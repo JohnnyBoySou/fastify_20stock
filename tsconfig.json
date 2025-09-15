@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+      "module": "ESNext",
+      "target": "ES2022",
+      "moduleResolution": "Node",
+      "esModuleInterop": true,
+      "resolveJsonModule": true,
+      "outDir": "./dist",
+      "baseUrl": "./",
+      "typeRoots": ["./src/types"],
+      "paths": {
+        "@/*": ["src/*"],
+        "@/config/*": ["src/config/*"],
+        "@/features/*": ["src/features/*"],
+        "@/plugins/*": ["src/plugins/*"],
+        "@/utils/*": ["src/utils/*"]
+      }
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist"]
+  }
+  

@@ -1,0 +1,298 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String      @id @default(cuid())
+  email                  String      @unique
+  password               String
+  name                   String?
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+  status                 Boolean     @default(true)
+  resetPasswordToken     String?
+  resetPasswordExpires   DateTime?
+  emailVerified          Boolean     @default(false)
+  emailVerificationToken String?
+  lastLoginAt            DateTime?
+  roles                  String[]    @default(["user"])
+  auditLogs              AuditLog[]
+  movements              Movement[]
+  ownedStores            Store[]     @relation("StoreOwner")
+  stores                 StoreUser[]
+  
+  // Granular Permissions Relations
+  userPermissions        UserPermission[]
+  storePermissions       StorePermission[]
+  createdUserPermissions UserPermission[] @relation("UserPermissionCreator")
+  createdStorePermissions StorePermission[] @relation("StorePermissionCreator")
+  createdPermissionTemplates PermissionTemplate[] @relation("PermissionTemplateCreator")
+  createdPermissionAudits PermissionAuditLog[] @relation("PermissionAuditCreator")
+
+  @@map("users")
+}
+
+model Product {
+  id              String        @id @default(cuid())
+  name            String
+  description     String?
+  unitOfMeasure   UnitOfMeasure
+  referencePrice  Decimal       @db.Decimal(10, 2)
+  categoryId      String?
+  supplierId      String?
+  storeId         String
+  stockMin        Int
+  stockMax        Int
+  alertPercentage Int           @db.SmallInt
+  status          Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  category        Category?     @relation(fields: [categoryId], references: [id])
+  store           Store         @relation(fields: [storeId], references: [id])
+  supplier        Supplier?     @relation(fields: [supplierId], references: [id])
+  movements       Movement[]
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  code        String?    @unique
+  status      Boolean    @default(true)
+  color       String?
+  icon        String?
+  parentId    String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  products    Product[]
+}
+
+model Supplier {
+  id            String                @id @default(cuid())
+  corporateName String
+  cnpj          String                @unique
+  tradeName     String?
+  status        Boolean               @default(true)
+  cep           String?
+  city          String?
+  state         String?
+  address       String?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  products      Product[]
+  movements     Movement[]
+  responsibles  SupplierResponsible[]
+}
+
+model SupplierResponsible {
+  id         String   @id @default(cuid())
+  name       String
+  phone      String?
+  email      String?
+  cpf        String?
+  status     Boolean  @default(true)
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+}
+
+model Store {
+  id        String      @id @default(cuid())
+  ownerId   String
+  name      String
+  cnpj      String      @unique
+  email     String?
+  phone     String?
+  status    Boolean     @default(true)
+  cep       String?
+  city      String?
+  state     String?
+  address   String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  products  Product[]
+  movements Movement[]
+  owner     User        @relation("StoreOwner", fields: [ownerId], references: [id])
+  users     StoreUser[]
+  
+  // Granular Permissions Relations
+  userPermissions UserPermission[]
+  storePermissions StorePermission[]
+}
+
+model StoreUser {
+  id      String    @id @default(cuid())
+  storeId String
+  userId  String
+  role    StoreRole @default(STAFF)
+  store   Store     @relation(fields: [storeId], references: [id])
+  user    User      @relation(fields: [userId], references: [id])
+
+  @@unique([storeId, userId])
+}
+
+model AuditLog {
+  id        String    @id @default(cuid())
+  entity    Entity
+  entityId  String
+  action    LogAction
+  userId    String?
+  before    Json?
+  after     Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User?     @relation(fields: [userId], references: [id])
+}
+
+model Movement {
+  id          String         @id @default(cuid())
+  type        MovementType
+  quantity    Int
+  storeId     String
+  productId   String
+  supplierId  String?        // fornecedor opcional, pode variar
+  batch       String?        // lote
+  expiration  DateTime?      // validade
+  price       Decimal?       @db.Decimal(10,2) // preço da unidade na movimentação
+  note        String?        // observações
+  balanceAfter Int?          // estoque após a movimentação
+
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  // Relacionamentos
+  store       Store          @relation(fields: [storeId], references: [id])
+  product     Product        @relation(fields: [productId], references: [id])
+  supplier    Supplier?      @relation(fields: [supplierId], references: [id])
+  userId      String?        // quem registrou
+  user        User?          @relation(fields: [userId], references: [id])
+}
+
+enum MovementType {
+  ENTRADA
+  SAIDA
+  PERDA
+}
+
+
+enum LogAction {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+enum Entity {
+  PRODUCT
+  STORE
+  USER
+}
+
+enum StoreRole {
+  OWNER
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+enum UnitOfMeasure {
+  UNIDADE
+  KG
+  L
+  ML
+  M
+  CM
+  MM
+  UN
+  DZ
+  CX
+  PCT
+  KIT
+  PAR
+  H
+  D
+}
+
+// ================================
+// GRANULAR PERMISSIONS MODELS
+// ================================
+
+model UserPermission {
+  id         String    @id @default(cuid())
+  userId     String
+  action     String    // Action enum from middleware
+  resource   String?   // Specific resource (e.g., product:123) or * for all
+  storeId    String?   // Store-specific permission
+  grant      Boolean   @default(true) // true = grant, false = deny
+  conditions Json?     // JSON conditions for when permission applies
+  expiresAt  DateTime? // When permission expires (null = never)
+  reason     String?   // Reason for permission
+  createdAt  DateTime  @default(now())
+  createdBy  String    // Who created this permission
+  
+  // Relations
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store      Store?    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  creator    User      @relation("UserPermissionCreator", fields: [createdBy], references: [id])
+  
+  @@map("UserPermission")
+}
+
+model StorePermission {
+  id           String     @id @default(cuid())
+  userId       String
+  storeId      String
+  storeRole    StoreRole  // Role within the store
+  permissions  Json       // Array of actions permitted for this store role
+  conditions   Json?      // JSON conditions for when permissions apply
+  expiresAt    DateTime?  // When permission expires (null = never)
+  createdAt    DateTime   @default(now())
+  createdBy    String     // Who created this permission
+  
+  // Relations
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store        Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  creator      User       @relation("StorePermissionCreator", fields: [createdBy], references: [id])
+  
+  @@unique([userId, storeId])
+  @@map("StorePermission")
+}
+
+model PermissionTemplate {
+  id           String    @id @default(cuid())
+  name         String    @unique
+  description  String?
+  permissions  Json      // Array of actions included in this template
+  conditions   Json?     // Default conditions for permissions in this template
+  isDefault    Boolean   @default(false) // Whether this is a system default template
+  createdAt    DateTime  @default(now())
+  createdBy    String    // Who created this template
+  
+  // Relations
+  creator      User      @relation("PermissionTemplateCreator", fields: [createdBy], references: [id])
+  
+  @@map("PermissionTemplate")
+}
+
+model PermissionAuditLog {
+  id             String   @id @default(cuid())
+  permissionId   String   // ID of the permission that was changed
+  permissionType String   // 'user' or 'store'
+  action         String   // 'created', 'updated', 'deleted', 'expired'
+  userId         String   // User affected by the change
+  changes        Json?    // JSON of what changed (for updates)
+  reason         String?  // Reason for the change
+  createdAt      DateTime @default(now())
+  createdBy      String   // Who made the change
+  
+  // Relations
+  creator        User     @relation("PermissionAuditCreator", fields: [createdBy], references: [id])
+  
+  @@map("PermissionAuditLog")
+}

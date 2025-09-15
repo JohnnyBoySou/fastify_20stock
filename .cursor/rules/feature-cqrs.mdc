@@ -1,0 +1,504 @@
+---
+description: Guia de Estrutura de Controller com CQRS - Fastify
+globs:
+alwaysApply: true
+---
+
+# 📋 Guia de Estrutura de Controller com CQRS - Fastify
+
+## 🎯 **Visão Geral**
+Este documento define o padrão de estrutura para controllers que seguem o padrão CQRS (Command Query Responsibility Segregation) no Fastify.
+
+## 📁 **Estrutura de Arquivos**
+```
+src/features/{entity}/
+├── commands/
+│   └── {entity}.commands.ts    # Operações de escrita (CREATE, UPDATE, DELETE)
+├── querys/
+│   └── {entity}.query.ts       # Operações de leitura (GET, LIST, SEARCH)
+├── {entity}.controller.ts      # Controller principal
+├── {entity}.interfaces.ts      # Interfaces TypeScript
+├── {entity}.routes.ts          # Definição das rotas
+└── {entity}.schema.ts          # Schemas de validação
+```
+
+## 🔧 **Template do Controller**
+
+### **1. Imports Obrigatórios**
+```typescript
+import { FastifyRequest, FastifyReply } from 'fastify'
+import { {Entity}Commands } from './commands/{entity}.commands'
+import { {Entity}Queries } from './querys/{entity}.query'
+import {
+  Create{Entity}Request,
+  Get{Entity}Request,
+  Update{Entity}Request,
+  Delete{Entity}Request,
+  List{Entity}sRequest
+} from './{entity}.interfaces'
+```
+
+### **2. Estrutura do Controller**
+```typescript
+export const {Entity}Controller = {
+  // === CRUD BÁSICO ===
+  async create(request: Create{Entity}Request, reply: FastifyReply) {
+    try {
+      const { field1, field2, field3 } = request.body
+      const prisma = (request.server as any).prisma
+      const {entity}Commands = new {Entity}Commands(prisma)
+
+      const result = await {entity}Commands.create({
+        field1,
+        field2,
+        field3
+      })
+
+      return reply.status(201).send(result)
+    } catch (error: any) {
+      request.log.error(error)
+      
+      if (error.message === 'Specific error message') {
+        return reply.status(400).send({
+          error: error.message
+        })
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async get(request: Get{Entity}Request, reply: FastifyReply) {
+    try {
+      const { id } = request.params
+      const prisma = (request.server as any).prisma
+      const {entity}Queries = new {Entity}Queries(prisma)
+
+      const result = await {entity}Queries.getById(id)
+
+      return reply.send(result)
+    } catch (error: any) {
+      request.log.error(error)
+      
+      if (error.message === 'Entity not found') {
+        return reply.status(404).send({
+          error: error.message
+        })
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async update(request: Update{Entity}Request, reply: FastifyReply) {
+    try {
+      const { id } = request.params
+      const updateData = { ...request.body }
+      const prisma = (request.server as any).prisma
+      const {entity}Commands = new {Entity}Commands(prisma)
+
+      const result = await {entity}Commands.update(id, updateData)
+
+      return reply.send(result)
+    } catch (error: any) {
+      request.log.error(error)
+      
+      if (error.message === 'Entity not found') {
+        return reply.status(404).send({
+          error: error.message
+        })
+      }
+
+      if (error.message === 'Validation error') {
+        return reply.status(400).send({
+          error: error.message
+        })
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async delete(request: Delete{Entity}Request, reply: FastifyReply) {
+    try {
+      const { id } = request.params
+      const prisma = (request.server as any).prisma
+      const {entity}Commands = new {Entity}Commands(prisma)
+
+      await {entity}Commands.delete(id)
+
+      return reply.status(204).send()
+    } catch (error: any) {
+      request.log.error(error)
+      
+      if (error.message === 'Entity not found') {
+        return reply.status(404).send({
+          error: error.message
+        })
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async list(request: List{Entity}sRequest, reply: FastifyReply) {
+    try {
+      const { page = 1, limit = 10, search, status } = request.query
+      const prisma = (request.server as any).prisma
+      const {entity}Queries = new {Entity}Queries(prisma)
+
+      const result = await {entity}Queries.list({
+        page,
+        limit,
+        search,
+        status
+      })
+
+      return reply.send(result)
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  // === FUNÇÕES ADICIONAIS (QUERIES) ===
+  async getBy{Field}(request: FastifyRequest<{ Querystring: { field: string } }>, reply: FastifyReply) {
+    try {
+      const { field } = request.query
+      const prisma = (request.server as any).prisma
+      const {entity}Queries = new {Entity}Queries(prisma)
+
+      const result = await {entity}Queries.getBy{Field}(field)
+
+      if (!result) {
+        return reply.status(404).send({
+          error: 'Entity not found'
+        })
+      }
+
+      return reply.send(result)
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async getBy{Field}(request: FastifyRequest<{ Params: { field: string } }>, reply: FastifyReply) {
+    try {
+      const { field } = request.params
+      const prisma = (request.server as any).prisma
+      const {entity}Queries = new {Entity}Queries(prisma)
+
+      const result = await {entity}Queries.getBy{Field}(field)
+
+      return reply.send({ entities: result })
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async getActive(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const prisma = (request.server as any).prisma
+      const {entity}Queries = new {Entity}Queries(prisma)
+
+      const result = await {entity}Queries.getActive()
+
+      return reply.send({ entities: result })
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async getStats(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const prisma = (request.server as any).prisma
+      const {entity}Queries = new {Entity}Queries(prisma)
+
+      const result = await {entity}Queries.getStats()
+
+      return reply.send(result)
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async search(request: FastifyRequest<{ Querystring: { q: string; limit?: number } }>, reply: FastifyReply) {
+    try {
+      const { q, limit = 10 } = request.query
+      const prisma = (request.server as any).prisma
+      const {entity}Queries = new {Entity}Queries(prisma)
+
+      const result = await {entity}Queries.search(q, limit)
+
+      return reply.send({ entities: result })
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  // === FUNÇÕES ADICIONAIS (COMMANDS) ===
+  async verify{Field}(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+    try {
+      const { id } = request.params
+      const prisma = (request.server as any).prisma
+      const {entity}Commands = new {Entity}Commands(prisma)
+
+      const result = await {entity}Commands.verify{Field}(id)
+
+      return reply.send(result)
+    } catch (error: any) {
+      request.log.error(error)
+      
+      if (error.message === 'Entity not found') {
+        return reply.status(404).send({
+          error: error.message
+        })
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async update{Field}(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+    try {
+      const { id } = request.params
+      const prisma = (request.server as any).prisma
+      const {entity}Commands = new {Entity}Commands(prisma)
+
+      await {entity}Commands.update{Field}(id)
+
+      return reply.send({ success: true })
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  }
+}
+```
+
+## 🛣️ **Template das Rotas**
+
+```typescript
+export async function {Entity}Routes(fastify: FastifyInstance) {
+  // CRUD básico
+  fastify.post('/', {
+    schema: create{Entity}Schema,
+    handler: {Entity}Controller.create
+  })
+
+  fastify.get('/', {
+    schema: list{Entity}sSchema,
+    handler: {Entity}Controller.list
+  })
+
+  fastify.get('/:id', {
+    schema: get{Entity}Schema,
+    handler: {Entity}Controller.get
+  })
+
+  fastify.put('/:id', {
+    schema: update{Entity}Schema,
+    handler: {Entity}Controller.update
+  })
+
+  fastify.delete('/:id', {
+    schema: delete{Entity}Schema,
+    handler: {Entity}Controller.delete
+  })
+
+  // Funções adicionais
+  fastify.get('/field/:field', {
+    handler: {Entity}Controller.getBy{Field}
+  })
+
+  fastify.get('/active', {
+    handler: {Entity}Controller.getActive
+  })
+
+  fastify.get('/stats', {
+    handler: {Entity}Controller.getStats
+  })
+
+  fastify.get('/search', {
+    handler: {Entity}Controller.search
+  })
+
+  fastify.patch('/:id/verify-field', {
+    handler: {Entity}Controller.verify{Field}
+  })
+
+  fastify.patch('/:id/update-field', {
+    handler: {Entity}Controller.update{Field}
+  })
+}
+```
+
+## 📝 **Convenções de Nomenclatura**
+
+### **Entidades**
+- **Singular**: `User`, `Product`, `Order`
+- **Plural**: `Users`, `Products`, `Orders`
+
+### **Funções**
+- **Commands**: `create`, `update`, `delete`, `verify{Field}`
+- **Queries**: `get`, `list`, `getBy{Field}`, `search`
+
+### **Arquivos**
+- **Controller**: `{entity}.controller.ts`
+- **Commands**: `{entity}.commands.ts`
+- **Queries**: `{entity}.query.ts`
+- **Interfaces**: `{entity}.interfaces.ts`
+- **Routes**: `{entity}.routes.ts`
+- **Schemas**: `{entity}.schema.ts`
+
+## 🔄 **Padrão CQRS**
+
+### **Commands (Writes)**
+- Operações que modificam dados
+- Usam `{Entity}Commands`
+- Exemplos: `create`, `update`, `delete`, `verifyEmail`
+
+### **Queries (Reads)**
+- Operações que apenas leem dados
+- Usam `{Entity}Queries`
+- Exemplos: `get`, `list`, `search`, `getStats`
+
+## 🚫 **Padrão Funcional Obrigatório**
+
+### **❌ NUNCA use Classes:**
+```typescript
+// ❌ ERRADO - Não fazer assim
+export class UserController {
+  constructor(private prisma: any) {}
+  
+  async createUser(request, reply) { ... }
+}
+
+// ❌ ERRADO - Não fazer assim
+const userController = new UserController(prisma)
+fastify.post('/', userController.createUser.bind(userController))
+```
+
+### **✅ SEMPRE use Funções:**
+```typescript
+// ✅ CORRETO - Fazer assim
+export const UserController = {
+  async create(request, reply) { ... },
+  async get(request, reply) { ... },
+  async update(request, reply) { ... }
+}
+
+// ✅ CORRETO - Fazer assim
+fastify.post('/', UserController.create)
+```
+
+### **Vantagens do Padrão Funcional:**
+1. **Mais Simples**: Sem necessidade de instanciar classes
+2. **Menos Código**: Sem constructors, bind, etc.
+3. **Mais Direto**: Acesso direto às funções
+4. **Melhor Performance**: Sem overhead de classes
+5. **Mais Limpo**: Código mais legível e maintível
+
+### **Estrutura de Commands e Queries (também funcionais):**
+
+#### **Commands - `{entity}.commands.ts`:**
+```typescript
+// ✅ CORRETO - Commands como classe (para encapsular Prisma)
+export class {Entity}Commands {
+  constructor(private prisma: any) {}
+  
+  async create(data) { ... }
+  async update(id, data) { ... }
+  async delete(id) { ... }
+}
+```
+
+#### **Queries - `{entity}.query.ts`:**
+```typescript
+// ✅ CORRETO - Queries como classe (para encapsular Prisma)
+export class {Entity}Queries {
+  constructor(private prisma: any) {}
+  
+  async getById(id) { ... }
+  async list(filters) { ... }
+  async search(term, limit) { ... }
+}
+```
+
+#### **Controller - `{entity}.controller.ts`:**
+```typescript
+// ✅ CORRETO - Controller como objeto com funções
+export const {Entity}Controller = {
+  async create(request, reply) {
+    const prisma = (request.server as any).prisma
+    const commands = new {Entity}Commands(prisma)
+    // ...
+  }
+}
+```
+
+## ⚠️ **Regras Importantes**
+
+1. **Controller SEMPRE como objeto com funções, NUNCA como classe** - Padrão funcional obrigatório
+2. **Sempre use try/catch** em todas as funções
+3. **Log de erros** com `request.log.error(error)`
+4. **Tratamento específico** de erros conhecidos
+5. **Fallback genérico** para erros não tratados
+6. **Acesso ao Prisma** via `(request.server as any).prisma`
+7. **Instanciar Commands/Queries** em cada função
+8. **Nomenclatura em inglês** para tudo
+9. **Interfaces separadas** em arquivo próprio
+10. **Controller como objeto** com funções, não classe
+
+## 📋 **Exemplo Prático: ProductController**
+
+```typescript
+// Uso: ProductController.create
+// Uso: ProductController.list
+// Uso: ProductController.getBySku
+// Uso: ProductController.updateStock
+```
+
+## 🎯 **Resumo do Padrão Obrigatório**
+
+### **✅ O QUE FAZER:**
+- **Controller**: Objeto com funções (`export const ProductController = { ... }`)
+- **Commands/Queries**: Classes para encapsular Prisma
+- **Rotas**: Acesso direto às funções (`ProductController.create`)
+- **Nomenclatura**: Funções concisas (`create`, `get`, `list`)
+
+### **❌ O QUE NÃO FAZER:**
+- **Controller**: NUNCA como classe (`export class ProductController`)
+- **Rotas**: NUNCA com `.bind()` ou instanciação
+- **Nomenclatura**: NUNCA redundante (`createProduct` em `ProductController`)
+
+Este padrão garante consistência, manutenibilidade e escalabilidade em todos os controllers do projeto.
