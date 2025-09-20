@@ -12,7 +12,12 @@ export const createProductSchema: FastifySchema = {
         enum: ['UNIDADE', 'KG', 'L', 'ML', 'M', 'CM', 'MM', 'UN', 'DZ', 'CX', 'PCT', 'KIT', 'PAR', 'H', 'D']
       },
       referencePrice: { type: 'number', minimum: 0.01 },
-      categoryId: { type: ['string', 'null'], minLength: 1 },
+      categoryIds: { 
+        type: 'array', 
+        items: { type: 'string', minLength: 1 },
+        minItems: 1,
+        uniqueItems: true
+      },
       supplierId: { type: ['string', 'null'], minLength: 1 },
       storeId: { type: 'string', minLength: 1 },
       stockMin: { type: 'number', minimum: 0 },
@@ -30,7 +35,6 @@ export const createProductSchema: FastifySchema = {
         description: { type: 'string', nullable: true },
         unitOfMeasure: { type: 'string' },
         referencePrice: { type: 'number' },
-        categoryId: { type: 'string' },
         supplierId: { type: 'string' },
         storeId: { type: 'string' },
         stockMin: { type: 'number' },
@@ -39,7 +43,20 @@ export const createProductSchema: FastifySchema = {
         status: { type: 'boolean' },
         createdAt: { type: 'string', format: 'date-time' },
         updatedAt: { type: 'string', format: 'date-time' },
-        category: { type: 'object' },
+        categories: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              description: { type: 'string', nullable: true },
+              code: { type: 'string', nullable: true },
+              color: { type: 'string', nullable: true },
+              icon: { type: 'string', nullable: true }
+            }
+          }
+        },
         supplier: { type: 'object' },
         store: { type: 'object' }
       }
@@ -65,7 +82,12 @@ export const updateProductSchema: FastifySchema = {
         enum: ['UNIDADE', 'KG', 'L', 'ML', 'M', 'CM', 'MM', 'UN', 'DZ', 'CX', 'PCT', 'KIT', 'PAR', 'H', 'D']
       },
       referencePrice: { type: 'number', minimum: 0.01 },
-      categoryId: { type: ['string', 'null'], minLength: 1 },
+      categoryIds: { 
+        type: 'array', 
+        items: { type: 'string', minLength: 1 },
+        minItems: 1,
+        uniqueItems: true
+      },
       supplierId: { type: ['string', 'null'], minLength: 1 },
       storeId: { type: 'string', minLength: 1 },
       stockMin: { type: 'number', minimum: 0 },
@@ -83,7 +105,6 @@ export const updateProductSchema: FastifySchema = {
         description: { type: 'string', nullable: true },
         unitOfMeasure: { type: 'string' },
         referencePrice: { type: 'number' },
-        categoryId: { type: 'string' },
         supplierId: { type: 'string' },
         storeId: { type: 'string' },
         stockMin: { type: 'number' },
@@ -91,7 +112,20 @@ export const updateProductSchema: FastifySchema = {
         alertPercentage: { type: 'number' },
         status: { type: 'boolean' },
         updatedAt: { type: 'string', format: 'date-time' },
-        category: { type: 'object' },
+        categories: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              description: { type: 'string', nullable: true },
+              code: { type: 'string', nullable: true },
+              color: { type: 'string', nullable: true },
+              icon: { type: 'string', nullable: true }
+            }
+          }
+        },
         supplier: { type: 'object' },
         store: { type: 'object' }
       }
@@ -116,7 +150,20 @@ export const getProductSchema: FastifySchema = {
         description: { type: 'string', nullable: true },
         unitOfMeasure: { type: 'string' },
         referencePrice: { type: 'number' },
-        categoryId: { type: 'string' },
+        categories: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              description: { type: 'string', nullable: true },
+              code: { type: 'string', nullable: true },
+              color: { type: 'string', nullable: true },
+              icon: { type: 'string', nullable: true }
+            }
+          }
+        },
         supplierId: { type: 'string' },
         storeId: { type: 'string' },
         stockMin: { type: 'number' },
@@ -141,7 +188,11 @@ export const listProductsSchema: FastifySchema = {
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       search: { type: 'string' },
       status: { type: 'boolean' },
-      categoryId: { type: 'string' },
+      categoryIds: { 
+        type: 'array', 
+        items: { type: 'string', minLength: 1 },
+        uniqueItems: true
+      },
       supplierId: { type: 'string' },
       storeId: { type: 'string' }
     }
@@ -160,7 +211,20 @@ export const listProductsSchema: FastifySchema = {
               description: { type: 'string', nullable: true },
               unitOfMeasure: { type: 'string' },
               referencePrice: { type: 'number' },
-              categoryId: { type: 'string' },
+              categories: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              description: { type: 'string', nullable: true },
+              code: { type: 'string', nullable: true },
+              color: { type: 'string', nullable: true },
+              icon: { type: 'string', nullable: true }
+            }
+          }
+        },
               supplierId: { type: 'string' },
               storeId: { type: 'string' },
               stockMin: { type: 'number' },
@@ -590,6 +654,213 @@ export const getProductAnalyticsSchema: FastifySchema = {
   }
 };
 
+// === SCHEMAS PARA GERENCIAR CATEGORIAS DO PRODUTO ===
+
+export const addProductCategoriesSchema: FastifySchema = {
+  params: {
+    type: 'object',
+    required: ['id'],
+    properties: {
+      id: { type: 'string' }
+    }
+  },
+  body: {
+    type: 'object',
+    required: ['categoryIds'],
+    properties: {
+      categoryIds: { 
+        type: 'array', 
+        items: { type: 'string', minLength: 1 },
+        minItems: 1,
+        uniqueItems: true
+      }
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        addedCount: { type: 'number' },
+        categories: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              description: { type: 'string', nullable: true },
+              code: { type: 'string', nullable: true },
+              color: { type: 'string', nullable: true },
+              icon: { type: 'string', nullable: true }
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
+export const removeProductCategoriesSchema: FastifySchema = {
+  params: {
+    type: 'object',
+    required: ['id'],
+    properties: {
+      id: { type: 'string' }
+    }
+  },
+  body: {
+    type: 'object',
+    required: ['categoryIds'],
+    properties: {
+      categoryIds: { 
+        type: 'array', 
+        items: { type: 'string', minLength: 1 },
+        minItems: 1,
+        uniqueItems: true
+      }
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        removedCount: { type: 'number' }
+      }
+    }
+  }
+};
+
+export const setProductCategoriesSchema: FastifySchema = {
+  params: {
+    type: 'object',
+    required: ['id'],
+    properties: {
+      id: { type: 'string' }
+    }
+  },
+  body: {
+    type: 'object',
+    required: ['categoryIds'],
+    properties: {
+      categoryIds: { 
+        type: 'array', 
+        items: { type: 'string', minLength: 1 },
+        uniqueItems: true
+      }
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        categories: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              description: { type: 'string', nullable: true },
+              code: { type: 'string', nullable: true },
+              color: { type: 'string', nullable: true },
+              icon: { type: 'string', nullable: true }
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
+export const getProductCategoriesSchema: FastifySchema = {
+  params: {
+    type: 'object',
+    required: ['id'],
+    properties: {
+      id: { type: 'string' }
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        categories: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              description: { type: 'string', nullable: true },
+              code: { type: 'string', nullable: true },
+              color: { type: 'string', nullable: true },
+              icon: { type: 'string', nullable: true }
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
+export const getProductsByCategorySchema: FastifySchema = {
+  params: {
+    type: 'object',
+    required: ['categoryId'],
+    properties: {
+      categoryId: { type: 'string' }
+    }
+  },
+  querystring: {
+    type: 'object',
+    properties: {
+      page: { type: 'number', minimum: 1, default: 1 },
+      limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
+      search: { type: 'string' },
+      status: { type: 'boolean' }
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        products: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              description: { type: 'string', nullable: true },
+              unitOfMeasure: { type: 'string' },
+              referencePrice: { type: 'number' },
+              stockMin: { type: 'number' },
+              stockMax: { type: 'number' },
+              alertPercentage: { type: 'number' },
+              status: { type: 'boolean' },
+              createdAt: { type: 'string', format: 'date-time' },
+              supplier: { type: 'object', nullable: true },
+              store: { type: 'object' }
+            }
+          }
+        },
+        pagination: {
+          type: 'object',
+          properties: {
+            page: { type: 'number' },
+            limit: { type: 'number' },
+            total: { type: 'number' },
+            totalPages: { type: 'number' }
+          }
+        }
+      }
+    }
+  }
+};
+
 export const ProductSchemas = {
   create: createProductSchema,
   update: updateProductSchema,
@@ -605,5 +876,11 @@ export const ProductSchemas = {
   getStock: getProductStockSchema,
   getStockHistory: getProductStockHistorySchema,
   getLowStock: getLowStockProductsSchema,
-  getAnalytics: getProductAnalyticsSchema
+  getAnalytics: getProductAnalyticsSchema,
+  // Gerenciar categorias
+  addCategories: addProductCategoriesSchema,
+  removeCategories: removeProductCategoriesSchema,
+  setCategories: setProductCategoriesSchema,
+  getCategories: getProductCategoriesSchema,
+  getByCategory: getProductsByCategorySchema
 };

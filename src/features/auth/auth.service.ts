@@ -62,6 +62,25 @@ export interface ResendVerificationResponse {
     message: string;
 }
 
+export interface VerifyResetCodeRequest {
+    email: string;
+    code: string;
+}
+
+export interface VerifyResetCodeResponse {
+    message: string;
+    token?: string;
+}
+
+export interface VerifyEmailCodeRequest {
+    email: string;
+    code: string;
+}
+
+export interface VerifyEmailCodeResponse {
+    message: string;
+}
+
 export interface RefreshTokenResponse {
     token: string;
     message: string;
@@ -159,17 +178,29 @@ export const AuthService = {
     register: (data: RegisterRequest): Promise<RegisterResponse> => 
         fetch(`${URI}/register`, { method: "POST", data }),
     
+    signup: (data: RegisterRequest): Promise<RegisterResponse> => 
+        fetch(`${URI}/signup`, { method: "POST", data }),
+    
     login: (email: string, password: string): Promise<LoginResponse> => 
         fetch(`${URI}/login`, { method: "POST", data: { email, password } }),
     
+    signin: (email: string, password: string): Promise<LoginResponse> => 
+        fetch(`${URI}/signin`, { method: "POST", data: { email, password } }),
+    
     forgotPassword: (email: string): Promise<ForgotPasswordResponse> => 
         fetch(`${URI}/forgot-password`, { method: "POST", data: { email } }),
+    
+    verifyResetCode: (email: string, code: string): Promise<VerifyResetCodeResponse> => 
+        fetch(`${URI}/verify-reset-code`, { method: "POST", data: { email, code } }),
     
     resetPassword: (token: string, password: string): Promise<ResetPasswordResponse> => 
         fetch(`${URI}/reset-password`, { method: "POST", data: { token, password } }),
     
     verifyEmail: (token: string): Promise<VerifyEmailResponse> => 
         fetch(`${URI}/verify-email`, { method: "POST", data: { token } }),
+    
+    verifyEmailCode: (email: string, code: string): Promise<VerifyEmailCodeResponse> => 
+        fetch(`${URI}/verify-email-code`, { method: "POST", data: { email, code } }),
     
     resendVerification: (email: string): Promise<ResendVerificationResponse> => 
         fetch(`${URI}/resend-verification`, { method: "POST", data: { email } }),

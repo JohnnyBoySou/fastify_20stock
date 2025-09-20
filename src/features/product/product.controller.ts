@@ -12,14 +12,14 @@ export const ProductController = {
   // === CRUD BÁSICO ===
   async create(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const { name, description, unitOfMeasure, referencePrice, categoryId, supplierId, storeId, stockMin, stockMax, alertPercentage, status } = request.body as any;
+      const { name, description, unitOfMeasure, referencePrice, categoryIds, supplierId, storeId, stockMin, stockMax, alertPercentage, status } = request.body as any;
 
       const result = await ProductCommands.create({
         name,
         description,
         unitOfMeasure,
         referencePrice,
-        categoryId,
+        categoryIds,
         supplierId,
         storeId,
         stockMin,
@@ -38,9 +38,15 @@ export const ProductController = {
         });
       }
 
+      if (error.message.includes('Categories not found')) {
+        return reply.status(400).send({
+          error: error.message
+        });
+      }
+
       if (error.code === 'P2003') {
         return reply.status(400).send({
-          error: 'Invalid category, supplier or store reference'
+          error: 'Invalid supplier or store reference'
         });
       }
 
@@ -101,9 +107,15 @@ export const ProductController = {
         });
       }
 
+      if (error.message.includes('Categories not found')) {
+        return reply.status(400).send({
+          error: error.message
+        });
+      }
+
       if (error.code === 'P2003') {
         return reply.status(400).send({
-          error: 'Invalid category, supplier or store reference'
+          error: 'Invalid supplier or store reference'
         });
       }
 
@@ -137,14 +149,14 @@ export const ProductController = {
 
   async list(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const { page = 1, limit = 10, search, status, categoryId, supplierId, storeId } = request.query as any;
+      const { page = 1, limit = 10, search, status, categoryIds, supplierId, storeId } = request.query as any;
 
       const result = await ProductQueries.list({
         page,
         limit,
         search,
         status,
-        categoryId,
+        categoryIds: categoryIds ? (Array.isArray(categoryIds) ? categoryIds : [categoryIds]) : undefined,
         supplierId,
         storeId
       });
@@ -467,6 +479,133 @@ export const ProductController = {
           error: error.message
         });
       }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      });
+    }
+  },
+
+  // === MÉTODOS PARA GERENCIAR CATEGORIAS DO PRODUTO ===
+  async addCategories(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { id } = request.params as any;
+      const { categoryIds } = request.body as any;
+
+      const result = await ProductCommands.addCategories(id, categoryIds);
+
+      return reply.send(result);
+    } catch (error: any) {
+      request.log.error(error);
+
+      if (error.message === 'Product not found') {
+        return reply.status(404).send({
+          error: error.message
+        });
+      }
+
+      if (error.message.includes('Categories not found') || 
+          error.message.includes('already associated')) {
+        return reply.status(400).send({
+          error: error.message
+        });
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      });
+    }
+  },
+
+  async removeCategories(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { id } = request.params as any;
+      const { categoryIds } = request.body as any;
+
+      const result = await ProductCommands.removeCategories(id, categoryIds);
+
+      return reply.send(result);
+    } catch (error: any) {
+      request.log.error(error);
+
+      if (error.message === 'Product not found') {
+        return reply.status(404).send({
+          error: error.message
+        });
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      });
+    }
+  },
+
+  async setCategories(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { id } = request.params as any;
+      const { categoryIds } = request.body as any;
+
+      const result = await ProductCommands.setCategories(id, categoryIds);
+
+      return reply.send(result);
+    } catch (error: any) {
+      request.log.error(error);
+
+      if (error.message === 'Product not found') {
+        return reply.status(404).send({
+          error: error.message
+        });
+      }
+
+      if (error.message.includes('Categories not found')) {
+        return reply.status(400).send({
+          error: error.message
+        });
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      });
+    }
+  },
+
+  async getCategories(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { id } = request.params as any;
+
+      const result = await ProductQueries.getCategories(id);
+
+      return reply.send(result);
+    } catch (error: any) {
+      request.log.error(error);
+
+      if (error.message === 'Product not found') {
+        return reply.status(404).send({
+          error: error.message
+        });
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      });
+    }
+  },
+
+  async getByCategory(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { categoryId } = request.params as any;
+      const { page = 1, limit = 10, search, status } = request.query as any;
+
+      const result = await ProductQueries.getByCategory(categoryId, {
+        page,
+        limit,
+        search,
+        status
+      });
+
+      return reply.send(result);
+    } catch (error: any) {
+      request.log.error(error);
 
       return reply.status(500).send({
         error: 'Internal server error'

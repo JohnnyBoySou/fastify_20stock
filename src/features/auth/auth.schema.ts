@@ -142,15 +142,67 @@ export const forgotPasswordSchema: FastifySchema = {
   }
 };
 
+// Verify Reset Code schema
+export const verifyResetCodeSchema: FastifySchema = {
+  body: {
+    type: 'object',
+    required: ['email', 'code'],
+    properties: {
+      email: {
+        type: 'string',
+        format: 'email',
+        description: 'User email address'
+      },
+      code: {
+        type: 'string',
+        pattern: '^[0-9]{6}$',
+        description: '6-digit reset code'
+      }
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' }
+      }
+    },
+    400: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    401: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    404: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
+  }
+};
+
 // Reset Password schema
 export const resetPasswordSchema: FastifySchema = {
   body: {
     type: 'object',
-    required: ['token', 'password'],
+    required: ['email', 'code', 'password'],
     properties: {
-      token: {
+      email: {
         type: 'string',
-        description: 'Reset password token'
+        format: 'email',
+        description: 'User email address'
+      },
+      code: {
+        type: 'string',
+        pattern: '^[0-9]{6}$',
+        description: '6-digit reset code'
       },
       password: {
         type: 'string',
@@ -208,6 +260,61 @@ export const verifyEmailSchema: FastifySchema = {
       }
     },
     401: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
+  }
+};
+
+// Verify Email Code schema
+export const verifyEmailCodeSchema: FastifySchema = {
+  body: {
+    type: 'object',
+    required: ['email', 'code'],
+    properties: {
+      email: {
+        type: 'string',
+        format: 'email',
+        description: 'User email address'
+      },
+      code: {
+        type: 'string',
+        pattern: '^[0-9]{6}$',
+        description: '6-digit verification code'
+      }
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        user: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+            email: { type: 'string' },
+            emailVerified: { type: 'boolean' }
+          }
+        }
+      }
+    },
+    400: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    401: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    404: {
       type: 'object',
       properties: {
         error: { type: 'string' }

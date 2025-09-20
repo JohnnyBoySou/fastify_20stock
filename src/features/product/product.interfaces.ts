@@ -7,7 +7,7 @@ export interface CreateProductRequest extends FastifyRequest {
     description?: string
     unitOfMeasure: 'UNIDADE' | 'KG' | 'L' | 'ML' | 'M' | 'CM' | 'MM' | 'UN' | 'DZ' | 'CX' | 'PCT' | 'KIT' | 'PAR' | 'H' | 'D'
     referencePrice: number
-    categoryId?: string
+    categoryIds?: string[]
     supplierId?: string
     storeId: string
     stockMin: number
@@ -24,7 +24,7 @@ export interface UpdateProductRequest extends FastifyRequest {
     description?: string
     unitOfMeasure?: 'UNIDADE' | 'KG' | 'L' | 'ML' | 'M' | 'CM' | 'MM' | 'UN' | 'DZ' | 'CX' | 'PCT' | 'KIT' | 'PAR' | 'H' | 'D'
     referencePrice?: number
-    categoryId?: string
+    categoryIds?: string[]
     supplierId?: string
     storeId?: string
     stockMin?: number
@@ -44,7 +44,7 @@ export interface ListProductsRequest extends FastifyRequest {
     limit?: number
     search?: string
     status?: boolean
-    categoryId?: string
+    categoryIds?: string[]
     supplierId?: string
     storeId?: string
   }
@@ -60,8 +60,7 @@ export interface ProductResponse {
   description?: string
   unitOfMeasure: string
   referencePrice: number
-  categoryId: string
-  supplierId: string
+  supplierId?: string
   storeId: string
   stockMin: number
   stockMax: number
@@ -69,12 +68,15 @@ export interface ProductResponse {
   status: boolean
   createdAt: Date
   updatedAt: Date
-  category?: {
+  currentStock: number
+  categories?: Array<{
     id: string
     name: string
     description?: string
     code?: string
-  }
+    color?: string
+    icon?: string
+  }>
   supplier?: {
     id: string
     corporateName: string
@@ -164,5 +166,42 @@ export interface ProductMovementResponse {
     id: string
     name: string
     email: string
+  }
+}
+
+// === INTERFACES PARA GERENCIAR CATEGORIAS DO PRODUTO ===
+
+export interface AddProductCategoriesRequest extends FastifyRequest {
+  params: { id: string }
+  body: {
+    categoryIds: string[]
+  }
+}
+
+export interface RemoveProductCategoriesRequest extends FastifyRequest {
+  params: { id: string }
+  body: {
+    categoryIds: string[]
+  }
+}
+
+export interface SetProductCategoriesRequest extends FastifyRequest {
+  params: { id: string }
+  body: {
+    categoryIds: string[]
+  }
+}
+
+export interface GetProductCategoriesRequest extends FastifyRequest {
+  params: { id: string }
+}
+
+export interface GetProductsByCategoryRequest extends FastifyRequest {
+  params: { categoryId: string }
+  query: {
+    page?: number
+    limit?: number
+    search?: string
+    status?: boolean
   }
 }

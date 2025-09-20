@@ -1,9 +1,75 @@
 import { db } from '@/plugins/prisma';
+
+// Função auxiliar para calcular o estoque atual de um produto
+async function calculateCurrentStock(productId: string): Promise<number> {
+  const movements = await db.movement.findMany({
+    where: { productId },
+    select: {
+      type: true,
+      quantity: true
+    }
+  });
+
+  let currentStock = 0;
+  movements.forEach(movement => {
+    if (movement.type === 'ENTRADA') {
+      currentStock += movement.quantity;
+    } else {
+      currentStock -= movement.quantity;
+    }
+  });
+
+  return currentStock;
+}
+
 export const ProductQueries = {
   async getById(id: string, storeId: string) {
-    return await db.product.findUnique({
-      where: { id, storeId }
+    const product = await db.product.findUnique({
+      where: { id, storeId },
+      include: {
+        categories: {
+          select: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                code: true,
+                color: true,
+                icon: true
+              }
+            }
+          }
+        },
+        supplier: {
+          select: {
+            id: true,
+            corporateName: true,
+            cnpj: true,
+            tradeName: true
+          }
+        },
+        store: {
+          select: {
+            id: true,
+            name: true,
+            cnpj: true
+          }
+        }
+      }
     });
+
+    if (!product) {
+      return null;
+    }
+
+    // Calcular estoque atual
+    const currentStock = await calculateCurrentStock(product.id);
+
+    return {
+      ...product,
+      currentStock
+    };
   },
 
   async list(params: {
@@ -11,11 +77,11 @@ export const ProductQueries = {
     limit?: number
     search?: string
     status?: boolean
-    categoryId?: string
+    categoryIds?: string[]
     supplierId?: string
     storeId?: string
   }) {
-    const { page = 1, limit = 10, search, status, categoryId, supplierId, storeId } = params;
+    const { page = 1, limit = 10, search, status, categoryIds, supplierId, storeId } = params;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -24,8 +90,12 @@ export const ProductQueries = {
       where.status = status;
     }
 
-    if (categoryId) {
-      where.categoryId = categoryId;
+    if (categoryIds && categoryIds.length > 0) {
+      where.categories = {
+        some: {
+          categoryId: { in: categoryIds }
+        }
+      };
     }
 
     if (supplierId) {
@@ -43,19 +113,25 @@ export const ProductQueries = {
       ];
     }
 
-    const [items, total] = await Promise.all([
+    const [products, total] = await Promise.all([
       db.product.findMany({
         where,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
-          category: {
+          categories: {
             select: {
-              id: true,
-              name: true,
-              description: true,
-              code: true
+              category: {
+                select: {
+                  id: true,
+                  name: true,
+                  description: true,
+                  code: true,
+                  color: true,
+                  icon: true
+                }
+              }
             }
           },
           supplier: {
@@ -78,8 +154,19 @@ export const ProductQueries = {
       db.product.count({ where })
     ]);
 
+    // Calcular estoque atual para todos os produtos
+    const itemsWithStock = await Promise.all(
+      products.map(async (product) => {
+        const currentStock = await calculateCurrentStock(product.id);
+        return {
+          ...product,
+          currentStock
+        };
+      })
+    );
+
     return {
-      items,
+      items: itemsWithStock,
       pagination: {
         page,
         limit,
@@ -90,12 +177,12 @@ export const ProductQueries = {
   },
 
   async search(term: string, limit: number = 10) {
-    return await db.product.findMany({
+    const products = await db.product.findMany({
       where: {
         OR: [
           { name: { contains: term, mode: 'insensitive' } },
           { description: { contains: term, mode: 'insensitive' } },
-          { category: { name: { contains: term, mode: 'insensitive' } } },
+          { categories: { some: { category: { name: { contains: term, mode: 'insensitive' } } } } },
           { supplier: { corporateName: { contains: term, mode: 'insensitive' } } },
           { supplier: { tradeName: { contains: term, mode: 'insensitive' } } }
         ]
@@ -103,12 +190,18 @@ export const ProductQueries = {
       take: limit,
       orderBy: { createdAt: 'desc' },
       include: {
-        category: {
+        categories: {
           select: {
-            id: true,
-            name: true,
-            description: true,
-            code: true
+            category: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                code: true,
+                color: true,
+                icon: true
+              }
+            }
           }
         },
         supplier: {
@@ -128,19 +221,38 @@ export const ProductQueries = {
         }
       }
     });
+
+    // Calcular estoque atual para todos os produtos
+    const productsWithStock = await Promise.all(
+      products.map(async (product) => {
+        const currentStock = await calculateCurrentStock(product.id);
+        return {
+          ...product,
+          currentStock
+        };
+      })
+    );
+
+    return productsWithStock;
   },
 
   async getActive() {
-    return await db.product.findMany({
+    const products = await db.product.findMany({
       where: { status: true },
       orderBy: { createdAt: 'desc' },
       include: {
-        category: {
+        categories: {
           select: {
-            id: true,
-            name: true,
-            description: true,
-            code: true
+            category: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                code: true,
+                color: true,
+                icon: true
+              }
+            }
           }
         },
         supplier: {
@@ -160,6 +272,19 @@ export const ProductQueries = {
         }
       }
     });
+
+    // Calcular estoque atual para todos os produtos
+    const productsWithStock = await Promise.all(
+      products.map(async (product) => {
+        const currentStock = await calculateCurrentStock(product.id);
+        return {
+          ...product,
+          currentStock
+        };
+      })
+    );
+
+    return productsWithStock;
   },
 
   async getStats() {
@@ -177,16 +302,28 @@ export const ProductQueries = {
   },
 
   async getByCategory(categoryId: string) {
-    return await db.product.findMany({
-      where: { categoryId },
+    const products = await db.product.findMany({
+      where: { 
+        categories: {
+          some: {
+            categoryId
+          }
+        }
+      },
       orderBy: { createdAt: 'desc' },
       include: {
-        category: {
+        categories: {
           select: {
-            id: true,
-            name: true,
-            description: true,
-            code: true
+            category: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                code: true,
+                color: true,
+                icon: true
+              }
+            }
           }
         },
         supplier: {
@@ -206,19 +343,38 @@ export const ProductQueries = {
         }
       }
     });
+
+    // Calcular estoque atual para todos os produtos
+    const productsWithStock = await Promise.all(
+      products.map(async (product) => {
+        const currentStock = await calculateCurrentStock(product.id);
+        return {
+          ...product,
+          currentStock
+        };
+      })
+    );
+
+    return productsWithStock;
   },
 
   async getBySupplier(supplierId: string) {
-    return await db.product.findMany({
+    const products = await db.product.findMany({
       where: { supplierId },
       orderBy: { createdAt: 'desc' },
       include: {
-        category: {
+        categories: {
           select: {
-            id: true,
-            name: true,
-            description: true,
-            code: true
+            category: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                code: true,
+                color: true,
+                icon: true
+              }
+            }
           }
         },
         supplier: {
@@ -238,19 +394,38 @@ export const ProductQueries = {
         }
       }
     });
+
+    // Calcular estoque atual para todos os produtos
+    const productsWithStock = await Promise.all(
+      products.map(async (product) => {
+        const currentStock = await calculateCurrentStock(product.id);
+        return {
+          ...product,
+          currentStock
+        };
+      })
+    );
+
+    return productsWithStock;
   },
 
   async getByStore(storeId: string) {
-    return await db.product.findMany({
+    const products = await db.product.findMany({
       where: { storeId },
       orderBy: { createdAt: 'desc' },
       include: {
-        category: {
+        categories: {
           select: {
-            id: true,
-            name: true,
-            description: true,
-            code: true
+            category: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                code: true,
+                color: true,
+                icon: true
+              }
+            }
           }
         },
         supplier: {
@@ -270,6 +445,19 @@ export const ProductQueries = {
         }
       }
     });
+
+    // Calcular estoque atual para todos os produtos
+    const productsWithStock = await Promise.all(
+      products.map(async (product) => {
+        const currentStock = await calculateCurrentStock(product.id);
+        return {
+          ...product,
+          currentStock
+        };
+      })
+    );
+
+    return productsWithStock;
   },
 
   // === FUNÇÕES ADICIONAIS DE PRODUTO ===
@@ -572,6 +760,201 @@ export const ProductQueries = {
         totalPerda,
         monthlyMovements,
         supplierStats: Object.values(supplierStats)
+      }
+    };
+  },
+
+  // === MÉTODOS PARA GERENCIAR CATEGORIAS DO PRODUTO ===
+  async getCategories(productId: string) {
+    const product = await db.product.findUnique({
+      where: { id: productId }
+    });
+
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    const categories = await db.productCategory.findMany({
+      where: { productId },
+      select: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            code: true,
+            color: true,
+            icon: true
+          }
+        }
+      }
+    });
+
+    return {
+      categories: categories.map(pc => pc.category)
+    };
+  },
+
+  async getByCategory(categoryId: string, params: {
+    page?: number
+    limit?: number
+    search?: string
+    status?: boolean
+  }) {
+    const { page = 1, limit = 10, search, status } = params;
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      categories: {
+        some: {
+          categoryId
+        }
+      }
+    };
+
+    if (status !== undefined) {
+      where.status = status;
+    }
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    const [products, total] = await Promise.all([
+      db.product.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          categories: {
+            select: {
+              category: {
+                select: {
+                  id: true,
+                  name: true,
+                  description: true,
+                  code: true,
+                  color: true,
+                  icon: true
+                }
+              }
+            }
+          },
+          supplier: {
+            select: {
+              id: true,
+              corporateName: true,
+              cnpj: true,
+              tradeName: true
+            }
+          },
+          store: {
+            select: {
+              id: true,
+              name: true,
+              cnpj: true
+            }
+          }
+        }
+      }),
+      db.product.count({ where })
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages
+      }
+    };
+  },
+
+  async getProductsByCategories(categoryIds: string[], params: {
+    page?: number
+    limit?: number
+    search?: string
+    status?: boolean
+  }) {
+    const { page = 1, limit = 10, search, status } = params;
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      categories: {
+        some: {
+          categoryId: { in: categoryIds }
+        }
+      }
+    };
+
+    if (status !== undefined) {
+      where.status = status;
+    }
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    const [products, total] = await Promise.all([
+      db.product.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          categories: {
+            select: {
+              category: {
+                select: {
+                  id: true,
+                  name: true,
+                  description: true,
+                  code: true,
+                  color: true,
+                  icon: true
+                }
+              }
+            }
+          },
+          supplier: {
+            select: {
+              id: true,
+              corporateName: true,
+              cnpj: true,
+              tradeName: true
+            }
+          },
+          store: {
+            select: {
+              id: true,
+              name: true,
+              cnpj: true
+            }
+          }
+        }
+      }),
+      db.product.count({ where })
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages
       }
     };
   }

@@ -95,4 +95,30 @@ export async function ProductRoutes(fastify: FastifyInstance) {
     schema: ProductSchemas.updateStatus,
     handler: ProductController.updateStatus
   });
+
+  // === ENDPOINTS PARA GERENCIAR CATEGORIAS DO PRODUTO ===
+  fastify.post('/:id/categories', {
+    schema: ProductSchemas.addCategories,
+    handler: ProductController.addCategories
+  });
+
+  fastify.delete('/:id/categories', {
+    schema: ProductSchemas.removeCategories,
+    handler: ProductController.removeCategories
+  });
+
+  fastify.put('/:id/categories', {
+    schema: ProductSchemas.setCategories,
+    handler: ProductController.setCategories
+  });
+
+  fastify.get('/:id/categories', {
+    schema: ProductSchemas.getCategories,
+    handler: ProductController.getCategories
+  });
+
+ // fastify.get('/category/:categoryId', {
+ //   schema: ProductSchemas.getByCategory,
+ //   handler: ProductController.getByCategory
+ // });
 }

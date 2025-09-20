@@ -301,6 +301,7 @@ export const AuthQueries = {
         status: true,
         roles: true,
         lastLoginAt: true,
+        phone: true,
         createdAt: true,
         updatedAt: true
       }
@@ -431,12 +432,12 @@ export const AuthQueries = {
       effectivePermissions: effectivePermissions.effectivePermissions,
       customPermissions: customPermissions.map(p => ({
         ...p,
-        conditions: p.conditions ? JSON.parse(p.conditions) : null
+        conditions: p.conditions ? JSON.parse(p.conditions as string) : null
       })),
       storePermissions: storePermissions.map(p => ({
         ...p,
-        permissions: JSON.parse(p.permissions),
-        conditions: p.conditions ? JSON.parse(p.conditions) : null
+        permissions: JSON.parse(p.permissions as string),
+        conditions: p.conditions ? JSON.parse(p.conditions as string) : null
       })),
       pagination: {
         page,
@@ -518,7 +519,7 @@ export const AuthQueries = {
       effectivePermissions,
       customPermissions: customPermissions.map(p => ({
         ...p,
-        conditions: p.conditions ? JSON.parse(p.conditions) : null
+        conditions: p.conditions ? JSON.parse(p.conditions as string) : null
       })),
       storePermissions: storePermissions.map(p => ({
         ...p,

@@ -13,13 +13,17 @@ model User {
   email                  String      @unique
   password               String
   name                   String?
+  phone                  String?
   createdAt              DateTime    @default(now())
   updatedAt              DateTime    @updatedAt
   status                 Boolean     @default(true)
   resetPasswordToken     String?
+  resetPasswordCode      String?
   resetPasswordExpires   DateTime?
   emailVerified          Boolean     @default(false)
   emailVerificationToken String?
+  emailVerificationCode  String?
+  emailVerificationCodeExpires DateTime?
   lastLoginAt            DateTime?
   roles                  String[]    @default(["user"])
   auditLogs              AuditLog[]
@@ -34,6 +38,9 @@ model User {
   createdStorePermissions StorePermission[] @relation("StorePermissionCreator")
   createdPermissionTemplates PermissionTemplate[] @relation("PermissionTemplateCreator")
   createdPermissionAudits PermissionAuditLog[] @relation("PermissionAuditCreator")
+  
+  // Notifications
+  notifications          Notification[]
 
   @@map("users")
 }
@@ -44,7 +51,6 @@ model Product {
   description     String?
   unitOfMeasure   UnitOfMeasure
   referencePrice  Decimal       @db.Decimal(10, 2)
-  categoryId      String?
   supplierId      String?
   storeId         String
   stockMin        Int
@@ -53,10 +59,10 @@ model Product {
   status          Boolean       @default(true)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
-  category        Category?     @relation(fields: [categoryId], references: [id])
   store           Store         @relation(fields: [storeId], references: [id])
   supplier        Supplier?     @relation(fields: [supplierId], references: [id])
   movements       Movement[]
+  categories      ProductCategory[]
 }
 
 model Category {
@@ -72,7 +78,20 @@ model Category {
   updatedAt   DateTime   @updatedAt
   parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children    Category[] @relation("CategoryHierarchy")
-  products    Product[]
+  products    ProductCategory[]
+}
+
+model ProductCategory {
+  id         String   @id @default(cuid())
+  productId  String
+  categoryId String
+  createdAt  DateTime @default(now())
+  
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  @@unique([productId, categoryId])
+  @@map("ProductCategory")
 }
 
 model Supplier {
@@ -295,4 +314,43 @@ model PermissionAuditLog {
   creator        User     @relation("PermissionAuditCreator", fields: [createdBy], references: [id])
   
   @@map("PermissionAuditLog")
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String           // Usuário que receberá a notificação
+  title       String           // Título da notificação
+  message     String           // Mensagem da notificação
+  type        NotificationType @default(INFO) // Tipo da notificação
+  priority    NotificationPriority @default(MEDIUM) // Prioridade da notificação
+  isRead      Boolean          @default(false) // Se foi lida
+  readAt      DateTime?        // Quando foi lida
+  data        Json?            // Dados adicionais da notificação (opcional)
+  actionUrl   String?          // URL de ação (opcional)
+  expiresAt   DateTime?        // Quando a notificação expira (opcional)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  
+  // Relations
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("notifications")
+}
+
+enum NotificationType {
+  INFO        // Informação geral
+  SUCCESS     // Sucesso/confirmação
+  WARNING     // Aviso
+  ERROR       // Erro
+  STOCK_ALERT // Alerta de estoque
+  MOVEMENT    // Movimentação de estoque
+  PERMISSION  // Permissão
+  SYSTEM      // Sistema
+}
+
+enum NotificationPriority {
+  LOW         // Baixa prioridade
+  MEDIUM      // Média prioridade
+  HIGH        // Alta prioridade
+  URGENT      // Urgente
 }

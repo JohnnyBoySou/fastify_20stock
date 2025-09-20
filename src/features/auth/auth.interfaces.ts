@@ -6,6 +6,7 @@ export interface RegisterRequest extends FastifyRequest {
     name: string
     email: string
     password: string
+    phone: string
   }
 }
 
@@ -14,6 +15,7 @@ export interface RegisterResponse {
     id: string
     name: string
     email: string
+    phone: string
     emailVerified: boolean
     createdAt: Date
   }
@@ -61,14 +63,26 @@ export interface ForgotPasswordRequest extends FastifyRequest {
   }
 }
 
+export interface VerifyResetCodeRequest extends FastifyRequest {
+  body: {
+    email: string
+    code: string
+  }
+}
+
 export interface ResetPasswordRequest extends FastifyRequest {
   body: {
-    token: string
+    email: string
+    code: string
     password: string
   }
 }
 
 export interface ForgotPasswordResponse {
+  message: string
+}
+
+export interface VerifyResetCodeResponse {
   message: string
 }
 
@@ -83,6 +97,13 @@ export interface VerifyEmailRequest extends FastifyRequest {
   }
 }
 
+export interface VerifyEmailCodeRequest extends FastifyRequest {
+  body: {
+    email: string
+    code: string
+  }
+}
+
 export interface ResendVerificationRequest extends FastifyRequest {
   body: {
     email: string
@@ -91,6 +112,16 @@ export interface ResendVerificationRequest extends FastifyRequest {
 
 export interface VerifyEmailResponse {
   message: string
+}
+
+export interface VerifyEmailCodeResponse {
+  message: string
+  user: {
+    id: string
+    name: string
+    email: string
+    emailVerified: boolean
+  }
 }
 
 export interface ResendVerificationResponse {
@@ -176,7 +207,7 @@ export interface GetProfilePermissionsRequest extends FastifyRequest {
   headers: {
     authorization: string
   }
-  querystring: {
+  Querystring: {
     storeId?: string
     active?: boolean
     page?: number

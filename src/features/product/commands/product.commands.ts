@@ -7,7 +7,7 @@ export const ProductCommands = {
     description?: string
     unitOfMeasure: UnitOfMeasure
     referencePrice: number
-    categoryId?: string
+    categoryIds?: string[]
     supplierId?: string
     storeId: string
     stockMin: number
@@ -15,24 +15,50 @@ export const ProductCommands = {
     alertPercentage: number
     status?: boolean
   }) {
-    const { categoryId, supplierId, storeId, ...createData } = data;
+    const { categoryIds, supplierId, storeId, ...createData } = data;
+
+    // Verificar se as categorias existem
+    if (categoryIds && categoryIds.length > 0) {
+      const existingCategories = await db.category.findMany({
+        where: { id: { in: categoryIds } },
+        select: { id: true }
+      });
+
+      if (existingCategories.length !== categoryIds.length) {
+        const foundIds = existingCategories.map(c => c.id);
+        const notFoundIds = categoryIds.filter(id => !foundIds.includes(id));
+        throw new Error(`Categories not found: ${notFoundIds.join(', ')}`);
+      }
+    }
 
     return await db.product.create({
       data: {
         ...createData,
         unitOfMeasure: createData.unitOfMeasure as UnitOfMeasure,
         status: data.status ?? true,
-        ...(categoryId && { category: { connect: { id: categoryId } } }),
         ...(supplierId && { supplier: { connect: { id: supplierId } } }),
-        store: { connect: { id: storeId } }
+        store: { connect: { id: storeId } },
+        ...(categoryIds && categoryIds.length > 0 && {
+          categories: {
+            create: categoryIds.map(categoryId => ({
+              category: { connect: { id: categoryId } }
+            }))
+          }
+        })
       },
       include: {
-        category: {
+        categories: {
           select: {
-            id: true,
-            name: true,
-            description: true,
-            code: true
+            category: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                code: true,
+                color: true,
+                icon: true
+              }
+            }
           }
         },
         supplier: {
@@ -59,7 +85,7 @@ export const ProductCommands = {
     description?: string
     unitOfMeasure?: string
     referencePrice?: number
-    categoryId?: string
+    categoryIds?: string[]
     supplierId?: string
     storeId?: string
     stockMin?: number
@@ -67,7 +93,44 @@ export const ProductCommands = {
     alertPercentage?: number
     status?: boolean
   }) {
-    const { categoryId, supplierId, storeId, ...updateData } = data;
+    const { categoryIds, supplierId, storeId, ...updateData } = data;
+
+    // Verificar se as categorias existem (se fornecidas)
+    if (categoryIds && categoryIds.length > 0) {
+      const existingCategories = await db.category.findMany({
+        where: { id: { in: categoryIds } },
+        select: { id: true }
+      });
+
+      if (existingCategories.length !== categoryIds.length) {
+        const foundIds = existingCategories.map(c => c.id);
+        const notFoundIds = categoryIds.filter(id => !foundIds.includes(id));
+        throw new Error(`Categories not found: ${notFoundIds.join(', ')}`);
+      }
+    }
+
+    // Se categoryIds for fornecido, atualizar as categorias
+    let categoryUpdate = {};
+    if (categoryIds !== undefined) {
+      if (categoryIds.length === 0) {
+        // Remover todas as categorias
+        categoryUpdate = {
+          categories: {
+            deleteMany: {}
+          }
+        };
+      } else {
+        // Substituir todas as categorias
+        categoryUpdate = {
+          categories: {
+            deleteMany: {},
+            create: categoryIds.map(categoryId => ({
+              category: { connect: { id: categoryId } }
+            }))
+          }
+        };
+      }
+    }
 
     return await db.product.update({
       where: { id },
@@ -75,15 +138,22 @@ export const ProductCommands = {
         ...updateData,
         ...(updateData.unitOfMeasure && { unitOfMeasure: updateData.unitOfMeasure as UnitOfMeasure }),
         ...(supplierId !== undefined && supplierId ? { supplier: { connect: { id: supplierId } } } : supplierId === null ? { supplier: { disconnect: true } } : {}),
-        ...(storeId && { store: { connect: { id: storeId } } })
+        ...(storeId && { store: { connect: { id: storeId } } }),
+        ...categoryUpdate
       },
       include: {
-        category: {
+        categories: {
           select: {
-            id: true,
-            name: true,
-            description: true,
-            code: true
+            category: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                code: true,
+                color: true,
+                icon: true
+              }
+            }
           }
         },
         supplier: {
@@ -116,12 +186,18 @@ export const ProductCommands = {
       where: { id },
       data: { status },
       include: {
-        category: {
+        categories: {
           select: {
-            id: true,
-            name: true,
-            description: true,
-            code: true
+            category: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                code: true,
+                color: true,
+                icon: true
+              }
+            }
           }
         },
         supplier: {
@@ -364,6 +440,162 @@ export const ProductCommands = {
         quantity: product.movements[0].quantity,
         date: product.movements[0].createdAt
       } : null
+    };
+  },
+
+  // === MÉTODOS PARA GERENCIAR CATEGORIAS DO PRODUTO ===
+  async addCategories(productId: string, categoryIds: string[]) {
+    // Verificar se o produto existe
+    const product = await db.product.findUnique({
+      where: { id: productId }
+    });
+
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    // Verificar se as categorias existem
+    const existingCategories = await db.category.findMany({
+      where: { id: { in: categoryIds } },
+      select: { id: true }
+    });
+
+    if (existingCategories.length !== categoryIds.length) {
+      const foundIds = existingCategories.map(c => c.id);
+      const notFoundIds = categoryIds.filter(id => !foundIds.includes(id));
+      throw new Error(`Categories not found: ${notFoundIds.join(', ')}`);
+    }
+
+    // Verificar quais categorias já estão associadas
+    const existingProductCategories = await db.productCategory.findMany({
+      where: {
+        productId,
+        categoryId: { in: categoryIds }
+      },
+      select: { categoryId: true }
+    });
+
+    const existingCategoryIds = existingProductCategories.map(pc => pc.categoryId);
+    const newCategoryIds = categoryIds.filter(id => !existingCategoryIds.includes(id));
+
+    if (newCategoryIds.length === 0) {
+      throw new Error('All provided categories are already associated with this product');
+    }
+
+    // Adicionar novas categorias
+    await db.productCategory.createMany({
+      data: newCategoryIds.map(categoryId => ({
+        productId,
+        categoryId
+      }))
+    });
+
+    // Retornar as categorias atualizadas
+    const updatedCategories = await db.productCategory.findMany({
+      where: { productId },
+      select: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            code: true,
+            color: true,
+            icon: true
+          }
+        }
+      }
+    });
+
+    return {
+      message: `${newCategoryIds.length} categories added successfully`,
+      addedCount: newCategoryIds.length,
+      categories: updatedCategories.map(pc => pc.category)
+    };
+  },
+
+  async removeCategories(productId: string, categoryIds: string[]) {
+    // Verificar se o produto existe
+    const product = await db.product.findUnique({
+      where: { id: productId }
+    });
+
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    // Remover as categorias
+    const result = await db.productCategory.deleteMany({
+      where: {
+        productId,
+        categoryId: { in: categoryIds }
+      }
+    });
+
+    return {
+      message: `${result.count} categories removed successfully`,
+      removedCount: result.count
+    };
+  },
+
+  async setCategories(productId: string, categoryIds: string[]) {
+    // Verificar se o produto existe
+    const product = await db.product.findUnique({
+      where: { id: productId }
+    });
+
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    // Verificar se as categorias existem (se fornecidas)
+    if (categoryIds.length > 0) {
+      const existingCategories = await db.category.findMany({
+        where: { id: { in: categoryIds } },
+        select: { id: true }
+      });
+
+      if (existingCategories.length !== categoryIds.length) {
+        const foundIds = existingCategories.map(c => c.id);
+        const notFoundIds = categoryIds.filter(id => !foundIds.includes(id));
+        throw new Error(`Categories not found: ${notFoundIds.join(', ')}`);
+      }
+    }
+
+    // Substituir todas as categorias
+    await db.productCategory.deleteMany({
+      where: { productId }
+    });
+
+    if (categoryIds.length > 0) {
+      await db.productCategory.createMany({
+        data: categoryIds.map(categoryId => ({
+          productId,
+          categoryId
+        }))
+      });
+    }
+
+    // Retornar as categorias atualizadas
+    const updatedCategories = await db.productCategory.findMany({
+      where: { productId },
+      select: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            code: true,
+            color: true,
+            icon: true
+          }
+        }
+      }
+    });
+
+    return {
+      message: 'Categories updated successfully',
+      categories: updatedCategories.map(pc => pc.category)
     };
   }
 };

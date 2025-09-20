@@ -7,12 +7,16 @@ import {
   LoginRequest,
   LoginResponse,
   ForgotPasswordRequest,
+  VerifyResetCodeRequest,
   ResetPasswordRequest,
   ForgotPasswordResponse,
+  VerifyResetCodeResponse,
   ResetPasswordResponse,
   VerifyEmailRequest,
+  VerifyEmailCodeRequest,
   ResendVerificationRequest,
   VerifyEmailResponse,
+  VerifyEmailCodeResponse,
   ResendVerificationResponse,
   UpdateProfileRequest,
   UpdateProfileResponse,
@@ -24,24 +28,25 @@ export const AuthController = {
   // === AUTH CRUD ===
   async register(request: RegisterRequest, reply: FastifyReply): Promise<RegisterResponse> {
     try {
-      const { name, email, password } = request.body;
+      const { name, email, password, phone } = request.body;
 
       const user = await AuthCommands.register({
         name,
         email,
+        phone,
         password
       });
 
       return reply.status(201).send({
         user,
-        message: 'User registered successfully. Please check your email for verification.'
+        message: 'Usuário registrado com sucesso. Verifique seu email para o código de confirmação de 6 dígitos.'
       });
     } catch (error: any) {
       request.log.error(error);
 
       if (error.message === 'User already exists with this email') {
         return reply.status(409).send({
-          error: error.message
+          error: "Já existe um usuário com este email"
         });
       }
 
@@ -88,14 +93,44 @@ export const AuthController = {
       await AuthCommands.forgotPassword(email);
 
       return reply.send({
-        message: 'If the email exists, a reset password link has been sent.'
+        message: 'If the email exists, a reset password code has been sent.'
       });
     } catch (error: any) {
       request.log.error(error);
 
       if (error.message === 'User not found') {
         return reply.status(404).send({
-          error: 'If the email exists, a reset password link has been sent.'
+          error: 'If the email exists, a reset password code has been sent.'
+        });
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      });
+    }
+  },
+
+  async verifyResetCode(request: VerifyResetCodeRequest, reply: FastifyReply): Promise<VerifyResetCodeResponse> {
+    try {
+      const { email, code } = request.body;
+
+      await AuthCommands.verifyResetCode(email, code);
+
+      return reply.send({
+        message: 'Reset code verified successfully'
+      });
+    } catch (error: any) {
+      request.log.error(error);
+
+      if (error.message === 'Invalid or expired reset code') {
+        return reply.status(401).send({
+          error: error.message
+        });
+      }
+
+      if (error.message === 'Reset code expired') {
+        return reply.status(401).send({
+          error: error.message
         });
       }
 
@@ -107,9 +142,9 @@ export const AuthController = {
 
   async resetPassword(request: ResetPasswordRequest, reply: FastifyReply): Promise<ResetPasswordResponse> {
     try {
-      const { token, password } = request.body;
+      const { email, code, password } = request.body;
 
-      await AuthCommands.resetPassword(token, password);
+      await AuthCommands.resetPassword(email, code, password);
 
       return reply.send({
         message: 'Password reset successfully'
@@ -117,7 +152,13 @@ export const AuthController = {
     } catch (error: any) {
       request.log.error(error);
 
-      if (error.message === 'Invalid or expired reset token') {
+      if (error.message === 'Invalid or expired reset code') {
+        return reply.status(401).send({
+          error: error.message
+        });
+      }
+
+      if (error.message === 'Reset code expired') {
         return reply.status(401).send({
           error: error.message
         });
@@ -143,6 +184,42 @@ export const AuthController = {
 
       if (error.message === 'Invalid verification token') {
         return reply.status(401).send({
+          error: error.message
+        });
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      });
+    }
+  },
+
+  async verifyEmailCode(request: VerifyEmailCodeRequest, reply: FastifyReply): Promise<VerifyEmailCodeResponse> {
+    try {
+      const { email, code } = request.body;
+
+      const user = await AuthCommands.verifyEmailCode(email, code);
+
+      return reply.send({
+        message: 'Email verified successfully',
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          emailVerified: user.emailVerified
+        }
+      });
+    } catch (error: any) {
+      request.log.error(error);
+
+      if (error.message === 'Invalid verification code' || error.message === 'Verification code expired') {
+        return reply.status(401).send({
+          error: error.message
+        });
+      }
+
+      if (error.message === 'User not found') {
+        return reply.status(404).send({
           error: error.message
         });
       }
@@ -323,7 +400,7 @@ export const AuthController = {
       const token = AuthCommands.extractToken(authHeader);
       const payload = AuthCommands.verifyToken(token);
 
-      const { storeId, active, page, limit } = request.query;
+      const { storeId, active, page, limit } = request.query as { storeId: string, active: boolean, page: number, limit: number };
 
       const permissions = await AuthQueries.getProfilePermissions(payload.userId, {
         storeId,

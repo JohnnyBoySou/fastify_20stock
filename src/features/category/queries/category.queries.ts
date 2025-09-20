@@ -24,14 +24,19 @@ export const CategoryQueries = {
             icon: true
           }
         },
-        products: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            status: true
-          }
-        },
+          products: {
+            select: {
+              id: true,
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  description: true,
+                  status: true
+                }
+              }
+            }
+          },
         _count: {
           select: {
             children: true,
@@ -103,9 +108,14 @@ export const CategoryQueries = {
           products: {
             select: {
               id: true,
-              name: true,
-              description: true,
-              status: true
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  description: true,
+                  status: true
+                }
+              }
             },
             take: 5
           },
@@ -283,9 +293,14 @@ export const CategoryQueries = {
         products: {
           select: {
             id: true,
-            name: true,
-            description: true,
-            status: true
+            product: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                status: true
+              }
+            }
           },
           take: 5
         },
@@ -341,9 +356,14 @@ export const CategoryQueries = {
         products: {
           select: {
             id: true,
-            name: true,
-            description: true,
-            status: true
+            product: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                status: true
+              }
+            }
           },
           take: 5
         },

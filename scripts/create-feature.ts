@@ -2,6 +2,7 @@
 import fs from "fs";
 import path from "path";
 import readline from "readline";
+import inquirer from "inquirer";
 
 function capitalize(str: string) {
   return str[0].toUpperCase() + str.slice(1);
@@ -21,6 +22,27 @@ function ask(question: string): Promise<string> {
       resolve(answer.trim());
     })
   );
+}
+
+async function selectModel(models: PrismaModel[]): Promise<PrismaModel> {
+  const choices = models.map((model, index) => ({
+    name: `${model.name} (${model.fields.length} campos)`,
+    value: model,
+    short: model.name
+  }));
+
+  const { selectedModel } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'selectedModel',
+      message: 'Selecione o modelo do Prisma:',
+      choices,
+      pageSize: 10,
+      loop: false
+    }
+  ]);
+
+  return selectedModel;
 }
 
 interface PrismaField {
@@ -855,26 +877,21 @@ async function main() {
   const models = parsePrismaSchema(schemaPath);
   const modelNames = models.map(m => m.name);
 
-  // Se não tiver argumento do modelo, pergunta ao usuário
+  let selectedModel: PrismaModel;
+
+  // Se não tiver argumento do modelo, usa menu interativo
   if (!modelArg) {
-    console.log("\n📋 Modelos disponíveis no Prisma:");
-    modelNames.forEach((name, index) => {
-      console.log(`  ${index + 1}. ${name}`);
-    });
-    
-    modelArg = await ask("\nDigite o nome do modelo do Prisma: ");
-    if (!modelArg) {
-      console.error("❌ Nenhum modelo fornecido.");
+    console.log("\n📋 Selecionando modelo do Prisma...");
+    selectedModel = await selectModel(models);
+  } else {
+    // Verificar se o modelo existe
+    const foundModel = models.find(m => m.name.toLowerCase() === modelArg.toLowerCase());
+    if (!foundModel) {
+      console.error(`❌ Modelo '${modelArg}' não encontrado no schema do Prisma.`);
+      console.error("Modelos disponíveis:", modelNames.join(", "));
       process.exit(1);
     }
-  }
-
-  // Verificar se o modelo existe
-  const selectedModel = models.find(m => m.name.toLowerCase() === modelArg.toLowerCase());
-  if (!selectedModel) {
-    console.error(`❌ Modelo '${modelArg}' não encontrado no schema do Prisma.`);
-    console.error("Modelos disponíveis:", modelNames.join(", "));
-    process.exit(1);
+    selectedModel = foundModel;
   }
 
   const Entity = capitalize(entityArg);

@@ -4,8 +4,10 @@ import {
   registerSchema,
   loginSchema,
   forgotPasswordSchema,
+  verifyResetCodeSchema,
   resetPasswordSchema,
   verifyEmailSchema,
+  verifyEmailCodeSchema,
   resendVerificationSchema,
   refreshTokenSchema,
   logoutSchema,
@@ -17,13 +19,13 @@ export async function AuthRoutes(fastify: FastifyInstance) {
   // === AUTH ENDPOINTS ===
 
   // Register
-  fastify.post('/register', {
+  fastify.post('/signup', {
     schema: registerSchema,
     handler: AuthController.register
   });
 
   // Login
-  fastify.post('/login', {
+  fastify.post('/signin', {
     schema: loginSchema,
     handler: AuthController.login
   });
@@ -32,6 +34,12 @@ export async function AuthRoutes(fastify: FastifyInstance) {
   fastify.post('/forgot-password', {
     schema: forgotPasswordSchema,
     handler: AuthController.forgotPassword
+  });
+
+  // Verify Reset Code
+  fastify.post('/verify-reset-code', {
+    schema: verifyResetCodeSchema,
+    handler: AuthController.verifyResetCode
   });
 
   // Reset Password
@@ -44,6 +52,12 @@ export async function AuthRoutes(fastify: FastifyInstance) {
   fastify.post('/verify-email', {
     schema: verifyEmailSchema,
     handler: AuthController.verifyEmail
+  });
+
+  // Verify Email Code
+  fastify.post('/verify-email-code', {
+    schema: verifyEmailCodeSchema,
+    handler: AuthController.verifyEmailCode
   });
 
   // Resend Verification

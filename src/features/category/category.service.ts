@@ -1,5 +1,4 @@
 import { fetchAuth } from '@/hooks/api';
-import axios from 'axios';
 
 const URI = '/category';
 

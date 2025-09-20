@@ -3,6 +3,7 @@ import { SupplierController } from './supplier.controller';
 import {
   SupplierSchemas
 } from './supplier.schema';
+import { SupplierResponsibleRoutes } from './supplier-responsible.routes';
 
 export async function SupplierRoutes(fastify: FastifyInstance) {
   // CRUD básico
@@ -68,4 +69,7 @@ export async function SupplierRoutes(fastify: FastifyInstance) {
     schema: SupplierSchemas.get,
     handler: SupplierController.toggleStatus
   });
+
+  // Registrar rotas de responsáveis
+  await fastify.register(SupplierResponsibleRoutes);
 }
