@@ -12,6 +12,23 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastify_app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://fastify_user:fastify_pass@postgres:5432/fastify_db
+      - PORT=3000
+    depends_on:
+      - postgres
+    volumes:
+      - ./logs:/app/logs
+
   # uptrace:
   #   image: uptrace/uptrace:latest
   #   container_name: uptrace
