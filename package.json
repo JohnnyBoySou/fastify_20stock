@@ -63,7 +63,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc && tsc-alias",
-    "start": "node src/server.ts",
+    "start": "tsx src/server.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/features/ --ext .ts,.js",
     "lint:fix": "eslint src/features/ --ext .ts,.js --fix",
