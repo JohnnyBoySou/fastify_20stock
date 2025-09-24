@@ -5,8 +5,6 @@ import { FastifySchema } from 'fastify'
 // ================================
 
 export const getDashboardStatsSchema: FastifySchema = {
-  description: 'Obter estatísticas do dashboard',
-  tags: ['Reports'],
   querystring: {
     type: 'object',
     properties: {
@@ -128,8 +126,6 @@ export const getDashboardStatsSchema: FastifySchema = {
 }
 
 export const getInventoryReportSchema: FastifySchema = {
-  description: 'Obter relatório de inventário',
-  tags: ['Reports'],
   querystring: {
     type: 'object',
     properties: {
@@ -221,8 +217,6 @@ export const getInventoryReportSchema: FastifySchema = {
 }
 
 export const getMovementReportSchema: FastifySchema = {
-  description: 'Obter relatório de movimentações',
-  tags: ['Reports'],
   querystring: {
     type: 'object',
     properties: {
@@ -309,8 +303,6 @@ export const getMovementReportSchema: FastifySchema = {
 }
 
 export const getFinancialReportSchema: FastifySchema = {
-  description: 'Obter relatório financeiro',
-  tags: ['Reports'],
   querystring: {
     type: 'object',
     properties: {
@@ -412,8 +404,6 @@ export const getFinancialReportSchema: FastifySchema = {
 }
 
 export const getCategoryReportSchema: FastifySchema = {
-  description: 'Obter relatório de categorias',
-  tags: ['Reports'],
   querystring: {
     type: 'object',
     properties: {
@@ -484,8 +474,6 @@ export const getCategoryReportSchema: FastifySchema = {
 }
 
 export const getSupplierReportSchema: FastifySchema = {
-  description: 'Obter relatório de fornecedores',
-  tags: ['Reports'],
   querystring: {
     type: 'object',
     properties: {
@@ -563,8 +551,6 @@ export const getSupplierReportSchema: FastifySchema = {
 }
 
 export const getUserActivityReportSchema: FastifySchema = {
-  description: 'Obter relatório de atividade de usuários',
-  tags: ['Reports'],
   querystring: {
     type: 'object',
     properties: {
@@ -647,8 +633,6 @@ export const getUserActivityReportSchema: FastifySchema = {
 }
 
 export const getStockAlertReportSchema: FastifySchema = {
-  description: 'Obter relatório de alertas de estoque',
-  tags: ['Reports'],
   querystring: {
     type: 'object',
     properties: {
@@ -731,8 +715,6 @@ export const getStockAlertReportSchema: FastifySchema = {
 }
 
 export const exportReportSchema: FastifySchema = {
-  description: 'Exportar relatório em diferentes formatos',
-  tags: ['Reports'],
   querystring: {
     type: 'object',
     required: ['reportType', 'format'],

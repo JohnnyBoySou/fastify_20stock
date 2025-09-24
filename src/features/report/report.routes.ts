@@ -351,6 +351,12 @@ export async function ReportRoutes(fastify: FastifyInstance) {
         200: {
           type: 'string',
           description: 'File content'
+        },
+        500: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
         }
       }
     },

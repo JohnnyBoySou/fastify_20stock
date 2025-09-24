@@ -36,11 +36,15 @@ export const CategoryCommands = {
           }
         },
         products: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            status: true
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                status: true
+              }
+            }
           },
           take: 5
         },
@@ -87,11 +91,15 @@ export const CategoryCommands = {
           }
         },
         products: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            status: true
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                status: true
+              }
+            }
           },
           take: 5
         },
@@ -136,11 +144,15 @@ export const CategoryCommands = {
           }
         },
         products: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            status: true
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                status: true
+              }
+            }
           },
           take: 5
         },

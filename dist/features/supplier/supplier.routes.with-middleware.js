@@ -1,10 +1,8 @@
-import { FastifyInstance } from 'fastify';
 import { SupplierController } from './supplier.controller';
 import { SupplierSchemas } from './supplier.schema';
-import { authMiddleware, requirePermission, } from '@/middlewares';
-import { Action, } from '@/middlewares/authorization.middleware';
-
-export async function supplierRoutesWithMiddleware(fastify: FastifyInstance) {
+import { authMiddleware, requirePermission, } from '../../middlewares';
+import { Action, } from '../../middlewares/authorization.middleware';
+export async function supplierRoutesWithMiddleware(fastify) {
     // POST /suppliers - Criar fornecedor (requer permissão)
     fastify.post('/', {
         schema: SupplierSchemas.create,
@@ -14,7 +12,6 @@ export async function supplierRoutesWithMiddleware(fastify: FastifyInstance) {
         ],
         handler: SupplierController.create
     });
-
     // GET /suppliers - Listar fornecedores (requer permissão)
     fastify.get('/', {
         schema: SupplierSchemas.list,
@@ -24,7 +21,6 @@ export async function supplierRoutesWithMiddleware(fastify: FastifyInstance) {
         ],
         handler: SupplierController.list
     });
-
     // GET /suppliers/:id - Buscar fornecedor por ID (requer permissão)
     fastify.get('/:id', {
         schema: SupplierSchemas.get,
@@ -34,7 +30,6 @@ export async function supplierRoutesWithMiddleware(fastify: FastifyInstance) {
         ],
         handler: SupplierController.get
     });
-
     // PUT /suppliers/:id - Atualizar fornecedor (requer permissão)
     fastify.put('/:id', {
         schema: SupplierSchemas.update,
@@ -44,7 +39,6 @@ export async function supplierRoutesWithMiddleware(fastify: FastifyInstance) {
         ],
         handler: SupplierController.update
     });
-
     // DELETE /suppliers/:id - Deletar fornecedor (requer permissão)
     fastify.delete('/:id', {
         schema: SupplierSchemas.delete,
@@ -54,7 +48,6 @@ export async function supplierRoutesWithMiddleware(fastify: FastifyInstance) {
         ],
         handler: SupplierController.delete
     });
-
     // PATCH /suppliers/:id/toggle-status - Alternar status do fornecedor (requer permissão)
     fastify.patch('/:id/toggle-status', {
         preHandler: [
@@ -63,7 +56,6 @@ export async function supplierRoutesWithMiddleware(fastify: FastifyInstance) {
         ],
         handler: SupplierController.toggleStatus
     });
-
     // GET /suppliers/cnpj/:cnpj - Buscar fornecedor por CNPJ (requer permissão)
     fastify.get('/cnpj/:cnpj', {
         schema: SupplierSchemas.getByCnpj,
@@ -73,7 +65,6 @@ export async function supplierRoutesWithMiddleware(fastify: FastifyInstance) {
         ],
         handler: SupplierController.getByCnpj
     });
-
     // GET /suppliers/city/:city - Buscar fornecedores por cidade (requer permissão)
     fastify.get('/city/:city', {
         schema: SupplierSchemas.getByCity,
@@ -83,7 +74,6 @@ export async function supplierRoutesWithMiddleware(fastify: FastifyInstance) {
         ],
         handler: SupplierController.getByCity
     });
-
     // GET /suppliers/state/:state - Buscar fornecedores por estado (requer permissão)
     fastify.get('/state/:state', {
         schema: SupplierSchemas.getByState,
@@ -93,7 +83,6 @@ export async function supplierRoutesWithMiddleware(fastify: FastifyInstance) {
         ],
         handler: SupplierController.getByState
     });
-
     // GET /suppliers/active - Listar fornecedores ativos (requer permissão)
     fastify.get('/active', {
         preHandler: [
@@ -102,7 +91,6 @@ export async function supplierRoutesWithMiddleware(fastify: FastifyInstance) {
         ],
         handler: SupplierController.getActive
     });
-
     // GET /suppliers/top - Listar top fornecedores (requer permissão)
     fastify.get('/top', {
         preHandler: [
@@ -111,7 +99,6 @@ export async function supplierRoutesWithMiddleware(fastify: FastifyInstance) {
         ],
         handler: SupplierController.getTopSuppliers
     });
-
     // GET /suppliers/search - Buscar fornecedores (requer permissão)
     fastify.get('/search', {
         schema: SupplierSchemas.search,
@@ -121,7 +108,6 @@ export async function supplierRoutesWithMiddleware(fastify: FastifyInstance) {
         ],
         handler: SupplierController.search
     });
-
     // GET /suppliers/stats - Estatísticas dos fornecedores (requer permissão)
     fastify.get('/stats', {
         preHandler: [

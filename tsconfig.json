@@ -8,6 +8,7 @@
       "outDir": "./dist",
       "baseUrl": "./",
       "typeRoots": ["./src/types"],
+      "skipLibCheck": true,
       "paths": {
         "@/*": ["src/*"],
         "@/config/*": ["src/config/*"],
@@ -18,6 +19,11 @@
       }
     },
     "include": ["src/**/*"],
-    "exclude": ["node_modules", "dist"]
+    "exclude": [
+      "node_modules",
+      "dist",
+      "**/*.test.ts",
+      "**/*.spec.ts"
+    ]
   }
   

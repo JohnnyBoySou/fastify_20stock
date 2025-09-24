@@ -1,11 +1,11 @@
-import { PrismaClient } from '@prisma/client'
 import {
   ExportReportResponse,
   ReportFilters
 } from '../report.interfaces'
 
-export class ReportCommands {
-  constructor(private prisma: PrismaClient) {}
+import { db } from '@/plugins/prisma';
+
+export const ReportCommands = {
 
   // ================================
   // EXPORT REPORTS
@@ -22,7 +22,7 @@ export class ReportCommands {
       const filename = `${reportType}-report-${timestamp}.${format}`
 
       // Create export record in database
-      const exportRecord = await this.prisma.auditLog.create({
+      const exportRecord = await db.auditLog.create({
         data: {
           entity: 'REPORT' as any,
           entityId: `export-${Date.now()}`,
@@ -55,7 +55,7 @@ export class ReportCommands {
     } catch (error) {
       throw new Error(`Failed to export report: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
-  }
+  },
 
   // ================================
   // GENERATE CSV REPORT
@@ -73,7 +73,7 @@ export class ReportCommands {
       // Create CSV rows
       const rows = data.map(item => {
         return columns.map(column => {
-          const value = this.getNestedValue(item, column)
+          const value = ReportCommands.getNestedValue(item, column)
           // Escape CSV values
           if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
             return `"${value.replace(/"/g, '""')}"`
@@ -87,7 +87,7 @@ export class ReportCommands {
     } catch (error) {
       throw new Error(`Failed to generate CSV report: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
-  }
+  },
 
   // ================================
   // GENERATE EXCEL REPORT
@@ -118,7 +118,7 @@ export class ReportCommands {
     } catch (error) {
       throw new Error(`Failed to generate Excel report: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
-  }
+  },
 
   // ================================
   // GENERATE PDF REPORT
@@ -146,7 +146,7 @@ export class ReportCommands {
     } catch (error) {
       throw new Error(`Failed to generate PDF report: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
-  }
+  },
 
   // ================================
   // SCHEDULE REPORT
@@ -165,7 +165,7 @@ export class ReportCommands {
   ): Promise<{ success: boolean; scheduleId: string }> {
     try {
       // Create scheduled report record
-      const scheduledReport = await this.prisma.auditLog.create({
+      const scheduledReport = await db.auditLog.create({
         data: {
           entity: 'REPORT' as any,
           entityId: `schedule-${Date.now()}`,
@@ -189,7 +189,7 @@ export class ReportCommands {
     } catch (error) {
       throw new Error(`Failed to schedule report: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
-  }
+  },
 
   // ================================
   // CANCEL SCHEDULED REPORT
@@ -198,11 +198,11 @@ export class ReportCommands {
   async cancelScheduledReport(scheduleId: string): Promise<{ success: boolean }> {
     try {
       // Update scheduled report to inactive
-      await this.prisma.auditLog.update({
+      await db.auditLog.update({
         where: { id: scheduleId },
         data: {
           after: {
-            ...(await this.prisma.auditLog.findUnique({
+            ...(await db.auditLog.findUnique({
               where: { id: scheduleId },
               select: { after: true }
             }))?.after as any,
@@ -216,7 +216,7 @@ export class ReportCommands {
     } catch (error) {
       throw new Error(`Failed to cancel scheduled report: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
-  }
+  },
 
   // ================================
   // SEND REPORT VIA EMAIL
@@ -237,18 +237,18 @@ export class ReportCommands {
 
       switch (format) {
         case 'csv':
-          const columns = this.getDefaultColumns(reportType)
-          reportContent = await this.generateCsvReport(reportType, data, columns)
+          const columns = ReportCommands.getDefaultColumns(reportType)
+          reportContent = await ReportCommands.generateCsvReport(reportType, data, columns)
           filename = `${reportType}-report-${new Date().toISOString().split('T')[0]}.csv`
           break
         case 'xlsx':
-          const excelColumns = this.getDefaultExcelColumns(reportType)
-          reportContent = await this.generateExcelReport(reportType, data, excelColumns)
+          const excelColumns = ReportCommands.getDefaultExcelColumns(reportType)
+          reportContent = await ReportCommands.generateExcelReport(reportType, data, excelColumns)
           filename = `${reportType}-report-${new Date().toISOString().split('T')[0]}.xlsx`
           break
         case 'pdf':
-          const pdfColumns = this.getDefaultPdfColumns(reportType)
-          reportContent = await this.generatePdfReport(reportType, data, pdfColumns)
+          const pdfColumns = ReportCommands.getDefaultPdfColumns(reportType)
+          reportContent = await ReportCommands.generatePdfReport(reportType, data, pdfColumns)
           filename = `${reportType}-report-${new Date().toISOString().split('T')[0]}.pdf`
           break
         default:
@@ -257,7 +257,7 @@ export class ReportCommands {
 
       // In a real implementation, you would send the email here
       // For now, we'll just log the action
-      const emailLog = await this.prisma.auditLog.create({
+      const emailLog = await db.auditLog.create({
         data: {
           entity: 'REPORT' as any,
           entityId: `email-${Date.now()}`,
@@ -282,7 +282,7 @@ export class ReportCommands {
     } catch (error) {
       throw new Error(`Failed to send report via email: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
-  }
+  },
 
   // ================================
   // GENERATE REPORT SUMMARY
@@ -339,17 +339,17 @@ export class ReportCommands {
     } catch (error) {
       throw new Error(`Failed to generate report summary: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
-  }
+  },
 
   // ================================
   // HELPER METHODS
   // ================================
 
-  private getNestedValue(obj: any, path: string): any {
+  getNestedValue(obj: any, path: string): any {
     return path.split('.').reduce((current, key) => current?.[key], obj)
-  }
+  },
 
-  private getDefaultColumns(reportType: string): string[] {
+  getDefaultColumns(reportType: string): string[] {
     const columnMap: Record<string, string[]> = {
       inventory: ['id', 'name', 'description', 'category.name', 'supplier.corporateName', 'currentStock', 'stockMin', 'stockMax', 'unitPrice', 'totalValue', 'status', 'alertLevel'],
       movement: ['id', 'type', 'quantity', 'price', 'totalValue', 'batch', 'expiration', 'note', 'product.name', 'supplier.corporateName', 'user.name', 'createdAt'],
@@ -361,9 +361,9 @@ export class ReportCommands {
     }
 
     return columnMap[reportType] || ['id', 'name', 'createdAt']
-  }
+  },
 
-  private getDefaultExcelColumns(reportType: string): { key: string; label: string; type: 'string' | 'number' | 'date' }[] {
+  getDefaultExcelColumns(reportType: string): { key: string; label: string; type: 'string' | 'number' | 'date' }[] {
     const columnMap: Record<string, { key: string; label: string; type: 'string' | 'number' | 'date' }[]> = {
       inventory: [
         { key: 'id', label: 'ID', type: 'string' },
@@ -400,9 +400,9 @@ export class ReportCommands {
       { key: 'name', label: 'Nome', type: 'string' },
       { key: 'createdAt', label: 'Data de Criação', type: 'date' }
     ]
-  }
+  },
 
-  private getDefaultPdfColumns(reportType: string): { key: string; label: string; width?: number }[] {
+  getDefaultPdfColumns(reportType: string): { key: string; label: string; width?: number }[] {
     const columnMap: Record<string, { key: string; label: string; width?: number }[]> = {
       inventory: [
         { key: 'name', label: 'Produto', width: 30 },
@@ -425,5 +425,51 @@ export class ReportCommands {
       { key: 'name', label: 'Nome', width: 50 },
       { key: 'createdAt', label: 'Data', width: 50 }
     ]
+  },
+
+  // ================================
+  // VALIDATION METHODS
+  // ================================
+
+  validateReportFilters(filters: any): { valid: boolean; errors: string[] } {
+    const errors: string[] = []
+
+    // Basic validation logic
+    if (filters.startDate && filters.endDate) {
+      const startDate = new Date(filters.startDate)
+      const endDate = new Date(filters.endDate)
+      
+      if (startDate > endDate) {
+        errors.push('Start date cannot be after end date')
+      }
+    }
+
+    if (filters.storeId && typeof filters.storeId !== 'string') {
+      errors.push('Store ID must be a string')
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors
+    }
+  },
+
+  getAvailableReportTypes(): string[] {
+    return [
+      'inventory',
+      'movement', 
+      'financial',
+      'category',
+      'supplier',
+      'user-activity',
+      'stock-alert'
+    ]
+  },
+
+  getReportStatistics(): { totalReports: number; availableTypes: string[] } {
+    return {
+      totalReports: 0, // This would be calculated from actual data
+      availableTypes: ReportCommands.getAvailableReportTypes()
+    }
   }
-}
+};

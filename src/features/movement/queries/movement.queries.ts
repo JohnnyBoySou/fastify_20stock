@@ -697,7 +697,42 @@ export const MovementQueries = {
     endDate?: string
     groupBy?: 'day' | 'week' | 'month' | 'year'
   }) {
-    return await MovementCommands.getMovementReport(params);
+    // Implementação básica do relatório de movimentação
+    const { storeId, productId, supplierId, type, startDate, endDate } = params;
+    
+    const where: any = {};
+    if (storeId) where.storeId = storeId;
+    if (productId) where.productId = productId;
+    if (supplierId) where.supplierId = supplierId;
+    if (type) where.type = type;
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) where.createdAt.gte = new Date(startDate);
+      if (endDate) where.createdAt.lte = new Date(endDate);
+    }
+
+    const movements = await db.movement.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        store: { select: { id: true, name: true } },
+        product: { select: { id: true, name: true, unitOfMeasure: true } },
+        supplier: { select: { id: true, corporateName: true } },
+        user: { select: { id: true, name: true, email: true } }
+      }
+    });
+
+    return {
+      movements,
+      summary: {
+        total: movements.length,
+        totalValue: movements.reduce((sum, m) => sum + (Number(m.price) || 0), 0),
+        byType: movements.reduce((acc, m) => {
+          acc[m.type] = (acc[m.type] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>)
+      }
+    };
   },
 
   async getVerifiedMovements(params: {
@@ -934,9 +969,9 @@ export const MovementQueries = {
       }) : []
     ]);
 
-    const storeMap = new Map(stores.map(store => [store.id, store.name]));
-    const productMap = new Map(products.map(product => [product.id, product.name]));
-    const supplierMap = new Map(suppliers.map(supplier => [supplier.id, supplier.corporateName]));
+    const storeMap = new Map(stores.map(store => [store.id, store.name] as [string, string]));
+    const productMap = new Map(products.map((product: { id: string; name: string; }) => [product.id, product.name] as [string, string]));
+    const supplierMap = new Map(suppliers.map(supplier => [supplier.id, supplier.corporateName] as [string, string]));
 
     return {
       summary: {

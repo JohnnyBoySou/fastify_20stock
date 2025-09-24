@@ -629,10 +629,14 @@ export const ProductQueries = {
             quantity: true
           }
         },
-        category: {
+        categories: {
           select: {
-            id: true,
-            name: true
+            category: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
           }
         },
         supplier: {
@@ -792,88 +796,6 @@ export const ProductQueries = {
 
     return {
       categories: categories.map(pc => pc.category)
-    };
-  },
-
-  async getByCategory(categoryId: string, params: {
-    page?: number
-    limit?: number
-    search?: string
-    status?: boolean
-  }) {
-    const { page = 1, limit = 10, search, status } = params;
-    const skip = (page - 1) * limit;
-
-    const where: any = {
-      categories: {
-        some: {
-          categoryId
-        }
-      }
-    };
-
-    if (status !== undefined) {
-      where.status = status;
-    }
-
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } }
-      ];
-    }
-
-    const [products, total] = await Promise.all([
-      db.product.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          categories: {
-            select: {
-              category: {
-                select: {
-                  id: true,
-                  name: true,
-                  description: true,
-                  code: true,
-                  color: true,
-                  icon: true
-                }
-              }
-            }
-          },
-          supplier: {
-            select: {
-              id: true,
-              corporateName: true,
-              cnpj: true,
-              tradeName: true
-            }
-          },
-          store: {
-            select: {
-              id: true,
-              name: true,
-              cnpj: true
-            }
-          }
-        }
-      }),
-      db.product.count({ where })
-    ]);
-
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      products,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages
-      }
     };
   },
 

@@ -183,6 +183,18 @@ model Movement {
   note        String?        // observações
   balanceAfter Int?          // estoque após a movimentação
 
+  // Campos de verificação
+  verified         Boolean?   @default(false)
+  verifiedAt       DateTime?
+  verifiedBy       String?
+  verificationNote String?
+
+  // Campos de cancelamento
+  cancelled         Boolean   @default(false)
+  cancelledAt       DateTime?
+  cancelledBy       String?
+  cancellationReason String?
+
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 

@@ -1,7 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { ReportQueries } from './queries/report.queries'
 import { ReportCommands } from './commands/report.commands'
-import { ReportService } from './report.service'
 import {
   GetDashboardStatsRequest,
   GetInventoryReportRequest,
@@ -22,10 +21,6 @@ export const ReportController = {
   async getDashboardStats(request: GetDashboardStatsRequest, reply: FastifyReply) {
     try {
       const { storeId, period, startDate, endDate } = request.query
-      const prisma = (request.server as any).prisma
-      const reportQueries = new ReportQueries(prisma)
-      const reportService = new ReportService(reportQueries, new ReportCommands(prisma))
-
       const filters = {
         storeId,
         startDate,
@@ -33,7 +28,7 @@ export const ReportController = {
         period
       }
 
-      const result = await reportService.getDashboardStats(filters)
+      const result = await ReportQueries.getDashboardStats(filters)
 
       return reply.send(result)
     } catch (error: any) {
@@ -69,10 +64,6 @@ export const ReportController = {
         limit = 20 
       } = request.query
       
-      const prisma = (request.server as any).prisma
-      const reportQueries = new ReportQueries(prisma)
-      const reportService = new ReportService(reportQueries, new ReportCommands(prisma))
-
       const filters = {
         storeId,
         categoryId,
@@ -84,7 +75,7 @@ export const ReportController = {
       const pagination = { page, limit }
       const sort = { field: sortBy || 'name', order: sortOrder || 'asc' }
 
-      const result = await reportService.getInventoryReport(filters, pagination, sort)
+      const result = await ReportQueries.getInventoryReport(filters, pagination, sort)
 
       return reply.send(result)
     } catch (error: any) {
@@ -119,10 +110,6 @@ export const ReportController = {
         limit = 20 
       } = request.query
       
-      const prisma = (request.server as any).prisma
-      const reportQueries = new ReportQueries(prisma)
-      const reportService = new ReportService(reportQueries, new ReportCommands(prisma))
-
       const filters = {
         storeId,
         productId,
@@ -134,7 +121,7 @@ export const ReportController = {
 
       const pagination = { page, limit }
 
-      const result = await reportService.getMovementReport(filters, pagination)
+      const result = await ReportQueries.getMovementReport(filters, pagination)
 
       return reply.send(result)
     } catch (error: any) {
@@ -160,10 +147,6 @@ export const ReportController = {
     try {
       const { storeId, startDate, endDate, groupBy } = request.query
       
-      const prisma = (request.server as any).prisma
-      const reportQueries = new ReportQueries(prisma)
-      const reportService = new ReportService(reportQueries, new ReportCommands(prisma))
-
       const filters = {
         storeId,
         startDate,
@@ -171,7 +154,7 @@ export const ReportController = {
         groupBy
       }
 
-      const result = await reportService.getFinancialReport(filters)
+      const result = await ReportQueries.getFinancialReport(filters)
 
       return reply.send(result)
     } catch (error: any) {
@@ -197,10 +180,6 @@ export const ReportController = {
     try {
       const { storeId, startDate, endDate, includeSubcategories } = request.query
       
-      const prisma = (request.server as any).prisma
-      const reportQueries = new ReportQueries(prisma)
-      const reportService = new ReportService(reportQueries, new ReportCommands(prisma))
-
       const filters = {
         storeId,
         startDate,
@@ -208,7 +187,7 @@ export const ReportController = {
         includeSubcategories
       }
 
-      const result = await reportService.getCategoryReport(filters)
+      const result = await ReportQueries.getCategoryReport(filters)
 
       return reply.send(result)
     } catch (error: any) {
@@ -234,10 +213,6 @@ export const ReportController = {
     try {
       const { storeId, startDate, endDate, status } = request.query
       
-      const prisma = (request.server as any).prisma
-      const reportQueries = new ReportQueries(prisma)
-      const reportService = new ReportService(reportQueries, new ReportCommands(prisma))
-
       const filters = {
         storeId,
         startDate,
@@ -245,7 +220,7 @@ export const ReportController = {
         status
       }
 
-      const result = await reportService.getSupplierReport(filters)
+      const result = await ReportQueries.getSupplierReport(filters)
 
       return reply.send(result)
     } catch (error: any) {
@@ -279,10 +254,6 @@ export const ReportController = {
         limit = 20 
       } = request.query
       
-      const prisma = (request.server as any).prisma
-      const reportQueries = new ReportQueries(prisma)
-      const reportService = new ReportService(reportQueries, new ReportCommands(prisma))
-
       const filters = {
         storeId,
         userId,
@@ -293,7 +264,7 @@ export const ReportController = {
 
       const pagination = { page, limit }
 
-      const result = await reportService.getUserActivityReport(filters, pagination)
+      const result = await ReportQueries.getUserActivityReport(filters, pagination)
 
       return reply.send(result)
     } catch (error: any) {
@@ -319,10 +290,6 @@ export const ReportController = {
     try {
       const { storeId, alertType, page = 1, limit = 20 } = request.query
       
-      const prisma = (request.server as any).prisma
-      const reportQueries = new ReportQueries(prisma)
-      const reportService = new ReportService(reportQueries, new ReportCommands(prisma))
-
       const filters = {
         storeId,
         alertType
@@ -330,7 +297,7 @@ export const ReportController = {
 
       const pagination = { page, limit }
 
-      const result = await reportService.getStockAlertReport(filters, pagination)
+      const result = await ReportQueries.getStockAlertReport(filters, pagination)
 
       return reply.send(result)
     } catch (error: any) {
@@ -356,10 +323,6 @@ export const ReportController = {
     try {
       const { reportType, format, storeId, startDate, endDate, filters } = request.query
       
-      const prisma = (request.server as any).prisma
-      const reportQueries = new ReportQueries(prisma)
-      const reportService = new ReportService(reportQueries, new ReportCommands(prisma))
-
       const reportFilters = {
         storeId,
         startDate,
@@ -367,7 +330,7 @@ export const ReportController = {
         ...(filters ? JSON.parse(filters) : {})
       }
 
-      const result = await reportService.exportReport(reportType, format, reportFilters)
+      const result = await ReportCommands.exportReport(reportType, format, reportFilters)
 
       return reply.send(result)
     } catch (error: any) {
@@ -411,11 +374,7 @@ export const ReportController = {
     try {
       const { reportType, schedule, filters, emailRecipients } = request.body
       
-      const prisma = (request.server as any).prisma
-      const reportQueries = new ReportQueries(prisma)
-      const reportService = new ReportService(reportQueries, new ReportCommands(prisma))
-
-      const result = await reportService.scheduleReport(reportType, schedule, filters, emailRecipients)
+      const result = await ReportCommands.scheduleReport(reportType, schedule, filters, emailRecipients)
 
       return reply.send(result)
     } catch (error: any) {
@@ -439,11 +398,7 @@ export const ReportController = {
     try {
       const { scheduleId } = request.params
       
-      const prisma = (request.server as any).prisma
-      const reportQueries = new ReportQueries(prisma)
-      const reportService = new ReportService(reportQueries, new ReportCommands(prisma))
-
-      const result = await reportService.cancelScheduledReport(scheduleId)
+      const result = await ReportCommands.cancelScheduledReport(scheduleId)
 
       return reply.send(result)
     } catch (error: any) {
@@ -478,11 +433,7 @@ export const ReportController = {
     try {
       const { reportType, format, data, emailRecipients, subject, message } = request.body
       
-      const prisma = (request.server as any).prisma
-      const reportQueries = new ReportQueries(prisma)
-      const reportService = new ReportService(reportQueries, new ReportCommands(prisma))
-
-      const result = await reportService.sendReportViaEmail(
+      const result = await ReportCommands.sendReportViaEmail(
         reportType,
         format,
         data,
@@ -513,11 +464,7 @@ export const ReportController = {
 
   async getAvailableReportTypes(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const prisma = (request.server as any).prisma
-      const reportQueries = new ReportQueries(prisma)
-      const reportService = new ReportService(reportQueries, new ReportCommands(prisma))
-
-      const result = await reportService.getAvailableReportTypes()
+      const result = ReportCommands.getAvailableReportTypes()
 
       return reply.send({ reportTypes: result })
     } catch (error: any) {
@@ -531,11 +478,7 @@ export const ReportController = {
 
   async getReportStatistics(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const prisma = (request.server as any).prisma
-      const reportQueries = new ReportQueries(prisma)
-      const reportService = new ReportService(reportQueries, new ReportCommands(prisma))
-
-      const result = await reportService.getReportStatistics()
+      const result = ReportCommands.getReportStatistics()
 
       return reply.send(result)
     } catch (error: any) {
@@ -559,11 +502,7 @@ export const ReportController = {
     try {
       const { filters } = request.body
       
-      const prisma = (request.server as any).prisma
-      const reportQueries = new ReportQueries(prisma)
-      const reportService = new ReportService(reportQueries, new ReportCommands(prisma))
-
-      const result = reportService.validateReportFilters(filters)
+      const result = ReportCommands.validateReportFilters(filters)
 
       return reply.send(result)
     } catch (error: any) {

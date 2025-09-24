@@ -589,27 +589,6 @@ export const ProductController = {
         error: 'Internal server error'
       });
     }
-  },
-
-  async getByCategory(request: FastifyRequest, reply: FastifyReply) {
-    try {
-      const { categoryId } = request.params as any;
-      const { page = 1, limit = 10, search, status } = request.query as any;
-
-      const result = await ProductQueries.getByCategory(categoryId, {
-        page,
-        limit,
-        search,
-        status
-      });
-
-      return reply.send(result);
-    } catch (error: any) {
-      request.log.error(error);
-
-      return reply.status(500).send({
-        error: 'Internal server error'
-      });
-    }
   }
+
 };

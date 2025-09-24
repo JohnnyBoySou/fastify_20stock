@@ -537,7 +537,7 @@ export const MovementCommands = {
 
       const data = groupedData.get(dateKey)!;
       data.movements++;
-      data.value += movement.price || 0;
+      data.value += Number(movement.price) || 0;
 
       if (movement.type === 'ENTRADA') {
         data.entrada += movement.quantity;
@@ -564,7 +564,7 @@ export const MovementCommands = {
     movements.forEach(movement => {
       const typeData = byType[movement.type];
       typeData.count++;
-      typeData.value += movement.price || 0;
+      typeData.value += Number(movement.price) || 0;
       typeData.quantity += movement.quantity;
     });
 
@@ -577,7 +577,7 @@ export const MovementCommands = {
       }
       const storeData = storeMap.get(storeId)!;
       storeData.movements++;
-      storeData.value += movement.price || 0;
+      storeData.value += Number(movement.price) || 0;
     });
 
     const byStore = Array.from(storeMap.entries()).map(([storeId, stats]) => {
@@ -620,7 +620,7 @@ export const MovementCommands = {
         }
         const supplierData = supplierMap.get(supplierId)!;
         supplierData.movements++;
-        supplierData.value += movement.price || 0;
+        supplierData.value += Number(movement.price) || 0;
       }
     });
 
@@ -636,7 +636,7 @@ export const MovementCommands = {
     return {
       summary: {
         totalMovements: movements.length,
-        totalValue: movements.reduce((sum, m) => sum + (m.price || 0), 0),
+        totalValue: movements.reduce((sum, m) => sum + (Number(m.price) || 0), 0),
         period: {
           startDate: startDate || new Date(Math.min(...movements.map(m => m.createdAt.getTime()))).toISOString().split('T')[0],
           endDate: endDate || new Date(Math.max(...movements.map(m => m.createdAt.getTime()))).toISOString().split('T')[0]
