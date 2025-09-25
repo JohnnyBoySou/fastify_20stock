@@ -422,5 +422,40 @@ export const MovementController = {
                 error: 'Internal server error'
             });
         }
+    },
+    async summarize(request, reply) {
+        try {
+            const result = await MovementQueries.summarize();
+            return reply.send(result);
+        }
+        catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({
+                error: 'Internal server error'
+            });
+        }
+    },
+    async summarizeProduct(request, reply) {
+        try {
+            const { productId } = request.params;
+            const { startDate, endDate, storeId } = request.query;
+            const result = await MovementQueries.getProductSummary(productId, {
+                startDate,
+                endDate,
+                storeId
+            });
+            return reply.send(result);
+        }
+        catch (error) {
+            request.log.error(error);
+            if (error.message === 'Product not found') {
+                return reply.status(404).send({
+                    error: error.message
+                });
+            }
+            return reply.status(500).send({
+                error: 'Internal server error'
+            });
+        }
     }
 };
