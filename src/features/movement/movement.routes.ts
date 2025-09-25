@@ -40,6 +40,10 @@ export async function MovementRoutes(fastify: FastifyInstance) {
     handler: MovementController.getByProduct
   });
 
+  fastify.get('/product/:productId/summary', {
+    handler: MovementController.summarizeProduct
+  });
+
   fastify.get('/supplier/:supplierId', {
     schema: MovementSchemas.getBySupplier,
     handler: MovementController.getBySupplier
@@ -73,4 +77,8 @@ export async function MovementRoutes(fastify: FastifyInstance) {
   fastify.post('/recalculate-stock/:productId/:storeId', {
     handler: MovementController.recalculateStock
   });
-}
+
+  fastify.get('/summarize', {
+    handler: MovementController.summarize
+  });
+  }

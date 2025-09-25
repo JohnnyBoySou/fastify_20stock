@@ -1,0 +1,50 @@
+import { LLMService } from "./index.ts";
+
+async function main() {
+  try {
+    const prompt = `
+      Olá! Sou o gerente do estoque e preciso de uma análise amigável sobre as movimentações de hoje.
+      
+      Analise os dados abaixo e me conte como está nosso estoque de forma conversacional e humanizada.
+      Quero entender o que está acontecendo sem muito jargão técnico. Me fale sobre:
+      - O que mais está entrando e saindo
+      - Se temos algum problema com perdas
+      - Como está a demanda geral
+      - Alguma observação importante que devo saber
+      
+      Aqui estão as movimentações de hoje:
+      
+      Notebook Dell Inspiron 15 3000: +25 unidades (entrada)
+      Mouse Logitech M100: -15 unidades (saída)
+      Teclado Mecânico Razer BlackWidow: +8 unidades (entrada)
+      Monitor Samsung 24" Full HD: -12 unidades (saída)
+      Cabo HDMI Premium 2m: -3 unidades (perda)
+      Headset Gamer HyperX Cloud II: +20 unidades (entrada)
+      Placa de Vídeo RTX 4060: -6 unidades (saída)
+      SSD NVMe 1TB Kingston: +30 unidades (entrada)
+      Memória RAM DDR4 16GB Corsair: -18 unidades (saída)
+      Fonte Corsair 650W 80 Plus Gold: +12 unidades (entrada)
+      Webcam Logitech C920 HD Pro: -2 unidades (perda)
+      Mesa Digitalizadora Wacom Intuos: -4 unidades (saída)
+      Impressora Multifuncional HP LaserJet: +5 unidades (entrada)
+      Roteador Wi-Fi TP-Link Archer C7: -10 unidades (saída)
+      Smartphone Samsung Galaxy A54: +40 unidades (entrada)
+      Carregador USB-C 65W Universal: -1 unidade (perda)
+      Suporte Monitor Articulado NB: -8 unidades (saída)
+      Hub USB 3.0 7 Portas: +25 unidades (entrada)
+      Fone Bluetooth JBL Tune 500BT: -22 unidades (saída)
+      Carregador Wireless Samsung 15W: +15 unidades (entrada)
+      
+      Me conte como foi o dia de hoje no estoque de forma natural e amigável!
+      deixe reduzido e mais humanizado.
+    `;
+
+    const resumo = await LLMService.executePrompt(prompt);
+    console.log("Resumo gerado pelo LLM:\n", resumo);
+
+  } catch (error) {
+    console.error("Erro ao chamar o LLMService:", error);
+  }
+}
+
+main();

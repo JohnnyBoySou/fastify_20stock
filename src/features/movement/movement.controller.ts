@@ -560,5 +560,52 @@ export const MovementController = {
         error: 'Internal server error'
       });
     }
+  },
+
+
+  async summarize(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const result = await MovementQueries.summarize();
+      return reply.send(result);
+    } catch (error: any) {
+      request.log.error(error);
+      return reply.status(500).send({
+        error: 'Internal server error'
+      });
+    }
+  },
+
+  async summarizeProduct(request: FastifyRequest<{ 
+    Params: { productId: string }
+    Querystring: { 
+      startDate?: string
+      endDate?: string
+      storeId?: string
+    }
+  }>, reply: FastifyReply) {
+    try {
+      const { productId } = request.params;
+      const { startDate, endDate, storeId } = request.query;
+
+      const result = await MovementQueries.getProductSummary(productId, {
+        startDate,
+        endDate,
+        storeId
+      });
+
+      return reply.send(result);
+    } catch (error: any) {
+      request.log.error(error);
+
+      if (error.message === 'Product not found') {
+        return reply.status(404).send({
+          error: error.message
+        });
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      });
+    }
   }
 };

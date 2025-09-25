@@ -38,10 +38,6 @@ RUN npx prisma generate
 # Compilar TypeScript
 RUN pnpm run build
 
-# Verificar se os arquivos foram compilados corretamente
-RUN ls -la dist/
-RUN ls -la dist/plugins/
-
 # ================================
 # STAGE 3: Production
 # ================================
