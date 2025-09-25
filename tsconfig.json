@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
-      "module": "ESNext",
+      "moduleResolution": "NodeNext",
+      "module": "NodeNext",
       "target": "ES2022",
-      "moduleResolution": "bundler",
       "esModuleInterop": true,
       "resolveJsonModule": true,
       "allowImportingTsExtensions": false,
