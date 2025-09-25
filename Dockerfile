@@ -19,7 +19,7 @@ RUN npm install -g pnpm
 FROM base AS deps
 
 # Instalar dependências de produção
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --no-frozen-lockfile --prod
 
 # ================================
 # STAGE 2: Build
@@ -27,7 +27,7 @@ RUN pnpm install --frozen-lockfile --prod
 FROM base AS builder
 
 # Instalar todas as dependências (dev + prod)
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Copiar código fonte
 COPY . .
