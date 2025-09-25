@@ -67,7 +67,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc && tsc-alias -p tsconfig.paths.json",
+    "build": "tsc && tsc-alias -p tsconfig.paths.json --resolve-full-extension .js",
     "start": "tsx src/server.ts",
     "start:prod": "node dist/server.js",
     "typecheck": "tsc --noEmit",

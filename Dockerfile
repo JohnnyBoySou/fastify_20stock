@@ -58,7 +58,7 @@ COPY --from=deps /app/node_modules ./node_modules
 
 # Copiar código compilado
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/src/generated ./src/generated
+COPY --from=builder /app/src/generated ./dist/generated
 COPY --from=builder /app/prisma ./prisma
 
 # Copiar arquivos necessários
