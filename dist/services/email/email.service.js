@@ -1,15 +1,18 @@
-import { Resend } from 'resend';
-import { generateWelcomeEmailHTML, generateWelcomeEmailText, generatePasswordResetEmailHTML, generatePasswordResetEmailText, generateStockLowEmailHTML, generateStockLowEmailText, generateNotificationEmailHTML, generateNotificationEmailText, generateStoreInviteEmailHTML, generateStoreInviteEmailText, generateEmailVerificationHTML, generateEmailVerificationText } from './templates';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.EmailService = void 0;
+const resend_1 = require("resend");
+const templates_1 = require("./templates");
 // Configuração do Resend
-const resend = new Resend(process.env.RESEND_API_KEY);
-export const EmailService = {
+const resend = new resend_1.Resend(process.env.RESEND_API_KEY);
+exports.EmailService = {
     /**
      * Envia email de boas-vindas para novos usuários
      */
     sendWelcomeEmail: async (data) => {
         try {
-            const html = generateWelcomeEmailHTML(data);
-            const text = generateWelcomeEmailText(data);
+            const html = (0, templates_1.generateWelcomeEmailHTML)(data);
+            const text = (0, templates_1.generateWelcomeEmailText)(data);
             const result = await resend.emails.send({
                 from: process.env.FROM_EMAIL || 'noreply@25stock.com',
                 to: data.email,
@@ -30,8 +33,8 @@ export const EmailService = {
      */
     sendPasswordResetEmail: async (data) => {
         try {
-            const html = generatePasswordResetEmailHTML(data);
-            const text = generatePasswordResetEmailText(data);
+            const html = (0, templates_1.generatePasswordResetEmailHTML)(data);
+            const text = (0, templates_1.generatePasswordResetEmailText)(data);
             const result = await resend.emails.send({
                 from: process.env.FROM_EMAIL || 'noreply@25stock.com',
                 to: data.email,
@@ -52,8 +55,8 @@ export const EmailService = {
      */
     sendNotificationEmail: async (data) => {
         try {
-            const html = generateNotificationEmailHTML(data);
-            const text = generateNotificationEmailText(data);
+            const html = (0, templates_1.generateNotificationEmailHTML)(data);
+            const text = (0, templates_1.generateNotificationEmailText)(data);
             const result = await resend.emails.send({
                 from: process.env.FROM_EMAIL || 'noreply@25stock.com',
                 to: data.email,
@@ -74,8 +77,8 @@ export const EmailService = {
      */
     sendStoreInviteEmail: async (data) => {
         try {
-            const html = generateStoreInviteEmailHTML(data);
-            const text = generateStoreInviteEmailText(data);
+            const html = (0, templates_1.generateStoreInviteEmailHTML)(data);
+            const text = (0, templates_1.generateStoreInviteEmailText)(data);
             const result = await resend.emails.send({
                 from: process.env.FROM_EMAIL || 'noreply@25stock.com',
                 to: data.email,
@@ -96,8 +99,8 @@ export const EmailService = {
      */
     sendStockLowEmail: async (data) => {
         try {
-            const html = generateStockLowEmailHTML(data);
-            const text = generateStockLowEmailText(data);
+            const html = (0, templates_1.generateStockLowEmailHTML)(data);
+            const text = (0, templates_1.generateStockLowEmailText)(data);
             const result = await resend.emails.send({
                 from: process.env.FROM_EMAIL || 'noreply@25stock.com',
                 to: data.email,
@@ -118,8 +121,8 @@ export const EmailService = {
      */
     sendEmailVerification: async (data) => {
         try {
-            const html = generateEmailVerificationHTML(data);
-            const text = generateEmailVerificationText(data);
+            const html = (0, templates_1.generateEmailVerificationHTML)(data);
+            const text = (0, templates_1.generateEmailVerificationText)(data);
             const result = await resend.emails.send({
                 from: process.env.FROM_EMAIL || 'noreply@25stock.com',
                 to: data.email,

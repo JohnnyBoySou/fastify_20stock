@@ -1,15 +1,20 @@
-import { PrismaClient } from "../generated/prisma";
-export const prisma = new PrismaClient();
-export const db = prisma;
-export async function prismaPlugin(app) {
-    app.decorate("prisma", prisma);
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.db = exports.prisma = void 0;
+exports.prismaPlugin = prismaPlugin;
+exports.connectPrisma = connectPrisma;
+const prisma_1 = require("../generated/prisma");
+exports.prisma = new prisma_1.PrismaClient();
+exports.db = exports.prisma;
+async function prismaPlugin(app) {
+    app.decorate("prisma", exports.prisma);
     app.addHook("onClose", async () => {
-        await prisma.$disconnect();
+        await exports.prisma.$disconnect();
     });
 }
-export async function connectPrisma(app) {
+async function connectPrisma(app) {
     try {
-        await prisma.$connect();
+        await exports.prisma.$connect();
         console.log('✅ Prisma conectado com sucesso ao banco de dados');
         app.log.info('Prisma conectado com sucesso ao banco de dados');
     }

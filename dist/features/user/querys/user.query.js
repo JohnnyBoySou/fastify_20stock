@@ -1,8 +1,11 @@
-import { PaginationUtils } from '../../../utils/pagination';
-import { db } from '../../../plugins/prisma';
-export const UserQueries = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserQueries = void 0;
+const pagination_1 = require("../../../utils/pagination");
+const prisma_1 = require("../../../plugins/prisma");
+exports.UserQueries = {
     async getById(id) {
-        const user = await db.user.findUnique({
+        const user = await prisma_1.db.user.findUnique({
             where: { id },
             select: {
                 id: true,
@@ -22,7 +25,7 @@ export const UserQueries = {
         return user;
     },
     async getByEmail(email) {
-        const user = await db.user.findUnique({
+        const user = await prisma_1.db.user.findUnique({
             where: { email },
             select: {
                 id: true,
@@ -39,7 +42,7 @@ export const UserQueries = {
         return user;
     },
     async getByEmailWithPassword(email) {
-        const user = await db.user.findUnique({
+        const user = await prisma_1.db.user.findUnique({
             where: { email },
             select: {
                 id: true,
@@ -74,7 +77,7 @@ export const UserQueries = {
             };
         }
         // Usar o util de paginação
-        const result = await PaginationUtils.paginate(db, 'user', {
+        const result = await pagination_1.PaginationUtils.paginate(prisma_1.db, 'user', {
             where,
             select: {
                 id: true,
@@ -98,10 +101,10 @@ export const UserQueries = {
             }
         });
         // Transformar para o formato esperado
-        return PaginationUtils.transformPaginationResult(result, 'users');
+        return pagination_1.PaginationUtils.transformPaginationResult(result, 'users');
     },
     async getByRole(role) {
-        const users = await db.user.findMany({
+        const users = await prisma_1.db.user.findMany({
             where: {
                 roles: {
                     has: role
@@ -123,7 +126,7 @@ export const UserQueries = {
         return users;
     },
     async getActive() {
-        const users = await db.user.findMany({
+        const users = await prisma_1.db.user.findMany({
             where: { status: true },
             select: {
                 id: true,
@@ -140,11 +143,11 @@ export const UserQueries = {
     },
     async getStats() {
         const [total, active, inactive, verified, unverified] = await Promise.all([
-            db.user.count(),
-            db.user.count({ where: { status: true } }),
-            db.user.count({ where: { status: false } }),
-            db.user.count({ where: { emailVerified: true } }),
-            db.user.count({ where: { emailVerified: false } })
+            prisma_1.db.user.count(),
+            prisma_1.db.user.count({ where: { status: true } }),
+            prisma_1.db.user.count({ where: { status: false } }),
+            prisma_1.db.user.count({ where: { emailVerified: true } }),
+            prisma_1.db.user.count({ where: { emailVerified: false } })
         ]);
         return {
             total,
@@ -155,14 +158,14 @@ export const UserQueries = {
         };
     },
     async checkEmailExists(email) {
-        const user = await db.user.findUnique({
+        const user = await prisma_1.db.user.findUnique({
             where: { email },
             select: { id: true }
         });
         return !!user;
     },
     async search(searchTerm, limit = 10) {
-        const users = await db.user.findMany({
+        const users = await prisma_1.db.user.findMany({
             where: {
                 OR: [
                     { email: { contains: searchTerm, mode: 'insensitive' } },

@@ -1,41 +1,44 @@
-import { StoreController } from './store.controller';
-import { StoreSchemas } from './store.schema';
-export async function StoreRoutes(fastify) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.StoreRoutes = StoreRoutes;
+const store_controller_1 = require("./store.controller");
+const store_schema_1 = require("./store.schema");
+async function StoreRoutes(fastify) {
     // CRUD básico
     fastify.post('/', {
-        schema: StoreSchemas.create,
-        handler: StoreController.create
+        schema: store_schema_1.StoreSchemas.create,
+        handler: store_controller_1.StoreController.create
     });
     fastify.get('/', {
-        schema: StoreSchemas.list,
-        handler: StoreController.list
+        schema: store_schema_1.StoreSchemas.list,
+        handler: store_controller_1.StoreController.list
     });
     fastify.get('/:id', {
-        schema: StoreSchemas.get,
-        handler: StoreController.get
+        schema: store_schema_1.StoreSchemas.get,
+        handler: store_controller_1.StoreController.get
     });
     fastify.put('/:id', {
-        schema: StoreSchemas.update,
-        handler: StoreController.update
+        schema: store_schema_1.StoreSchemas.update,
+        handler: store_controller_1.StoreController.update
     });
     fastify.delete('/:id', {
-        schema: StoreSchemas.delete,
-        handler: StoreController.delete
+        schema: store_schema_1.StoreSchemas.delete,
+        handler: store_controller_1.StoreController.delete
     });
     // Funções adicionais - Queries
     fastify.get('/cnpj/:cnpj', {
-        schema: StoreSchemas.getByCnpj,
-        handler: StoreController.getByCnpj
+        schema: store_schema_1.StoreSchemas.getByCnpj,
+        handler: store_controller_1.StoreController.getByCnpj
     });
     fastify.get('/owner/:ownerId', {
-        schema: StoreSchemas.getByOwner,
-        handler: StoreController.getByOwner
+        schema: store_schema_1.StoreSchemas.getByOwner,
+        handler: store_controller_1.StoreController.getByOwner
     });
     fastify.get('/active', {
-        handler: StoreController.getActive
+        handler: store_controller_1.StoreController.getActive
     });
     fastify.get('/stats', {
-        handler: StoreController.getStats
+        handler: store_controller_1.StoreController.getStats
     });
     fastify.get('/search', {
         schema: {
@@ -48,7 +51,7 @@ export async function StoreRoutes(fastify) {
                 required: ['q']
             }
         },
-        handler: StoreController.search
+        handler: store_controller_1.StoreController.search
     });
     fastify.get('/recent', {
         schema: {
@@ -59,15 +62,15 @@ export async function StoreRoutes(fastify) {
                 }
             }
         },
-        handler: StoreController.getRecent
+        handler: store_controller_1.StoreController.getRecent
     });
     // Funções adicionais - Commands
     fastify.get('/verify-cnpj/:cnpj', {
-        schema: StoreSchemas.verifyCnpj,
-        handler: StoreController.verifyCnpj
+        schema: store_schema_1.StoreSchemas.verifyCnpj,
+        handler: store_controller_1.StoreController.verifyCnpj
     });
     fastify.patch('/:id/toggle-status', {
-        schema: StoreSchemas.toggleStatus,
-        handler: StoreController.toggleStatus
+        schema: store_schema_1.StoreSchemas.toggleStatus,
+        handler: store_controller_1.StoreController.toggleStatus
     });
 }

@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.NotificationSchemas = exports.searchSchema = exports.getStatsSchema = exports.getRecentSchema = exports.getByPrioritySchema = exports.getByTypeSchema = exports.getUnreadSchema = exports.getByUserSchema = exports.markAllAsReadSchema = exports.markAsReadSchema = exports.deleteNotificationSchema = exports.listNotificationsSchema = exports.getNotificationSchema = exports.updateNotificationSchema = exports.createNotificationSchema = void 0;
 const notificationTypeEnum = ['INFO', 'SUCCESS', 'WARNING', 'ERROR', 'STOCK_ALERT', 'MOVEMENT', 'PERMISSION', 'SYSTEM'];
 const notificationPriorityEnum = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
 const notificationResponseSchema = {
@@ -26,7 +29,7 @@ const notificationResponseSchema = {
         }
     }
 };
-export const createNotificationSchema = {
+exports.createNotificationSchema = {
     body: {
         type: 'object',
         required: ['userId', 'title', 'message'],
@@ -57,7 +60,7 @@ export const createNotificationSchema = {
         }
     }
 };
-export const updateNotificationSchema = {
+exports.updateNotificationSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -99,7 +102,7 @@ export const updateNotificationSchema = {
         }
     }
 };
-export const getNotificationSchema = {
+exports.getNotificationSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -123,7 +126,7 @@ export const getNotificationSchema = {
         }
     }
 };
-export const listNotificationsSchema = {
+exports.listNotificationsSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -163,7 +166,7 @@ export const listNotificationsSchema = {
         }
     }
 };
-export const deleteNotificationSchema = {
+exports.deleteNotificationSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -187,7 +190,7 @@ export const deleteNotificationSchema = {
         }
     }
 };
-export const markAsReadSchema = {
+exports.markAsReadSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -211,7 +214,7 @@ export const markAsReadSchema = {
         }
     }
 };
-export const markAllAsReadSchema = {
+exports.markAllAsReadSchema = {
     body: {
         type: 'object',
         required: ['userId'],
@@ -235,7 +238,7 @@ export const markAllAsReadSchema = {
         }
     }
 };
-export const getByUserSchema = {
+exports.getByUserSchema = {
     params: {
         type: 'object',
         required: ['userId'],
@@ -279,7 +282,7 @@ export const getByUserSchema = {
         }
     }
 };
-export const getUnreadSchema = {
+exports.getUnreadSchema = {
     params: {
         type: 'object',
         required: ['userId'],
@@ -311,7 +314,7 @@ export const getUnreadSchema = {
         }
     }
 };
-export const getByTypeSchema = {
+exports.getByTypeSchema = {
     params: {
         type: 'object',
         required: ['type'],
@@ -343,7 +346,7 @@ export const getByTypeSchema = {
         }
     }
 };
-export const getByPrioritySchema = {
+exports.getByPrioritySchema = {
     params: {
         type: 'object',
         required: ['priority'],
@@ -375,7 +378,7 @@ export const getByPrioritySchema = {
         }
     }
 };
-export const getRecentSchema = {
+exports.getRecentSchema = {
     params: {
         type: 'object',
         required: ['userId'],
@@ -408,7 +411,7 @@ export const getRecentSchema = {
         }
     }
 };
-export const getStatsSchema = {
+exports.getStatsSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -434,7 +437,7 @@ export const getStatsSchema = {
         }
     }
 };
-export const searchSchema = {
+exports.searchSchema = {
     querystring: {
         type: 'object',
         required: ['q'],
@@ -461,19 +464,19 @@ export const searchSchema = {
         }
     }
 };
-export const NotificationSchemas = {
-    create: createNotificationSchema,
-    update: updateNotificationSchema,
-    get: getNotificationSchema,
-    delete: deleteNotificationSchema,
-    list: listNotificationsSchema,
-    markAsRead: markAsReadSchema,
-    markAllAsRead: markAllAsReadSchema,
-    getByUser: getByUserSchema,
-    getUnread: getUnreadSchema,
-    getByType: getByTypeSchema,
-    getByPriority: getByPrioritySchema,
-    getRecent: getRecentSchema,
-    getStats: getStatsSchema,
-    search: searchSchema
+exports.NotificationSchemas = {
+    create: exports.createNotificationSchema,
+    update: exports.updateNotificationSchema,
+    get: exports.getNotificationSchema,
+    delete: exports.deleteNotificationSchema,
+    list: exports.listNotificationsSchema,
+    markAsRead: exports.markAsReadSchema,
+    markAllAsRead: exports.markAllAsReadSchema,
+    getByUser: exports.getByUserSchema,
+    getUnread: exports.getUnreadSchema,
+    getByType: exports.getByTypeSchema,
+    getByPriority: exports.getByPrioritySchema,
+    getRecent: exports.getRecentSchema,
+    getStats: exports.getStatsSchema,
+    search: exports.searchSchema
 };

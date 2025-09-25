@@ -1,57 +1,60 @@
-import { UserController } from './user.controller';
-import { UserSchemas } from './user.schema';
-export async function UserRoutes(fastify) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserRoutes = UserRoutes;
+const user_controller_1 = require("./user.controller");
+const user_schema_1 = require("./user.schema");
+async function UserRoutes(fastify) {
     // POST /users - Criar usuário
     fastify.post('/', {
-        schema: UserSchemas.create,
-        handler: UserController.create
+        schema: user_schema_1.UserSchemas.create,
+        handler: user_controller_1.UserController.create
     });
     // GET /users - Listar usuários
     fastify.get('/', {
-        schema: UserSchemas.list,
-        handler: UserController.list
+        schema: user_schema_1.UserSchemas.list,
+        handler: user_controller_1.UserController.list
     });
     // GET /users/:id - Buscar usuário por ID
     fastify.get('/:id', {
-        schema: UserSchemas.get,
-        handler: UserController.get
+        schema: user_schema_1.UserSchemas.get,
+        handler: user_controller_1.UserController.get
     });
     // PUT /users/:id - Atualizar usuário
     fastify.put('/:id', {
-        schema: UserSchemas.update,
-        handler: UserController.update
+        schema: user_schema_1.UserSchemas.update,
+        handler: user_controller_1.UserController.update
     });
     // DELETE /users/:id - Deletar usuário (soft delete)
     fastify.delete('/:id', {
-        schema: UserSchemas.delete,
-        handler: UserController.delete
+        schema: user_schema_1.UserSchemas.delete,
+        handler: user_controller_1.UserController.delete
     });
     // GET /users/email - Buscar usuário por email
     fastify.get('/email', {
-        handler: UserController.getByEmail
+        handler: user_controller_1.UserController.getByEmail
     });
     // GET /users/role/:role - Buscar usuários por role
     fastify.get('/role/:role', {
-        handler: UserController.getByRole
+        handler: user_controller_1.UserController.getByRole
     });
     // GET /users/active - Buscar usuários ativos
     fastify.get('/active', {
-        handler: UserController.getActive
+        handler: user_controller_1.UserController.getActive
     });
     // GET /users/stats - Estatísticas dos usuários
     fastify.get('/stats', {
-        handler: UserController.getStats
+        handler: user_controller_1.UserController.getStats
     });
     // GET /users/search - Buscar usuários
     fastify.get('/search', {
-        handler: UserController.search
+        handler: user_controller_1.UserController.search
     });
     // PATCH /users/:id/verify-email - Verificar email do usuário
     fastify.patch('/:id/verify-email', {
-        handler: UserController.verifyEmail
+        handler: user_controller_1.UserController.verifyEmail
     });
     // PATCH /users/:id/last-login - Atualizar último login
     fastify.patch('/:id/last-login', {
-        handler: UserController.updateLastLogin
+        handler: user_controller_1.UserController.updateLastLogin
     });
 }

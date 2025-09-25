@@ -1,8 +1,11 @@
-import { GranularPermissionService } from '../../../middlewares/granular-permissions.middleware';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.searchPermissions = exports.getExpiringPermissions = exports.getPermissionsByStore = exports.getPermissionsByUser = exports.getPermissionStats = exports.testPermission = exports.getUserEffectivePermissions = exports.getStoreUserPermission = exports.getStoreUserPermissions = exports.getUserPermissionById = exports.getUserPermissions = void 0;
+const granular_permissions_middleware_1 = require("../../../middlewares/granular-permissions.middleware");
 // ================================
 // CONSULTAS DE PERMISSÕES CUSTOMIZADAS
 // ================================
-export const getUserPermissions = async (prisma, filters) => {
+const getUserPermissions = async (prisma, filters) => {
     const { userId, storeId, action, active, page = 1, limit = 10 } = filters;
     const where = { userId };
     if (storeId)
@@ -50,7 +53,8 @@ export const getUserPermissions = async (prisma, filters) => {
         }
     };
 };
-export const getUserPermissionById = async (prisma, id) => {
+exports.getUserPermissions = getUserPermissions;
+const getUserPermissionById = async (prisma, id) => {
     const permission = await prisma.userPermission.findUnique({
         where: { id },
         include: {
@@ -70,10 +74,11 @@ export const getUserPermissionById = async (prisma, id) => {
     }
     return null;
 };
+exports.getUserPermissionById = getUserPermissionById;
 // ================================
 // CONSULTAS DE PERMISSÕES POR LOJA
 // ================================
-export const getStoreUserPermissions = async (prisma, filters) => {
+const getStoreUserPermissions = async (prisma, filters) => {
     const { storeId, page = 1, limit = 10 } = filters;
     const [permissions, total] = await Promise.all([
         prisma.storePermission.findMany({
@@ -109,7 +114,8 @@ export const getStoreUserPermissions = async (prisma, filters) => {
         }
     };
 };
-export const getStoreUserPermission = async (prisma, userId, storeId) => {
+exports.getStoreUserPermissions = getStoreUserPermissions;
+const getStoreUserPermission = async (prisma, userId, storeId) => {
     const permission = await prisma.storePermission.findUnique({
         where: {
             userId_storeId: {
@@ -138,10 +144,11 @@ export const getStoreUserPermission = async (prisma, userId, storeId) => {
     }
     return null;
 };
+exports.getStoreUserPermission = getStoreUserPermission;
 // ================================
 // CONSULTAS AVANÇADAS
 // ================================
-export const getUserEffectivePermissions = async (prisma, context) => {
+const getUserEffectivePermissions = async (prisma, context) => {
     const { userId, storeId } = context;
     // Buscar usuário
     const user = await prisma.user.findUnique({
@@ -182,7 +189,7 @@ export const getUserEffectivePermissions = async (prisma, context) => {
         }))
     };
     // Obter permissões efetivas
-    const effectivePermissions = await GranularPermissionService.getUserEffectivePermissions(permissionContext);
+    const effectivePermissions = await granular_permissions_middleware_1.GranularPermissionService.getUserEffectivePermissions(permissionContext);
     return {
         userId,
         userRoles: user.roles,
@@ -192,7 +199,8 @@ export const getUserEffectivePermissions = async (prisma, context) => {
         storePermissions: permissionContext.storePermissions
     };
 };
-export const testPermission = async (prisma, context) => {
+exports.getUserEffectivePermissions = getUserEffectivePermissions;
+const testPermission = async (prisma, context) => {
     const { userId, action, resource, storeId, testContext } = context;
     // Buscar usuário
     const user = await prisma.user.findUnique({
@@ -232,7 +240,7 @@ export const testPermission = async (prisma, context) => {
         requestData: testContext || {}
     };
     // Testar permissão
-    const result = await GranularPermissionService.hasPermission(permissionContext, action, resource);
+    const result = await granular_permissions_middleware_1.GranularPermissionService.hasPermission(permissionContext, action, resource);
     return {
         userId,
         action,
@@ -242,10 +250,11 @@ export const testPermission = async (prisma, context) => {
         context: permissionContext
     };
 };
+exports.testPermission = testPermission;
 // ================================
 // ESTATÍSTICAS E RELATÓRIOS
 // ================================
-export const getPermissionStats = async (prisma) => {
+const getPermissionStats = async (prisma) => {
     const [totalUserPermissions, activeUserPermissions, expiredUserPermissions, totalStorePermissions, permissionsByAction, permissionsByRole] = await Promise.all([
         prisma.userPermission.count(),
         prisma.userPermission.count({
@@ -290,7 +299,8 @@ export const getPermissionStats = async (prisma) => {
         }))
     };
 };
-export const getPermissionsByUser = async (prisma, userId) => {
+exports.getPermissionStats = getPermissionStats;
+const getPermissionsByUser = async (prisma, userId) => {
     const [userPermissions, storePermissions] = await Promise.all([
         prisma.userPermission.findMany({
             where: { userId },
@@ -324,7 +334,8 @@ export const getPermissionsByUser = async (prisma, userId) => {
         }))
     };
 };
-export const getPermissionsByStore = async (prisma, storeId) => {
+exports.getPermissionsByUser = getPermissionsByUser;
+const getPermissionsByStore = async (prisma, storeId) => {
     const storePermissions = await prisma.storePermission.findMany({
         where: { storeId },
         include: {
@@ -345,7 +356,8 @@ export const getPermissionsByStore = async (prisma, storeId) => {
         conditions: p.conditions ? JSON.parse(p.conditions) : null
     }));
 };
-export const getExpiringPermissions = async (prisma, days = 7) => {
+exports.getPermissionsByStore = getPermissionsByStore;
+const getExpiringPermissions = async (prisma, days = 7) => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + days);
     const [userPermissions, storePermissions] = await Promise.all([
@@ -391,7 +403,8 @@ export const getExpiringPermissions = async (prisma, days = 7) => {
         }))
     };
 };
-export const searchPermissions = async (prisma, query, limit = 10) => {
+exports.getExpiringPermissions = getExpiringPermissions;
+const searchPermissions = async (prisma, query, limit = 10) => {
     const userPermissions = await prisma.userPermission.findMany({
         where: {
             OR: [
@@ -423,3 +436,4 @@ export const searchPermissions = async (prisma, query, limit = 10) => {
         conditions: p.conditions ? JSON.parse(p.conditions) : null
     }));
 };
+exports.searchPermissions = searchPermissions;

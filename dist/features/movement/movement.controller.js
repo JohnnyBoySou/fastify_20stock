@@ -1,10 +1,13 @@
-import { MovementCommands } from './commands/movement.commands';
-import { MovementQueries } from './queries/movement.queries';
-export const MovementController = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MovementController = void 0;
+const movement_commands_1 = require("./commands/movement.commands");
+const movement_queries_1 = require("./queries/movement.queries");
+exports.MovementController = {
     // === CRUD BÁSICO ===
     async create(request, reply) {
         try {
-            const result = await MovementCommands.create(request.body);
+            const result = await movement_commands_1.MovementCommands.create(request.body);
             return reply.status(201).send(result);
         }
         catch (error) {
@@ -32,7 +35,7 @@ export const MovementController = {
     async get(request, reply) {
         try {
             const { id } = request.params;
-            const result = await MovementQueries.getById(id);
+            const result = await movement_queries_1.MovementQueries.getById(id);
             if (!result) {
                 return reply.status(404).send({
                     error: 'Movement not found'
@@ -56,7 +59,7 @@ export const MovementController = {
         try {
             const { id } = request.params;
             const updateData = { ...request.body };
-            const result = await MovementCommands.update(id, updateData);
+            const result = await movement_commands_1.MovementCommands.update(id, updateData);
             return reply.send(result);
         }
         catch (error) {
@@ -79,7 +82,7 @@ export const MovementController = {
     async delete(request, reply) {
         try {
             const { id } = request.params;
-            await MovementCommands.delete(id);
+            await movement_commands_1.MovementCommands.delete(id);
             return reply.status(204).send();
         }
         catch (error) {
@@ -102,7 +105,7 @@ export const MovementController = {
     async list(request, reply) {
         try {
             const { page = 1, limit = 10, search, type, storeId, productId, supplierId, startDate, endDate } = request.query;
-            const result = await MovementQueries.list({
+            const result = await movement_queries_1.MovementQueries.list({
                 page,
                 limit,
                 search,
@@ -127,7 +130,7 @@ export const MovementController = {
         try {
             const { storeId } = request.params;
             const { page = 1, limit = 10, type, startDate, endDate } = request.query;
-            const result = await MovementQueries.getByStore(storeId, {
+            const result = await movement_queries_1.MovementQueries.getByStore(storeId, {
                 page,
                 limit,
                 type,
@@ -147,7 +150,7 @@ export const MovementController = {
         try {
             const { productId } = request.params;
             const { page = 1, limit = 10, type, startDate, endDate } = request.query;
-            const result = await MovementQueries.getByProduct(productId, {
+            const result = await movement_queries_1.MovementQueries.getByProduct(productId, {
                 page,
                 limit,
                 type,
@@ -167,7 +170,7 @@ export const MovementController = {
         try {
             const { supplierId } = request.params;
             const { page = 1, limit = 10, type, startDate, endDate } = request.query;
-            const result = await MovementQueries.getBySupplier(supplierId, {
+            const result = await movement_queries_1.MovementQueries.getBySupplier(supplierId, {
                 page,
                 limit,
                 type,
@@ -187,7 +190,7 @@ export const MovementController = {
         try {
             const { productId, storeId } = request.params;
             const { startDate, endDate } = request.query;
-            const result = await MovementQueries.getStockHistory(productId, storeId, {
+            const result = await movement_queries_1.MovementQueries.getStockHistory(productId, storeId, {
                 startDate,
                 endDate
             });
@@ -203,7 +206,7 @@ export const MovementController = {
     async getCurrentStock(request, reply) {
         try {
             const { productId, storeId } = request.params;
-            const result = await MovementQueries.getCurrentStock(productId, storeId);
+            const result = await movement_queries_1.MovementQueries.getCurrentStock(productId, storeId);
             return reply.send({ currentStock: result });
         }
         catch (error) {
@@ -215,7 +218,7 @@ export const MovementController = {
     },
     async getStats(request, reply) {
         try {
-            const result = await MovementQueries.getStats();
+            const result = await movement_queries_1.MovementQueries.getStats();
             return reply.send(result);
         }
         catch (error) {
@@ -228,7 +231,7 @@ export const MovementController = {
     async search(request, reply) {
         try {
             const { q, limit = 10 } = request.query;
-            const result = await MovementQueries.search(q, limit);
+            const result = await movement_queries_1.MovementQueries.search(q, limit);
             return reply.send({ movements: result });
         }
         catch (error) {
@@ -241,7 +244,7 @@ export const MovementController = {
     async getLowStockProducts(request, reply) {
         try {
             const { storeId } = request.query;
-            const result = await MovementQueries.getLowStockProducts(storeId);
+            const result = await movement_queries_1.MovementQueries.getLowStockProducts(storeId);
             return reply.send({ products: result });
         }
         catch (error) {
@@ -255,7 +258,7 @@ export const MovementController = {
     async recalculateStock(request, reply) {
         try {
             const { productId, storeId } = request.params;
-            const result = await MovementCommands.recalculateStock(productId, storeId);
+            const result = await movement_commands_1.MovementCommands.recalculateStock(productId, storeId);
             return reply.send({ currentStock: result });
         }
         catch (error) {
@@ -274,7 +277,7 @@ export const MovementController = {
     async getReport(request, reply) {
         try {
             const { storeId, productId, supplierId, type, startDate, endDate, groupBy, format } = request.query;
-            const result = await MovementQueries.getMovementReport({
+            const result = await movement_queries_1.MovementQueries.getMovementReport({
                 storeId,
                 productId,
                 supplierId,
@@ -305,7 +308,7 @@ export const MovementController = {
         try {
             const { movements } = request.body;
             const userId = request.user?.id;
-            const result = await MovementCommands.createBulk(movements, userId);
+            const result = await movement_commands_1.MovementCommands.createBulk(movements, userId);
             return reply.status(201).send(result);
         }
         catch (error) {
@@ -320,7 +323,7 @@ export const MovementController = {
             const { id } = request.params;
             const { verified, note } = request.body;
             const userId = request.user?.id;
-            const result = await MovementCommands.verify(id, verified, note, userId);
+            const result = await movement_commands_1.MovementCommands.verify(id, verified, note, userId);
             return reply.send(result);
         }
         catch (error) {
@@ -340,7 +343,7 @@ export const MovementController = {
             const { id } = request.params;
             const { reason } = request.body;
             const userId = request.user?.id;
-            const result = await MovementCommands.cancel(id, reason, userId);
+            const result = await movement_commands_1.MovementCommands.cancel(id, reason, userId);
             return reply.send(result);
         }
         catch (error) {
@@ -368,7 +371,7 @@ export const MovementController = {
     async getVerifiedMovements(request, reply) {
         try {
             const { page = 1, limit = 10, storeId, verified, startDate, endDate } = request.query;
-            const result = await MovementQueries.getVerifiedMovements({
+            const result = await movement_queries_1.MovementQueries.getVerifiedMovements({
                 page,
                 limit,
                 storeId,
@@ -388,7 +391,7 @@ export const MovementController = {
     async getCancelledMovements(request, reply) {
         try {
             const { page = 1, limit = 10, storeId, startDate, endDate } = request.query;
-            const result = await MovementQueries.getCancelledMovements({
+            const result = await movement_queries_1.MovementQueries.getCancelledMovements({
                 page,
                 limit,
                 storeId,
@@ -407,7 +410,7 @@ export const MovementController = {
     async getAnalytics(request, reply) {
         try {
             const { storeId, productId, supplierId, startDate, endDate } = request.query;
-            const result = await MovementQueries.getMovementAnalytics({
+            const result = await movement_queries_1.MovementQueries.getMovementAnalytics({
                 storeId,
                 productId,
                 supplierId,
@@ -425,7 +428,7 @@ export const MovementController = {
     },
     async summarize(request, reply) {
         try {
-            const result = await MovementQueries.summarize();
+            const result = await movement_queries_1.MovementQueries.summarize();
             return reply.send(result);
         }
         catch (error) {
@@ -439,7 +442,7 @@ export const MovementController = {
         try {
             const { productId } = request.params;
             const { startDate, endDate, storeId } = request.query;
-            const result = await MovementQueries.getProductSummary(productId, {
+            const result = await movement_queries_1.MovementQueries.getProductSummary(productId, {
                 startDate,
                 endDate,
                 storeId

@@ -1,4 +1,7 @@
-export const createMovementSchema = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MovementSchemas = exports.getMovementAnalyticsSchema = exports.getCancelledMovementsSchema = exports.getVerifiedMovementsSchema = exports.cancelMovementSchema = exports.verifyMovementSchema = exports.createBulkMovementSchema = exports.getMovementReportSchema = exports.getStockHistorySchema = exports.getBySupplierSchema = exports.getByProductSchema = exports.getByStoreSchema = exports.deleteMovementSchema = exports.listMovementsSchema = exports.getMovementSchema = exports.updateMovementSchema = exports.createMovementSchema = void 0;
+exports.createMovementSchema = {
     body: {
         type: 'object',
         required: ['type', 'quantity', 'storeId', 'productId'],
@@ -43,7 +46,7 @@ export const createMovementSchema = {
         }
     }
 };
-export const updateMovementSchema = {
+exports.updateMovementSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -90,7 +93,7 @@ export const updateMovementSchema = {
         }
     }
 };
-export const getMovementSchema = {
+exports.getMovementSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -123,7 +126,7 @@ export const getMovementSchema = {
         }
     }
 };
-export const listMovementsSchema = {
+exports.listMovementsSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -183,7 +186,7 @@ export const listMovementsSchema = {
         }
     }
 };
-export const deleteMovementSchema = {
+exports.deleteMovementSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -195,7 +198,7 @@ export const deleteMovementSchema = {
         204: { type: 'null' }
     }
 };
-export const getByStoreSchema = {
+exports.getByStoreSchema = {
     params: {
         type: 'object',
         required: ['storeId'],
@@ -257,7 +260,7 @@ export const getByStoreSchema = {
         }
     }
 };
-export const getByProductSchema = {
+exports.getByProductSchema = {
     params: {
         type: 'object',
         required: ['productId'],
@@ -319,7 +322,7 @@ export const getByProductSchema = {
         }
     }
 };
-export const getBySupplierSchema = {
+exports.getBySupplierSchema = {
     params: {
         type: 'object',
         required: ['supplierId'],
@@ -381,7 +384,7 @@ export const getBySupplierSchema = {
         }
     }
 };
-export const getStockHistorySchema = {
+exports.getStockHistorySchema = {
     params: {
         type: 'object',
         required: ['productId', 'storeId'],
@@ -436,7 +439,7 @@ export const getStockHistorySchema = {
     }
 };
 // === SCHEMAS PARA FUNÇÕES ADICIONAIS DE MOVIMENTAÇÃO ===
-export const getMovementReportSchema = {
+exports.getMovementReportSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -562,7 +565,7 @@ export const getMovementReportSchema = {
         }
     }
 };
-export const createBulkMovementSchema = {
+exports.createBulkMovementSchema = {
     body: {
         type: 'object',
         required: ['movements'],
@@ -614,7 +617,7 @@ export const createBulkMovementSchema = {
         }
     }
 };
-export const verifyMovementSchema = {
+exports.verifyMovementSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -648,7 +651,7 @@ export const verifyMovementSchema = {
         }
     }
 };
-export const cancelMovementSchema = {
+exports.cancelMovementSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -681,7 +684,7 @@ export const cancelMovementSchema = {
         }
     }
 };
-export const getVerifiedMovementsSchema = {
+exports.getVerifiedMovementsSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -729,7 +732,7 @@ export const getVerifiedMovementsSchema = {
         }
     }
 };
-export const getCancelledMovementsSchema = {
+exports.getCancelledMovementsSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -777,7 +780,7 @@ export const getCancelledMovementsSchema = {
         }
     }
 };
-export const getMovementAnalyticsSchema = {
+exports.getMovementAnalyticsSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -868,22 +871,22 @@ export const getMovementAnalyticsSchema = {
         }
     }
 };
-export const MovementSchemas = {
-    create: createMovementSchema,
-    update: updateMovementSchema,
-    get: getMovementSchema,
-    delete: deleteMovementSchema,
-    list: listMovementsSchema,
-    getByStore: getByStoreSchema,
-    getByProduct: getByProductSchema,
-    getBySupplier: getBySupplierSchema,
-    getStockHistory: getStockHistorySchema,
+exports.MovementSchemas = {
+    create: exports.createMovementSchema,
+    update: exports.updateMovementSchema,
+    get: exports.getMovementSchema,
+    delete: exports.deleteMovementSchema,
+    list: exports.listMovementsSchema,
+    getByStore: exports.getByStoreSchema,
+    getByProduct: exports.getByProductSchema,
+    getBySupplier: exports.getBySupplierSchema,
+    getStockHistory: exports.getStockHistorySchema,
     // Funções adicionais
-    getReport: getMovementReportSchema,
-    createBulk: createBulkMovementSchema,
-    verify: verifyMovementSchema,
-    cancel: cancelMovementSchema,
-    getVerifiedMovements: getVerifiedMovementsSchema,
-    getCancelledMovements: getCancelledMovementsSchema,
-    getAnalytics: getMovementAnalyticsSchema
+    getReport: exports.getMovementReportSchema,
+    createBulk: exports.createBulkMovementSchema,
+    verify: exports.verifyMovementSchema,
+    cancel: exports.cancelMovementSchema,
+    getVerifiedMovements: exports.getVerifiedMovementsSchema,
+    getCancelledMovements: exports.getCancelledMovementsSchema,
+    getAnalytics: exports.getMovementAnalyticsSchema
 };

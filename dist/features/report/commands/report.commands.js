@@ -1,5 +1,8 @@
-import { db } from '../../../plugins/prisma';
-export const ReportCommands = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ReportCommands = void 0;
+const prisma_1 = require("../../../plugins/prisma");
+exports.ReportCommands = {
     // ================================
     // EXPORT REPORTS
     // ================================
@@ -9,7 +12,7 @@ export const ReportCommands = {
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
             const filename = `${reportType}-report-${timestamp}.${format}`;
             // Create export record in database
-            const exportRecord = await db.auditLog.create({
+            const exportRecord = await prisma_1.db.auditLog.create({
                 data: {
                     entity: 'REPORT',
                     entityId: `export-${Date.now()}`,
@@ -51,7 +54,7 @@ export const ReportCommands = {
             // Create CSV rows
             const rows = data.map(item => {
                 return columns.map(column => {
-                    const value = ReportCommands.getNestedValue(item, column);
+                    const value = exports.ReportCommands.getNestedValue(item, column);
                     // Escape CSV values
                     if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
                         return `"${value.replace(/"/g, '""')}"`;
@@ -117,7 +120,7 @@ export const ReportCommands = {
     async scheduleReport(reportType, schedule, filters, emailRecipients) {
         try {
             // Create scheduled report record
-            const scheduledReport = await db.auditLog.create({
+            const scheduledReport = await prisma_1.db.auditLog.create({
                 data: {
                     entity: 'REPORT',
                     entityId: `schedule-${Date.now()}`,
@@ -148,11 +151,11 @@ export const ReportCommands = {
     async cancelScheduledReport(scheduleId) {
         try {
             // Update scheduled report to inactive
-            await db.auditLog.update({
+            await prisma_1.db.auditLog.update({
                 where: { id: scheduleId },
                 data: {
                     after: {
-                        ...(await db.auditLog.findUnique({
+                        ...(await prisma_1.db.auditLog.findUnique({
                             where: { id: scheduleId },
                             select: { after: true }
                         }))?.after,
@@ -177,18 +180,18 @@ export const ReportCommands = {
             let filename;
             switch (format) {
                 case 'csv':
-                    const columns = ReportCommands.getDefaultColumns(reportType);
-                    reportContent = await ReportCommands.generateCsvReport(reportType, data, columns);
+                    const columns = exports.ReportCommands.getDefaultColumns(reportType);
+                    reportContent = await exports.ReportCommands.generateCsvReport(reportType, data, columns);
                     filename = `${reportType}-report-${new Date().toISOString().split('T')[0]}.csv`;
                     break;
                 case 'xlsx':
-                    const excelColumns = ReportCommands.getDefaultExcelColumns(reportType);
-                    reportContent = await ReportCommands.generateExcelReport(reportType, data, excelColumns);
+                    const excelColumns = exports.ReportCommands.getDefaultExcelColumns(reportType);
+                    reportContent = await exports.ReportCommands.generateExcelReport(reportType, data, excelColumns);
                     filename = `${reportType}-report-${new Date().toISOString().split('T')[0]}.xlsx`;
                     break;
                 case 'pdf':
-                    const pdfColumns = ReportCommands.getDefaultPdfColumns(reportType);
-                    reportContent = await ReportCommands.generatePdfReport(reportType, data, pdfColumns);
+                    const pdfColumns = exports.ReportCommands.getDefaultPdfColumns(reportType);
+                    reportContent = await exports.ReportCommands.generatePdfReport(reportType, data, pdfColumns);
                     filename = `${reportType}-report-${new Date().toISOString().split('T')[0]}.pdf`;
                     break;
                 default:
@@ -196,7 +199,7 @@ export const ReportCommands = {
             }
             // In a real implementation, you would send the email here
             // For now, we'll just log the action
-            const emailLog = await db.auditLog.create({
+            const emailLog = await prisma_1.db.auditLog.create({
                 data: {
                     entity: 'REPORT',
                     entityId: `email-${Date.now()}`,
@@ -379,7 +382,7 @@ export const ReportCommands = {
     getReportStatistics() {
         return {
             totalReports: 0, // This would be calculated from actual data
-            availableTypes: ReportCommands.getAvailableReportTypes()
+            availableTypes: exports.ReportCommands.getAvailableReportTypes()
         };
     }
 };

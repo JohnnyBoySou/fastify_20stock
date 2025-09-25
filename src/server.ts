@@ -19,32 +19,32 @@ const fastify = Fastify({
 })
 
 //Plugins
-await fastify.register(cors, {
+fastify.register(cors, {
   origin: true, // Permite todas as origens em desenvolvimento
   credentials: true, // Permite cookies e headers de autenticação
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 })
 
-await fastify.register(prismaPlugin)
+fastify.register(prismaPlugin)
 
 //Conexão com o banco de dados
-await connectPrisma(fastify)
+connectPrisma(fastify)
 
 // Registrar rotas
-await fastify.register(AuthRoutes, { prefix: '/auth' })
-await fastify.register(UserRoutes, { prefix: '/users' })
-await fastify.register(ProductRoutes, { prefix: '/products' })
-await fastify.register(SupplierRoutes, { prefix: '/suppliers' })
-await fastify.register(StoreRoutes, { prefix: '/stores' })
-await fastify.register(CategoryRoutes, { prefix: '/categories' })
-await fastify.register(MovementRoutes, { prefix: '/movements' })
-await fastify.register(PermissionRoutes, { prefix: '/permissions' })
-await fastify.register(ReportRoutes, { prefix: '/reports' })
-await fastify.register(NotificationRoutes, { prefix: '/notifications' })
+fastify.register(AuthRoutes, { prefix: '/auth' })
+fastify.register(UserRoutes, { prefix: '/users' })
+fastify.register(ProductRoutes, { prefix: '/products' })
+fastify.register(SupplierRoutes, { prefix: '/suppliers' })
+fastify.register(StoreRoutes, { prefix: '/stores' })
+fastify.register(CategoryRoutes, { prefix: '/categories' })
+fastify.register(MovementRoutes, { prefix: '/movements' })
+fastify.register(PermissionRoutes, { prefix: '/permissions' })
+fastify.register(ReportRoutes, { prefix: '/reports' })
+fastify.register(NotificationRoutes, { prefix: '/notifications' })
 
 try {
-  await fastify.listen({ port: 3000 })
+  fastify.listen({ port: 3000 })
   fastify.log.info(`Servidor rodando na porta ${3000}`)
   console.log(`✅ Servidor rodando na porta ${3000}`)
 } catch (err) {

@@ -1,5 +1,8 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getProfilePermissionsSchema = exports.updateProfileSchema = exports.logoutSchema = exports.refreshTokenSchema = exports.resendVerificationSchema = exports.verifyEmailCodeSchema = exports.verifyEmailSchema = exports.resetPasswordSchema = exports.verifyResetCodeSchema = exports.forgotPasswordSchema = exports.loginSchema = exports.registerSchema = void 0;
 // Register schema
-export const registerSchema = {
+exports.registerSchema = {
     body: {
         type: 'object',
         required: ['name', 'email', 'password'],
@@ -55,7 +58,7 @@ export const registerSchema = {
     }
 };
 // Login schema
-export const loginSchema = {
+exports.loginSchema = {
     body: {
         type: 'object',
         required: ['email', 'password'],
@@ -104,7 +107,7 @@ export const loginSchema = {
     }
 };
 // Forgot Password schema
-export const forgotPasswordSchema = {
+exports.forgotPasswordSchema = {
     body: {
         type: 'object',
         required: ['email'],
@@ -138,7 +141,7 @@ export const forgotPasswordSchema = {
     }
 };
 // Verify Reset Code schema
-export const verifyResetCodeSchema = {
+exports.verifyResetCodeSchema = {
     body: {
         type: 'object',
         required: ['email', 'code'],
@@ -183,7 +186,7 @@ export const verifyResetCodeSchema = {
     }
 };
 // Reset Password schema
-export const resetPasswordSchema = {
+exports.resetPasswordSchema = {
     body: {
         type: 'object',
         required: ['email', 'code', 'password'],
@@ -228,7 +231,7 @@ export const resetPasswordSchema = {
     }
 };
 // Verify Email schema
-export const verifyEmailSchema = {
+exports.verifyEmailSchema = {
     body: {
         type: 'object',
         required: ['token'],
@@ -261,7 +264,7 @@ export const verifyEmailSchema = {
     }
 };
 // Verify Email Code schema
-export const verifyEmailCodeSchema = {
+exports.verifyEmailCodeSchema = {
     body: {
         type: 'object',
         required: ['email', 'code'],
@@ -315,7 +318,7 @@ export const verifyEmailCodeSchema = {
     }
 };
 // Resend Verification schema
-export const resendVerificationSchema = {
+exports.resendVerificationSchema = {
     body: {
         type: 'object',
         required: ['email'],
@@ -349,7 +352,7 @@ export const resendVerificationSchema = {
     }
 };
 // Refresh Token schema
-export const refreshTokenSchema = {
+exports.refreshTokenSchema = {
     headers: {
         type: 'object',
         properties: {
@@ -376,7 +379,7 @@ export const refreshTokenSchema = {
     }
 };
 // Logout schema
-export const logoutSchema = {
+exports.logoutSchema = {
     headers: {
         type: 'object',
         properties: {
@@ -402,7 +405,7 @@ export const logoutSchema = {
     }
 };
 // Update Profile schema
-export const updateProfileSchema = {
+exports.updateProfileSchema = {
     headers: {
         type: 'object',
         properties: {
@@ -474,7 +477,7 @@ export const updateProfileSchema = {
     }
 };
 // Get Profile Permissions schema
-export const getProfilePermissionsSchema = {
+exports.getProfilePermissionsSchema = {
     headers: {
         type: 'object',
         properties: {

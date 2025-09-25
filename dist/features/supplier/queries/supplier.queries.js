@@ -1,7 +1,10 @@
-import { db } from '../../../plugins/prisma';
-export const SupplierQueries = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SupplierQueries = void 0;
+const prisma_1 = require("../../../plugins/prisma");
+exports.SupplierQueries = {
     async getById(id) {
-        const supplier = await db.supplier.findUnique({
+        const supplier = await prisma_1.db.supplier.findUnique({
             where: { id },
             include: {
                 responsibles: true,
@@ -39,7 +42,7 @@ export const SupplierQueries = {
             where.status = status;
         }
         const [suppliers, total] = await Promise.all([
-            db.supplier.findMany({
+            prisma_1.db.supplier.findMany({
                 where,
                 skip,
                 take: limit,
@@ -57,7 +60,7 @@ export const SupplierQueries = {
                     }
                 }
             }),
-            db.supplier.count({ where })
+            prisma_1.db.supplier.count({ where })
         ]);
         return {
             suppliers,
@@ -70,7 +73,7 @@ export const SupplierQueries = {
         };
     },
     async getByCnpj(cnpj) {
-        const supplier = await db.supplier.findUnique({
+        const supplier = await prisma_1.db.supplier.findUnique({
             where: { cnpj },
             include: {
                 responsibles: true,
@@ -89,7 +92,7 @@ export const SupplierQueries = {
         return supplier;
     },
     async getByCity(city) {
-        return await db.supplier.findMany({
+        return await prisma_1.db.supplier.findMany({
             where: {
                 city: { contains: city, mode: 'insensitive' },
                 status: true
@@ -103,7 +106,7 @@ export const SupplierQueries = {
         });
     },
     async getByState(state) {
-        return await db.supplier.findMany({
+        return await prisma_1.db.supplier.findMany({
             where: {
                 state: { contains: state, mode: 'insensitive' },
                 status: true
@@ -117,7 +120,7 @@ export const SupplierQueries = {
         });
     },
     async getActive() {
-        return await db.supplier.findMany({
+        return await prisma_1.db.supplier.findMany({
             where: { status: true },
             orderBy: { corporateName: 'asc' },
             select: {
@@ -131,7 +134,7 @@ export const SupplierQueries = {
         });
     },
     async search(term, limit = 10) {
-        return await db.supplier.findMany({
+        return await prisma_1.db.supplier.findMany({
             where: {
                 status: true,
                 OR: [
@@ -154,10 +157,10 @@ export const SupplierQueries = {
     },
     async getStats() {
         const [total, active, inactive, withProducts] = await Promise.all([
-            db.supplier.count(),
-            db.supplier.count({ where: { status: true } }),
-            db.supplier.count({ where: { status: false } }),
-            db.supplier.count({
+            prisma_1.db.supplier.count(),
+            prisma_1.db.supplier.count({ where: { status: true } }),
+            prisma_1.db.supplier.count({ where: { status: false } }),
+            prisma_1.db.supplier.count({
                 where: {
                     products: {
                         some: {}
@@ -174,7 +177,7 @@ export const SupplierQueries = {
         };
     },
     async getTopSuppliers(limit = 5) {
-        return await db.supplier.findMany({
+        return await prisma_1.db.supplier.findMany({
             where: { status: true },
             orderBy: {
                 products: {

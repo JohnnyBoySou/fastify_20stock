@@ -1,99 +1,102 @@
-import { AuthController } from './auth.controller';
-import { registerSchema, loginSchema, forgotPasswordSchema, verifyResetCodeSchema, resetPasswordSchema, verifyEmailSchema, verifyEmailCodeSchema, resendVerificationSchema, refreshTokenSchema, logoutSchema, updateProfileSchema, getProfilePermissionsSchema } from './auth.schema';
-export async function AuthRoutes(fastify) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuthRoutes = AuthRoutes;
+const auth_controller_1 = require("./auth.controller");
+const auth_schema_1 = require("./auth.schema");
+async function AuthRoutes(fastify) {
     // === AUTH ENDPOINTS ===
     // Register
     fastify.post('/signup', {
-        schema: registerSchema,
-        handler: AuthController.register
+        schema: auth_schema_1.registerSchema,
+        handler: auth_controller_1.AuthController.register
     });
     // Login
     fastify.post('/signin', {
-        schema: loginSchema,
-        handler: AuthController.login
+        schema: auth_schema_1.loginSchema,
+        handler: auth_controller_1.AuthController.login
     });
     // Forgot Password
     fastify.post('/forgot-password', {
-        schema: forgotPasswordSchema,
-        handler: AuthController.forgotPassword
+        schema: auth_schema_1.forgotPasswordSchema,
+        handler: auth_controller_1.AuthController.forgotPassword
     });
     // Verify Reset Code
     fastify.post('/verify-reset-code', {
-        schema: verifyResetCodeSchema,
-        handler: AuthController.verifyResetCode
+        schema: auth_schema_1.verifyResetCodeSchema,
+        handler: auth_controller_1.AuthController.verifyResetCode
     });
     // Reset Password
     fastify.post('/reset-password', {
-        schema: resetPasswordSchema,
-        handler: AuthController.resetPassword
+        schema: auth_schema_1.resetPasswordSchema,
+        handler: auth_controller_1.AuthController.resetPassword
     });
     // Verify Email
     fastify.post('/verify-email', {
-        schema: verifyEmailSchema,
-        handler: AuthController.verifyEmail
+        schema: auth_schema_1.verifyEmailSchema,
+        handler: auth_controller_1.AuthController.verifyEmail
     });
     // Verify Email Code
     fastify.post('/verify-email-code', {
-        schema: verifyEmailCodeSchema,
-        handler: AuthController.verifyEmailCode
+        schema: auth_schema_1.verifyEmailCodeSchema,
+        handler: auth_controller_1.AuthController.verifyEmailCode
     });
     // Resend Verification
     fastify.post('/resend-verification', {
-        schema: resendVerificationSchema,
-        handler: AuthController.resendVerification
+        schema: auth_schema_1.resendVerificationSchema,
+        handler: auth_controller_1.AuthController.resendVerification
     });
     // Refresh Token
     fastify.post('/refresh-token', {
-        schema: refreshTokenSchema,
-        handler: AuthController.refreshToken
+        schema: auth_schema_1.refreshTokenSchema,
+        handler: auth_controller_1.AuthController.refreshToken
     });
     // Logout
     fastify.post('/logout', {
-        schema: logoutSchema,
-        handler: AuthController.logout
+        schema: auth_schema_1.logoutSchema,
+        handler: auth_controller_1.AuthController.logout
     });
     // === USER PROFILE ===
     // Get Profile (requires authentication)
     fastify.get('/profile', {
-        handler: AuthController.getProfile
+        handler: auth_controller_1.AuthController.getProfile
     });
     // Update Profile (requires authentication)
     fastify.put('/profile', {
-        schema: updateProfileSchema,
-        handler: AuthController.updateProfile
+        schema: auth_schema_1.updateProfileSchema,
+        handler: auth_controller_1.AuthController.updateProfile
     });
     // Get Profile Permissions (requires authentication)
     fastify.get('/profile/permissions', {
-        schema: getProfilePermissionsSchema,
-        handler: AuthController.getProfilePermissions
+        schema: auth_schema_1.getProfilePermissionsSchema,
+        handler: auth_controller_1.AuthController.getProfilePermissions
     });
     // === ADMIN ENDPOINTS ===
     // Get all active users
     fastify.get('/users/active', {
-        handler: AuthController.getActive
+        handler: auth_controller_1.AuthController.getActive
     });
     // Get all verified users
     fastify.get('/users/verified', {
-        handler: AuthController.getVerified
+        handler: auth_controller_1.AuthController.getVerified
     });
     // Get all unverified users
     fastify.get('/users/unverified', {
-        handler: AuthController.getUnverified
+        handler: auth_controller_1.AuthController.getUnverified
     });
     // Get user statistics
     fastify.get('/stats', {
-        handler: AuthController.getStats
+        handler: auth_controller_1.AuthController.getStats
     });
     // Search users
     fastify.get('/search', {
-        handler: AuthController.search
+        handler: auth_controller_1.AuthController.search
     });
     // Get users with pending email verification
     fastify.get('/users/pending-verification', {
-        handler: AuthController.getPendingVerification
+        handler: auth_controller_1.AuthController.getPendingVerification
     });
     // Get users with pending password reset
     fastify.get('/users/pending-reset', {
-        handler: AuthController.getPendingReset
+        handler: auth_controller_1.AuthController.getPendingReset
     });
 }

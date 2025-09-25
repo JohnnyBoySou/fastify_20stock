@@ -1,11 +1,14 @@
-import { StoreCommands } from './commands/store.commands';
-import { StoreQueries } from './queries/store.queries';
-export const StoreController = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.StoreController = void 0;
+const store_commands_1 = require("./commands/store.commands");
+const store_queries_1 = require("./queries/store.queries");
+exports.StoreController = {
     // === CRUD BÁSICO ===
     async create(request, reply) {
         try {
             const { ownerId, name, cnpj, email, phone, cep, city, state, address, status } = request.body;
-            const result = await StoreCommands.create({
+            const result = await store_commands_1.StoreCommands.create({
                 ownerId,
                 name,
                 cnpj,
@@ -39,7 +42,7 @@ export const StoreController = {
     async get(request, reply) {
         try {
             const { id } = request.params;
-            const result = await StoreQueries.getById(id);
+            const result = await store_queries_1.StoreQueries.getById(id);
             return reply.send(result);
         }
         catch (error) {
@@ -58,7 +61,7 @@ export const StoreController = {
         try {
             const { id } = request.params;
             const updateData = { ...request.body };
-            const result = await StoreCommands.update(id, updateData);
+            const result = await store_commands_1.StoreCommands.update(id, updateData);
             return reply.send(result);
         }
         catch (error) {
@@ -81,7 +84,7 @@ export const StoreController = {
     async delete(request, reply) {
         try {
             const { id } = request.params;
-            await StoreCommands.delete(id);
+            await store_commands_1.StoreCommands.delete(id);
             return reply.status(204).send();
         }
         catch (error) {
@@ -104,7 +107,7 @@ export const StoreController = {
     async list(request, reply) {
         try {
             const { page = 1, limit = 10, search, status, ownerId } = request.query;
-            const result = await StoreQueries.list({
+            const result = await store_queries_1.StoreQueries.list({
                 page,
                 limit,
                 search,
@@ -124,7 +127,7 @@ export const StoreController = {
     async getByCnpj(request, reply) {
         try {
             const { cnpj } = request.params;
-            const result = await StoreQueries.getByCnpj(cnpj);
+            const result = await store_queries_1.StoreQueries.getByCnpj(cnpj);
             return reply.send(result);
         }
         catch (error) {
@@ -142,7 +145,7 @@ export const StoreController = {
     async getByOwner(request, reply) {
         try {
             const { ownerId } = request.params;
-            const result = await StoreQueries.getByOwner(ownerId);
+            const result = await store_queries_1.StoreQueries.getByOwner(ownerId);
             return reply.send({ stores: result });
         }
         catch (error) {
@@ -154,7 +157,7 @@ export const StoreController = {
     },
     async getActive(request, reply) {
         try {
-            const result = await StoreQueries.getActive();
+            const result = await store_queries_1.StoreQueries.getActive();
             return reply.send({ stores: result });
         }
         catch (error) {
@@ -166,7 +169,7 @@ export const StoreController = {
     },
     async getStats(request, reply) {
         try {
-            const result = await StoreQueries.getStats();
+            const result = await store_queries_1.StoreQueries.getStats();
             return reply.send(result);
         }
         catch (error) {
@@ -179,7 +182,7 @@ export const StoreController = {
     async search(request, reply) {
         try {
             const { q, limit = 10 } = request.query;
-            const result = await StoreQueries.search(q, limit);
+            const result = await store_queries_1.StoreQueries.search(q, limit);
             return reply.send({ stores: result });
         }
         catch (error) {
@@ -192,7 +195,7 @@ export const StoreController = {
     async getRecent(request, reply) {
         try {
             const { limit = 5 } = request.query;
-            const result = await StoreQueries.getRecent(limit);
+            const result = await store_queries_1.StoreQueries.getRecent(limit);
             return reply.send({ stores: result });
         }
         catch (error) {
@@ -206,7 +209,7 @@ export const StoreController = {
     async verifyCnpj(request, reply) {
         try {
             const { cnpj } = request.params;
-            const result = await StoreCommands.verifyCnpj(cnpj);
+            const result = await store_commands_1.StoreCommands.verifyCnpj(cnpj);
             return reply.send(result);
         }
         catch (error) {
@@ -219,7 +222,7 @@ export const StoreController = {
     async toggleStatus(request, reply) {
         try {
             const { id } = request.params;
-            const result = await StoreCommands.toggleStatus(id);
+            const result = await store_commands_1.StoreCommands.toggleStatus(id);
             return reply.send(result);
         }
         catch (error) {
@@ -239,7 +242,7 @@ export const StoreController = {
         try {
             const { id: storeId } = request.params;
             const { userId, role } = request.body;
-            const result = await StoreCommands.addUser(storeId, userId, role);
+            const result = await store_commands_1.StoreCommands.addUser(storeId, userId, role);
             return reply.status(201).send(result);
         }
         catch (error) {
@@ -267,7 +270,7 @@ export const StoreController = {
     async removeUser(request, reply) {
         try {
             const { id: storeId, userId } = request.params;
-            await StoreCommands.removeUser(storeId, userId);
+            await store_commands_1.StoreCommands.removeUser(storeId, userId);
             return reply.status(204).send();
         }
         catch (error) {
@@ -296,7 +299,7 @@ export const StoreController = {
         try {
             const { id: storeId, userId } = request.params;
             const { role } = request.body;
-            const result = await StoreCommands.updateUserRole(storeId, userId, role);
+            const result = await store_commands_1.StoreCommands.updateUserRole(storeId, userId, role);
             return reply.send(result);
         }
         catch (error) {
@@ -325,7 +328,7 @@ export const StoreController = {
         try {
             const { id: storeId } = request.params;
             const { page = 1, limit = 10, search, role } = request.query;
-            const result = await StoreQueries.getStoreUsers(storeId, {
+            const result = await store_queries_1.StoreQueries.getStoreUsers(storeId, {
                 page,
                 limit,
                 search,
@@ -348,7 +351,7 @@ export const StoreController = {
     async getStoreUser(request, reply) {
         try {
             const { id: storeId, userId } = request.params;
-            const result = await StoreQueries.getStoreUser(storeId, userId);
+            const result = await store_queries_1.StoreQueries.getStoreUser(storeId, userId);
             return reply.send(result);
         }
         catch (error) {
@@ -371,7 +374,7 @@ export const StoreController = {
     async getStoreOwner(request, reply) {
         try {
             const { id: storeId } = request.params;
-            const result = await StoreQueries.getStoreOwner(storeId);
+            const result = await store_queries_1.StoreQueries.getStoreOwner(storeId);
             return reply.send(result);
         }
         catch (error) {
@@ -394,7 +397,7 @@ export const StoreController = {
     async getStoreAdmins(request, reply) {
         try {
             const { id: storeId } = request.params;
-            const result = await StoreQueries.getStoreAdmins(storeId);
+            const result = await store_queries_1.StoreQueries.getStoreAdmins(storeId);
             return reply.send({ admins: result });
         }
         catch (error) {
@@ -412,7 +415,7 @@ export const StoreController = {
     async getStoreManagers(request, reply) {
         try {
             const { id: storeId } = request.params;
-            const result = await StoreQueries.getStoreManagers(storeId);
+            const result = await store_queries_1.StoreQueries.getStoreManagers(storeId);
             return reply.send({ managers: result });
         }
         catch (error) {
@@ -430,7 +433,7 @@ export const StoreController = {
     async getStoreStaff(request, reply) {
         try {
             const { id: storeId } = request.params;
-            const result = await StoreQueries.getStoreStaff(storeId);
+            const result = await store_queries_1.StoreQueries.getStoreStaff(storeId);
             return reply.send({ staff: result });
         }
         catch (error) {
@@ -448,7 +451,7 @@ export const StoreController = {
     async getStoreUserStats(request, reply) {
         try {
             const { id: storeId } = request.params;
-            const result = await StoreQueries.getStoreUserStats(storeId);
+            const result = await store_queries_1.StoreQueries.getStoreUserStats(storeId);
             return reply.send(result);
         }
         catch (error) {
@@ -467,7 +470,7 @@ export const StoreController = {
         try {
             const { id: storeId } = request.params;
             const { q, limit = 10 } = request.query;
-            const result = await StoreQueries.searchStoreUsers(storeId, q, limit);
+            const result = await store_queries_1.StoreQueries.searchStoreUsers(storeId, q, limit);
             return reply.send({ storeUsers: result });
         }
         catch (error) {
@@ -486,7 +489,7 @@ export const StoreController = {
         try {
             const { id: storeId } = request.params;
             const { newOwnerId } = request.body;
-            const result = await StoreCommands.transferOwnership(storeId, newOwnerId);
+            const result = await store_commands_1.StoreCommands.transferOwnership(storeId, newOwnerId);
             return reply.send(result);
         }
         catch (error) {

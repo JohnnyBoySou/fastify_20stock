@@ -1,7 +1,10 @@
-import { prisma } from '../../../plugins/prisma';
-export const AuthQueries = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuthQueries = void 0;
+const prisma_1 = require("../../../plugins/prisma");
+exports.AuthQueries = {
     async getById(id) {
-        const user = await prisma.user.findUnique({
+        const user = await prisma_1.prisma.user.findUnique({
             where: { id, status: true },
             select: {
                 id: true,
@@ -18,7 +21,7 @@ export const AuthQueries = {
         return user;
     },
     async getByEmail(email) {
-        const user = await prisma.user.findUnique({
+        const user = await prisma_1.prisma.user.findUnique({
             where: { email, status: true },
             select: {
                 id: true,
@@ -35,7 +38,7 @@ export const AuthQueries = {
         return user;
     },
     async getByResetToken(token) {
-        const user = await prisma.user.findFirst({
+        const user = await prisma_1.prisma.user.findFirst({
             where: {
                 resetPasswordToken: token,
                 resetPasswordExpires: {
@@ -58,7 +61,7 @@ export const AuthQueries = {
         return user;
     },
     async getByVerificationToken(token) {
-        const user = await prisma.user.findFirst({
+        const user = await prisma_1.prisma.user.findFirst({
             where: {
                 emailVerificationToken: token,
                 emailVerified: false,
@@ -79,7 +82,7 @@ export const AuthQueries = {
         return user;
     },
     async getActiveUsers() {
-        const users = await prisma.user.findMany({
+        const users = await prisma_1.prisma.user.findMany({
             where: { status: true },
             select: {
                 id: true,
@@ -97,7 +100,7 @@ export const AuthQueries = {
         return users;
     },
     async getVerifiedUsers() {
-        const users = await prisma.user.findMany({
+        const users = await prisma_1.prisma.user.findMany({
             where: {
                 status: true,
                 emailVerified: true
@@ -118,7 +121,7 @@ export const AuthQueries = {
         return users;
     },
     async getUnverifiedUsers() {
-        const users = await prisma.user.findMany({
+        const users = await prisma_1.prisma.user.findMany({
             where: {
                 status: true,
                 emailVerified: false
@@ -172,7 +175,7 @@ export const AuthQueries = {
         };
     },
     async searchUsers(searchTerm, limit = 10) {
-        const users = await prisma.user.findMany({
+        const users = await prisma_1.prisma.user.findMany({
             where: {
                 status: true,
                 OR: [
@@ -197,7 +200,7 @@ export const AuthQueries = {
         return users;
     },
     async getUsersWithPendingVerification() {
-        const users = await prisma.user.findMany({
+        const users = await prisma_1.prisma.user.findMany({
             where: {
                 status: true,
                 emailVerified: false,
@@ -218,7 +221,7 @@ export const AuthQueries = {
         return users;
     },
     async getUsersWithPendingReset() {
-        const users = await prisma.user.findMany({
+        const users = await prisma_1.prisma.user.findMany({
             where: {
                 status: true,
                 resetPasswordToken: {
@@ -242,14 +245,14 @@ export const AuthQueries = {
     },
     // Verify if user exists by email
     async userExists(email) {
-        const count = await prisma.user.count({
+        const count = await prisma_1.prisma.user.count({
             where: { email }
         });
         return count > 0;
     },
     // Verify if email is already verified
     async isEmailVerified(email) {
-        const user = await prisma.user.findUnique({
+        const user = await prisma_1.prisma.user.findUnique({
             where: { email },
             select: { emailVerified: true }
         });
@@ -257,7 +260,7 @@ export const AuthQueries = {
     },
     // Get user profile for authenticated user
     async getUserProfile(userId) {
-        const user = await prisma.user.findUnique({
+        const user = await prisma_1.prisma.user.findUnique({
             where: { id: userId, status: true },
             select: {
                 id: true,
@@ -279,7 +282,7 @@ export const AuthQueries = {
     },
     // Get store owned by user
     async getStoreByOwner(userId) {
-        const store = await prisma.store.findFirst({
+        const store = await prisma_1.prisma.store.findFirst({
             where: {
                 ownerId: userId,
                 status: true
@@ -305,7 +308,7 @@ export const AuthQueries = {
     async getProfilePermissions(userId, filters) {
         const { storeId, active, page = 1, limit = 10 } = filters;
         // Get user basic info
-        const user = await prisma.user.findUnique({
+        const user = await prisma_1.prisma.user.findUnique({
             where: { id: userId, status: true },
             select: { id: true, roles: true }
         });
@@ -329,7 +332,7 @@ export const AuthQueries = {
         }
         // Get custom permissions
         const [customPermissions, customPermissionsTotal] = await Promise.all([
-            prisma.userPermission.findMany({
+            prisma_1.prisma.userPermission.findMany({
                 where: customPermissionsWhere,
                 skip: (page - 1) * limit,
                 take: limit,
@@ -340,7 +343,7 @@ export const AuthQueries = {
                     }
                 }
             }),
-            prisma.userPermission.count({ where: customPermissionsWhere })
+            prisma_1.prisma.userPermission.count({ where: customPermissionsWhere })
         ]);
         // Build where conditions for store permissions
         const storePermissionsWhere = { userId };
@@ -359,7 +362,7 @@ export const AuthQueries = {
         }
         // Get store permissions
         const [storePermissions, storePermissionsTotal] = await Promise.all([
-            prisma.storePermission.findMany({
+            prisma_1.prisma.storePermission.findMany({
                 where: storePermissionsWhere,
                 skip: (page - 1) * limit,
                 take: limit,
@@ -373,7 +376,7 @@ export const AuthQueries = {
                     }
                 }
             }),
-            prisma.storePermission.count({ where: storePermissionsWhere })
+            prisma_1.prisma.storePermission.count({ where: storePermissionsWhere })
         ]);
         // Get effective permissions using the existing function
         const effectivePermissions = await this.getUserEffectivePermissions(userId, { storeId });
@@ -403,7 +406,7 @@ export const AuthQueries = {
     async getUserEffectivePermissions(userId, context) {
         const { storeId } = context;
         // Get user
-        const user = await prisma.user.findUnique({
+        const user = await prisma_1.prisma.user.findUnique({
             where: { id: userId },
             select: { id: true, roles: true }
         });
@@ -411,7 +414,7 @@ export const AuthQueries = {
             throw new Error('User not found');
         }
         // Get custom permissions
-        const customPermissions = await prisma.userPermission.findMany({
+        const customPermissions = await prisma_1.prisma.userPermission.findMany({
             where: {
                 userId,
                 ...(storeId ? { storeId } : {})
@@ -420,7 +423,7 @@ export const AuthQueries = {
         // Get store permissions
         let storePermissions = [];
         if (storeId) {
-            storePermissions = await prisma.storePermission.findMany({
+            storePermissions = await prisma_1.prisma.storePermission.findMany({
                 where: { userId, storeId }
             });
         }

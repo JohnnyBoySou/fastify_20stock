@@ -1,33 +1,36 @@
-import { CategoryController } from './category.controller';
-import { CategorySchemas } from './category.schema';
-export async function CategoryRoutes(fastify) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CategoryRoutes = CategoryRoutes;
+const category_controller_1 = require("./category.controller");
+const category_schema_1 = require("./category.schema");
+async function CategoryRoutes(fastify) {
     // CRUD básico
     fastify.post('/', {
-        schema: CategorySchemas.create,
-        handler: CategoryController.create
+        schema: category_schema_1.CategorySchemas.create,
+        handler: category_controller_1.CategoryController.create
     });
     fastify.get('/', {
-        schema: CategorySchemas.list,
-        handler: CategoryController.list
+        schema: category_schema_1.CategorySchemas.list,
+        handler: category_controller_1.CategoryController.list
     });
     fastify.get('/:id', {
-        schema: CategorySchemas.get,
-        handler: CategoryController.get
+        schema: category_schema_1.CategorySchemas.get,
+        handler: category_controller_1.CategoryController.get
     });
     fastify.put('/:id', {
-        schema: CategorySchemas.update,
-        handler: CategoryController.update
+        schema: category_schema_1.CategorySchemas.update,
+        handler: category_controller_1.CategoryController.update
     });
     fastify.delete('/:id', {
-        schema: CategorySchemas.delete,
-        handler: CategoryController.delete
+        schema: category_schema_1.CategorySchemas.delete,
+        handler: category_controller_1.CategoryController.delete
     });
     // Funções adicionais - Queries
     fastify.get('/active', {
-        handler: CategoryController.getActive
+        handler: category_controller_1.CategoryController.getActive
     });
     fastify.get('/stats', {
-        handler: CategoryController.getStats
+        handler: category_controller_1.CategoryController.getStats
     });
     fastify.get('/search', {
         schema: {
@@ -40,18 +43,18 @@ export async function CategoryRoutes(fastify) {
                 required: ['q']
             }
         },
-        handler: CategoryController.search
+        handler: category_controller_1.CategoryController.search
     });
     fastify.get('/root', {
-        schema: CategorySchemas.getRoot,
-        handler: CategoryController.getRootCategories
+        schema: category_schema_1.CategorySchemas.getRoot,
+        handler: category_controller_1.CategoryController.getRootCategories
     });
     fastify.get('/:id/children', {
-        schema: CategorySchemas.getChildren,
-        handler: CategoryController.getChildren
+        schema: category_schema_1.CategorySchemas.getChildren,
+        handler: category_controller_1.CategoryController.getChildren
     });
     fastify.get('/hierarchy', {
-        handler: CategoryController.getHierarchy
+        handler: category_controller_1.CategoryController.getHierarchy
     });
     fastify.get('/code/:code', {
         schema: {
@@ -63,12 +66,12 @@ export async function CategoryRoutes(fastify) {
                 required: ['code']
             }
         },
-        handler: CategoryController.getByCode
+        handler: category_controller_1.CategoryController.getByCode
     });
     // Funções adicionais - Commands
     fastify.patch('/:id/status', {
-        schema: CategorySchemas.updateStatus,
-        handler: CategoryController.updateStatus
+        schema: category_schema_1.CategorySchemas.updateStatus,
+        handler: category_controller_1.CategoryController.updateStatus
     });
     fastify.patch('/:id/move', {
         schema: {
@@ -86,6 +89,6 @@ export async function CategoryRoutes(fastify) {
                 }
             }
         },
-        handler: CategoryController.moveToParent
+        handler: category_controller_1.CategoryController.moveToParent
     });
 }

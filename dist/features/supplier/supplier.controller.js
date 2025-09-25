@@ -1,11 +1,14 @@
-import { SupplierCommands } from './commands/supplier.commands';
-import { SupplierQueries } from './queries/supplier.queries';
-export const SupplierController = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SupplierController = void 0;
+const supplier_commands_1 = require("./commands/supplier.commands");
+const supplier_queries_1 = require("./queries/supplier.queries");
+exports.SupplierController = {
     // === CRUD BÁSICO ===
     async create(request, reply) {
         try {
             const { corporateName, cnpj, tradeName, cep, city, state, address } = request.body;
-            const result = await SupplierCommands.create({
+            const result = await supplier_commands_1.SupplierCommands.create({
                 corporateName,
                 cnpj,
                 tradeName,
@@ -31,7 +34,7 @@ export const SupplierController = {
     async get(request, reply) {
         try {
             const { id } = request.params;
-            const result = await SupplierQueries.getById(id);
+            const result = await supplier_queries_1.SupplierQueries.getById(id);
             return reply.send(result);
         }
         catch (error) {
@@ -50,7 +53,7 @@ export const SupplierController = {
         try {
             const { id } = request.params;
             const updateData = { ...request.body };
-            const result = await SupplierCommands.update(id, updateData);
+            const result = await supplier_commands_1.SupplierCommands.update(id, updateData);
             return reply.send(result);
         }
         catch (error) {
@@ -73,7 +76,7 @@ export const SupplierController = {
     async delete(request, reply) {
         try {
             const { id } = request.params;
-            await SupplierCommands.delete(id);
+            await supplier_commands_1.SupplierCommands.delete(id);
             return reply.status(204).send();
         }
         catch (error) {
@@ -96,7 +99,7 @@ export const SupplierController = {
     async list(request, reply) {
         try {
             const { page = 1, limit = 10, search, status } = request.query;
-            const result = await SupplierQueries.list({
+            const result = await supplier_queries_1.SupplierQueries.list({
                 page,
                 limit,
                 search,
@@ -115,7 +118,7 @@ export const SupplierController = {
     async getByCnpj(request, reply) {
         try {
             const { cnpj } = request.params;
-            const result = await SupplierQueries.getByCnpj(cnpj);
+            const result = await supplier_queries_1.SupplierQueries.getByCnpj(cnpj);
             return reply.send(result);
         }
         catch (error) {
@@ -133,7 +136,7 @@ export const SupplierController = {
     async getByCity(request, reply) {
         try {
             const { city } = request.params;
-            const result = await SupplierQueries.getByCity(city);
+            const result = await supplier_queries_1.SupplierQueries.getByCity(city);
             return reply.send({ suppliers: result });
         }
         catch (error) {
@@ -146,7 +149,7 @@ export const SupplierController = {
     async getByState(request, reply) {
         try {
             const { state } = request.params;
-            const result = await SupplierQueries.getByState(state);
+            const result = await supplier_queries_1.SupplierQueries.getByState(state);
             return reply.send({ suppliers: result });
         }
         catch (error) {
@@ -158,7 +161,7 @@ export const SupplierController = {
     },
     async getActive(request, reply) {
         try {
-            const result = await SupplierQueries.getActive();
+            const result = await supplier_queries_1.SupplierQueries.getActive();
             return reply.send({ suppliers: result });
         }
         catch (error) {
@@ -170,7 +173,7 @@ export const SupplierController = {
     },
     async getStats(request, reply) {
         try {
-            const result = await SupplierQueries.getStats();
+            const result = await supplier_queries_1.SupplierQueries.getStats();
             return reply.send(result);
         }
         catch (error) {
@@ -183,7 +186,7 @@ export const SupplierController = {
     async search(request, reply) {
         try {
             const { q, limit = 10 } = request.query;
-            const result = await SupplierQueries.search(q, limit);
+            const result = await supplier_queries_1.SupplierQueries.search(q, limit);
             return reply.send({ suppliers: result });
         }
         catch (error) {
@@ -196,7 +199,7 @@ export const SupplierController = {
     async getTopSuppliers(request, reply) {
         try {
             const { limit = 5 } = request.query;
-            const result = await SupplierQueries.getTopSuppliers(limit);
+            const result = await supplier_queries_1.SupplierQueries.getTopSuppliers(limit);
             return reply.send({ suppliers: result });
         }
         catch (error) {
@@ -210,7 +213,7 @@ export const SupplierController = {
     async toggleStatus(request, reply) {
         try {
             const { id } = request.params;
-            const result = await SupplierCommands.toggleStatus(id);
+            const result = await supplier_commands_1.SupplierCommands.toggleStatus(id);
             return reply.send(result);
         }
         catch (error) {

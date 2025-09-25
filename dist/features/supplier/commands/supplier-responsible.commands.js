@@ -1,5 +1,7 @@
-export class SupplierResponsibleCommands {
-    prisma;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SupplierResponsibleCommands = void 0;
+class SupplierResponsibleCommands {
     constructor(prisma) {
         this.prisma = prisma;
     }
@@ -171,3 +173,4 @@ export class SupplierResponsibleCommands {
         });
     }
 }
+exports.SupplierResponsibleCommands = SupplierResponsibleCommands;

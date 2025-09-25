@@ -1,10 +1,13 @@
-import { CategoryCommands } from './commands/category.commands';
-import { CategoryQueries } from './queries/category.queries';
-export const CategoryController = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CategoryController = void 0;
+const category_commands_1 = require("./commands/category.commands");
+const category_queries_1 = require("./queries/category.queries");
+exports.CategoryController = {
     // === CRUD BÁSICO ===
     async create(request, reply) {
         try {
-            const result = await CategoryCommands.create(request.body);
+            const result = await category_commands_1.CategoryCommands.create(request.body);
             return reply.status(201).send(result);
         }
         catch (error) {
@@ -27,7 +30,7 @@ export const CategoryController = {
     async get(request, reply) {
         try {
             const { id } = request.params;
-            const result = await CategoryQueries.getById(id);
+            const result = await category_queries_1.CategoryQueries.getById(id);
             if (!result) {
                 return reply.status(404).send({
                     error: 'Category not found'
@@ -51,7 +54,7 @@ export const CategoryController = {
         try {
             const { id } = request.params;
             const updateData = request.body;
-            const result = await CategoryCommands.update(id, updateData);
+            const result = await category_commands_1.CategoryCommands.update(id, updateData);
             return reply.send(result);
         }
         catch (error) {
@@ -79,7 +82,7 @@ export const CategoryController = {
     async delete(request, reply) {
         try {
             const { id } = request.params;
-            await CategoryCommands.delete(id);
+            await category_commands_1.CategoryCommands.delete(id);
             return reply.status(204).send();
         }
         catch (error) {
@@ -102,7 +105,7 @@ export const CategoryController = {
     async list(request, reply) {
         try {
             const { page = 1, limit = 10, search, status, parentId } = request.query;
-            const result = await CategoryQueries.list({
+            const result = await category_queries_1.CategoryQueries.list({
                 page,
                 limit,
                 search,
@@ -121,7 +124,7 @@ export const CategoryController = {
     // === FUNÇÕES ADICIONAIS (QUERIES) ===
     async getActive(request, reply) {
         try {
-            const result = await CategoryQueries.getActive();
+            const result = await category_queries_1.CategoryQueries.getActive();
             return reply.send({ categories: result });
         }
         catch (error) {
@@ -133,7 +136,7 @@ export const CategoryController = {
     },
     async getStats(request, reply) {
         try {
-            const result = await CategoryQueries.getStats();
+            const result = await category_queries_1.CategoryQueries.getStats();
             return reply.send(result);
         }
         catch (error) {
@@ -146,7 +149,7 @@ export const CategoryController = {
     async search(request, reply) {
         try {
             const { q, limit = 10 } = request.query;
-            const result = await CategoryQueries.search(q, limit);
+            const result = await category_queries_1.CategoryQueries.search(q, limit);
             return reply.send({ categories: result });
         }
         catch (error) {
@@ -159,7 +162,7 @@ export const CategoryController = {
     async getRootCategories(request, reply) {
         try {
             const { status } = request.query;
-            const result = await CategoryQueries.getRootCategories(status);
+            const result = await category_queries_1.CategoryQueries.getRootCategories(status);
             return reply.send({ categories: result });
         }
         catch (error) {
@@ -172,7 +175,7 @@ export const CategoryController = {
     async getChildren(request, reply) {
         try {
             const { id } = request.params;
-            const result = await CategoryQueries.getChildren(id);
+            const result = await category_queries_1.CategoryQueries.getChildren(id);
             return reply.send({ categories: result });
         }
         catch (error) {
@@ -184,7 +187,7 @@ export const CategoryController = {
     },
     async getHierarchy(request, reply) {
         try {
-            const result = await CategoryQueries.getHierarchy();
+            const result = await category_queries_1.CategoryQueries.getHierarchy();
             return reply.send({ categories: result });
         }
         catch (error) {
@@ -197,7 +200,7 @@ export const CategoryController = {
     async getByCode(request, reply) {
         try {
             const { code } = request.params;
-            const result = await CategoryQueries.getByCode(code);
+            const result = await category_queries_1.CategoryQueries.getByCode(code);
             if (!result) {
                 return reply.status(404).send({
                     error: 'Category not found'
@@ -217,7 +220,7 @@ export const CategoryController = {
         try {
             const { id } = request.params;
             const { status } = request.body;
-            const result = await CategoryCommands.updateStatus(id, status);
+            const result = await category_commands_1.CategoryCommands.updateStatus(id, status);
             return reply.send(result);
         }
         catch (error) {
@@ -236,7 +239,7 @@ export const CategoryController = {
         try {
             const { id } = request.params;
             const { parentId } = request.body;
-            const result = await CategoryCommands.moveToParent(id, parentId);
+            const result = await category_commands_1.CategoryCommands.moveToParent(id, parentId);
             return reply.send(result);
         }
         catch (error) {

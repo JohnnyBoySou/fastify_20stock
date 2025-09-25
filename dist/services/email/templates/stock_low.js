@@ -1,4 +1,7 @@
-export const generateStockLowEmailHTML = (data) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.generateStockLowEmailText = exports.generateStockLowEmailHTML = void 0;
+const generateStockLowEmailHTML = (data) => {
     return `
     <!DOCTYPE html>
     <html>
@@ -40,7 +43,8 @@ export const generateStockLowEmailHTML = (data) => {
     </html>
   `;
 };
-export const generateStockLowEmailText = (data) => {
+exports.generateStockLowEmailHTML = generateStockLowEmailHTML;
+const generateStockLowEmailText = (data) => {
     return `
 ${data.title} - 25Stock
 
@@ -57,3 +61,4 @@ Este é um email automático, não responda a esta mensagem.
 © 2024 25Stock. Todos os direitos reservados.
   `;
 };
+exports.generateStockLowEmailText = generateStockLowEmailText;

@@ -1,7 +1,10 @@
-import { db } from '../../../plugins/prisma';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ProductQueries = void 0;
+const prisma_1 = require("../../../plugins/prisma");
 // Função auxiliar para calcular o estoque atual de um produto
 async function calculateCurrentStock(productId) {
-    const movements = await db.movement.findMany({
+    const movements = await prisma_1.db.movement.findMany({
         where: { productId },
         select: {
             type: true,
@@ -19,9 +22,9 @@ async function calculateCurrentStock(productId) {
     });
     return currentStock;
 }
-export const ProductQueries = {
+exports.ProductQueries = {
     async getById(id, storeId) {
-        const product = await db.product.findUnique({
+        const product = await prisma_1.db.product.findUnique({
             where: { id, storeId },
             include: {
                 categories: {
@@ -92,7 +95,7 @@ export const ProductQueries = {
             ];
         }
         const [products, total] = await Promise.all([
-            db.product.findMany({
+            prisma_1.db.product.findMany({
                 where,
                 skip,
                 take: limit,
@@ -129,7 +132,7 @@ export const ProductQueries = {
                     }
                 }
             }),
-            db.product.count({ where })
+            prisma_1.db.product.count({ where })
         ]);
         // Calcular estoque atual para todos os produtos
         const itemsWithStock = await Promise.all(products.map(async (product) => {
@@ -150,7 +153,7 @@ export const ProductQueries = {
         };
     },
     async search(term, limit = 10) {
-        const products = await db.product.findMany({
+        const products = await prisma_1.db.product.findMany({
             where: {
                 OR: [
                     { name: { contains: term, mode: 'insensitive' } },
@@ -205,7 +208,7 @@ export const ProductQueries = {
         return productsWithStock;
     },
     async getActive() {
-        const products = await db.product.findMany({
+        const products = await prisma_1.db.product.findMany({
             where: { status: true },
             orderBy: { createdAt: 'desc' },
             include: {
@@ -252,9 +255,9 @@ export const ProductQueries = {
     },
     async getStats() {
         const [total, active, inactive] = await Promise.all([
-            db.product.count(),
-            db.product.count({ where: { status: true } }),
-            db.product.count({ where: { status: false } })
+            prisma_1.db.product.count(),
+            prisma_1.db.product.count({ where: { status: true } }),
+            prisma_1.db.product.count({ where: { status: false } })
         ]);
         return {
             total,
@@ -263,7 +266,7 @@ export const ProductQueries = {
         };
     },
     async getByCategory(categoryId) {
-        const products = await db.product.findMany({
+        const products = await prisma_1.db.product.findMany({
             where: {
                 categories: {
                     some: {
@@ -315,7 +318,7 @@ export const ProductQueries = {
         return productsWithStock;
     },
     async getBySupplier(supplierId) {
-        const products = await db.product.findMany({
+        const products = await prisma_1.db.product.findMany({
             where: { supplierId },
             orderBy: { createdAt: 'desc' },
             include: {
@@ -361,7 +364,7 @@ export const ProductQueries = {
         return productsWithStock;
     },
     async getByStore(storeId) {
-        const products = await db.product.findMany({
+        const products = await prisma_1.db.product.findMany({
             where: { storeId },
             orderBy: { createdAt: 'desc' },
             include: {
@@ -411,7 +414,7 @@ export const ProductQueries = {
         const { page = 1, limit = 10, type, startDate, endDate } = params;
         const skip = (page - 1) * limit;
         // Verificar se o produto existe
-        const product = await db.product.findUnique({
+        const product = await prisma_1.db.product.findUnique({
             where: { id: productId }
         });
         if (!product) {
@@ -434,7 +437,7 @@ export const ProductQueries = {
             }
         }
         const [items, total] = await Promise.all([
-            db.movement.findMany({
+            prisma_1.db.movement.findMany({
                 where,
                 skip,
                 take: limit,
@@ -470,7 +473,7 @@ export const ProductQueries = {
                     }
                 }
             }),
-            db.movement.count({ where })
+            prisma_1.db.movement.count({ where })
         ]);
         return {
             items,
@@ -484,14 +487,14 @@ export const ProductQueries = {
     },
     async getProductStockHistory(productId, limit = 30) {
         // Verificar se o produto existe
-        const product = await db.product.findUnique({
+        const product = await prisma_1.db.product.findUnique({
             where: { id: productId }
         });
         if (!product) {
             throw new Error('Product not found');
         }
         // Buscar histórico de movimentações
-        const movements = await db.movement.findMany({
+        const movements = await prisma_1.db.movement.findMany({
             where: { productId },
             take: limit,
             orderBy: { createdAt: 'desc' },
@@ -545,7 +548,7 @@ export const ProductQueries = {
         if (storeId) {
             where.storeId = storeId;
         }
-        const products = await db.product.findMany({
+        const products = await prisma_1.db.product.findMany({
             where,
             include: {
                 movements: {
@@ -610,14 +613,14 @@ export const ProductQueries = {
     },
     async getProductAnalytics(productId) {
         // Verificar se o produto existe
-        const product = await db.product.findUnique({
+        const product = await prisma_1.db.product.findUnique({
             where: { id: productId }
         });
         if (!product) {
             throw new Error('Product not found');
         }
         // Buscar todas as movimentações do produto
-        const movements = await db.movement.findMany({
+        const movements = await prisma_1.db.movement.findMany({
             where: { productId },
             include: {
                 supplier: {
@@ -683,13 +686,13 @@ export const ProductQueries = {
     },
     // === MÉTODOS PARA GERENCIAR CATEGORIAS DO PRODUTO ===
     async getCategories(productId) {
-        const product = await db.product.findUnique({
+        const product = await prisma_1.db.product.findUnique({
             where: { id: productId }
         });
         if (!product) {
             throw new Error('Product not found');
         }
-        const categories = await db.productCategory.findMany({
+        const categories = await prisma_1.db.productCategory.findMany({
             where: { productId },
             select: {
                 category: {
@@ -728,7 +731,7 @@ export const ProductQueries = {
             ];
         }
         const [products, total] = await Promise.all([
-            db.product.findMany({
+            prisma_1.db.product.findMany({
                 where,
                 skip,
                 take: limit,
@@ -765,7 +768,7 @@ export const ProductQueries = {
                     }
                 }
             }),
-            db.product.count({ where })
+            prisma_1.db.product.count({ where })
         ]);
         const totalPages = Math.ceil(total / limit);
         return {

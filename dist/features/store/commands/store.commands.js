@@ -1,21 +1,24 @@
-import { db } from '../../../plugins/prisma';
-export const StoreCommands = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.StoreCommands = void 0;
+const prisma_1 = require("../../../plugins/prisma");
+exports.StoreCommands = {
     async create(data) {
         // Check if CNPJ already exists
-        const existingStore = await db.store.findUnique({
+        const existingStore = await prisma_1.db.store.findUnique({
             where: { cnpj: data.cnpj }
         });
         if (existingStore) {
             throw new Error('CNPJ already exists');
         }
         // Check if owner exists
-        const owner = await db.user.findUnique({
+        const owner = await prisma_1.db.user.findUnique({
             where: { id: data.ownerId }
         });
         if (!owner) {
             throw new Error('Owner not found');
         }
-        return await db.store.create({
+        return await prisma_1.db.store.create({
             data: {
                 ownerId: data.ownerId,
                 name: data.name,
@@ -41,7 +44,7 @@ export const StoreCommands = {
     },
     async update(id, data) {
         // Check if store exists
-        const existingStore = await db.store.findUnique({
+        const existingStore = await prisma_1.db.store.findUnique({
             where: { id }
         });
         if (!existingStore) {
@@ -49,14 +52,14 @@ export const StoreCommands = {
         }
         // If updating CNPJ, check if it already exists
         if (data.cnpj && data.cnpj !== existingStore.cnpj) {
-            const cnpjExists = await db.store.findUnique({
+            const cnpjExists = await prisma_1.db.store.findUnique({
                 where: { cnpj: data.cnpj }
             });
             if (cnpjExists) {
                 throw new Error('CNPJ already exists');
             }
         }
-        return await db.store.update({
+        return await prisma_1.db.store.update({
             where: { id },
             data: {
                 ...data,
@@ -80,31 +83,31 @@ export const StoreCommands = {
     },
     async delete(id) {
         // Check if store exists
-        const existingStore = await db.store.findUnique({
+        const existingStore = await prisma_1.db.store.findUnique({
             where: { id }
         });
         if (!existingStore) {
             throw new Error('Store not found');
         }
         // Check if store has products
-        const productCount = await db.product.count({
+        const productCount = await prisma_1.db.product.count({
             where: { storeId: id }
         });
         if (productCount > 0) {
             throw new Error('Cannot delete store with existing products');
         }
-        return await db.store.delete({
+        return await prisma_1.db.store.delete({
             where: { id }
         });
     },
     async toggleStatus(id) {
-        const store = await db.store.findUnique({
+        const store = await prisma_1.db.store.findUnique({
             where: { id }
         });
         if (!store) {
             throw new Error('Store not found');
         }
-        return await db.store.update({
+        return await prisma_1.db.store.update({
             where: { id },
             data: { status: !store.status },
             include: {
@@ -119,7 +122,7 @@ export const StoreCommands = {
         });
     },
     async verifyCnpj(cnpj) {
-        const store = await db.store.findUnique({
+        const store = await prisma_1.db.store.findUnique({
             where: { cnpj }
         });
         return {
@@ -134,21 +137,21 @@ export const StoreCommands = {
     // === GERENCIAMENTO DE USUÁRIOS DA LOJA ===
     async addUser(storeId, userId, role) {
         // Verificar se a loja existe
-        const store = await db.store.findUnique({
+        const store = await prisma_1.db.store.findUnique({
             where: { id: storeId }
         });
         if (!store) {
             throw new Error('Store not found');
         }
         // Verificar se o usuário existe
-        const user = await db.user.findUnique({
+        const user = await prisma_1.db.user.findUnique({
             where: { id: userId, status: true }
         });
         if (!user) {
             throw new Error('User not found or inactive');
         }
         // Verificar se o usuário já está na loja
-        const existingStoreUser = await db.storeUser.findUnique({
+        const existingStoreUser = await prisma_1.db.storeUser.findUnique({
             where: {
                 storeId_userId: {
                     storeId,
@@ -160,7 +163,7 @@ export const StoreCommands = {
             throw new Error('User already exists in this store');
         }
         // Adicionar usuário à loja
-        return await db.storeUser.create({
+        return await prisma_1.db.storeUser.create({
             data: {
                 storeId,
                 userId,
@@ -188,14 +191,14 @@ export const StoreCommands = {
     },
     async removeUser(storeId, userId) {
         // Verificar se a loja existe
-        const store = await db.store.findUnique({
+        const store = await prisma_1.db.store.findUnique({
             where: { id: storeId }
         });
         if (!store) {
             throw new Error('Store not found');
         }
         // Verificar se o usuário está na loja
-        const storeUser = await db.storeUser.findUnique({
+        const storeUser = await prisma_1.db.storeUser.findUnique({
             where: {
                 storeId_userId: {
                     storeId,
@@ -211,7 +214,7 @@ export const StoreCommands = {
             throw new Error('Cannot remove store owner');
         }
         // Remover usuário da loja
-        return await db.storeUser.delete({
+        return await prisma_1.db.storeUser.delete({
             where: {
                 storeId_userId: {
                     storeId,
@@ -222,14 +225,14 @@ export const StoreCommands = {
     },
     async updateUserRole(storeId, userId, newRole) {
         // Verificar se a loja existe
-        const store = await db.store.findUnique({
+        const store = await prisma_1.db.store.findUnique({
             where: { id: storeId }
         });
         if (!store) {
             throw new Error('Store not found');
         }
         // Verificar se o usuário está na loja
-        const storeUser = await db.storeUser.findUnique({
+        const storeUser = await prisma_1.db.storeUser.findUnique({
             where: {
                 storeId_userId: {
                     storeId,
@@ -245,7 +248,7 @@ export const StoreCommands = {
             throw new Error('Cannot change store owner role');
         }
         // Atualizar role do usuário
-        return await db.storeUser.update({
+        return await prisma_1.db.storeUser.update({
             where: {
                 storeId_userId: {
                     storeId,
@@ -277,21 +280,21 @@ export const StoreCommands = {
     },
     async transferOwnership(storeId, newOwnerId) {
         // Verificar se a loja existe
-        const store = await db.store.findUnique({
+        const store = await prisma_1.db.store.findUnique({
             where: { id: storeId }
         });
         if (!store) {
             throw new Error('Store not found');
         }
         // Verificar se o novo dono existe
-        const newOwner = await db.user.findUnique({
+        const newOwner = await prisma_1.db.user.findUnique({
             where: { id: newOwnerId, status: true }
         });
         if (!newOwner) {
             throw new Error('New owner not found or inactive');
         }
         // Verificar se o novo dono já está na loja
-        const existingStoreUser = await db.storeUser.findUnique({
+        const existingStoreUser = await prisma_1.db.storeUser.findUnique({
             where: {
                 storeId_userId: {
                     storeId,
@@ -301,7 +304,7 @@ export const StoreCommands = {
         });
         // Se o usuário não está na loja, adicionar como OWNER
         if (!existingStoreUser) {
-            await db.storeUser.create({
+            await prisma_1.db.storeUser.create({
                 data: {
                     storeId,
                     userId: newOwnerId,
@@ -311,7 +314,7 @@ export const StoreCommands = {
         }
         else {
             // Se já está na loja, atualizar para OWNER
-            await db.storeUser.update({
+            await prisma_1.db.storeUser.update({
                 where: {
                     storeId_userId: {
                         storeId,
@@ -324,7 +327,7 @@ export const StoreCommands = {
             });
         }
         // Atualizar o ownerId da loja
-        return await db.store.update({
+        return await prisma_1.db.store.update({
             where: { id: storeId },
             data: {
                 ownerId: newOwnerId

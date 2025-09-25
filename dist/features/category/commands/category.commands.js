@@ -1,7 +1,10 @@
-import { db } from '../../../plugins/prisma';
-export const CategoryCommands = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CategoryCommands = void 0;
+const prisma_1 = require("../../../plugins/prisma");
+exports.CategoryCommands = {
     async create(data) {
-        return await db.category.create({
+        return await prisma_1.db.category.create({
             data: {
                 ...data,
                 status: data.status ?? true
@@ -49,7 +52,7 @@ export const CategoryCommands = {
         });
     },
     async update(id, data) {
-        return await db.category.update({
+        return await prisma_1.db.category.update({
             where: { id },
             data,
             include: {
@@ -95,12 +98,12 @@ export const CategoryCommands = {
         });
     },
     async delete(id) {
-        return await db.category.delete({
+        return await prisma_1.db.category.delete({
             where: { id }
         });
     },
     async updateStatus(id, status) {
-        return await db.category.update({
+        return await prisma_1.db.category.update({
             where: { id },
             data: { status },
             include: {
@@ -146,7 +149,7 @@ export const CategoryCommands = {
         });
     },
     async moveToParent(id, parentId) {
-        return await db.category.update({
+        return await prisma_1.db.category.update({
             where: { id },
             data: { parentId },
             include: {

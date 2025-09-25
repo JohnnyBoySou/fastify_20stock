@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "main": "src/server.ts",
-  "type": "module",
   "dependencies": {
     "@fastify/cors": "^11.1.0",
     "@fastify/otel": "^0.9.4",
@@ -66,8 +65,8 @@
     "typescript": "^5.8.3"
   },
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc && tsc-alias -p tsconfig.paths.json --resolve-full-extension .js",
+    "dev": "tsx watch src/server.ts", 
+    "build": "tsc && tsc-alias",
     "start": "tsx src/server.ts",
     "start:prod": "node dist/server.js",
     "typecheck": "tsc --noEmit",

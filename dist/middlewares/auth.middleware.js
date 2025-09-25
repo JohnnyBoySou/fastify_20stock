@@ -1,6 +1,9 @@
-import { AuthCommands } from '../features/auth/commands/auth.commands';
-import { AuthQueries } from '../features/auth/queries/auth.queries';
-export const authMiddleware = async (request, reply) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.optionalAuthMiddleware = exports.authMiddleware = void 0;
+const auth_commands_1 = require("../features/auth/commands/auth.commands");
+const auth_queries_1 = require("../features/auth/queries/auth.queries");
+const authMiddleware = async (request, reply) => {
     try {
         // Get authorization header
         const authHeader = request.headers.authorization;
@@ -10,11 +13,11 @@ export const authMiddleware = async (request, reply) => {
             });
         }
         // Extract token from header
-        const token = AuthCommands.extractToken(authHeader);
+        const token = auth_commands_1.AuthCommands.extractToken(authHeader);
         // Verify token
-        const payload = AuthCommands.verifyToken(token);
+        const payload = auth_commands_1.AuthCommands.verifyToken(token);
         // Get user from database to ensure user still exists and is active
-        const user = await AuthQueries.getUserProfile(payload.userId);
+        const user = await auth_queries_1.AuthQueries.getUserProfile(payload.userId);
         if (!user || !user.status) {
             return reply.status(401).send({
                 error: 'User not found or inactive'
@@ -48,17 +51,18 @@ export const authMiddleware = async (request, reply) => {
         });
     }
 };
+exports.authMiddleware = authMiddleware;
 // Optional auth middleware - doesn't fail if no token
-export const optionalAuthMiddleware = async (request, reply) => {
+const optionalAuthMiddleware = async (request, reply) => {
     try {
         const authHeader = request.headers.authorization;
         if (!authHeader) {
             // No token provided, continue without user
             return;
         }
-        const token = AuthCommands.extractToken(authHeader);
-        const payload = AuthCommands.verifyToken(token);
-        const user = await AuthQueries.getUserProfile(payload.userId);
+        const token = auth_commands_1.AuthCommands.extractToken(authHeader);
+        const payload = auth_commands_1.AuthCommands.verifyToken(token);
+        const user = await auth_queries_1.AuthQueries.getUserProfile(payload.userId);
         if (user && user.status) {
             request.user = user;
             request.token = token;
@@ -72,3 +76,4 @@ export const optionalAuthMiddleware = async (request, reply) => {
         return;
     }
 };
+exports.optionalAuthMiddleware = optionalAuthMiddleware;

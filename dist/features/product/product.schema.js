@@ -1,4 +1,7 @@
-export const createProductSchema = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ProductSchemas = exports.getProductsByCategorySchema = exports.getProductCategoriesSchema = exports.setProductCategoriesSchema = exports.removeProductCategoriesSchema = exports.addProductCategoriesSchema = exports.getProductAnalyticsSchema = exports.getLowStockProductsSchema = exports.getProductStockHistorySchema = exports.getProductStockSchema = exports.createProductMovementSchema = exports.getProductMovementsSchema = exports.updateStockSchema = exports.verifySkuSchema = exports.updateStatusSchema = exports.deleteProductSchema = exports.listProductsSchema = exports.getProductSchema = exports.updateProductSchema = exports.createProductSchema = void 0;
+exports.createProductSchema = {
     body: {
         type: 'object',
         required: ['name', 'unitOfMeasure', 'referencePrice', 'storeId', 'stockMin', 'stockMax', 'alertPercentage'],
@@ -61,7 +64,7 @@ export const createProductSchema = {
         }
     }
 };
-export const updateProductSchema = {
+exports.updateProductSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -129,7 +132,7 @@ export const updateProductSchema = {
         }
     }
 };
-export const getProductSchema = {
+exports.getProductSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -175,7 +178,7 @@ export const getProductSchema = {
         }
     }
 };
-export const listProductsSchema = {
+exports.listProductsSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -247,7 +250,7 @@ export const listProductsSchema = {
         }
     }
 };
-export const deleteProductSchema = {
+exports.deleteProductSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -259,7 +262,7 @@ export const deleteProductSchema = {
         204: { type: 'null' }
     }
 };
-export const updateStatusSchema = {
+exports.updateStatusSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -289,7 +292,7 @@ export const updateStatusSchema = {
     }
 };
 // === SCHEMAS PARA FUNÇÕES ADICIONAIS DE PRODUTO ===
-export const verifySkuSchema = {
+exports.verifySkuSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -314,7 +317,7 @@ export const verifySkuSchema = {
         }
     }
 };
-export const updateStockSchema = {
+exports.updateStockSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -363,7 +366,7 @@ export const updateStockSchema = {
         }
     }
 };
-export const getProductMovementsSchema = {
+exports.getProductMovementsSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -422,7 +425,7 @@ export const getProductMovementsSchema = {
         }
     }
 };
-export const createProductMovementSchema = {
+exports.createProductMovementSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -467,7 +470,7 @@ export const createProductMovementSchema = {
         }
     }
 };
-export const getProductStockSchema = {
+exports.getProductStockSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -502,7 +505,7 @@ export const getProductStockSchema = {
         }
     }
 };
-export const getProductStockHistorySchema = {
+exports.getProductStockHistorySchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -554,7 +557,7 @@ export const getProductStockHistorySchema = {
         }
     }
 };
-export const getLowStockProductsSchema = {
+exports.getLowStockProductsSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -589,7 +592,7 @@ export const getLowStockProductsSchema = {
         }
     }
 };
-export const getProductAnalyticsSchema = {
+exports.getProductAnalyticsSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -638,7 +641,7 @@ export const getProductAnalyticsSchema = {
     }
 };
 // === SCHEMAS PARA GERENCIAR CATEGORIAS DO PRODUTO ===
-export const addProductCategoriesSchema = {
+exports.addProductCategoriesSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -682,7 +685,7 @@ export const addProductCategoriesSchema = {
         }
     }
 };
-export const removeProductCategoriesSchema = {
+exports.removeProductCategoriesSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -712,7 +715,7 @@ export const removeProductCategoriesSchema = {
         }
     }
 };
-export const setProductCategoriesSchema = {
+exports.setProductCategoriesSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -754,7 +757,7 @@ export const setProductCategoriesSchema = {
         }
     }
 };
-export const getProductCategoriesSchema = {
+exports.getProductCategoriesSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -784,7 +787,7 @@ export const getProductCategoriesSchema = {
         }
     }
 };
-export const getProductsByCategorySchema = {
+exports.getProductsByCategorySchema = {
     params: {
         type: 'object',
         required: ['categoryId'],
@@ -838,26 +841,26 @@ export const getProductsByCategorySchema = {
         }
     }
 };
-export const ProductSchemas = {
-    create: createProductSchema,
-    update: updateProductSchema,
-    get: getProductSchema,
-    delete: deleteProductSchema,
-    list: listProductsSchema,
-    updateStatus: updateStatusSchema,
+exports.ProductSchemas = {
+    create: exports.createProductSchema,
+    update: exports.updateProductSchema,
+    get: exports.getProductSchema,
+    delete: exports.deleteProductSchema,
+    list: exports.listProductsSchema,
+    updateStatus: exports.updateStatusSchema,
     // Funções adicionais
-    verifySku: verifySkuSchema,
-    updateStock: updateStockSchema,
-    getMovements: getProductMovementsSchema,
-    createMovement: createProductMovementSchema,
-    getStock: getProductStockSchema,
-    getStockHistory: getProductStockHistorySchema,
-    getLowStock: getLowStockProductsSchema,
-    getAnalytics: getProductAnalyticsSchema,
+    verifySku: exports.verifySkuSchema,
+    updateStock: exports.updateStockSchema,
+    getMovements: exports.getProductMovementsSchema,
+    createMovement: exports.createProductMovementSchema,
+    getStock: exports.getProductStockSchema,
+    getStockHistory: exports.getProductStockHistorySchema,
+    getLowStock: exports.getLowStockProductsSchema,
+    getAnalytics: exports.getProductAnalyticsSchema,
     // Gerenciar categorias
-    addCategories: addProductCategoriesSchema,
-    removeCategories: removeProductCategoriesSchema,
-    setCategories: setProductCategoriesSchema,
-    getCategories: getProductCategoriesSchema,
-    getByCategory: getProductsByCategorySchema
+    addCategories: exports.addProductCategoriesSchema,
+    removeCategories: exports.removeProductCategoriesSchema,
+    setCategories: exports.setProductCategoriesSchema,
+    getCategories: exports.getProductCategoriesSchema,
+    getByCategory: exports.getProductsByCategorySchema
 };

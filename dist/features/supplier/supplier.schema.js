@@ -1,4 +1,7 @@
-export const createSupplierSchema = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SupplierSchemas = exports.searchSuppliersSchema = exports.getSuppliersByStateSchema = exports.getSuppliersByCitySchema = exports.getSupplierByCnpjSchema = exports.listSuppliersSchema = exports.deleteSupplierSchema = exports.getSupplierSchema = exports.updateSupplierSchema = exports.createSupplierSchema = void 0;
+exports.createSupplierSchema = {
     body: {
         type: 'object',
         required: ['corporateName', 'cnpj'],
@@ -31,7 +34,7 @@ export const createSupplierSchema = {
         }
     }
 };
-export const updateSupplierSchema = {
+exports.updateSupplierSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -70,7 +73,7 @@ export const updateSupplierSchema = {
         }
     }
 };
-export const getSupplierSchema = {
+exports.getSupplierSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -97,7 +100,7 @@ export const getSupplierSchema = {
         }
     }
 };
-export const deleteSupplierSchema = {
+exports.deleteSupplierSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -109,7 +112,7 @@ export const deleteSupplierSchema = {
         204: { type: 'null' }
     }
 };
-export const listSuppliersSchema = {
+exports.listSuppliersSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -179,7 +182,7 @@ export const listSuppliersSchema = {
         }
     }
 };
-export const getSupplierByCnpjSchema = {
+exports.getSupplierByCnpjSchema = {
     params: {
         type: 'object',
         required: ['cnpj'],
@@ -206,7 +209,7 @@ export const getSupplierByCnpjSchema = {
         }
     }
 };
-export const getSuppliersByCitySchema = {
+exports.getSuppliersByCitySchema = {
     params: {
         type: 'object',
         required: ['city'],
@@ -240,7 +243,7 @@ export const getSuppliersByCitySchema = {
         }
     }
 };
-export const getSuppliersByStateSchema = {
+exports.getSuppliersByStateSchema = {
     params: {
         type: 'object',
         required: ['state'],
@@ -274,7 +277,7 @@ export const getSuppliersByStateSchema = {
         }
     }
 };
-export const searchSuppliersSchema = {
+exports.searchSuppliersSchema = {
     querystring: {
         type: 'object',
         required: ['q'],
@@ -309,14 +312,14 @@ export const searchSuppliersSchema = {
         }
     }
 };
-export const SupplierSchemas = {
-    create: createSupplierSchema,
-    update: updateSupplierSchema,
-    get: getSupplierSchema,
-    delete: deleteSupplierSchema,
-    list: listSuppliersSchema,
-    getByCnpj: getSupplierByCnpjSchema,
-    getByCity: getSuppliersByCitySchema,
-    getByState: getSuppliersByStateSchema,
-    search: searchSuppliersSchema
+exports.SupplierSchemas = {
+    create: exports.createSupplierSchema,
+    update: exports.updateSupplierSchema,
+    get: exports.getSupplierSchema,
+    delete: exports.deleteSupplierSchema,
+    list: exports.listSuppliersSchema,
+    getByCnpj: exports.getSupplierByCnpjSchema,
+    getByCity: exports.getSuppliersByCitySchema,
+    getByState: exports.getSuppliersByStateSchema,
+    search: exports.searchSuppliersSchema
 };

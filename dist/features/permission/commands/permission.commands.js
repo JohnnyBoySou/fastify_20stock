@@ -1,7 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.extendUserPermissions = exports.expireUserPermissions = exports.bulkDeleteUserPermissions = exports.bulkUpdateUserPermissions = exports.bulkCreateUserPermissions = exports.deleteStoreUserPermissions = exports.setStoreUserPermissions = exports.deleteUserPermission = exports.updateUserPermission = exports.createUserPermission = void 0;
 // ================================
 // GESTÃO DE PERMISSÕES CUSTOMIZADAS
 // ================================
-export const createUserPermission = async (prisma, data) => {
+const createUserPermission = async (prisma, data) => {
     return await prisma.userPermission.create({
         data: {
             userId: data.userId,
@@ -16,7 +19,8 @@ export const createUserPermission = async (prisma, data) => {
         }
     });
 };
-export const updateUserPermission = async (prisma, id, data) => {
+exports.createUserPermission = createUserPermission;
+const updateUserPermission = async (prisma, id, data) => {
     return await prisma.userPermission.update({
         where: { id },
         data: {
@@ -26,15 +30,17 @@ export const updateUserPermission = async (prisma, id, data) => {
         }
     });
 };
-export const deleteUserPermission = async (prisma, id) => {
+exports.updateUserPermission = updateUserPermission;
+const deleteUserPermission = async (prisma, id) => {
     return await prisma.userPermission.delete({
         where: { id }
     });
 };
+exports.deleteUserPermission = deleteUserPermission;
 // ================================
 // GESTÃO DE PERMISSÕES POR LOJA
 // ================================
-export const setStoreUserPermissions = async (prisma, data) => {
+const setStoreUserPermissions = async (prisma, data) => {
     return await prisma.storePermission.upsert({
         where: {
             userId_storeId: {
@@ -60,7 +66,8 @@ export const setStoreUserPermissions = async (prisma, data) => {
         }
     });
 };
-export const deleteStoreUserPermissions = async (prisma, userId, storeId) => {
+exports.setStoreUserPermissions = setStoreUserPermissions;
+const deleteStoreUserPermissions = async (prisma, userId, storeId) => {
     return await prisma.storePermission.delete({
         where: {
             userId_storeId: {
@@ -70,10 +77,11 @@ export const deleteStoreUserPermissions = async (prisma, userId, storeId) => {
         }
     });
 };
+exports.deleteStoreUserPermissions = deleteStoreUserPermissions;
 // ================================
 // OPERAÇÕES ESPECIAIS
 // ================================
-export const bulkCreateUserPermissions = async (prisma, permissions) => {
+const bulkCreateUserPermissions = async (prisma, permissions) => {
     return await prisma.userPermission.createMany({
         data: permissions.map(permission => ({
             ...permission,
@@ -82,7 +90,8 @@ export const bulkCreateUserPermissions = async (prisma, permissions) => {
         }))
     });
 };
-export const bulkUpdateUserPermissions = async (prisma, updates) => {
+exports.bulkCreateUserPermissions = bulkCreateUserPermissions;
+const bulkUpdateUserPermissions = async (prisma, updates) => {
     const transactions = updates.map(update => prisma.userPermission.update({
         where: { id: update.id },
         data: {
@@ -93,7 +102,8 @@ export const bulkUpdateUserPermissions = async (prisma, updates) => {
     }));
     return await prisma.$transaction(transactions);
 };
-export const bulkDeleteUserPermissions = async (prisma, ids) => {
+exports.bulkUpdateUserPermissions = bulkUpdateUserPermissions;
+const bulkDeleteUserPermissions = async (prisma, ids) => {
     return await prisma.userPermission.deleteMany({
         where: {
             id: {
@@ -102,7 +112,8 @@ export const bulkDeleteUserPermissions = async (prisma, ids) => {
         }
     });
 };
-export const expireUserPermissions = async (prisma, userIds, reason) => {
+exports.bulkDeleteUserPermissions = bulkDeleteUserPermissions;
+const expireUserPermissions = async (prisma, userIds, reason) => {
     return await prisma.userPermission.updateMany({
         where: {
             userId: {
@@ -118,7 +129,8 @@ export const expireUserPermissions = async (prisma, userIds, reason) => {
         }
     });
 };
-export const extendUserPermissions = async (prisma, userIds, newExpiryDate, reason) => {
+exports.expireUserPermissions = expireUserPermissions;
+const extendUserPermissions = async (prisma, userIds, newExpiryDate, reason) => {
     return await prisma.userPermission.updateMany({
         where: {
             userId: {
@@ -131,3 +143,4 @@ export const extendUserPermissions = async (prisma, userIds, newExpiryDate, reas
         }
     });
 };
+exports.extendUserPermissions = extendUserPermissions;

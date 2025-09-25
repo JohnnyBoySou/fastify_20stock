@@ -1,30 +1,33 @@
-import { db } from '../../../plugins/prisma';
-export const ReportQueries = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ReportQueries = void 0;
+const prisma_1 = require("../../../plugins/prisma");
+exports.ReportQueries = {
     // ================================
     // DASHBOARD STATS
     // ================================
     async getDashboardStats(filters) {
         const { storeId, startDate, endDate } = filters;
         // Build date filter
-        const dateFilter = ReportQueries.buildDateFilter(startDate, endDate);
+        const dateFilter = exports.ReportQueries.buildDateFilter(startDate, endDate);
         // Overview stats
         const [totalProducts, totalCategories, totalSuppliers, totalStores, totalUsers] = await Promise.all([
-            db.product.count({
+            prisma_1.db.product.count({
                 where: storeId ? { storeId } : {}
             }),
-            db.category.count(),
-            db.supplier.count(),
-            db.store.count(),
-            db.user.count()
+            prisma_1.db.category.count(),
+            prisma_1.db.supplier.count(),
+            prisma_1.db.store.count(),
+            prisma_1.db.user.count()
         ]);
         // Inventory stats
-        const inventoryStats = await ReportQueries.getInventoryStats(storeId);
+        const inventoryStats = await exports.ReportQueries.getInventoryStats(storeId);
         // Movement stats
-        const movementStats = await ReportQueries.getMovementStats(storeId, dateFilter);
+        const movementStats = await exports.ReportQueries.getMovementStats(storeId, dateFilter);
         // Recent activity
-        const recentActivity = await ReportQueries.getRecentActivity(storeId, dateFilter);
+        const recentActivity = await exports.ReportQueries.getRecentActivity(storeId, dateFilter);
         // Chart data
-        const charts = await ReportQueries.getChartData(storeId, dateFilter);
+        const charts = await exports.ReportQueries.getChartData(storeId, dateFilter);
         return {
             overview: {
                 totalProducts,
@@ -87,7 +90,7 @@ export const ReportQueries = {
         }
         // Get products with pagination
         const [products, total] = await Promise.all([
-            db.product.findMany({
+            prisma_1.db.product.findMany({
                 where,
                 orderBy,
                 skip: (page - 1) * limit,
@@ -110,11 +113,11 @@ export const ReportQueries = {
                     }
                 }
             }),
-            db.product.count({ where })
+            prisma_1.db.product.count({ where })
         ]);
         // Calculate product values and alert levels
         const productsWithStats = products.map(product => {
-            const currentStock = ReportQueries.calculateCurrentStock(product.movements || []);
+            const currentStock = exports.ReportQueries.calculateCurrentStock(product.movements || []);
             const totalValue = Number(product.referencePrice) * currentStock;
             let alertLevel = 'normal';
             if (currentStock <= 0)
@@ -140,7 +143,7 @@ export const ReportQueries = {
             };
         });
         // Calculate summary
-        const summary = await ReportQueries.calculateInventorySummary(where);
+        const summary = await exports.ReportQueries.calculateInventorySummary(where);
         return {
             products: productsWithStats,
             summary,
@@ -169,11 +172,11 @@ export const ReportQueries = {
         if (type)
             where.type = type;
         if (startDate || endDate) {
-            where.createdAt = ReportQueries.buildDateFilter(startDate, endDate);
+            where.createdAt = exports.ReportQueries.buildDateFilter(startDate, endDate);
         }
         // Get movements with pagination
         const [movements, total] = await Promise.all([
-            db.movement.findMany({
+            prisma_1.db.movement.findMany({
                 where,
                 orderBy: { createdAt: 'desc' },
                 skip: (page - 1) * limit,
@@ -190,10 +193,10 @@ export const ReportQueries = {
                     }
                 }
             }),
-            db.movement.count({ where })
+            prisma_1.db.movement.count({ where })
         ]);
         // Calculate summary
-        const summary = await ReportQueries.calculateMovementSummary(where);
+        const summary = await exports.ReportQueries.calculateMovementSummary(where);
         return {
             movements: movements.map(movement => ({
                 id: movement.id,
@@ -224,12 +227,12 @@ export const ReportQueries = {
     // ================================
     async getFinancialReport(filters) {
         const { storeId, startDate, endDate, groupBy = 'month' } = filters;
-        const dateFilter = ReportQueries.buildDateFilter(startDate, endDate);
+        const dateFilter = exports.ReportQueries.buildDateFilter(startDate, endDate);
         const where = { ...dateFilter };
         if (storeId)
             where.storeId = storeId;
         // Get movements for financial calculations
-        const movements = await db.movement.findMany({
+        const movements = await prisma_1.db.movement.findMany({
             where: {
                 ...where,
                 price: { not: null }
@@ -244,9 +247,9 @@ export const ReportQueries = {
             }
         });
         // Calculate financial data
-        const financialData = ReportQueries.calculateFinancialData(movements, groupBy);
+        const financialData = exports.ReportQueries.calculateFinancialData(movements, groupBy);
         // Calculate breakdowns
-        const breakdown = await ReportQueries.calculateFinancialBreakdown(movements);
+        const breakdown = await exports.ReportQueries.calculateFinancialBreakdown(movements);
         return {
             period: {
                 startDate: startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -267,7 +270,7 @@ export const ReportQueries = {
         if (storeId)
             where.storeId = storeId;
         // Get categories with their products
-        const categories = await db.category.findMany({
+        const categories = await prisma_1.db.category.findMany({
             include: {
                 products: {
                     where,
@@ -311,7 +314,7 @@ export const ReportQueries = {
                 : category.products;
             const totalValue = allProducts.reduce((sum, productCategory) => {
                 const product = productCategory.product;
-                const currentStock = ReportQueries.calculateCurrentStock(product.movements || []);
+                const currentStock = exports.ReportQueries.calculateCurrentStock(product.movements || []);
                 return sum + (Number(product.referencePrice) * currentStock);
             }, 0);
             const totalMovements = allProducts.reduce((sum, productCategory) => {
@@ -364,7 +367,7 @@ export const ReportQueries = {
         if (status && status !== 'all')
             where.status = status === 'active';
         // Get suppliers with their products and movements
-        const suppliers = await db.supplier.findMany({
+        const suppliers = await prisma_1.db.supplier.findMany({
             where,
             include: {
                 products: {
@@ -389,7 +392,7 @@ export const ReportQueries = {
         // Calculate supplier stats
         const suppliersWithStats = suppliers.map(supplier => {
             const totalValue = supplier.products.reduce((sum, product) => {
-                const currentStock = ReportQueries.calculateCurrentStock(product.movements || []);
+                const currentStock = exports.ReportQueries.calculateCurrentStock(product.movements || []);
                 return sum + (Number(product.referencePrice) * currentStock);
             }, 0);
             const totalMovements = supplier.movements.length;
@@ -448,11 +451,11 @@ export const ReportQueries = {
         if (action)
             where.action = action;
         if (startDate || endDate) {
-            where.createdAt = ReportQueries.buildDateFilter(startDate, endDate);
+            where.createdAt = exports.ReportQueries.buildDateFilter(startDate, endDate);
         }
         // Get audit logs
         const [activities, total] = await Promise.all([
-            db.auditLog.findMany({
+            prisma_1.db.auditLog.findMany({
                 where,
                 orderBy: { createdAt: 'desc' },
                 skip: (page - 1) * limit,
@@ -463,10 +466,10 @@ export const ReportQueries = {
                     }
                 }
             }),
-            db.auditLog.count({ where })
+            prisma_1.db.auditLog.count({ where })
         ]);
         // Calculate summary
-        const summary = await ReportQueries.calculateUserActivitySummary(where);
+        const summary = await exports.ReportQueries.calculateUserActivitySummary(where);
         return {
             activities: activities.map(activity => ({
                 id: activity.id,
@@ -497,7 +500,7 @@ export const ReportQueries = {
         if (storeId)
             where.storeId = storeId;
         // Get products with movements to calculate current stock
-        const products = await db.product.findMany({
+        const products = await prisma_1.db.product.findMany({
             where,
             include: {
                 categories: {
@@ -520,7 +523,7 @@ export const ReportQueries = {
         // Calculate alerts
         const alerts = products
             .map(product => {
-            const currentStock = ReportQueries.calculateCurrentStock(product.movements || []);
+            const currentStock = exports.ReportQueries.calculateCurrentStock(product.movements || []);
             const unitPrice = Number(product.referencePrice);
             const totalValue = unitPrice * currentStock;
             let alertType = null;
@@ -613,11 +616,11 @@ export const ReportQueries = {
     async getInventoryStats(storeId) {
         const where = storeId ? { storeId } : {};
         const [totalValue, lowStockCount, outOfStockCount] = await Promise.all([
-            db.product.aggregate({
+            prisma_1.db.product.aggregate({
                 where,
                 _sum: { referencePrice: true }
             }),
-            db.product.count({
+            prisma_1.db.product.count({
                 where: {
                     ...where,
                     AND: [
@@ -626,7 +629,7 @@ export const ReportQueries = {
                     ]
                 }
             }),
-            db.product.count({
+            prisma_1.db.product.count({
                 where: {
                     ...where,
                     stockMin: { gt: 0 }
@@ -645,11 +648,11 @@ export const ReportQueries = {
         if (storeId)
             where.storeId = storeId;
         const [totalMovements, entries, exits, losses, totalValue] = await Promise.all([
-            db.movement.count({ where }),
-            db.movement.count({ where: { ...where, type: 'ENTRADA' } }),
-            db.movement.count({ where: { ...where, type: 'SAIDA' } }),
-            db.movement.count({ where: { ...where, type: 'PERDA' } }),
-            db.movement.aggregate({
+            prisma_1.db.movement.count({ where }),
+            prisma_1.db.movement.count({ where: { ...where, type: 'ENTRADA' } }),
+            prisma_1.db.movement.count({ where: { ...where, type: 'SAIDA' } }),
+            prisma_1.db.movement.count({ where: { ...where, type: 'PERDA' } }),
+            prisma_1.db.movement.aggregate({
                 where: { ...where, price: { not: null } },
                 _sum: { price: true }
             })
@@ -667,7 +670,7 @@ export const ReportQueries = {
         if (storeId)
             where.storeId = storeId;
         const [lastMovements, recentProducts] = await Promise.all([
-            db.movement.findMany({
+            prisma_1.db.movement.findMany({
                 where,
                 orderBy: { createdAt: 'desc' },
                 take: 5,
@@ -677,7 +680,7 @@ export const ReportQueries = {
                     }
                 }
             }),
-            db.product.findMany({
+            prisma_1.db.product.findMany({
                 where: storeId ? { storeId } : {},
                 orderBy: { createdAt: 'desc' },
                 take: 5,
@@ -704,14 +707,14 @@ export const ReportQueries = {
         if (storeId)
             where.storeId = storeId;
         // Movements by type
-        const movementsByType = await db.movement.groupBy({
+        const movementsByType = await prisma_1.db.movement.groupBy({
             by: ['type'],
             where,
             _count: { type: true },
             _sum: { price: true }
         });
         // Top products by movements
-        const topProducts = await db.movement.groupBy({
+        const topProducts = await prisma_1.db.movement.groupBy({
             by: ['productId'],
             where,
             _count: { productId: true },
@@ -721,7 +724,7 @@ export const ReportQueries = {
         });
         // Get product names for top products
         const productIds = topProducts.map(p => p.productId);
-        const products = await db.product.findMany({
+        const products = await prisma_1.db.product.findMany({
             where: { id: { in: productIds } },
             select: { id: true, name: true }
         });
@@ -743,12 +746,12 @@ export const ReportQueries = {
     },
     async calculateInventorySummary(where) {
         const [totalProducts, totalValue, lowStockCount, outOfStockCount] = await Promise.all([
-            db.product.count({ where }),
-            db.product.aggregate({
+            prisma_1.db.product.count({ where }),
+            prisma_1.db.product.aggregate({
                 where,
                 _sum: { referencePrice: true }
             }),
-            db.product.count({
+            prisma_1.db.product.count({
                 where: {
                     ...where,
                     AND: [
@@ -757,7 +760,7 @@ export const ReportQueries = {
                     ]
                 }
             }),
-            db.product.count({
+            prisma_1.db.product.count({
                 where: {
                     ...where,
                     stockMin: { gt: 0 }
@@ -774,11 +777,11 @@ export const ReportQueries = {
     },
     async calculateMovementSummary(where) {
         const [totalMovements, totalEntries, totalExits, totalLosses, totalValue] = await Promise.all([
-            db.movement.count({ where }),
-            db.movement.count({ where: { ...where, type: 'ENTRADA' } }),
-            db.movement.count({ where: { ...where, type: 'SAIDA' } }),
-            db.movement.count({ where: { ...where, type: 'PERDA' } }),
-            db.movement.aggregate({
+            prisma_1.db.movement.count({ where }),
+            prisma_1.db.movement.count({ where: { ...where, type: 'ENTRADA' } }),
+            prisma_1.db.movement.count({ where: { ...where, type: 'SAIDA' } }),
+            prisma_1.db.movement.count({ where: { ...where, type: 'PERDA' } }),
+            prisma_1.db.movement.aggregate({
                 where: { ...where, price: { not: null } },
                 _sum: { price: true }
             })
@@ -851,13 +854,13 @@ export const ReportQueries = {
     },
     async calculateUserActivitySummary(where) {
         const [totalActivities, uniqueUsers, activitiesByType] = await Promise.all([
-            db.auditLog.count({ where }),
-            db.auditLog.groupBy({
+            prisma_1.db.auditLog.count({ where }),
+            prisma_1.db.auditLog.groupBy({
                 by: ['userId'],
                 where,
                 _count: { userId: true }
             }),
-            db.auditLog.groupBy({
+            prisma_1.db.auditLog.groupBy({
                 by: ['action'],
                 where,
                 _count: { action: true }

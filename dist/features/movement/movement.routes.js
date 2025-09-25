@@ -1,67 +1,70 @@
-import { MovementController } from './movement.controller';
-import { MovementSchemas } from './movement.schema';
-export async function MovementRoutes(fastify) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MovementRoutes = MovementRoutes;
+const movement_controller_1 = require("./movement.controller");
+const movement_schema_1 = require("./movement.schema");
+async function MovementRoutes(fastify) {
     // CRUD básico
     fastify.post('/', {
-        schema: MovementSchemas.create,
-        handler: MovementController.create
+        schema: movement_schema_1.MovementSchemas.create,
+        handler: movement_controller_1.MovementController.create
     });
     fastify.get('/', {
-        schema: MovementSchemas.list,
-        handler: MovementController.list
+        schema: movement_schema_1.MovementSchemas.list,
+        handler: movement_controller_1.MovementController.list
     });
     fastify.get('/:id', {
-        schema: MovementSchemas.get,
-        handler: MovementController.get
+        schema: movement_schema_1.MovementSchemas.get,
+        handler: movement_controller_1.MovementController.get
     });
     fastify.put('/:id', {
-        schema: MovementSchemas.update,
-        handler: MovementController.update
+        schema: movement_schema_1.MovementSchemas.update,
+        handler: movement_controller_1.MovementController.update
     });
     fastify.delete('/:id', {
-        schema: MovementSchemas.delete,
-        handler: MovementController.delete
+        schema: movement_schema_1.MovementSchemas.delete,
+        handler: movement_controller_1.MovementController.delete
     });
     // Consultas por entidade
     fastify.get('/store/:storeId', {
-        schema: MovementSchemas.getByStore,
-        handler: MovementController.getByStore
+        schema: movement_schema_1.MovementSchemas.getByStore,
+        handler: movement_controller_1.MovementController.getByStore
     });
     fastify.get('/product/:productId', {
-        schema: MovementSchemas.getByProduct,
-        handler: MovementController.getByProduct
+        schema: movement_schema_1.MovementSchemas.getByProduct,
+        handler: movement_controller_1.MovementController.getByProduct
     });
     fastify.get('/product/:productId/summary', {
-        handler: MovementController.summarizeProduct
+        handler: movement_controller_1.MovementController.summarizeProduct
     });
     fastify.get('/supplier/:supplierId', {
-        schema: MovementSchemas.getBySupplier,
-        handler: MovementController.getBySupplier
+        schema: movement_schema_1.MovementSchemas.getBySupplier,
+        handler: movement_controller_1.MovementController.getBySupplier
     });
     // Histórico de estoque
     fastify.get('/stock-history/:productId/:storeId', {
-        schema: MovementSchemas.getStockHistory,
-        handler: MovementController.getStockHistory
+        schema: movement_schema_1.MovementSchemas.getStockHistory,
+        handler: movement_controller_1.MovementController.getStockHistory
     });
     // Estoque atual
     fastify.get('/current-stock/:productId/:storeId', {
-        handler: MovementController.getCurrentStock
+        handler: movement_controller_1.MovementController.getCurrentStock
     });
     // Relatórios e estatísticas
     fastify.get('/stats', {
-        handler: MovementController.getStats
+        handler: movement_controller_1.MovementController.getStats
     });
     fastify.get('/search', {
-        handler: MovementController.search
+        handler: movement_controller_1.MovementController.search
     });
     fastify.get('/low-stock', {
-        handler: MovementController.getLowStockProducts
+        handler: movement_controller_1.MovementController.getLowStockProducts
     });
     // Comandos especiais
     fastify.post('/recalculate-stock/:productId/:storeId', {
-        handler: MovementController.recalculateStock
+        handler: movement_controller_1.MovementController.recalculateStock
     });
     fastify.get('/summarize', {
-        handler: MovementController.summarize
+        handler: movement_controller_1.MovementController.summarize
     });
 }

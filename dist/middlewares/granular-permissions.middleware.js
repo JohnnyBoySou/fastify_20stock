@@ -1,91 +1,94 @@
-import { Action, UserRole, StoreRole } from './authorization.middleware';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.requireTimeBasedPermission = exports.requireResourcePermission = exports.requireGranularPermission = exports.GranularPermissionService = void 0;
+const authorization_middleware_1 = require("./authorization.middleware");
 // ================================
 // PERMISSÕES BASE POR ROLE
 // ================================
 // Permissões padrão por role global
 const BASE_ROLE_PERMISSIONS = {
-    [UserRole.SUPER_ADMIN]: Object.values(Action), // Pode fazer tudo
-    [UserRole.ADMIN]: [
+    [authorization_middleware_1.UserRole.SUPER_ADMIN]: Object.values(authorization_middleware_1.Action), // Pode fazer tudo
+    [authorization_middleware_1.UserRole.ADMIN]: [
         // Gestão de usuários
-        Action.CREATE_USER, Action.READ_USER, Action.UPDATE_USER, Action.DELETE_USER, Action.LIST_USERS,
+        authorization_middleware_1.Action.CREATE_USER, authorization_middleware_1.Action.READ_USER, authorization_middleware_1.Action.UPDATE_USER, authorization_middleware_1.Action.DELETE_USER, authorization_middleware_1.Action.LIST_USERS,
         // Gestão de lojas
-        Action.CREATE_STORE, Action.READ_STORE, Action.UPDATE_STORE, Action.DELETE_STORE, Action.LIST_STORES, Action.MANAGE_STORE_USERS,
+        authorization_middleware_1.Action.CREATE_STORE, authorization_middleware_1.Action.READ_STORE, authorization_middleware_1.Action.UPDATE_STORE, authorization_middleware_1.Action.DELETE_STORE, authorization_middleware_1.Action.LIST_STORES, authorization_middleware_1.Action.MANAGE_STORE_USERS,
         // Gestão de produtos
-        Action.CREATE_PRODUCT, Action.READ_PRODUCT, Action.UPDATE_PRODUCT, Action.DELETE_PRODUCT, Action.LIST_PRODUCTS,
+        authorization_middleware_1.Action.CREATE_PRODUCT, authorization_middleware_1.Action.READ_PRODUCT, authorization_middleware_1.Action.UPDATE_PRODUCT, authorization_middleware_1.Action.DELETE_PRODUCT, authorization_middleware_1.Action.LIST_PRODUCTS,
         // Gestão de categorias
-        Action.CREATE_CATEGORY, Action.READ_CATEGORY, Action.UPDATE_CATEGORY, Action.DELETE_CATEGORY, Action.LIST_CATEGORIES,
+        authorization_middleware_1.Action.CREATE_CATEGORY, authorization_middleware_1.Action.READ_CATEGORY, authorization_middleware_1.Action.UPDATE_CATEGORY, authorization_middleware_1.Action.DELETE_CATEGORY, authorization_middleware_1.Action.LIST_CATEGORIES,
         // Gestão de fornecedores
-        Action.CREATE_SUPPLIER, Action.READ_SUPPLIER, Action.UPDATE_SUPPLIER, Action.DELETE_SUPPLIER, Action.LIST_SUPPLIERS,
+        authorization_middleware_1.Action.CREATE_SUPPLIER, authorization_middleware_1.Action.READ_SUPPLIER, authorization_middleware_1.Action.UPDATE_SUPPLIER, authorization_middleware_1.Action.DELETE_SUPPLIER, authorization_middleware_1.Action.LIST_SUPPLIERS,
         // Gestão de movimentações
-        Action.CREATE_MOVEMENT, Action.READ_MOVEMENT, Action.UPDATE_MOVEMENT, Action.DELETE_MOVEMENT, Action.LIST_MOVEMENTS,
+        authorization_middleware_1.Action.CREATE_MOVEMENT, authorization_middleware_1.Action.READ_MOVEMENT, authorization_middleware_1.Action.UPDATE_MOVEMENT, authorization_middleware_1.Action.DELETE_MOVEMENT, authorization_middleware_1.Action.LIST_MOVEMENTS,
         // Sistema
-        Action.VIEW_AUDIT_LOGS
+        authorization_middleware_1.Action.VIEW_AUDIT_LOGS
     ],
-    [UserRole.MANAGER]: [
+    [authorization_middleware_1.UserRole.MANAGER]: [
         // Gestão de lojas (limitada)
-        Action.READ_STORE, Action.LIST_STORES, Action.MANAGE_STORE_USERS,
+        authorization_middleware_1.Action.READ_STORE, authorization_middleware_1.Action.LIST_STORES, authorization_middleware_1.Action.MANAGE_STORE_USERS,
         // Gestão de produtos
-        Action.CREATE_PRODUCT, Action.READ_PRODUCT, Action.UPDATE_PRODUCT, Action.DELETE_PRODUCT, Action.LIST_PRODUCTS,
+        authorization_middleware_1.Action.CREATE_PRODUCT, authorization_middleware_1.Action.READ_PRODUCT, authorization_middleware_1.Action.UPDATE_PRODUCT, authorization_middleware_1.Action.DELETE_PRODUCT, authorization_middleware_1.Action.LIST_PRODUCTS,
         // Gestão de categorias
-        Action.CREATE_CATEGORY, Action.READ_CATEGORY, Action.UPDATE_CATEGORY, Action.DELETE_CATEGORY, Action.LIST_CATEGORIES,
+        authorization_middleware_1.Action.CREATE_CATEGORY, authorization_middleware_1.Action.READ_CATEGORY, authorization_middleware_1.Action.UPDATE_CATEGORY, authorization_middleware_1.Action.DELETE_CATEGORY, authorization_middleware_1.Action.LIST_CATEGORIES,
         // Gestão de fornecedores
-        Action.CREATE_SUPPLIER, Action.READ_SUPPLIER, Action.UPDATE_SUPPLIER, Action.DELETE_SUPPLIER, Action.LIST_SUPPLIERS,
+        authorization_middleware_1.Action.CREATE_SUPPLIER, authorization_middleware_1.Action.READ_SUPPLIER, authorization_middleware_1.Action.UPDATE_SUPPLIER, authorization_middleware_1.Action.DELETE_SUPPLIER, authorization_middleware_1.Action.LIST_SUPPLIERS,
         // Gestão de movimentações
-        Action.CREATE_MOVEMENT, Action.READ_MOVEMENT, Action.UPDATE_MOVEMENT, Action.DELETE_MOVEMENT, Action.LIST_MOVEMENTS
+        authorization_middleware_1.Action.CREATE_MOVEMENT, authorization_middleware_1.Action.READ_MOVEMENT, authorization_middleware_1.Action.UPDATE_MOVEMENT, authorization_middleware_1.Action.DELETE_MOVEMENT, authorization_middleware_1.Action.LIST_MOVEMENTS
     ],
-    [UserRole.USER]: [
+    [authorization_middleware_1.UserRole.USER]: [
         // Acesso somente leitura
-        Action.READ_STORE, Action.LIST_STORES,
-        Action.READ_PRODUCT, Action.LIST_PRODUCTS,
-        Action.READ_CATEGORY, Action.LIST_CATEGORIES,
-        Action.READ_SUPPLIER, Action.LIST_SUPPLIERS,
-        Action.READ_MOVEMENT, Action.LIST_MOVEMENTS
+        authorization_middleware_1.Action.READ_STORE, authorization_middleware_1.Action.LIST_STORES,
+        authorization_middleware_1.Action.READ_PRODUCT, authorization_middleware_1.Action.LIST_PRODUCTS,
+        authorization_middleware_1.Action.READ_CATEGORY, authorization_middleware_1.Action.LIST_CATEGORIES,
+        authorization_middleware_1.Action.READ_SUPPLIER, authorization_middleware_1.Action.LIST_SUPPLIERS,
+        authorization_middleware_1.Action.READ_MOVEMENT, authorization_middleware_1.Action.LIST_MOVEMENTS
     ]
 };
 // Permissões padrão por role de loja
 const BASE_STORE_ROLE_PERMISSIONS = {
-    [StoreRole.OWNER]: [
+    [authorization_middleware_1.StoreRole.OWNER]: [
         // Pode fazer tudo na loja
-        Action.READ_STORE, Action.UPDATE_STORE, Action.MANAGE_STORE_USERS,
-        Action.CREATE_PRODUCT, Action.READ_PRODUCT, Action.UPDATE_PRODUCT, Action.DELETE_PRODUCT, Action.LIST_PRODUCTS,
-        Action.CREATE_CATEGORY, Action.READ_CATEGORY, Action.UPDATE_CATEGORY, Action.DELETE_CATEGORY, Action.LIST_CATEGORIES,
-        Action.CREATE_SUPPLIER, Action.READ_SUPPLIER, Action.UPDATE_SUPPLIER, Action.DELETE_SUPPLIER, Action.LIST_SUPPLIERS,
-        Action.CREATE_MOVEMENT, Action.READ_MOVEMENT, Action.UPDATE_MOVEMENT, Action.DELETE_MOVEMENT, Action.LIST_MOVEMENTS
+        authorization_middleware_1.Action.READ_STORE, authorization_middleware_1.Action.UPDATE_STORE, authorization_middleware_1.Action.MANAGE_STORE_USERS,
+        authorization_middleware_1.Action.CREATE_PRODUCT, authorization_middleware_1.Action.READ_PRODUCT, authorization_middleware_1.Action.UPDATE_PRODUCT, authorization_middleware_1.Action.DELETE_PRODUCT, authorization_middleware_1.Action.LIST_PRODUCTS,
+        authorization_middleware_1.Action.CREATE_CATEGORY, authorization_middleware_1.Action.READ_CATEGORY, authorization_middleware_1.Action.UPDATE_CATEGORY, authorization_middleware_1.Action.DELETE_CATEGORY, authorization_middleware_1.Action.LIST_CATEGORIES,
+        authorization_middleware_1.Action.CREATE_SUPPLIER, authorization_middleware_1.Action.READ_SUPPLIER, authorization_middleware_1.Action.UPDATE_SUPPLIER, authorization_middleware_1.Action.DELETE_SUPPLIER, authorization_middleware_1.Action.LIST_SUPPLIERS,
+        authorization_middleware_1.Action.CREATE_MOVEMENT, authorization_middleware_1.Action.READ_MOVEMENT, authorization_middleware_1.Action.UPDATE_MOVEMENT, authorization_middleware_1.Action.DELETE_MOVEMENT, authorization_middleware_1.Action.LIST_MOVEMENTS
     ],
-    [StoreRole.ADMIN]: [
+    [authorization_middleware_1.StoreRole.ADMIN]: [
         // Gestão completa da loja (exceto transferir propriedade)
-        Action.READ_STORE, Action.UPDATE_STORE, Action.MANAGE_STORE_USERS,
-        Action.CREATE_PRODUCT, Action.READ_PRODUCT, Action.UPDATE_PRODUCT, Action.DELETE_PRODUCT, Action.LIST_PRODUCTS,
-        Action.CREATE_CATEGORY, Action.READ_CATEGORY, Action.UPDATE_CATEGORY, Action.DELETE_CATEGORY, Action.LIST_CATEGORIES,
-        Action.CREATE_SUPPLIER, Action.READ_SUPPLIER, Action.UPDATE_SUPPLIER, Action.DELETE_SUPPLIER, Action.LIST_SUPPLIERS,
-        Action.CREATE_MOVEMENT, Action.READ_MOVEMENT, Action.UPDATE_MOVEMENT, Action.DELETE_MOVEMENT, Action.LIST_MOVEMENTS
+        authorization_middleware_1.Action.READ_STORE, authorization_middleware_1.Action.UPDATE_STORE, authorization_middleware_1.Action.MANAGE_STORE_USERS,
+        authorization_middleware_1.Action.CREATE_PRODUCT, authorization_middleware_1.Action.READ_PRODUCT, authorization_middleware_1.Action.UPDATE_PRODUCT, authorization_middleware_1.Action.DELETE_PRODUCT, authorization_middleware_1.Action.LIST_PRODUCTS,
+        authorization_middleware_1.Action.CREATE_CATEGORY, authorization_middleware_1.Action.READ_CATEGORY, authorization_middleware_1.Action.UPDATE_CATEGORY, authorization_middleware_1.Action.DELETE_CATEGORY, authorization_middleware_1.Action.LIST_CATEGORIES,
+        authorization_middleware_1.Action.CREATE_SUPPLIER, authorization_middleware_1.Action.READ_SUPPLIER, authorization_middleware_1.Action.UPDATE_SUPPLIER, authorization_middleware_1.Action.DELETE_SUPPLIER, authorization_middleware_1.Action.LIST_SUPPLIERS,
+        authorization_middleware_1.Action.CREATE_MOVEMENT, authorization_middleware_1.Action.READ_MOVEMENT, authorization_middleware_1.Action.UPDATE_MOVEMENT, authorization_middleware_1.Action.DELETE_MOVEMENT, authorization_middleware_1.Action.LIST_MOVEMENTS
     ],
-    [StoreRole.MANAGER]: [
+    [authorization_middleware_1.StoreRole.MANAGER]: [
         // Gestão operacional
-        Action.READ_STORE, Action.LIST_STORES,
-        Action.CREATE_PRODUCT, Action.READ_PRODUCT, Action.UPDATE_PRODUCT, Action.DELETE_PRODUCT, Action.LIST_PRODUCTS,
-        Action.CREATE_CATEGORY, Action.READ_CATEGORY, Action.UPDATE_CATEGORY, Action.DELETE_CATEGORY, Action.LIST_CATEGORIES,
-        Action.CREATE_SUPPLIER, Action.READ_SUPPLIER, Action.UPDATE_SUPPLIER, Action.DELETE_SUPPLIER, Action.LIST_SUPPLIERS,
-        Action.CREATE_MOVEMENT, Action.READ_MOVEMENT, Action.UPDATE_MOVEMENT, Action.DELETE_MOVEMENT, Action.LIST_MOVEMENTS
+        authorization_middleware_1.Action.READ_STORE, authorization_middleware_1.Action.LIST_STORES,
+        authorization_middleware_1.Action.CREATE_PRODUCT, authorization_middleware_1.Action.READ_PRODUCT, authorization_middleware_1.Action.UPDATE_PRODUCT, authorization_middleware_1.Action.DELETE_PRODUCT, authorization_middleware_1.Action.LIST_PRODUCTS,
+        authorization_middleware_1.Action.CREATE_CATEGORY, authorization_middleware_1.Action.READ_CATEGORY, authorization_middleware_1.Action.UPDATE_CATEGORY, authorization_middleware_1.Action.DELETE_CATEGORY, authorization_middleware_1.Action.LIST_CATEGORIES,
+        authorization_middleware_1.Action.CREATE_SUPPLIER, authorization_middleware_1.Action.READ_SUPPLIER, authorization_middleware_1.Action.UPDATE_SUPPLIER, authorization_middleware_1.Action.DELETE_SUPPLIER, authorization_middleware_1.Action.LIST_SUPPLIERS,
+        authorization_middleware_1.Action.CREATE_MOVEMENT, authorization_middleware_1.Action.READ_MOVEMENT, authorization_middleware_1.Action.UPDATE_MOVEMENT, authorization_middleware_1.Action.DELETE_MOVEMENT, authorization_middleware_1.Action.LIST_MOVEMENTS
     ],
-    [StoreRole.STAFF]: [
+    [authorization_middleware_1.StoreRole.STAFF]: [
         // Operações básicas
-        Action.READ_STORE, Action.LIST_STORES,
-        Action.READ_PRODUCT, Action.LIST_PRODUCTS,
-        Action.READ_CATEGORY, Action.LIST_CATEGORIES,
-        Action.READ_SUPPLIER, Action.LIST_SUPPLIERS,
-        Action.READ_MOVEMENT, Action.LIST_MOVEMENTS
+        authorization_middleware_1.Action.READ_STORE, authorization_middleware_1.Action.LIST_STORES,
+        authorization_middleware_1.Action.READ_PRODUCT, authorization_middleware_1.Action.LIST_PRODUCTS,
+        authorization_middleware_1.Action.READ_CATEGORY, authorization_middleware_1.Action.LIST_CATEGORIES,
+        authorization_middleware_1.Action.READ_SUPPLIER, authorization_middleware_1.Action.LIST_SUPPLIERS,
+        authorization_middleware_1.Action.READ_MOVEMENT, authorization_middleware_1.Action.LIST_MOVEMENTS
     ]
 };
 // ================================
 // SERVIÇO DE PERMISSÕES GRANULARES
 // ================================
-export class GranularPermissionService {
+class GranularPermissionService {
     // Verifica se usuário tem permissão considerando todas as camadas
     static async hasPermission(context, action, resource) {
         try {
             // 1. SUPER_ADMIN sempre pode
-            if (context.userRoles.includes(UserRole.SUPER_ADMIN)) {
+            if (context.userRoles.includes(authorization_middleware_1.UserRole.SUPER_ADMIN)) {
                 return { allowed: true, source: 'super_admin' };
             }
             // 2. Verificar permissões customizadas (maior prioridade)
@@ -301,11 +304,12 @@ export class GranularPermissionService {
         return Array.from(effectivePermissions);
     }
 }
+exports.GranularPermissionService = GranularPermissionService;
 // ================================
 // MIDDLEWARES GRANULARES
 // ================================
 // Middleware para permissão granular
-export const requireGranularPermission = (action, resource, options) => {
+const requireGranularPermission = (action, resource, options) => {
     return async (request, reply) => {
         try {
             if (!request.user) {
@@ -372,12 +376,13 @@ export const requireGranularPermission = (action, resource, options) => {
         }
     };
 };
+exports.requireGranularPermission = requireGranularPermission;
 // Middleware para permissão por recurso específico
-export const requireResourcePermission = (action, resourceExtractor) => {
+const requireResourcePermission = (action, resourceExtractor) => {
     return async (request, reply) => {
         try {
             const resource = resourceExtractor(request);
-            return requireGranularPermission(action, resource)(request, reply);
+            return (0, exports.requireGranularPermission)(action, resource)(request, reply);
         }
         catch (error) {
             request.log.error(error);
@@ -387,8 +392,9 @@ export const requireResourcePermission = (action, resourceExtractor) => {
         }
     };
 };
+exports.requireResourcePermission = requireResourcePermission;
 // Middleware para permissão baseada em tempo
-export const requireTimeBasedPermission = (action, timeConditions) => {
+const requireTimeBasedPermission = (action, timeConditions) => {
     return async (request, reply) => {
         try {
             if (!request.user) {
@@ -438,6 +444,7 @@ export const requireTimeBasedPermission = (action, timeConditions) => {
         }
     };
 };
+exports.requireTimeBasedPermission = requireTimeBasedPermission;
 // Função auxiliar para obter permissões customizadas do usuário
 async function getUserCustomPermissions(userId) {
     // TODO: Implementar busca no banco de dados

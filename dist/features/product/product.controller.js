@@ -1,11 +1,14 @@
-import { ProductCommands } from './commands/product.commands';
-import { ProductQueries } from './queries/product.queries';
-export const ProductController = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ProductController = void 0;
+const product_commands_1 = require("./commands/product.commands");
+const product_queries_1 = require("./queries/product.queries");
+exports.ProductController = {
     // === CRUD BÁSICO ===
     async create(request, reply) {
         try {
             const { name, description, unitOfMeasure, referencePrice, categoryIds, supplierId, storeId, stockMin, stockMax, alertPercentage, status } = request.body;
-            const result = await ProductCommands.create({
+            const result = await product_commands_1.ProductCommands.create({
                 name,
                 description,
                 unitOfMeasure,
@@ -45,7 +48,7 @@ export const ProductController = {
     async get(request, reply) {
         try {
             const { id, storeId } = request.params;
-            const result = await ProductQueries.getById(id, storeId);
+            const result = await product_queries_1.ProductQueries.getById(id, storeId);
             if (!result) {
                 return reply.status(404).send({
                     error: 'Product not found'
@@ -69,7 +72,7 @@ export const ProductController = {
         try {
             const { id } = request.params;
             const updateData = { ...request.body };
-            const result = await ProductCommands.update(id, updateData);
+            const result = await product_commands_1.ProductCommands.update(id, updateData);
             return reply.send(result);
         }
         catch (error) {
@@ -102,7 +105,7 @@ export const ProductController = {
     async delete(request, reply) {
         try {
             const { id } = request.params;
-            await ProductCommands.delete(id);
+            await product_commands_1.ProductCommands.delete(id);
             return reply.status(204).send();
         }
         catch (error) {
@@ -120,7 +123,7 @@ export const ProductController = {
     async list(request, reply) {
         try {
             const { page = 1, limit = 10, search, status, categoryIds, supplierId, storeId } = request.query;
-            const result = await ProductQueries.list({
+            const result = await product_queries_1.ProductQueries.list({
                 page,
                 limit,
                 search,
@@ -141,7 +144,7 @@ export const ProductController = {
     // === FUNÇÕES ADICIONAIS (QUERIES) ===
     async getActive(request, reply) {
         try {
-            const result = await ProductQueries.getActive();
+            const result = await product_queries_1.ProductQueries.getActive();
             return reply.send({ products: result });
         }
         catch (error) {
@@ -153,7 +156,7 @@ export const ProductController = {
     },
     async getStats(request, reply) {
         try {
-            const result = await ProductQueries.getStats();
+            const result = await product_queries_1.ProductQueries.getStats();
             return reply.send(result);
         }
         catch (error) {
@@ -166,7 +169,7 @@ export const ProductController = {
     async search(request, reply) {
         try {
             const { q, limit = 10 } = request.query;
-            const result = await ProductQueries.search(q, limit);
+            const result = await product_queries_1.ProductQueries.search(q, limit);
             return reply.send({ products: result });
         }
         catch (error) {
@@ -179,7 +182,7 @@ export const ProductController = {
     async getByCategory(request, reply) {
         try {
             const { categoryId } = request.params;
-            const result = await ProductQueries.getByCategory(categoryId);
+            const result = await product_queries_1.ProductQueries.getByCategory(categoryId);
             return reply.send({ products: result });
         }
         catch (error) {
@@ -192,7 +195,7 @@ export const ProductController = {
     async getBySupplier(request, reply) {
         try {
             const { supplierId } = request.params;
-            const result = await ProductQueries.getBySupplier(supplierId);
+            const result = await product_queries_1.ProductQueries.getBySupplier(supplierId);
             return reply.send({ products: result });
         }
         catch (error) {
@@ -205,7 +208,7 @@ export const ProductController = {
     async getByStore(request, reply) {
         try {
             const { storeId } = request.params;
-            const result = await ProductQueries.getByStore(storeId);
+            const result = await product_queries_1.ProductQueries.getByStore(storeId);
             return reply.send({ products: result });
         }
         catch (error) {
@@ -220,7 +223,7 @@ export const ProductController = {
         try {
             const { id } = request.params;
             const { status } = request.body;
-            const result = await ProductCommands.updateStatus(id, status);
+            const result = await product_commands_1.ProductCommands.updateStatus(id, status);
             return reply.send(result);
         }
         catch (error) {
@@ -240,7 +243,7 @@ export const ProductController = {
         try {
             const { id: productId } = request.params;
             const { sku } = request.body;
-            const result = await ProductCommands.verifySku(productId, sku);
+            const result = await product_commands_1.ProductCommands.verifySku(productId, sku);
             return reply.send(result);
         }
         catch (error) {
@@ -260,7 +263,7 @@ export const ProductController = {
             const { id: productId } = request.params;
             const { quantity, type, note } = request.body;
             const userId = request.user?.id;
-            const result = await ProductCommands.updateStock(productId, quantity, type, note, userId);
+            const result = await product_commands_1.ProductCommands.updateStock(productId, quantity, type, note, userId);
             return reply.send(result);
         }
         catch (error) {
@@ -279,7 +282,7 @@ export const ProductController = {
         try {
             const { id: productId } = request.params;
             const { page = 1, limit = 10, type, startDate, endDate } = request.query;
-            const result = await ProductQueries.getProductMovements(productId, {
+            const result = await product_queries_1.ProductQueries.getProductMovements(productId, {
                 page,
                 limit,
                 type,
@@ -305,7 +308,7 @@ export const ProductController = {
             const { id: productId } = request.params;
             const { type, quantity, supplierId, batch, expiration, price, note } = request.body;
             const userId = request.user?.id;
-            const result = await ProductCommands.createMovement(productId, {
+            const result = await product_commands_1.ProductCommands.createMovement(productId, {
                 type,
                 quantity,
                 supplierId,
@@ -337,7 +340,7 @@ export const ProductController = {
     async getStock(request, reply) {
         try {
             const { id: productId } = request.params;
-            const result = await ProductCommands.getProductStock(productId);
+            const result = await product_commands_1.ProductCommands.getProductStock(productId);
             return reply.send(result);
         }
         catch (error) {
@@ -356,7 +359,7 @@ export const ProductController = {
         try {
             const { id: productId } = request.params;
             const { limit = 30 } = request.query;
-            const result = await ProductQueries.getProductStockHistory(productId, limit);
+            const result = await product_queries_1.ProductQueries.getProductStockHistory(productId, limit);
             return reply.send(result);
         }
         catch (error) {
@@ -374,7 +377,7 @@ export const ProductController = {
     async getLowStock(request, reply) {
         try {
             const { storeId } = request.query;
-            const result = await ProductQueries.getLowStockProducts(storeId);
+            const result = await product_queries_1.ProductQueries.getLowStockProducts(storeId);
             return reply.send({ products: result });
         }
         catch (error) {
@@ -387,7 +390,7 @@ export const ProductController = {
     async getAnalytics(request, reply) {
         try {
             const { id: productId } = request.params;
-            const result = await ProductQueries.getProductAnalytics(productId);
+            const result = await product_queries_1.ProductQueries.getProductAnalytics(productId);
             return reply.send(result);
         }
         catch (error) {
@@ -407,7 +410,7 @@ export const ProductController = {
         try {
             const { id } = request.params;
             const { categoryIds } = request.body;
-            const result = await ProductCommands.addCategories(id, categoryIds);
+            const result = await product_commands_1.ProductCommands.addCategories(id, categoryIds);
             return reply.send(result);
         }
         catch (error) {
@@ -432,7 +435,7 @@ export const ProductController = {
         try {
             const { id } = request.params;
             const { categoryIds } = request.body;
-            const result = await ProductCommands.removeCategories(id, categoryIds);
+            const result = await product_commands_1.ProductCommands.removeCategories(id, categoryIds);
             return reply.send(result);
         }
         catch (error) {
@@ -451,7 +454,7 @@ export const ProductController = {
         try {
             const { id } = request.params;
             const { categoryIds } = request.body;
-            const result = await ProductCommands.setCategories(id, categoryIds);
+            const result = await product_commands_1.ProductCommands.setCategories(id, categoryIds);
             return reply.send(result);
         }
         catch (error) {
@@ -474,7 +477,7 @@ export const ProductController = {
     async getCategories(request, reply) {
         try {
             const { id } = request.params;
-            const result = await ProductQueries.getCategories(id);
+            const result = await product_queries_1.ProductQueries.getCategories(id);
             return reply.send(result);
         }
         catch (error) {

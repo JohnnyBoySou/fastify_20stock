@@ -1,58 +1,61 @@
-import { SupplierController } from './supplier.controller';
-import { SupplierSchemas } from './supplier.schema';
-import { SupplierResponsibleRoutes } from './supplier-responsible.routes';
-export async function SupplierRoutes(fastify) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SupplierRoutes = SupplierRoutes;
+const supplier_controller_1 = require("./supplier.controller");
+const supplier_schema_1 = require("./supplier.schema");
+const supplier_responsible_routes_1 = require("./supplier-responsible.routes");
+async function SupplierRoutes(fastify) {
     // CRUD básico
     fastify.post('/', {
-        schema: SupplierSchemas.create,
-        handler: SupplierController.create
+        schema: supplier_schema_1.SupplierSchemas.create,
+        handler: supplier_controller_1.SupplierController.create
     });
     fastify.get('/', {
-        schema: SupplierSchemas.list,
-        handler: SupplierController.list
+        schema: supplier_schema_1.SupplierSchemas.list,
+        handler: supplier_controller_1.SupplierController.list
     });
     fastify.get('/:id', {
-        schema: SupplierSchemas.get,
-        handler: SupplierController.get
+        schema: supplier_schema_1.SupplierSchemas.get,
+        handler: supplier_controller_1.SupplierController.get
     });
     fastify.put('/:id', {
-        schema: SupplierSchemas.update,
-        handler: SupplierController.update
+        schema: supplier_schema_1.SupplierSchemas.update,
+        handler: supplier_controller_1.SupplierController.update
     });
     fastify.delete('/:id', {
-        schema: SupplierSchemas.delete,
-        handler: SupplierController.delete
+        schema: supplier_schema_1.SupplierSchemas.delete,
+        handler: supplier_controller_1.SupplierController.delete
     });
     // Funções adicionais
     fastify.get('/cnpj/:cnpj', {
-        schema: SupplierSchemas.getByCnpj,
-        handler: SupplierController.getByCnpj
+        schema: supplier_schema_1.SupplierSchemas.getByCnpj,
+        handler: supplier_controller_1.SupplierController.getByCnpj
     });
     fastify.get('/city/:city', {
-        schema: SupplierSchemas.getByCity,
-        handler: SupplierController.getByCity
+        schema: supplier_schema_1.SupplierSchemas.getByCity,
+        handler: supplier_controller_1.SupplierController.getByCity
     });
     fastify.get('/state/:state', {
-        schema: SupplierSchemas.getByState,
-        handler: SupplierController.getByState
+        schema: supplier_schema_1.SupplierSchemas.getByState,
+        handler: supplier_controller_1.SupplierController.getByState
     });
     fastify.get('/active', {
-        handler: SupplierController.getActive
+        handler: supplier_controller_1.SupplierController.getActive
     });
     fastify.get('/stats', {
-        handler: SupplierController.getStats
+        handler: supplier_controller_1.SupplierController.getStats
     });
     fastify.get('/search', {
-        schema: SupplierSchemas.search,
-        handler: SupplierController.search
+        schema: supplier_schema_1.SupplierSchemas.search,
+        handler: supplier_controller_1.SupplierController.search
     });
     fastify.get('/top', {
-        handler: SupplierController.getTopSuppliers
+        handler: supplier_controller_1.SupplierController.getTopSuppliers
     });
     fastify.patch('/:id/toggle-status', {
-        schema: SupplierSchemas.get,
-        handler: SupplierController.toggleStatus
+        schema: supplier_schema_1.SupplierSchemas.get,
+        handler: supplier_controller_1.SupplierController.toggleStatus
     });
     // Registrar rotas de responsáveis
-    await fastify.register(SupplierResponsibleRoutes);
+    await fastify.register(supplier_responsible_routes_1.SupplierResponsibleRoutes);
 }

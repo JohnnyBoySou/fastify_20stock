@@ -1,6 +1,9 @@
-import { StoreRole } from './authorization.middleware';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.requireStoreResourceAccess = exports.requireStoreUserManagement = exports.requireStoreRoleAccess = exports.requireStoreAccess = void 0;
+const authorization_middleware_1 = require("./authorization.middleware");
 // Middleware to check if user has access to a specific store
-export const requireStoreAccess = (storeIdParam = 'storeId') => {
+const requireStoreAccess = (storeIdParam = 'storeId') => {
     return async (request, reply) => {
         try {
             if (!request.user) {
@@ -58,8 +61,9 @@ export const requireStoreAccess = (storeIdParam = 'storeId') => {
         }
     };
 };
+exports.requireStoreAccess = requireStoreAccess;
 // Middleware to check if user has specific store role
-export const requireStoreRoleAccess = (requiredRoles, storeIdParam = 'storeId') => {
+const requireStoreRoleAccess = (requiredRoles, storeIdParam = 'storeId') => {
     return async (request, reply) => {
         try {
             if (!request.user) {
@@ -122,8 +126,9 @@ export const requireStoreRoleAccess = (requiredRoles, storeIdParam = 'storeId') 
         }
     };
 };
+exports.requireStoreRoleAccess = requireStoreRoleAccess;
 // Middleware to check if user can manage store users
-export const requireStoreUserManagement = (storeIdParam = 'storeId') => {
+const requireStoreUserManagement = (storeIdParam = 'storeId') => {
     return async (request, reply) => {
         try {
             if (!request.user) {
@@ -159,7 +164,7 @@ export const requireStoreUserManagement = (storeIdParam = 'storeId') => {
                     storeId: storeId,
                     userId: currentUserId,
                     role: {
-                        in: [StoreRole.ADMIN, StoreRole.MANAGER]
+                        in: [authorization_middleware_1.StoreRole.ADMIN, authorization_middleware_1.StoreRole.MANAGER]
                     }
                 }
             });
@@ -178,8 +183,9 @@ export const requireStoreUserManagement = (storeIdParam = 'storeId') => {
         }
     };
 };
+exports.requireStoreUserManagement = requireStoreUserManagement;
 // Middleware to check if user can access store resources (products, movements, etc.)
-export const requireStoreResourceAccess = (storeIdParam = 'storeId') => {
+const requireStoreResourceAccess = (storeIdParam = 'storeId') => {
     return async (request, reply) => {
         try {
             if (!request.user) {
@@ -231,3 +237,4 @@ export const requireStoreResourceAccess = (storeIdParam = 'storeId') => {
         }
     };
 };
+exports.requireStoreResourceAccess = requireStoreResourceAccess;

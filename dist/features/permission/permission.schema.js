@@ -1,8 +1,11 @@
-import { Action, StoreRole } from '../../middlewares/authorization.middleware';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PermissionSchemas = void 0;
+const authorization_middleware_1 = require("../../middlewares/authorization.middleware");
 // ================================
 // SCHEMAS PARA PERMISSÕES CUSTOMIZADAS
 // ================================
-export const PermissionSchemas = {
+exports.PermissionSchemas = {
     // Criar permissão customizada
     createUserPermission: {
         body: {
@@ -10,7 +13,7 @@ export const PermissionSchemas = {
             required: ['userId', 'action', 'grant'],
             properties: {
                 userId: { type: 'string', minLength: 1 },
-                action: { type: 'string', enum: Object.values(Action) },
+                action: { type: 'string', enum: Object.values(authorization_middleware_1.Action) },
                 resource: { type: 'string', maxLength: 100 },
                 storeId: { type: 'string', minLength: 1 },
                 grant: { type: 'boolean' },
@@ -54,7 +57,7 @@ export const PermissionSchemas = {
             type: 'object',
             properties: {
                 storeId: { type: 'string', minLength: 1 },
-                action: { type: 'string', enum: Object.values(Action) },
+                action: { type: 'string', enum: Object.values(authorization_middleware_1.Action) },
                 active: { type: 'boolean' },
                 page: { type: 'integer', minimum: 1, default: 1 },
                 limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 }
@@ -73,7 +76,7 @@ export const PermissionSchemas = {
         body: {
             type: 'object',
             properties: {
-                action: { type: 'string', enum: Object.values(Action) },
+                action: { type: 'string', enum: Object.values(authorization_middleware_1.Action) },
                 resource: { type: 'string', maxLength: 100 },
                 storeId: { type: 'string', minLength: 1 },
                 grant: { type: 'boolean' },
@@ -125,10 +128,10 @@ export const PermissionSchemas = {
             properties: {
                 userId: { type: 'string', minLength: 1 },
                 storeId: { type: 'string', minLength: 1 },
-                storeRole: { type: 'string', enum: Object.values(StoreRole) },
+                storeRole: { type: 'string', enum: Object.values(authorization_middleware_1.StoreRole) },
                 permissions: {
                     type: 'array',
-                    items: { type: 'string', enum: Object.values(Action) },
+                    items: { type: 'string', enum: Object.values(authorization_middleware_1.Action) },
                     minItems: 1
                 },
                 conditions: {
@@ -200,7 +203,7 @@ export const PermissionSchemas = {
             required: ['userId', 'action'],
             properties: {
                 userId: { type: 'string', minLength: 1 },
-                action: { type: 'string', enum: Object.values(Action) },
+                action: { type: 'string', enum: Object.values(authorization_middleware_1.Action) },
                 resource: { type: 'string', maxLength: 100 },
                 storeId: { type: 'string', minLength: 1 },
                 context: { type: 'object' }
@@ -234,7 +237,7 @@ export const PermissionSchemas = {
                         required: ['userId', 'action', 'grant'],
                         properties: {
                             userId: { type: 'string', minLength: 1 },
-                            action: { type: 'string', enum: Object.values(Action) },
+                            action: { type: 'string', enum: Object.values(authorization_middleware_1.Action) },
                             resource: { type: 'string', maxLength: 100 },
                             storeId: { type: 'string', minLength: 1 },
                             grant: { type: 'boolean' },
@@ -283,7 +286,7 @@ export const PermissionSchemas = {
                         required: ['id'],
                         properties: {
                             id: { type: 'string', minLength: 1 },
-                            action: { type: 'string', enum: Object.values(Action) },
+                            action: { type: 'string', enum: Object.values(authorization_middleware_1.Action) },
                             resource: { type: 'string', maxLength: 100 },
                             storeId: { type: 'string', minLength: 1 },
                             grant: { type: 'boolean' },
@@ -347,7 +350,7 @@ export const PermissionSchemas = {
                 description: { type: 'string', maxLength: 500 },
                 permissions: {
                     type: 'array',
-                    items: { type: 'string', enum: Object.values(Action) },
+                    items: { type: 'string', enum: Object.values(authorization_middleware_1.Action) },
                     minItems: 1
                 },
                 conditions: {

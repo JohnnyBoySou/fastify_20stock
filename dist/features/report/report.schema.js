@@ -1,7 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.exportReportSchema = exports.getStockAlertReportSchema = exports.getUserActivityReportSchema = exports.getSupplierReportSchema = exports.getCategoryReportSchema = exports.getFinancialReportSchema = exports.getMovementReportSchema = exports.getInventoryReportSchema = exports.getDashboardStatsSchema = void 0;
 // ================================
 // SCHEMAS DE QUERY PARAMETERS
 // ================================
-export const getDashboardStatsSchema = {
+exports.getDashboardStatsSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -121,7 +124,7 @@ export const getDashboardStatsSchema = {
         }
     }
 };
-export const getInventoryReportSchema = {
+exports.getInventoryReportSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -211,7 +214,7 @@ export const getInventoryReportSchema = {
         }
     }
 };
-export const getMovementReportSchema = {
+exports.getMovementReportSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -296,7 +299,7 @@ export const getMovementReportSchema = {
         }
     }
 };
-export const getFinancialReportSchema = {
+exports.getFinancialReportSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -396,7 +399,7 @@ export const getFinancialReportSchema = {
         }
     }
 };
-export const getCategoryReportSchema = {
+exports.getCategoryReportSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -465,7 +468,7 @@ export const getCategoryReportSchema = {
         }
     }
 };
-export const getSupplierReportSchema = {
+exports.getSupplierReportSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -541,7 +544,7 @@ export const getSupplierReportSchema = {
         }
     }
 };
-export const getUserActivityReportSchema = {
+exports.getUserActivityReportSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -622,7 +625,7 @@ export const getUserActivityReportSchema = {
         }
     }
 };
-export const getStockAlertReportSchema = {
+exports.getStockAlertReportSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -703,7 +706,7 @@ export const getStockAlertReportSchema = {
         }
     }
 };
-export const exportReportSchema = {
+exports.exportReportSchema = {
     querystring: {
         type: 'object',
         required: ['reportType', 'format'],

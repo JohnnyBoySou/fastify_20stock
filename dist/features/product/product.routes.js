@@ -1,33 +1,36 @@
-import { ProductController } from './product.controller';
-import { ProductSchemas } from './product.schema';
-export async function ProductRoutes(fastify) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ProductRoutes = ProductRoutes;
+const product_controller_1 = require("./product.controller");
+const product_schema_1 = require("./product.schema");
+async function ProductRoutes(fastify) {
     // CRUD básico
     fastify.post('/', {
-        schema: ProductSchemas.create,
-        handler: ProductController.create
+        schema: product_schema_1.ProductSchemas.create,
+        handler: product_controller_1.ProductController.create
     });
     fastify.get('/', {
-        schema: ProductSchemas.list,
-        handler: ProductController.list
+        schema: product_schema_1.ProductSchemas.list,
+        handler: product_controller_1.ProductController.list
     });
     fastify.get('/:id', {
-        schema: ProductSchemas.get,
-        handler: ProductController.get
+        schema: product_schema_1.ProductSchemas.get,
+        handler: product_controller_1.ProductController.get
     });
     fastify.put('/:id', {
-        schema: ProductSchemas.update,
-        handler: ProductController.update
+        schema: product_schema_1.ProductSchemas.update,
+        handler: product_controller_1.ProductController.update
     });
     fastify.delete('/:id', {
-        schema: ProductSchemas.delete,
-        handler: ProductController.delete
+        schema: product_schema_1.ProductSchemas.delete,
+        handler: product_controller_1.ProductController.delete
     });
     // Funções adicionais
     fastify.get('/active', {
-        handler: ProductController.getActive
+        handler: product_controller_1.ProductController.getActive
     });
     fastify.get('/stats', {
-        handler: ProductController.getStats
+        handler: product_controller_1.ProductController.getStats
     });
     fastify.get('/search', {
         schema: {
@@ -40,7 +43,7 @@ export async function ProductRoutes(fastify) {
                 required: ['q']
             }
         },
-        handler: ProductController.search
+        handler: product_controller_1.ProductController.search
     });
     fastify.get('/category/:categoryId', {
         schema: {
@@ -52,7 +55,7 @@ export async function ProductRoutes(fastify) {
                 required: ['categoryId']
             }
         },
-        handler: ProductController.getByCategory
+        handler: product_controller_1.ProductController.getByCategory
     });
     fastify.get('/supplier/:supplierId', {
         schema: {
@@ -64,7 +67,7 @@ export async function ProductRoutes(fastify) {
                 required: ['supplierId']
             }
         },
-        handler: ProductController.getBySupplier
+        handler: product_controller_1.ProductController.getBySupplier
     });
     fastify.get('/store/:storeId', {
         schema: {
@@ -76,28 +79,28 @@ export async function ProductRoutes(fastify) {
                 required: ['storeId']
             }
         },
-        handler: ProductController.getByStore
+        handler: product_controller_1.ProductController.getByStore
     });
     fastify.patch('/:id/status', {
-        schema: ProductSchemas.updateStatus,
-        handler: ProductController.updateStatus
+        schema: product_schema_1.ProductSchemas.updateStatus,
+        handler: product_controller_1.ProductController.updateStatus
     });
     // === ENDPOINTS PARA GERENCIAR CATEGORIAS DO PRODUTO ===
     fastify.post('/:id/categories', {
-        schema: ProductSchemas.addCategories,
-        handler: ProductController.addCategories
+        schema: product_schema_1.ProductSchemas.addCategories,
+        handler: product_controller_1.ProductController.addCategories
     });
     fastify.delete('/:id/categories', {
-        schema: ProductSchemas.removeCategories,
-        handler: ProductController.removeCategories
+        schema: product_schema_1.ProductSchemas.removeCategories,
+        handler: product_controller_1.ProductController.removeCategories
     });
     fastify.put('/:id/categories', {
-        schema: ProductSchemas.setCategories,
-        handler: ProductController.setCategories
+        schema: product_schema_1.ProductSchemas.setCategories,
+        handler: product_controller_1.ProductController.setCategories
     });
     fastify.get('/:id/categories', {
-        schema: ProductSchemas.getCategories,
-        handler: ProductController.getCategories
+        schema: product_schema_1.ProductSchemas.getCategories,
+        handler: product_controller_1.ProductController.getCategories
     });
     // fastify.get('/category/:categoryId', {
     //   schema: ProductSchemas.getByCategory,

@@ -1,7 +1,10 @@
-import { db } from '../../../plugins/prisma';
-export const NotificationCommands = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.NotificationCommands = void 0;
+const prisma_1 = require("../../../plugins/prisma");
+exports.NotificationCommands = {
     async create(data) {
-        return await db.notification.create({
+        return await prisma_1.db.notification.create({
             data: {
                 userId: data.userId,
                 title: data.title,
@@ -24,7 +27,7 @@ export const NotificationCommands = {
         });
     },
     async update(id, data) {
-        return await db.notification.update({
+        return await prisma_1.db.notification.update({
             where: { id },
             data,
             include: {
@@ -39,12 +42,12 @@ export const NotificationCommands = {
         });
     },
     async delete(id) {
-        return await db.notification.delete({
+        return await prisma_1.db.notification.delete({
             where: { id }
         });
     },
     async markAsRead(id) {
-        return await db.notification.update({
+        return await prisma_1.db.notification.update({
             where: { id },
             data: {
                 isRead: true,
@@ -62,7 +65,7 @@ export const NotificationCommands = {
         });
     },
     async markAsUnread(id) {
-        return await db.notification.update({
+        return await prisma_1.db.notification.update({
             where: { id },
             data: {
                 isRead: false,
@@ -80,7 +83,7 @@ export const NotificationCommands = {
         });
     },
     async markAllAsRead(userId) {
-        return await db.notification.updateMany({
+        return await prisma_1.db.notification.updateMany({
             where: {
                 userId,
                 isRead: false
@@ -92,7 +95,7 @@ export const NotificationCommands = {
         });
     },
     async deleteExpired() {
-        return await db.notification.deleteMany({
+        return await prisma_1.db.notification.deleteMany({
             where: {
                 expiresAt: {
                     lt: new Date()
@@ -101,7 +104,7 @@ export const NotificationCommands = {
         });
     },
     async deleteByUser(userId) {
-        return await db.notification.deleteMany({
+        return await prisma_1.db.notification.deleteMany({
             where: { userId }
         });
     }

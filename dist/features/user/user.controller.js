@@ -1,10 +1,13 @@
-import { UserCommands } from './commands/user.commands';
-import { UserQueries } from './querys/user.query';
-export const UserController = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserController = void 0;
+const user_commands_1 = require("./commands/user.commands");
+const user_query_1 = require("./querys/user.query");
+exports.UserController = {
     async create(request, reply) {
         try {
             const { email, password, name, roles = ['user'] } = request.body;
-            const user = await UserCommands.create({
+            const user = await user_commands_1.UserCommands.create({
                 email,
                 password,
                 name,
@@ -27,7 +30,7 @@ export const UserController = {
     async get(request, reply) {
         try {
             const { id } = request.params;
-            const user = await UserQueries.getById(id);
+            const user = await user_query_1.UserQueries.getById(id);
             return reply.send(user);
         }
         catch (error) {
@@ -46,7 +49,7 @@ export const UserController = {
         try {
             const { id } = request.params;
             const updateData = { ...request.body };
-            const user = await UserCommands.update(id, updateData);
+            const user = await user_commands_1.UserCommands.update(id, updateData);
             return reply.send(user);
         }
         catch (error) {
@@ -69,7 +72,7 @@ export const UserController = {
     async delete(request, reply) {
         try {
             const { id } = request.params;
-            await UserCommands.delete(id);
+            await user_commands_1.UserCommands.delete(id);
             return reply.status(204).send();
         }
         catch (error) {
@@ -87,7 +90,7 @@ export const UserController = {
     async list(request, reply) {
         try {
             const { page = 1, limit = 10, search, status } = request.query;
-            const result = await UserQueries.list({
+            const result = await user_query_1.UserQueries.list({
                 page,
                 limit,
                 search,
@@ -106,7 +109,7 @@ export const UserController = {
     async getByEmail(request, reply) {
         try {
             const { email } = request.query;
-            const user = await UserQueries.getByEmail(email);
+            const user = await user_query_1.UserQueries.getByEmail(email);
             if (!user) {
                 return reply.status(404).send({
                     error: 'User not found'
@@ -124,7 +127,7 @@ export const UserController = {
     async getByRole(request, reply) {
         try {
             const { role } = request.params;
-            const users = await UserQueries.getByRole(role);
+            const users = await user_query_1.UserQueries.getByRole(role);
             return reply.send({ users });
         }
         catch (error) {
@@ -136,7 +139,7 @@ export const UserController = {
     },
     async getActive(request, reply) {
         try {
-            const users = await UserQueries.getActive();
+            const users = await user_query_1.UserQueries.getActive();
             return reply.send({ users });
         }
         catch (error) {
@@ -148,7 +151,7 @@ export const UserController = {
     },
     async getStats(request, reply) {
         try {
-            const stats = await UserQueries.getStats();
+            const stats = await user_query_1.UserQueries.getStats();
             return reply.send(stats);
         }
         catch (error) {
@@ -161,7 +164,7 @@ export const UserController = {
     async search(request, reply) {
         try {
             const { q, limit = 10 } = request.query;
-            const users = await UserQueries.search(q, limit);
+            const users = await user_query_1.UserQueries.search(q, limit);
             return reply.send({ users });
         }
         catch (error) {
@@ -175,7 +178,7 @@ export const UserController = {
     async verifyEmail(request, reply) {
         try {
             const { id } = request.params;
-            const user = await UserCommands.verifyEmail(id);
+            const user = await user_commands_1.UserCommands.verifyEmail(id);
             return reply.send(user);
         }
         catch (error) {
@@ -193,7 +196,7 @@ export const UserController = {
     async updateLastLogin(request, reply) {
         try {
             const { id } = request.params;
-            await UserCommands.updateLastLogin(id);
+            await user_commands_1.UserCommands.updateLastLogin(id);
             return reply.send({ success: true });
         }
         catch (error) {

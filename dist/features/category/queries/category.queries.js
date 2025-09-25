@@ -1,7 +1,10 @@
-import { db } from '../../../plugins/prisma';
-export const CategoryQueries = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CategoryQueries = void 0;
+const prisma_1 = require("../../../plugins/prisma");
+exports.CategoryQueries = {
     async getById(id) {
-        return await db.category.findUnique({
+        return await prisma_1.db.category.findUnique({
             where: { id },
             include: {
                 parent: {
@@ -68,7 +71,7 @@ export const CategoryQueries = {
             ];
         }
         const [items, total] = await Promise.all([
-            db.category.findMany({
+            prisma_1.db.category.findMany({
                 where,
                 skip,
                 take: limit,
@@ -115,7 +118,7 @@ export const CategoryQueries = {
                     }
                 }
             }),
-            db.category.count({ where })
+            prisma_1.db.category.count({ where })
         ]);
         return {
             items,
@@ -128,7 +131,7 @@ export const CategoryQueries = {
         };
     },
     async search(term, limit = 10) {
-        return await db.category.findMany({
+        return await prisma_1.db.category.findMany({
             where: {
                 OR: [
                     { name: { contains: term, mode: 'insensitive' } },
@@ -168,7 +171,7 @@ export const CategoryQueries = {
         });
     },
     async getActive() {
-        return await db.category.findMany({
+        return await prisma_1.db.category.findMany({
             where: { status: true },
             orderBy: { createdAt: 'desc' },
             include: {
@@ -202,15 +205,15 @@ export const CategoryQueries = {
     },
     async getStats() {
         const [total, active, inactive, withChildren, withoutChildren] = await Promise.all([
-            db.category.count(),
-            db.category.count({ where: { status: true } }),
-            db.category.count({ where: { status: false } }),
-            db.category.count({
+            prisma_1.db.category.count(),
+            prisma_1.db.category.count({ where: { status: true } }),
+            prisma_1.db.category.count({ where: { status: false } }),
+            prisma_1.db.category.count({
                 where: {
                     children: { some: {} }
                 }
             }),
-            db.category.count({
+            prisma_1.db.category.count({
                 where: {
                     children: { none: {} }
                 }
@@ -229,7 +232,7 @@ export const CategoryQueries = {
         if (status !== undefined) {
             where.status = status;
         }
-        return await db.category.findMany({
+        return await prisma_1.db.category.findMany({
             where,
             orderBy: { createdAt: 'desc' },
             include: {
@@ -254,7 +257,7 @@ export const CategoryQueries = {
         });
     },
     async getChildren(parentId) {
-        return await db.category.findMany({
+        return await prisma_1.db.category.findMany({
             where: { parentId },
             orderBy: { createdAt: 'desc' },
             include: {
@@ -293,10 +296,10 @@ export const CategoryQueries = {
         });
     },
     async getHierarchy() {
-        const rootCategories = await CategoryQueries.getRootCategories();
+        const rootCategories = await exports.CategoryQueries.getRootCategories();
         const buildHierarchy = async (categories) => {
             for (const category of categories) {
-                category.children = await CategoryQueries.getChildren(category.id);
+                category.children = await exports.CategoryQueries.getChildren(category.id);
                 if (category.children.length > 0) {
                     await buildHierarchy(category.children);
                 }
@@ -306,7 +309,7 @@ export const CategoryQueries = {
         return rootCategories;
     },
     async getByCode(code) {
-        return await db.category.findUnique({
+        return await prisma_1.db.category.findUnique({
             where: { code },
             include: {
                 parent: {

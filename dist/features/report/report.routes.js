@@ -1,58 +1,61 @@
-import { ReportController } from './report.controller';
-import { getDashboardStatsSchema, getInventoryReportSchema, getMovementReportSchema, getFinancialReportSchema, getCategoryReportSchema, getSupplierReportSchema, getUserActivityReportSchema, getStockAlertReportSchema, exportReportSchema } from './report.schema';
-export async function ReportRoutes(fastify) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ReportRoutes = ReportRoutes;
+const report_controller_1 = require("./report.controller");
+const report_schema_1 = require("./report.schema");
+async function ReportRoutes(fastify) {
     // ================================
     // DASHBOARD STATS
     // ================================
     fastify.get('/dashboard/stats', {
-        schema: getDashboardStatsSchema,
-        handler: ReportController.getDashboardStats
+        schema: report_schema_1.getDashboardStatsSchema,
+        handler: report_controller_1.ReportController.getDashboardStats
     });
     // ================================
     // REPORT ENDPOINTS
     // ================================
     // Inventory Report
     fastify.get('/inventory', {
-        schema: getInventoryReportSchema,
-        handler: ReportController.getInventoryReport
+        schema: report_schema_1.getInventoryReportSchema,
+        handler: report_controller_1.ReportController.getInventoryReport
     });
     // Movement Report
     fastify.get('/movements', {
-        schema: getMovementReportSchema,
-        handler: ReportController.getMovementReport
+        schema: report_schema_1.getMovementReportSchema,
+        handler: report_controller_1.ReportController.getMovementReport
     });
     // Financial Report
     fastify.get('/financial', {
-        schema: getFinancialReportSchema,
-        handler: ReportController.getFinancialReport
+        schema: report_schema_1.getFinancialReportSchema,
+        handler: report_controller_1.ReportController.getFinancialReport
     });
     // Category Report
     fastify.get('/categories', {
-        schema: getCategoryReportSchema,
-        handler: ReportController.getCategoryReport
+        schema: report_schema_1.getCategoryReportSchema,
+        handler: report_controller_1.ReportController.getCategoryReport
     });
     // Supplier Report
     fastify.get('/suppliers', {
-        schema: getSupplierReportSchema,
-        handler: ReportController.getSupplierReport
+        schema: report_schema_1.getSupplierReportSchema,
+        handler: report_controller_1.ReportController.getSupplierReport
     });
     // User Activity Report
     fastify.get('/user-activity', {
-        schema: getUserActivityReportSchema,
-        handler: ReportController.getUserActivityReport
+        schema: report_schema_1.getUserActivityReportSchema,
+        handler: report_controller_1.ReportController.getUserActivityReport
     });
     // Stock Alert Report
     fastify.get('/stock-alerts', {
-        schema: getStockAlertReportSchema,
-        handler: ReportController.getStockAlertReport
+        schema: report_schema_1.getStockAlertReportSchema,
+        handler: report_controller_1.ReportController.getStockAlertReport
     });
     // ================================
     // EXPORT ENDPOINTS
     // ================================
     // Export Report
     fastify.get('/export', {
-        schema: exportReportSchema,
-        handler: ReportController.exportReport
+        schema: report_schema_1.exportReportSchema,
+        handler: report_controller_1.ReportController.exportReport
     });
     // ================================
     // SCHEDULE ENDPOINTS
@@ -128,7 +131,7 @@ export async function ReportRoutes(fastify) {
                 }
             }
         },
-        handler: ReportController.scheduleReport
+        handler: report_controller_1.ReportController.scheduleReport
     });
     // Cancel Scheduled Report
     fastify.delete('/schedule/:scheduleId', {
@@ -151,7 +154,7 @@ export async function ReportRoutes(fastify) {
                 }
             }
         },
-        handler: ReportController.cancelScheduledReport
+        handler: report_controller_1.ReportController.cancelScheduledReport
     });
     // ================================
     // EMAIL ENDPOINTS
@@ -202,7 +205,7 @@ export async function ReportRoutes(fastify) {
                 }
             }
         },
-        handler: ReportController.sendReportViaEmail
+        handler: report_controller_1.ReportController.sendReportViaEmail
     });
     // ================================
     // UTILITY ENDPOINTS
@@ -235,7 +238,7 @@ export async function ReportRoutes(fastify) {
                 }
             }
         },
-        handler: ReportController.getAvailableReportTypes
+        handler: report_controller_1.ReportController.getAvailableReportTypes
     });
     // Get Report Statistics
     fastify.get('/statistics', {
@@ -254,7 +257,7 @@ export async function ReportRoutes(fastify) {
                 }
             }
         },
-        handler: ReportController.getReportStatistics
+        handler: report_controller_1.ReportController.getReportStatistics
     });
     // Validate Filters
     fastify.post('/validate-filters', {
@@ -296,7 +299,7 @@ export async function ReportRoutes(fastify) {
                 }
             }
         },
-        handler: ReportController.validateFilters
+        handler: report_controller_1.ReportController.validateFilters
     });
     // ================================
     // DOWNLOAD ENDPOINTS

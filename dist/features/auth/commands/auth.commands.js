@@ -1,27 +1,33 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
-import { db } from '../../../plugins/prisma';
-import { AuthQueries } from '../queries/auth.queries';
-import { EmailService } from '../../../services/email/email.service';
-export const AuthCommands = {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuthCommands = void 0;
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const crypto_1 = __importDefault(require("crypto"));
+const prisma_1 = require("../../../plugins/prisma");
+const auth_queries_1 = require("../queries/auth.queries");
+const email_service_1 = require("../../../services/email/email.service");
+exports.AuthCommands = {
     async register(data) {
         const { name, email, password, phone } = data;
         // Check if user already exists
-        const existingUser = await db.user.findUnique({
+        const existingUser = await prisma_1.db.user.findUnique({
             where: { email }
         });
         if (existingUser) {
             throw new Error('User already exists with this email');
         }
         // Hash password
-        const hashedPassword = await bcrypt.hash(password, 12);
+        const hashedPassword = await bcryptjs_1.default.hash(password, 12);
         // Generate email verification code and token
-        const emailVerificationCode = AuthCommands.generateVerificationCode();
+        const emailVerificationCode = exports.AuthCommands.generateVerificationCode();
         const emailVerificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-        const emailVerificationToken = AuthCommands.generateVerificationToken();
+        const emailVerificationToken = exports.AuthCommands.generateVerificationToken();
         // Create user
-        const user = await db.user.create({
+        const user = await prisma_1.db.user.create({
             data: {
                 name,
                 email,
@@ -43,7 +49,7 @@ export const AuthCommands = {
         });
         // Send email verification with code
         try {
-            await EmailService.sendEmailVerification({
+            await email_service_1.EmailService.sendEmailVerification({
                 name,
                 email,
                 verificationCode: emailVerificationCode,
@@ -59,26 +65,26 @@ export const AuthCommands = {
     async login(data) {
         const { email, password } = data;
         // Find user
-        const user = await db.user.findUnique({
+        const user = await prisma_1.db.user.findUnique({
             where: { email, status: true }
         });
         if (!user) {
             throw new Error('Invalid credentials');
         }
         // Verify password
-        const isValidPassword = await bcrypt.compare(password, user.password);
+        const isValidPassword = await bcryptjs_1.default.compare(password, user.password);
         if (!isValidPassword) {
             throw new Error('Invalid credentials');
         }
         // Update last login
-        await db.user.update({
+        await prisma_1.db.user.update({
             where: { id: user.id },
             data: { lastLoginAt: new Date() }
         });
         // Get user's store (if exists)
-        const store = await AuthQueries.getStoreByOwner(user.id);
+        const store = await auth_queries_1.AuthQueries.getStoreByOwner(user.id);
         // Generate JWT token
-        const token = AuthCommands.generateJWT({
+        const token = exports.AuthCommands.generateJWT({
             userId: user.id,
             email: user.email,
             roles: user.roles
@@ -97,17 +103,17 @@ export const AuthCommands = {
     },
     async forgotPassword(email) {
         // Find user
-        const user = await db.user.findUnique({
+        const user = await prisma_1.db.user.findUnique({
             where: { email, status: true }
         });
         if (!user) {
             throw new Error('User not found');
         }
         // Generate reset code (6 digits)
-        const resetCode = AuthCommands.generateVerificationCode();
+        const resetCode = exports.AuthCommands.generateVerificationCode();
         const resetExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
         // Update user with reset code
-        await db.user.update({
+        await prisma_1.db.user.update({
             where: { id: user.id },
             data: {
                 resetPasswordCode: resetCode,
@@ -116,7 +122,7 @@ export const AuthCommands = {
         });
         // Send reset password email with code
         try {
-            await EmailService.sendPasswordResetEmail({
+            await email_service_1.EmailService.sendPasswordResetEmail({
                 name: user.name,
                 email: user.email,
                 resetCode: resetCode,
@@ -131,7 +137,7 @@ export const AuthCommands = {
     },
     async verifyResetCode(email, code) {
         // Find user by email and reset code
-        const user = await db.user.findFirst({
+        const user = await prisma_1.db.user.findFirst({
             where: {
                 email,
                 resetPasswordCode: code,
@@ -151,7 +157,7 @@ export const AuthCommands = {
     },
     async resetPassword(email, code, newPassword) {
         // Find user by email and reset code
-        const user = await db.user.findFirst({
+        const user = await prisma_1.db.user.findFirst({
             where: {
                 email,
                 resetPasswordCode: code,
@@ -168,9 +174,9 @@ export const AuthCommands = {
             throw new Error('Reset code expired');
         }
         // Hash new password
-        const hashedPassword = await bcrypt.hash(newPassword, 12);
+        const hashedPassword = await bcryptjs_1.default.hash(newPassword, 12);
         // Update user password and clear reset data
-        await db.user.update({
+        await prisma_1.db.user.update({
             where: { id: user.id },
             data: {
                 password: hashedPassword,
@@ -182,7 +188,7 @@ export const AuthCommands = {
     },
     async verifyEmail(token) {
         // Find user by verification token
-        const user = await db.user.findFirst({
+        const user = await prisma_1.db.user.findFirst({
             where: {
                 emailVerificationToken: token,
                 emailVerified: false
@@ -192,7 +198,7 @@ export const AuthCommands = {
             throw new Error('Invalid verification token');
         }
         // Update user as verified
-        await db.user.update({
+        await prisma_1.db.user.update({
             where: { id: user.id },
             data: {
                 emailVerified: true,
@@ -203,7 +209,7 @@ export const AuthCommands = {
     },
     async verifyEmailCode(email, code) {
         // Find user by email and verification code
-        const user = await db.user.findFirst({
+        const user = await prisma_1.db.user.findFirst({
             where: {
                 email,
                 emailVerificationCode: code,
@@ -221,7 +227,7 @@ export const AuthCommands = {
             throw new Error('Verification code expired');
         }
         // Update user as verified and clear verification data
-        const updatedUser = await db.user.update({
+        const updatedUser = await prisma_1.db.user.update({
             where: { id: user.id },
             data: {
                 emailVerified: true,
@@ -241,7 +247,7 @@ export const AuthCommands = {
     },
     async resendVerification(email) {
         // Find user
-        const user = await db.user.findUnique({
+        const user = await prisma_1.db.user.findUnique({
             where: { email, status: true }
         });
         if (!user) {
@@ -251,11 +257,11 @@ export const AuthCommands = {
             throw new Error('Email already verified');
         }
         // Generate new verification code and token
-        const emailVerificationCode = AuthCommands.generateVerificationCode();
+        const emailVerificationCode = exports.AuthCommands.generateVerificationCode();
         const emailVerificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-        const emailVerificationToken = AuthCommands.generateVerificationToken();
+        const emailVerificationToken = exports.AuthCommands.generateVerificationToken();
         // Update user with new verification data
-        await db.user.update({
+        await prisma_1.db.user.update({
             where: { id: user.id },
             data: {
                 emailVerificationCode,
@@ -265,7 +271,7 @@ export const AuthCommands = {
         });
         // Send new verification email with code
         try {
-            await EmailService.sendEmailVerification({
+            await email_service_1.EmailService.sendEmailVerification({
                 name: user.name,
                 email: user.email,
                 verificationCode: emailVerificationCode,
@@ -280,14 +286,14 @@ export const AuthCommands = {
     },
     async refreshToken(userId) {
         // Find user
-        const user = await db.user.findUnique({
+        const user = await prisma_1.db.user.findUnique({
             where: { id: userId, status: true }
         });
         if (!user) {
             throw new Error('User not found');
         }
         // Generate new JWT token
-        const token = AuthCommands.generateJWT({
+        const token = exports.AuthCommands.generateJWT({
             userId: user.id,
             email: user.email,
             roles: user.roles
@@ -297,13 +303,13 @@ export const AuthCommands = {
     // Helper methods
     generateJWT(payload) {
         const secret = process.env.JWT_SECRET || 'your-secret-key';
-        return jwt.sign(payload, secret, { expiresIn: '7d' });
+        return jsonwebtoken_1.default.sign(payload, secret, { expiresIn: '7d' });
     },
     generateResetToken() {
-        return crypto.randomBytes(32).toString('hex');
+        return crypto_1.default.randomBytes(32).toString('hex');
     },
     generateVerificationToken() {
-        return crypto.randomBytes(32).toString('hex');
+        return crypto_1.default.randomBytes(32).toString('hex');
     },
     generateVerificationCode() {
         return Math.floor(100000 + Math.random() * 900000).toString();
@@ -311,7 +317,7 @@ export const AuthCommands = {
     // Verify JWT token
     verifyToken(token) {
         const secret = process.env.JWT_SECRET || 'your-secret-key';
-        return jwt.verify(token, secret);
+        return jsonwebtoken_1.default.verify(token, secret);
     },
     // Extract token from Authorization header
     extractToken(authHeader) {
@@ -324,7 +330,7 @@ export const AuthCommands = {
         const { name, email } = data;
         // Check if email is being changed and if it already exists
         if (email) {
-            const existingUser = await db.user.findFirst({
+            const existingUser = await prisma_1.db.user.findFirst({
                 where: {
                     email,
                     id: { not: userId }
@@ -341,10 +347,10 @@ export const AuthCommands = {
         if (email) {
             updateData.email = email;
             updateData.emailVerified = false; // Reset verification when email changes
-            updateData.emailVerificationToken = AuthCommands.generateVerificationToken();
+            updateData.emailVerificationToken = exports.AuthCommands.generateVerificationToken();
         }
         // Update user
-        const user = await db.user.update({
+        const user = await prisma_1.db.user.update({
             where: { id: userId },
             data: updateData,
             select: {

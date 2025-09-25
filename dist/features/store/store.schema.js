@@ -1,4 +1,7 @@
-export const createStoreSchema = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.StoreSchemas = exports.transferOwnershipSchema = exports.searchStoreUsersSchema = exports.getStoreUserStatsSchema = exports.getStoreStaffSchema = exports.getStoreManagersSchema = exports.getStoreAdminsSchema = exports.getStoreOwnerSchema = exports.getStoreUserSchema = exports.listStoreUsersSchema = exports.updateUserRoleSchema = exports.removeUserFromStoreSchema = exports.addUserToStoreSchema = exports.toggleStatusSchema = exports.verifyCnpjSchema = exports.getStoresByOwnerSchema = exports.getStoreByCnpjSchema = exports.listStoresSchema = exports.deleteStoreSchema = exports.getStoreSchema = exports.updateStoreSchema = exports.createStoreSchema = void 0;
+exports.createStoreSchema = {
     body: {
         type: 'object',
         required: ['ownerId', 'name', 'cnpj'],
@@ -43,7 +46,7 @@ export const createStoreSchema = {
         }
     }
 };
-export const updateStoreSchema = {
+exports.updateStoreSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -92,7 +95,7 @@ export const updateStoreSchema = {
         }
     }
 };
-export const getStoreSchema = {
+exports.getStoreSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -136,7 +139,7 @@ export const getStoreSchema = {
         }
     }
 };
-export const deleteStoreSchema = {
+exports.deleteStoreSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -148,7 +151,7 @@ export const deleteStoreSchema = {
         204: { type: 'null' }
     }
 };
-export const listStoresSchema = {
+exports.listStoresSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -211,7 +214,7 @@ export const listStoresSchema = {
         }
     }
 };
-export const getStoreByCnpjSchema = {
+exports.getStoreByCnpjSchema = {
     params: {
         type: 'object',
         required: ['cnpj'],
@@ -254,7 +257,7 @@ export const getStoreByCnpjSchema = {
         }
     }
 };
-export const getStoresByOwnerSchema = {
+exports.getStoresByOwnerSchema = {
     params: {
         type: 'object',
         required: ['ownerId'],
@@ -305,7 +308,7 @@ export const getStoresByOwnerSchema = {
         }
     }
 };
-export const verifyCnpjSchema = {
+exports.verifyCnpjSchema = {
     params: {
         type: 'object',
         required: ['cnpj'],
@@ -323,7 +326,7 @@ export const verifyCnpjSchema = {
         }
     }
 };
-export const toggleStatusSchema = {
+exports.toggleStatusSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -344,7 +347,7 @@ export const toggleStatusSchema = {
     }
 };
 // === SCHEMAS PARA GERENCIAMENTO DE USUÁRIOS DA LOJA ===
-export const addUserToStoreSchema = {
+exports.addUserToStoreSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -393,7 +396,7 @@ export const addUserToStoreSchema = {
         }
     }
 };
-export const removeUserFromStoreSchema = {
+exports.removeUserFromStoreSchema = {
     params: {
         type: 'object',
         required: ['id', 'userId'],
@@ -406,7 +409,7 @@ export const removeUserFromStoreSchema = {
         204: { type: 'null' }
     }
 };
-export const updateUserRoleSchema = {
+exports.updateUserRoleSchema = {
     params: {
         type: 'object',
         required: ['id', 'userId'],
@@ -455,7 +458,7 @@ export const updateUserRoleSchema = {
         }
     }
 };
-export const listStoreUsersSchema = {
+exports.listStoreUsersSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -523,7 +526,7 @@ export const listStoreUsersSchema = {
         }
     }
 };
-export const getStoreUserSchema = {
+exports.getStoreUserSchema = {
     params: {
         type: 'object',
         required: ['id', 'userId'],
@@ -563,7 +566,7 @@ export const getStoreUserSchema = {
         }
     }
 };
-export const getStoreOwnerSchema = {
+exports.getStoreOwnerSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -593,7 +596,7 @@ export const getStoreOwnerSchema = {
         }
     }
 };
-export const getStoreAdminsSchema = {
+exports.getStoreAdminsSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -631,7 +634,7 @@ export const getStoreAdminsSchema = {
         }
     }
 };
-export const getStoreManagersSchema = {
+exports.getStoreManagersSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -669,7 +672,7 @@ export const getStoreManagersSchema = {
         }
     }
 };
-export const getStoreStaffSchema = {
+exports.getStoreStaffSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -707,7 +710,7 @@ export const getStoreStaffSchema = {
         }
     }
 };
-export const getStoreUserStatsSchema = {
+exports.getStoreUserStatsSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -741,7 +744,7 @@ export const getStoreUserStatsSchema = {
         }
     }
 };
-export const searchStoreUsersSchema = {
+exports.searchStoreUsersSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -787,7 +790,7 @@ export const searchStoreUsersSchema = {
         }
     }
 };
-export const transferOwnershipSchema = {
+exports.transferOwnershipSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -822,27 +825,27 @@ export const transferOwnershipSchema = {
         }
     }
 };
-export const StoreSchemas = {
-    create: createStoreSchema,
-    update: updateStoreSchema,
-    get: getStoreSchema,
-    delete: deleteStoreSchema,
-    list: listStoresSchema,
-    getByCnpj: getStoreByCnpjSchema,
-    getByOwner: getStoresByOwnerSchema,
-    verifyCnpj: verifyCnpjSchema,
-    toggleStatus: toggleStatusSchema,
+exports.StoreSchemas = {
+    create: exports.createStoreSchema,
+    update: exports.updateStoreSchema,
+    get: exports.getStoreSchema,
+    delete: exports.deleteStoreSchema,
+    list: exports.listStoresSchema,
+    getByCnpj: exports.getStoreByCnpjSchema,
+    getByOwner: exports.getStoresByOwnerSchema,
+    verifyCnpj: exports.verifyCnpjSchema,
+    toggleStatus: exports.toggleStatusSchema,
     // Gerenciamento de usuários
-    addUser: addUserToStoreSchema,
-    removeUser: removeUserFromStoreSchema,
-    updateUserRole: updateUserRoleSchema,
-    listUsers: listStoreUsersSchema,
-    getStoreUser: getStoreUserSchema,
-    getStoreOwner: getStoreOwnerSchema,
-    getStoreAdmins: getStoreAdminsSchema,
-    getStoreManagers: getStoreManagersSchema,
-    getStoreStaff: getStoreStaffSchema,
-    getStoreUserStats: getStoreUserStatsSchema,
-    searchStoreUsers: searchStoreUsersSchema,
-    transferOwnership: transferOwnershipSchema
+    addUser: exports.addUserToStoreSchema,
+    removeUser: exports.removeUserFromStoreSchema,
+    updateUserRole: exports.updateUserRoleSchema,
+    listUsers: exports.listStoreUsersSchema,
+    getStoreUser: exports.getStoreUserSchema,
+    getStoreOwner: exports.getStoreOwnerSchema,
+    getStoreAdmins: exports.getStoreAdminsSchema,
+    getStoreManagers: exports.getStoreManagersSchema,
+    getStoreStaff: exports.getStoreStaffSchema,
+    getStoreUserStats: exports.getStoreUserStatsSchema,
+    searchStoreUsers: exports.searchStoreUsersSchema,
+    transferOwnership: exports.transferOwnershipSchema
 };

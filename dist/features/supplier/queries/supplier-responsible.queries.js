@@ -1,5 +1,7 @@
-export class SupplierResponsibleQueries {
-    prisma;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SupplierResponsibleQueries = void 0;
+class SupplierResponsibleQueries {
     constructor(prisma) {
         this.prisma = prisma;
     }
@@ -176,3 +178,4 @@ export class SupplierResponsibleQueries {
         });
     }
 }
+exports.SupplierResponsibleQueries = SupplierResponsibleQueries;

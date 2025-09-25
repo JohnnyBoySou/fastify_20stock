@@ -1,53 +1,56 @@
-import { SupplierResponsibleController } from './supplier-responsible.controller';
-import { SupplierResponsibleSchemas } from './supplier-responsible.schema';
-export async function SupplierResponsibleRoutes(fastify) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SupplierResponsibleRoutes = SupplierResponsibleRoutes;
+const supplier_responsible_controller_1 = require("./supplier-responsible.controller");
+const supplier_responsible_schema_1 = require("./supplier-responsible.schema");
+async function SupplierResponsibleRoutes(fastify) {
     // CRUD básico
     fastify.post('/:supplierId/responsibles', {
-        schema: SupplierResponsibleSchemas.create,
-        handler: SupplierResponsibleController.create
+        schema: supplier_responsible_schema_1.SupplierResponsibleSchemas.create,
+        handler: supplier_responsible_controller_1.SupplierResponsibleController.create
     });
     fastify.get('/:supplierId/responsibles', {
-        schema: SupplierResponsibleSchemas.list,
-        handler: SupplierResponsibleController.list
+        schema: supplier_responsible_schema_1.SupplierResponsibleSchemas.list,
+        handler: supplier_responsible_controller_1.SupplierResponsibleController.list
     });
     fastify.get('/:supplierId/responsibles/:responsibleId', {
-        schema: SupplierResponsibleSchemas.get,
-        handler: SupplierResponsibleController.get
+        schema: supplier_responsible_schema_1.SupplierResponsibleSchemas.get,
+        handler: supplier_responsible_controller_1.SupplierResponsibleController.get
     });
     fastify.put('/:supplierId/responsibles/:responsibleId', {
-        schema: SupplierResponsibleSchemas.update,
-        handler: SupplierResponsibleController.update
+        schema: supplier_responsible_schema_1.SupplierResponsibleSchemas.update,
+        handler: supplier_responsible_controller_1.SupplierResponsibleController.update
     });
     fastify.delete('/:supplierId/responsibles/:responsibleId', {
-        schema: SupplierResponsibleSchemas.delete,
-        handler: SupplierResponsibleController.delete
+        schema: supplier_responsible_schema_1.SupplierResponsibleSchemas.delete,
+        handler: supplier_responsible_controller_1.SupplierResponsibleController.delete
     });
     // Funções adicionais
     fastify.get('/:supplierId/responsibles/email/:email', {
-        schema: SupplierResponsibleSchemas.getByEmail,
-        handler: SupplierResponsibleController.getByEmail
+        schema: supplier_responsible_schema_1.SupplierResponsibleSchemas.getByEmail,
+        handler: supplier_responsible_controller_1.SupplierResponsibleController.getByEmail
     });
     fastify.get('/:supplierId/responsibles/cpf/:cpf', {
-        schema: SupplierResponsibleSchemas.getByCpf,
-        handler: SupplierResponsibleController.getByCpf
+        schema: supplier_responsible_schema_1.SupplierResponsibleSchemas.getByCpf,
+        handler: supplier_responsible_controller_1.SupplierResponsibleController.getByCpf
     });
     fastify.get('/:supplierId/responsibles/active', {
-        handler: SupplierResponsibleController.getActive
+        handler: supplier_responsible_controller_1.SupplierResponsibleController.getActive
     });
     fastify.get('/:supplierId/responsibles/stats', {
-        handler: SupplierResponsibleController.getStats
+        handler: supplier_responsible_controller_1.SupplierResponsibleController.getStats
     });
     fastify.get('/:supplierId/responsibles/search', {
-        handler: SupplierResponsibleController.search
+        handler: supplier_responsible_controller_1.SupplierResponsibleController.search
     });
     fastify.get('/:supplierId/responsibles/recent', {
-        handler: SupplierResponsibleController.getRecent
+        handler: supplier_responsible_controller_1.SupplierResponsibleController.getRecent
     });
     // Funções de comando
     fastify.patch('/:supplierId/responsibles/:responsibleId/toggle-status', {
-        handler: SupplierResponsibleController.toggleStatus
+        handler: supplier_responsible_controller_1.SupplierResponsibleController.toggleStatus
     });
     fastify.post('/:supplierId/responsibles/bulk', {
-        handler: SupplierResponsibleController.bulkCreate
+        handler: supplier_responsible_controller_1.SupplierResponsibleController.bulkCreate
     });
 }

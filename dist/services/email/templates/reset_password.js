@@ -1,4 +1,7 @@
-export const generatePasswordResetEmailHTML = (data) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.generatePasswordResetEmailText = exports.generatePasswordResetEmailHTML = void 0;
+const generatePasswordResetEmailHTML = (data) => {
     return `
     <!DOCTYPE html>
     <html>
@@ -51,7 +54,8 @@ export const generatePasswordResetEmailHTML = (data) => {
     </html>
   `;
 };
-export const generatePasswordResetEmailText = (data) => {
+exports.generatePasswordResetEmailHTML = generatePasswordResetEmailHTML;
+const generatePasswordResetEmailText = (data) => {
     return `
 Redefinição de Senha - 25Stock
 
@@ -76,3 +80,4 @@ Este é um email automático, não responda a esta mensagem.
 © 2024 25Stock. Todos os direitos reservados.
   `;
 };
+exports.generatePasswordResetEmailText = generatePasswordResetEmailText;

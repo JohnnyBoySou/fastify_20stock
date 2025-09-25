@@ -1,74 +1,77 @@
-import { UserController } from './user.controller';
-import { UserSchemas } from './user.schema';
-import { authMiddleware, requireRole, requirePermission, requireOwnership, UserRole, Action } from '../../middlewares';
-export async function UserRoutesWithMiddleware(fastify) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserRoutesWithMiddleware = UserRoutesWithMiddleware;
+const user_controller_1 = require("./user.controller");
+const user_schema_1 = require("./user.schema");
+const middlewares_1 = require("../../middlewares");
+async function UserRoutesWithMiddleware(fastify) {
     // POST /users - Criar usuário (requer permissão)
     fastify.post('/', {
-        schema: UserSchemas.create,
-        preHandler: [authMiddleware, requirePermission(Action.CREATE_USER)],
-        handler: UserController.create
+        schema: user_schema_1.UserSchemas.create,
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requirePermission)(middlewares_1.Action.CREATE_USER)],
+        handler: user_controller_1.UserController.create
     });
     // GET /users - Listar usuários (requer permissão)
     fastify.get('/', {
-        schema: UserSchemas.list,
-        preHandler: [authMiddleware, requirePermission(Action.LIST_USERS)],
-        handler: UserController.list
+        schema: user_schema_1.UserSchemas.list,
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requirePermission)(middlewares_1.Action.LIST_USERS)],
+        handler: user_controller_1.UserController.list
     });
     // GET /users/:id - Buscar usuário por ID (requer permissão)
     fastify.get('/:id', {
-        schema: UserSchemas.get,
-        preHandler: [authMiddleware, requirePermission(Action.READ_USER)],
-        handler: UserController.get
+        schema: user_schema_1.UserSchemas.get,
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requirePermission)(middlewares_1.Action.READ_USER)],
+        handler: user_controller_1.UserController.get
     });
     // PUT /users/:id - Atualizar usuário (requer permissão + ownership)
     fastify.put('/:id', {
-        schema: UserSchemas.update,
+        schema: user_schema_1.UserSchemas.update,
         preHandler: [
-            authMiddleware,
-            requirePermission(Action.UPDATE_USER),
-            requireOwnership('id') // Usuário só pode editar seu próprio perfil
+            middlewares_1.authMiddleware,
+            (0, middlewares_1.requirePermission)(middlewares_1.Action.UPDATE_USER),
+            (0, middlewares_1.requireOwnership)('id') // Usuário só pode editar seu próprio perfil
         ],
-        handler: UserController.update
+        handler: user_controller_1.UserController.update
     });
     // DELETE /users/:id - Deletar usuário (apenas admin)
     fastify.delete('/:id', {
-        schema: UserSchemas.delete,
-        preHandler: [authMiddleware, requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN])],
-        handler: UserController.delete
+        schema: user_schema_1.UserSchemas.delete,
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requireRole)([middlewares_1.UserRole.ADMIN, middlewares_1.UserRole.SUPER_ADMIN])],
+        handler: user_controller_1.UserController.delete
     });
     // GET /users/email - Buscar usuário por email (requer permissão)
     fastify.get('/email', {
-        preHandler: [authMiddleware, requirePermission(Action.READ_USER)],
-        handler: UserController.getByEmail
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requirePermission)(middlewares_1.Action.READ_USER)],
+        handler: user_controller_1.UserController.getByEmail
     });
     // GET /users/role/:role - Buscar usuários por role (apenas admin)
     fastify.get('/role/:role', {
-        preHandler: [authMiddleware, requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN])],
-        handler: UserController.getByRole
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requireRole)([middlewares_1.UserRole.ADMIN, middlewares_1.UserRole.SUPER_ADMIN])],
+        handler: user_controller_1.UserController.getByRole
     });
     // GET /users/active - Buscar usuários ativos (requer permissão)
     fastify.get('/active', {
-        preHandler: [authMiddleware, requirePermission(Action.LIST_USERS)],
-        handler: UserController.getActive
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requirePermission)(middlewares_1.Action.LIST_USERS)],
+        handler: user_controller_1.UserController.getActive
     });
     // GET /users/stats - Estatísticas dos usuários (apenas admin)
     fastify.get('/stats', {
-        preHandler: [authMiddleware, requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN])],
-        handler: UserController.getStats
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requireRole)([middlewares_1.UserRole.ADMIN, middlewares_1.UserRole.SUPER_ADMIN])],
+        handler: user_controller_1.UserController.getStats
     });
     // GET /users/search - Buscar usuários (requer permissão)
     fastify.get('/search', {
-        preHandler: [authMiddleware, requirePermission(Action.LIST_USERS)],
-        handler: UserController.search
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requirePermission)(middlewares_1.Action.LIST_USERS)],
+        handler: user_controller_1.UserController.search
     });
     // PATCH /users/:id/verify-email - Verificar email do usuário (apenas admin)
     fastify.patch('/:id/verify-email', {
-        preHandler: [authMiddleware, requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN])],
-        handler: UserController.verifyEmail
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requireRole)([middlewares_1.UserRole.ADMIN, middlewares_1.UserRole.SUPER_ADMIN])],
+        handler: user_controller_1.UserController.verifyEmail
     });
     // PATCH /users/:id/last-login - Atualizar último login (sistema interno)
     fastify.patch('/:id/last-login', {
-        preHandler: [authMiddleware, requireRole([UserRole.SUPER_ADMIN])],
-        handler: UserController.updateLastLogin
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requireRole)([middlewares_1.UserRole.SUPER_ADMIN])],
+        handler: user_controller_1.UserController.updateLastLogin
     });
 }

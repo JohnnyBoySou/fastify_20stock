@@ -1,10 +1,13 @@
-import { db } from '../../../plugins/prisma';
-export const ProductCommands = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ProductCommands = void 0;
+const prisma_1 = require("../../../plugins/prisma");
+exports.ProductCommands = {
     async create(data) {
         const { categoryIds, supplierId, storeId, ...createData } = data;
         // Verificar se as categorias existem
         if (categoryIds && categoryIds.length > 0) {
-            const existingCategories = await db.category.findMany({
+            const existingCategories = await prisma_1.db.category.findMany({
                 where: { id: { in: categoryIds } },
                 select: { id: true }
             });
@@ -14,7 +17,7 @@ export const ProductCommands = {
                 throw new Error(`Categories not found: ${notFoundIds.join(', ')}`);
             }
         }
-        return await db.product.create({
+        return await prisma_1.db.product.create({
             data: {
                 ...createData,
                 unitOfMeasure: createData.unitOfMeasure,
@@ -66,7 +69,7 @@ export const ProductCommands = {
         const { categoryIds, supplierId, storeId, ...updateData } = data;
         // Verificar se as categorias existem (se fornecidas)
         if (categoryIds && categoryIds.length > 0) {
-            const existingCategories = await db.category.findMany({
+            const existingCategories = await prisma_1.db.category.findMany({
                 where: { id: { in: categoryIds } },
                 select: { id: true }
             });
@@ -99,7 +102,7 @@ export const ProductCommands = {
                 };
             }
         }
-        return await db.product.update({
+        return await prisma_1.db.product.update({
             where: { id },
             data: {
                 ...updateData,
@@ -142,12 +145,12 @@ export const ProductCommands = {
         });
     },
     async delete(id) {
-        return await db.product.delete({
+        return await prisma_1.db.product.delete({
             where: { id }
         });
     },
     async updateStatus(id, status) {
-        return await db.product.update({
+        return await prisma_1.db.product.update({
             where: { id },
             data: { status },
             include: {
@@ -186,14 +189,14 @@ export const ProductCommands = {
     // === FUNÇÕES ADICIONAIS DE PRODUTO ===
     async verifySku(productId, sku) {
         // Verificar se o produto existe
-        const product = await db.product.findUnique({
+        const product = await prisma_1.db.product.findUnique({
             where: { id: productId }
         });
         if (!product) {
             throw new Error('Product not found');
         }
         // Verificar se o SKU já existe em outro produto
-        const existingProduct = await db.product.findFirst({
+        const existingProduct = await prisma_1.db.product.findFirst({
             where: {
                 id: { not: productId },
                 name: sku // Assumindo que SKU é o nome do produto
@@ -206,7 +209,7 @@ export const ProductCommands = {
     },
     async updateStock(productId, quantity, type, note, userId) {
         // Verificar se o produto existe
-        const product = await db.product.findUnique({
+        const product = await prisma_1.db.product.findUnique({
             where: { id: productId }
         });
         if (!product) {
@@ -221,7 +224,7 @@ export const ProductCommands = {
             newStock = -quantity; // Para saída e perda, subtrai a quantidade
         }
         // Criar movimentação
-        const movement = await db.movement.create({
+        const movement = await prisma_1.db.movement.create({
             data: {
                 type,
                 quantity,
@@ -259,7 +262,7 @@ export const ProductCommands = {
     },
     async createMovement(productId, data) {
         // Verificar se o produto existe
-        const product = await db.product.findUnique({
+        const product = await prisma_1.db.product.findUnique({
             where: { id: productId }
         });
         if (!product) {
@@ -267,7 +270,7 @@ export const ProductCommands = {
         }
         // Verificar se o fornecedor existe (se fornecido)
         if (data.supplierId) {
-            const supplier = await db.supplier.findUnique({
+            const supplier = await prisma_1.db.supplier.findUnique({
                 where: { id: data.supplierId }
             });
             if (!supplier) {
@@ -275,7 +278,7 @@ export const ProductCommands = {
             }
         }
         // Criar movimentação
-        const movement = await db.movement.create({
+        const movement = await prisma_1.db.movement.create({
             data: {
                 type: data.type,
                 quantity: data.quantity,
@@ -324,7 +327,7 @@ export const ProductCommands = {
     },
     async getProductStock(productId) {
         // Verificar se o produto existe
-        const product = await db.product.findUnique({
+        const product = await prisma_1.db.product.findUnique({
             where: { id: productId },
             include: {
                 movements: {
@@ -337,7 +340,7 @@ export const ProductCommands = {
             throw new Error('Product not found');
         }
         // Calcular estoque atual baseado nas movimentações
-        const movements = await db.movement.findMany({
+        const movements = await prisma_1.db.movement.findMany({
             where: { productId },
             select: {
                 type: true,
@@ -383,14 +386,14 @@ export const ProductCommands = {
     // === MÉTODOS PARA GERENCIAR CATEGORIAS DO PRODUTO ===
     async addCategories(productId, categoryIds) {
         // Verificar se o produto existe
-        const product = await db.product.findUnique({
+        const product = await prisma_1.db.product.findUnique({
             where: { id: productId }
         });
         if (!product) {
             throw new Error('Product not found');
         }
         // Verificar se as categorias existem
-        const existingCategories = await db.category.findMany({
+        const existingCategories = await prisma_1.db.category.findMany({
             where: { id: { in: categoryIds } },
             select: { id: true }
         });
@@ -400,7 +403,7 @@ export const ProductCommands = {
             throw new Error(`Categories not found: ${notFoundIds.join(', ')}`);
         }
         // Verificar quais categorias já estão associadas
-        const existingProductCategories = await db.productCategory.findMany({
+        const existingProductCategories = await prisma_1.db.productCategory.findMany({
             where: {
                 productId,
                 categoryId: { in: categoryIds }
@@ -413,14 +416,14 @@ export const ProductCommands = {
             throw new Error('All provided categories are already associated with this product');
         }
         // Adicionar novas categorias
-        await db.productCategory.createMany({
+        await prisma_1.db.productCategory.createMany({
             data: newCategoryIds.map(categoryId => ({
                 productId,
                 categoryId
             }))
         });
         // Retornar as categorias atualizadas
-        const updatedCategories = await db.productCategory.findMany({
+        const updatedCategories = await prisma_1.db.productCategory.findMany({
             where: { productId },
             select: {
                 category: {
@@ -443,14 +446,14 @@ export const ProductCommands = {
     },
     async removeCategories(productId, categoryIds) {
         // Verificar se o produto existe
-        const product = await db.product.findUnique({
+        const product = await prisma_1.db.product.findUnique({
             where: { id: productId }
         });
         if (!product) {
             throw new Error('Product not found');
         }
         // Remover as categorias
-        const result = await db.productCategory.deleteMany({
+        const result = await prisma_1.db.productCategory.deleteMany({
             where: {
                 productId,
                 categoryId: { in: categoryIds }
@@ -463,7 +466,7 @@ export const ProductCommands = {
     },
     async setCategories(productId, categoryIds) {
         // Verificar se o produto existe
-        const product = await db.product.findUnique({
+        const product = await prisma_1.db.product.findUnique({
             where: { id: productId }
         });
         if (!product) {
@@ -471,7 +474,7 @@ export const ProductCommands = {
         }
         // Verificar se as categorias existem (se fornecidas)
         if (categoryIds.length > 0) {
-            const existingCategories = await db.category.findMany({
+            const existingCategories = await prisma_1.db.category.findMany({
                 where: { id: { in: categoryIds } },
                 select: { id: true }
             });
@@ -482,11 +485,11 @@ export const ProductCommands = {
             }
         }
         // Substituir todas as categorias
-        await db.productCategory.deleteMany({
+        await prisma_1.db.productCategory.deleteMany({
             where: { productId }
         });
         if (categoryIds.length > 0) {
-            await db.productCategory.createMany({
+            await prisma_1.db.productCategory.createMany({
                 data: categoryIds.map(categoryId => ({
                     productId,
                     categoryId
@@ -494,7 +497,7 @@ export const ProductCommands = {
             });
         }
         // Retornar as categorias atualizadas
-        const updatedCategories = await db.productCategory.findMany({
+        const updatedCategories = await prisma_1.db.productCategory.findMany({
             where: { productId },
             select: {
                 category: {

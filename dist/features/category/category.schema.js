@@ -1,4 +1,7 @@
-export const createCategorySchema = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CategorySchemas = exports.getRootCategoriesSchema = exports.getChildrenSchema = exports.updateStatusSchema = exports.deleteCategorySchema = exports.listCategoriesSchema = exports.getCategorySchema = exports.updateCategorySchema = exports.createCategorySchema = void 0;
+exports.createCategorySchema = {
     body: {
         type: 'object',
         required: ['name'],
@@ -40,7 +43,7 @@ export const createCategorySchema = {
         }
     }
 };
-export const updateCategorySchema = {
+exports.updateCategorySchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -87,7 +90,7 @@ export const updateCategorySchema = {
         }
     }
 };
-export const getCategorySchema = {
+exports.getCategorySchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -123,7 +126,7 @@ export const getCategorySchema = {
         }
     }
 };
-export const listCategoriesSchema = {
+exports.listCategoriesSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -179,7 +182,7 @@ export const listCategoriesSchema = {
         }
     }
 };
-export const deleteCategorySchema = {
+exports.deleteCategorySchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -191,7 +194,7 @@ export const deleteCategorySchema = {
         204: { type: 'null' }
     }
 };
-export const updateStatusSchema = {
+exports.updateStatusSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -227,7 +230,7 @@ export const updateStatusSchema = {
         }
     }
 };
-export const getChildrenSchema = {
+exports.getChildrenSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -271,7 +274,7 @@ export const getChildrenSchema = {
         }
     }
 };
-export const getRootCategoriesSchema = {
+exports.getRootCategoriesSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -314,13 +317,13 @@ export const getRootCategoriesSchema = {
         }
     }
 };
-export const CategorySchemas = {
-    create: createCategorySchema,
-    update: updateCategorySchema,
-    get: getCategorySchema,
-    delete: deleteCategorySchema,
-    list: listCategoriesSchema,
-    updateStatus: updateStatusSchema,
-    getChildren: getChildrenSchema,
-    getRoot: getRootCategoriesSchema
+exports.CategorySchemas = {
+    create: exports.createCategorySchema,
+    update: exports.updateCategorySchema,
+    get: exports.getCategorySchema,
+    delete: exports.deleteCategorySchema,
+    list: exports.listCategoriesSchema,
+    updateStatus: exports.updateStatusSchema,
+    getChildren: exports.getChildrenSchema,
+    getRoot: exports.getRootCategoriesSchema
 };

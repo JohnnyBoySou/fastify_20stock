@@ -1,4 +1,7 @@
-export const createSupplierResponsibleSchema = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SupplierResponsibleSchemas = exports.getSupplierResponsibleByCpfSchema = exports.getSupplierResponsibleByEmailSchema = exports.listSupplierResponsiblesSchema = exports.deleteSupplierResponsibleSchema = exports.getSupplierResponsibleSchema = exports.updateSupplierResponsibleSchema = exports.createSupplierResponsibleSchema = void 0;
+exports.createSupplierResponsibleSchema = {
     params: {
         type: 'object',
         required: ['supplierId'],
@@ -33,7 +36,7 @@ export const createSupplierResponsibleSchema = {
         }
     }
 };
-export const updateSupplierResponsibleSchema = {
+exports.updateSupplierResponsibleSchema = {
     params: {
         type: 'object',
         required: ['supplierId', 'responsibleId'],
@@ -68,7 +71,7 @@ export const updateSupplierResponsibleSchema = {
         }
     }
 };
-export const getSupplierResponsibleSchema = {
+exports.getSupplierResponsibleSchema = {
     params: {
         type: 'object',
         required: ['supplierId', 'responsibleId'],
@@ -94,7 +97,7 @@ export const getSupplierResponsibleSchema = {
         }
     }
 };
-export const deleteSupplierResponsibleSchema = {
+exports.deleteSupplierResponsibleSchema = {
     params: {
         type: 'object',
         required: ['supplierId', 'responsibleId'],
@@ -107,7 +110,7 @@ export const deleteSupplierResponsibleSchema = {
         204: { type: 'null' }
     }
 };
-export const listSupplierResponsiblesSchema = {
+exports.listSupplierResponsiblesSchema = {
     params: {
         type: 'object',
         required: ['supplierId'],
@@ -158,7 +161,7 @@ export const listSupplierResponsiblesSchema = {
         }
     }
 };
-export const getSupplierResponsibleByEmailSchema = {
+exports.getSupplierResponsibleByEmailSchema = {
     params: {
         type: 'object',
         required: ['supplierId', 'email'],
@@ -184,7 +187,7 @@ export const getSupplierResponsibleByEmailSchema = {
         }
     }
 };
-export const getSupplierResponsibleByCpfSchema = {
+exports.getSupplierResponsibleByCpfSchema = {
     params: {
         type: 'object',
         required: ['supplierId', 'cpf'],
@@ -210,12 +213,12 @@ export const getSupplierResponsibleByCpfSchema = {
         }
     }
 };
-export const SupplierResponsibleSchemas = {
-    create: createSupplierResponsibleSchema,
-    update: updateSupplierResponsibleSchema,
-    get: getSupplierResponsibleSchema,
-    delete: deleteSupplierResponsibleSchema,
-    list: listSupplierResponsiblesSchema,
-    getByEmail: getSupplierResponsibleByEmailSchema,
-    getByCpf: getSupplierResponsibleByCpfSchema
+exports.SupplierResponsibleSchemas = {
+    create: exports.createSupplierResponsibleSchema,
+    update: exports.updateSupplierResponsibleSchema,
+    get: exports.getSupplierResponsibleSchema,
+    delete: exports.deleteSupplierResponsibleSchema,
+    list: exports.listSupplierResponsiblesSchema,
+    getByEmail: exports.getSupplierResponsibleByEmailSchema,
+    getByCpf: exports.getSupplierResponsibleByCpfSchema
 };

@@ -1,4 +1,7 @@
-export const generateWelcomeEmailHTML = (data) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.generateWelcomeEmailText = exports.generateWelcomeEmailHTML = void 0;
+const generateWelcomeEmailHTML = (data) => {
     return `
     <!DOCTYPE html>
     <html>
@@ -45,7 +48,8 @@ export const generateWelcomeEmailHTML = (data) => {
     </html>
   `;
 };
-export const generateWelcomeEmailText = (data) => {
+exports.generateWelcomeEmailHTML = generateWelcomeEmailHTML;
+const generateWelcomeEmailText = (data) => {
     return `
 Bem-vindo ao 25Stock!
 
@@ -69,3 +73,4 @@ Este é um email automático, não responda a esta mensagem.
 © 2024 25Stock. Todos os direitos reservados.
   `;
 };
+exports.generateWelcomeEmailText = generateWelcomeEmailText;

@@ -1,21 +1,24 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.requireOwnership = exports.requireStoreRole = exports.requireAnyPermission = exports.requireAllPermissions = exports.requirePermission = exports.requireRole = exports.hasStoreRole = exports.hasRole = exports.hasPermission = exports.Action = exports.StoreRole = exports.UserRole = void 0;
 // Define available roles
-export var UserRole;
+var UserRole;
 (function (UserRole) {
     UserRole["SUPER_ADMIN"] = "super_admin";
     UserRole["ADMIN"] = "admin";
     UserRole["MANAGER"] = "manager";
     UserRole["USER"] = "user";
-})(UserRole || (UserRole = {}));
+})(UserRole || (exports.UserRole = UserRole = {}));
 // Define available store roles
-export var StoreRole;
+var StoreRole;
 (function (StoreRole) {
     StoreRole["OWNER"] = "OWNER";
     StoreRole["ADMIN"] = "ADMIN";
     StoreRole["MANAGER"] = "MANAGER";
     StoreRole["STAFF"] = "STAFF";
-})(StoreRole || (StoreRole = {}));
+})(StoreRole || (exports.StoreRole = StoreRole = {}));
 // Define available actions
-export var Action;
+var Action;
 (function (Action) {
     // User actions
     Action["CREATE_USER"] = "create_user";
@@ -57,7 +60,7 @@ export var Action;
     // System actions
     Action["VIEW_AUDIT_LOGS"] = "view_audit_logs";
     Action["MANAGE_SYSTEM_SETTINGS"] = "manage_system_settings";
-})(Action || (Action = {}));
+})(Action || (exports.Action = Action = {}));
 // Define permissions matrix
 const PERMISSIONS = {
     [UserRole.SUPER_ADMIN]: Object.values(Action), // Can do everything
@@ -147,7 +150,7 @@ const PERMISSIONS = {
     ]
 };
 // Helper function to check if user has permission
-export const hasPermission = (userRoles, action) => {
+const hasPermission = (userRoles, action) => {
     // Check if user has any of the required roles
     for (const role of userRoles) {
         const userRole = role;
@@ -157,16 +160,19 @@ export const hasPermission = (userRoles, action) => {
     }
     return false;
 };
+exports.hasPermission = hasPermission;
 // Helper function to check if user has any of the required roles
-export const hasRole = (userRoles, requiredRoles) => {
+const hasRole = (userRoles, requiredRoles) => {
     return requiredRoles.some(role => userRoles.includes(role));
 };
+exports.hasRole = hasRole;
 // Helper function to check if user has store role
-export const hasStoreRole = (userRoles, requiredStoreRoles) => {
+const hasStoreRole = (userRoles, requiredStoreRoles) => {
     return requiredStoreRoles.some(role => userRoles.includes(role));
 };
+exports.hasStoreRole = hasStoreRole;
 // Middleware factory for role-based authorization
-export const requireRole = (requiredRoles) => {
+const requireRole = (requiredRoles) => {
     return async (request, reply) => {
         try {
             if (!request.user) {
@@ -175,7 +181,7 @@ export const requireRole = (requiredRoles) => {
                 });
             }
             const userRoles = request.user.roles;
-            if (!hasRole(userRoles, requiredRoles)) {
+            if (!(0, exports.hasRole)(userRoles, requiredRoles)) {
                 return reply.status(403).send({
                     error: 'Insufficient permissions',
                     required: requiredRoles,
@@ -192,8 +198,9 @@ export const requireRole = (requiredRoles) => {
         }
     };
 };
+exports.requireRole = requireRole;
 // Middleware factory for permission-based authorization
-export const requirePermission = (action) => {
+const requirePermission = (action) => {
     return async (request, reply) => {
         try {
             if (!request.user) {
@@ -202,7 +209,7 @@ export const requirePermission = (action) => {
                 });
             }
             const userRoles = request.user.roles;
-            if (!hasPermission(userRoles, action)) {
+            if (!(0, exports.hasPermission)(userRoles, action)) {
                 return reply.status(403).send({
                     error: 'Insufficient permissions',
                     required: action,
@@ -219,8 +226,9 @@ export const requirePermission = (action) => {
         }
     };
 };
+exports.requirePermission = requirePermission;
 // Middleware factory for multiple permissions (user needs ALL permissions)
-export const requireAllPermissions = (actions) => {
+const requireAllPermissions = (actions) => {
     return async (request, reply) => {
         try {
             if (!request.user) {
@@ -229,7 +237,7 @@ export const requireAllPermissions = (actions) => {
                 });
             }
             const userRoles = request.user.roles;
-            const hasAllPermissions = actions.every(action => hasPermission(userRoles, action));
+            const hasAllPermissions = actions.every(action => (0, exports.hasPermission)(userRoles, action));
             if (!hasAllPermissions) {
                 return reply.status(403).send({
                     error: 'Insufficient permissions',
@@ -247,8 +255,9 @@ export const requireAllPermissions = (actions) => {
         }
     };
 };
+exports.requireAllPermissions = requireAllPermissions;
 // Middleware factory for multiple permissions (user needs ANY permission)
-export const requireAnyPermission = (actions) => {
+const requireAnyPermission = (actions) => {
     return async (request, reply) => {
         try {
             if (!request.user) {
@@ -257,7 +266,7 @@ export const requireAnyPermission = (actions) => {
                 });
             }
             const userRoles = request.user.roles;
-            const hasAnyPermission = actions.some(action => hasPermission(userRoles, action));
+            const hasAnyPermission = actions.some(action => (0, exports.hasPermission)(userRoles, action));
             if (!hasAnyPermission) {
                 return reply.status(403).send({
                     error: 'Insufficient permissions',
@@ -275,8 +284,9 @@ export const requireAnyPermission = (actions) => {
         }
     };
 };
+exports.requireAnyPermission = requireAnyPermission;
 // Middleware for store-specific authorization
-export const requireStoreRole = (requiredStoreRoles) => {
+const requireStoreRole = (requiredStoreRoles) => {
     return async (request, reply) => {
         try {
             if (!request.user) {
@@ -285,7 +295,7 @@ export const requireStoreRole = (requiredStoreRoles) => {
                 });
             }
             const userRoles = request.user.roles;
-            if (!hasStoreRole(userRoles, requiredStoreRoles)) {
+            if (!(0, exports.hasStoreRole)(userRoles, requiredStoreRoles)) {
                 return reply.status(403).send({
                     error: 'Insufficient store permissions',
                     required: requiredStoreRoles,
@@ -302,8 +312,9 @@ export const requireStoreRole = (requiredStoreRoles) => {
         }
     };
 };
+exports.requireStoreRole = requireStoreRole;
 // Middleware for resource ownership check
-export const requireOwnership = (resourceUserIdField = 'userId') => {
+const requireOwnership = (resourceUserIdField = 'userId') => {
     return async (request, reply) => {
         try {
             if (!request.user) {
@@ -333,3 +344,4 @@ export const requireOwnership = (resourceUserIdField = 'userId') => {
         }
     };
 };
+exports.requireOwnership = requireOwnership;

@@ -1,160 +1,163 @@
-import { ProductController } from './product.controller';
-import { ProductSchemas } from './product.schema';
-import { authMiddleware, requirePermission, requireStoreResourceAccess, requireStoreRoleAccess, Action, StoreRole } from '../../middlewares';
-export async function ProductRoutesWithMiddleware(fastify) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ProductRoutesWithMiddleware = ProductRoutesWithMiddleware;
+const product_controller_1 = require("./product.controller");
+const product_schema_1 = require("./product.schema");
+const middlewares_1 = require("../../middlewares");
+async function ProductRoutesWithMiddleware(fastify) {
     // POST /products - Criar produto (requer permissão + acesso à loja)
     fastify.post('/', {
-        schema: ProductSchemas.create,
+        schema: product_schema_1.ProductSchemas.create,
         preHandler: [
-            authMiddleware,
-            requirePermission(Action.CREATE_PRODUCT),
-            requireStoreResourceAccess('storeId') // Verifica acesso à loja via body
+            middlewares_1.authMiddleware,
+            (0, middlewares_1.requirePermission)(middlewares_1.Action.CREATE_PRODUCT),
+            (0, middlewares_1.requireStoreResourceAccess)('storeId') // Verifica acesso à loja via body
         ],
-        handler: ProductController.create
+        handler: product_controller_1.ProductController.create
     });
     // GET /products - Listar produtos (requer permissão)
     fastify.get('/', {
-        schema: ProductSchemas.list,
-        preHandler: [authMiddleware, requirePermission(Action.LIST_PRODUCTS)],
-        handler: ProductController.list
+        schema: product_schema_1.ProductSchemas.list,
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requirePermission)(middlewares_1.Action.LIST_PRODUCTS)],
+        handler: product_controller_1.ProductController.list
     });
     // GET /products/:id - Buscar produto por ID (requer permissão)
     fastify.get('/:id', {
-        schema: ProductSchemas.get,
-        preHandler: [authMiddleware, requirePermission(Action.READ_PRODUCT)],
-        handler: ProductController.get
+        schema: product_schema_1.ProductSchemas.get,
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requirePermission)(middlewares_1.Action.READ_PRODUCT)],
+        handler: product_controller_1.ProductController.get
     });
     // PUT /products/:id - Atualizar produto (requer permissão + acesso à loja)
     fastify.put('/:id', {
-        schema: ProductSchemas.update,
+        schema: product_schema_1.ProductSchemas.update,
         preHandler: [
-            authMiddleware,
-            requirePermission(Action.UPDATE_PRODUCT),
-            requireStoreResourceAccess('storeId') // Verifica acesso à loja via body
+            middlewares_1.authMiddleware,
+            (0, middlewares_1.requirePermission)(middlewares_1.Action.UPDATE_PRODUCT),
+            (0, middlewares_1.requireStoreResourceAccess)('storeId') // Verifica acesso à loja via body
         ],
-        handler: ProductController.update
+        handler: product_controller_1.ProductController.update
     });
     // DELETE /products/:id - Deletar produto (requer permissão + acesso à loja)
     fastify.delete('/:id', {
-        schema: ProductSchemas.delete,
+        schema: product_schema_1.ProductSchemas.delete,
         preHandler: [
-            authMiddleware,
-            requirePermission(Action.DELETE_PRODUCT),
-            requireStoreResourceAccess('storeId') // Verifica acesso à loja via body
+            middlewares_1.authMiddleware,
+            (0, middlewares_1.requirePermission)(middlewares_1.Action.DELETE_PRODUCT),
+            (0, middlewares_1.requireStoreResourceAccess)('storeId') // Verifica acesso à loja via body
         ],
-        handler: ProductController.delete
+        handler: product_controller_1.ProductController.delete
     });
     // GET /products/store/:storeId - Buscar produtos por loja (requer acesso à loja)
     fastify.get('/store/:storeId', {
         preHandler: [
-            authMiddleware,
-            requireStoreResourceAccess()
+            middlewares_1.authMiddleware,
+            (0, middlewares_1.requireStoreResourceAccess)()
         ],
-        handler: ProductController.getByStore
+        handler: product_controller_1.ProductController.getByStore
     });
     // GET /products/category/:categoryId - Buscar produtos por categoria (requer permissão)
     fastify.get('/category/:categoryId', {
-        preHandler: [authMiddleware, requirePermission(Action.READ_PRODUCT)],
-        handler: ProductController.getByCategory
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requirePermission)(middlewares_1.Action.READ_PRODUCT)],
+        handler: product_controller_1.ProductController.getByCategory
     });
     // GET /products/supplier/:supplierId - Buscar produtos por fornecedor (requer permissão)
     fastify.get('/supplier/:supplierId', {
-        preHandler: [authMiddleware, requirePermission(Action.READ_PRODUCT)],
-        handler: ProductController.getBySupplier
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requirePermission)(middlewares_1.Action.READ_PRODUCT)],
+        handler: product_controller_1.ProductController.getBySupplier
     });
     // GET /products/active - Buscar produtos ativos (requer permissão)
     fastify.get('/active', {
-        preHandler: [authMiddleware, requirePermission(Action.LIST_PRODUCTS)],
-        handler: ProductController.getActive
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requirePermission)(middlewares_1.Action.LIST_PRODUCTS)],
+        handler: product_controller_1.ProductController.getActive
     });
     // GET /products/stats - Estatísticas dos produtos (requer permissão)
     fastify.get('/stats', {
-        preHandler: [authMiddleware, requirePermission(Action.READ_PRODUCT)],
-        handler: ProductController.getStats
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requirePermission)(middlewares_1.Action.READ_PRODUCT)],
+        handler: product_controller_1.ProductController.getStats
     });
     // GET /products/search - Buscar produtos (requer permissão)
     fastify.get('/search', {
-        preHandler: [authMiddleware, requirePermission(Action.READ_PRODUCT)],
-        handler: ProductController.search
+        preHandler: [middlewares_1.authMiddleware, (0, middlewares_1.requirePermission)(middlewares_1.Action.READ_PRODUCT)],
+        handler: product_controller_1.ProductController.search
     });
     // PATCH /products/:id/verify-sku - Verificar SKU do produto (requer permissão + acesso à loja)
     fastify.patch('/:id/verify-sku', {
-        schema: ProductSchemas.verifySku,
+        schema: product_schema_1.ProductSchemas.verifySku,
         preHandler: [
-            authMiddleware,
-            requirePermission(Action.UPDATE_PRODUCT),
-            requireStoreResourceAccess('storeId')
+            middlewares_1.authMiddleware,
+            (0, middlewares_1.requirePermission)(middlewares_1.Action.UPDATE_PRODUCT),
+            (0, middlewares_1.requireStoreResourceAccess)('storeId')
         ],
-        handler: ProductController.verifySku
+        handler: product_controller_1.ProductController.verifySku
     });
     // PATCH /products/:id/update-stock - Atualizar estoque (requer permissão + acesso à loja)
     fastify.patch('/:id/update-stock', {
-        schema: ProductSchemas.updateStock,
+        schema: product_schema_1.ProductSchemas.updateStock,
         preHandler: [
-            authMiddleware,
-            requirePermission(Action.UPDATE_PRODUCT),
-            requireStoreResourceAccess('storeId')
+            middlewares_1.authMiddleware,
+            (0, middlewares_1.requirePermission)(middlewares_1.Action.UPDATE_PRODUCT),
+            (0, middlewares_1.requireStoreResourceAccess)('storeId')
         ],
-        handler: ProductController.updateStock
+        handler: product_controller_1.ProductController.updateStock
     });
     // GET /products/:id/movements - Listar movimentações do produto (requer permissão + acesso à loja)
     fastify.get('/:id/movements', {
-        schema: ProductSchemas.getMovements,
+        schema: product_schema_1.ProductSchemas.getMovements,
         preHandler: [
-            authMiddleware,
-            requirePermission(Action.READ_MOVEMENT),
-            requireStoreResourceAccess('storeId')
+            middlewares_1.authMiddleware,
+            (0, middlewares_1.requirePermission)(middlewares_1.Action.READ_MOVEMENT),
+            (0, middlewares_1.requireStoreResourceAccess)('storeId')
         ],
-        handler: ProductController.getMovements
+        handler: product_controller_1.ProductController.getMovements
     });
     // POST /products/:id/movements - Criar movimentação do produto (requer permissão + acesso à loja)
     fastify.post('/:id/movements', {
-        schema: ProductSchemas.createMovement,
+        schema: product_schema_1.ProductSchemas.createMovement,
         preHandler: [
-            authMiddleware,
-            requirePermission(Action.CREATE_MOVEMENT),
-            requireStoreResourceAccess('storeId'),
-            requireStoreRoleAccess([StoreRole.ADMIN, StoreRole.MANAGER, StoreRole.STAFF])
+            middlewares_1.authMiddleware,
+            (0, middlewares_1.requirePermission)(middlewares_1.Action.CREATE_MOVEMENT),
+            (0, middlewares_1.requireStoreResourceAccess)('storeId'),
+            (0, middlewares_1.requireStoreRoleAccess)([middlewares_1.StoreRole.ADMIN, middlewares_1.StoreRole.MANAGER, middlewares_1.StoreRole.STAFF])
         ],
-        handler: ProductController.createMovement
+        handler: product_controller_1.ProductController.createMovement
     });
     // GET /products/:id/stock - Buscar estoque atual do produto (requer permissão + acesso à loja)
     fastify.get('/:id/stock', {
-        schema: ProductSchemas.getStock,
+        schema: product_schema_1.ProductSchemas.getStock,
         preHandler: [
-            authMiddleware,
-            requirePermission(Action.READ_PRODUCT),
-            requireStoreResourceAccess('storeId')
+            middlewares_1.authMiddleware,
+            (0, middlewares_1.requirePermission)(middlewares_1.Action.READ_PRODUCT),
+            (0, middlewares_1.requireStoreResourceAccess)('storeId')
         ],
-        handler: ProductController.getStock
+        handler: product_controller_1.ProductController.getStock
     });
     // GET /products/:id/stock/history - Histórico de estoque do produto (requer permissão + acesso à loja)
     fastify.get('/:id/stock/history', {
-        schema: ProductSchemas.getStockHistory,
+        schema: product_schema_1.ProductSchemas.getStockHistory,
         preHandler: [
-            authMiddleware,
-            requirePermission(Action.READ_PRODUCT),
-            requireStoreResourceAccess('storeId')
+            middlewares_1.authMiddleware,
+            (0, middlewares_1.requirePermission)(middlewares_1.Action.READ_PRODUCT),
+            (0, middlewares_1.requireStoreResourceAccess)('storeId')
         ],
-        handler: ProductController.getStockHistory
+        handler: product_controller_1.ProductController.getStockHistory
     });
     // GET /products/low-stock - Produtos com estoque baixo (requer permissão)
     fastify.get('/low-stock', {
-        schema: ProductSchemas.getLowStock,
+        schema: product_schema_1.ProductSchemas.getLowStock,
         preHandler: [
-            authMiddleware,
-            requirePermission(Action.READ_PRODUCT)
+            middlewares_1.authMiddleware,
+            (0, middlewares_1.requirePermission)(middlewares_1.Action.READ_PRODUCT)
         ],
-        handler: ProductController.getLowStock
+        handler: product_controller_1.ProductController.getLowStock
     });
     // GET /products/:id/analytics - Analytics do produto (requer permissão + acesso à loja)
     fastify.get('/:id/analytics', {
-        schema: ProductSchemas.getAnalytics,
+        schema: product_schema_1.ProductSchemas.getAnalytics,
         preHandler: [
-            authMiddleware,
-            requirePermission(Action.READ_PRODUCT),
-            requireStoreResourceAccess('storeId')
+            middlewares_1.authMiddleware,
+            (0, middlewares_1.requirePermission)(middlewares_1.Action.READ_PRODUCT),
+            (0, middlewares_1.requireStoreResourceAccess)('storeId')
         ],
-        handler: ProductController.getAnalytics
+        handler: product_controller_1.ProductController.getAnalytics
     });
 }

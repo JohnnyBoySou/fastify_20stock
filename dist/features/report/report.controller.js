@@ -1,6 +1,9 @@
-import { ReportQueries } from './queries/report.queries';
-import { ReportCommands } from './commands/report.commands';
-export const ReportController = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ReportController = void 0;
+const report_queries_1 = require("./queries/report.queries");
+const report_commands_1 = require("./commands/report.commands");
+exports.ReportController = {
     // ================================
     // DASHBOARD STATS
     // ================================
@@ -13,7 +16,7 @@ export const ReportController = {
                 endDate,
                 period
             };
-            const result = await ReportQueries.getDashboardStats(filters);
+            const result = await report_queries_1.ReportQueries.getDashboardStats(filters);
             return reply.send(result);
         }
         catch (error) {
@@ -43,7 +46,7 @@ export const ReportController = {
             };
             const pagination = { page, limit };
             const sort = { field: sortBy || 'name', order: sortOrder || 'asc' };
-            const result = await ReportQueries.getInventoryReport(filters, pagination, sort);
+            const result = await report_queries_1.ReportQueries.getInventoryReport(filters, pagination, sort);
             return reply.send(result);
         }
         catch (error) {
@@ -73,7 +76,7 @@ export const ReportController = {
                 endDate
             };
             const pagination = { page, limit };
-            const result = await ReportQueries.getMovementReport(filters, pagination);
+            const result = await report_queries_1.ReportQueries.getMovementReport(filters, pagination);
             return reply.send(result);
         }
         catch (error) {
@@ -100,7 +103,7 @@ export const ReportController = {
                 endDate,
                 groupBy
             };
-            const result = await ReportQueries.getFinancialReport(filters);
+            const result = await report_queries_1.ReportQueries.getFinancialReport(filters);
             return reply.send(result);
         }
         catch (error) {
@@ -127,7 +130,7 @@ export const ReportController = {
                 endDate,
                 includeSubcategories
             };
-            const result = await ReportQueries.getCategoryReport(filters);
+            const result = await report_queries_1.ReportQueries.getCategoryReport(filters);
             return reply.send(result);
         }
         catch (error) {
@@ -154,7 +157,7 @@ export const ReportController = {
                 endDate,
                 status
             };
-            const result = await ReportQueries.getSupplierReport(filters);
+            const result = await report_queries_1.ReportQueries.getSupplierReport(filters);
             return reply.send(result);
         }
         catch (error) {
@@ -183,7 +186,7 @@ export const ReportController = {
                 action
             };
             const pagination = { page, limit };
-            const result = await ReportQueries.getUserActivityReport(filters, pagination);
+            const result = await report_queries_1.ReportQueries.getUserActivityReport(filters, pagination);
             return reply.send(result);
         }
         catch (error) {
@@ -209,7 +212,7 @@ export const ReportController = {
                 alertType
             };
             const pagination = { page, limit };
-            const result = await ReportQueries.getStockAlertReport(filters, pagination);
+            const result = await report_queries_1.ReportQueries.getStockAlertReport(filters, pagination);
             return reply.send(result);
         }
         catch (error) {
@@ -236,7 +239,7 @@ export const ReportController = {
                 endDate,
                 ...(filters ? JSON.parse(filters) : {})
             };
-            const result = await ReportCommands.exportReport(reportType, format, reportFilters);
+            const result = await report_commands_1.ReportCommands.exportReport(reportType, format, reportFilters);
             return reply.send(result);
         }
         catch (error) {
@@ -262,7 +265,7 @@ export const ReportController = {
     async scheduleReport(request, reply) {
         try {
             const { reportType, schedule, filters, emailRecipients } = request.body;
-            const result = await ReportCommands.scheduleReport(reportType, schedule, filters, emailRecipients);
+            const result = await report_commands_1.ReportCommands.scheduleReport(reportType, schedule, filters, emailRecipients);
             return reply.send(result);
         }
         catch (error) {
@@ -280,7 +283,7 @@ export const ReportController = {
     async cancelScheduledReport(request, reply) {
         try {
             const { scheduleId } = request.params;
-            const result = await ReportCommands.cancelScheduledReport(scheduleId);
+            const result = await report_commands_1.ReportCommands.cancelScheduledReport(scheduleId);
             return reply.send(result);
         }
         catch (error) {
@@ -301,7 +304,7 @@ export const ReportController = {
     async sendReportViaEmail(request, reply) {
         try {
             const { reportType, format, data, emailRecipients, subject, message } = request.body;
-            const result = await ReportCommands.sendReportViaEmail(reportType, format, data, emailRecipients, subject, message);
+            const result = await report_commands_1.ReportCommands.sendReportViaEmail(reportType, format, data, emailRecipients, subject, message);
             return reply.send(result);
         }
         catch (error) {
@@ -321,7 +324,7 @@ export const ReportController = {
     // ================================
     async getAvailableReportTypes(request, reply) {
         try {
-            const result = ReportCommands.getAvailableReportTypes();
+            const result = report_commands_1.ReportCommands.getAvailableReportTypes();
             return reply.send({ reportTypes: result });
         }
         catch (error) {
@@ -333,7 +336,7 @@ export const ReportController = {
     },
     async getReportStatistics(request, reply) {
         try {
-            const result = ReportCommands.getReportStatistics();
+            const result = report_commands_1.ReportCommands.getReportStatistics();
             return reply.send(result);
         }
         catch (error) {
@@ -349,7 +352,7 @@ export const ReportController = {
     async validateFilters(request, reply) {
         try {
             const { filters } = request.body;
-            const result = ReportCommands.validateReportFilters(filters);
+            const result = report_commands_1.ReportCommands.validateReportFilters(filters);
             return reply.send(result);
         }
         catch (error) {

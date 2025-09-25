@@ -1,7 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PaginationUtils = void 0;
+exports.createPaginatedQuery = createPaginatedQuery;
 /**
  * Utilitário para paginação de dados com Prisma
  */
-export const PaginationUtils = {
+exports.PaginationUtils = {
     /**
      * Normaliza os parâmetros de paginação
      */
@@ -84,10 +88,10 @@ export const PaginationUtils = {
 /**
  * Função helper para criar queries paginadas rapidamente
  */
-export function createPaginatedQuery(model, options = {}) {
+function createPaginatedQuery(model, options = {}) {
     const { select, include, orderBy = { createdAt: 'desc' }, defaultLimit = 10, maxLimit = 100 } = options;
     return async (prisma, params) => {
-        return PaginationUtils.paginate(prisma, model, {
+        return exports.PaginationUtils.paginate(prisma, model, {
             where: params.where || {},
             select,
             include,

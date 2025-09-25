@@ -1,8 +1,11 @@
-import { db } from '../../../plugins/prisma';
-import { LLMService } from '../../../services/llm';
-export const MovementQueries = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MovementQueries = void 0;
+const prisma_1 = require("../../../plugins/prisma");
+const llm_1 = require("../../../services/llm");
+exports.MovementQueries = {
     async getById(id) {
-        return await db.movement.findUnique({
+        return await prisma_1.db.movement.findUnique({
             where: { id },
             include: {
                 store: {
@@ -100,7 +103,7 @@ export const MovementQueries = {
             ];
         }
         const [items, total] = await Promise.all([
-            db.movement.findMany({
+            prisma_1.db.movement.findMany({
                 where,
                 skip,
                 take: limit,
@@ -134,7 +137,7 @@ export const MovementQueries = {
                     }
                 }
             }),
-            db.movement.count({ where })
+            prisma_1.db.movement.count({ where })
         ]);
         return {
             items,
@@ -147,7 +150,7 @@ export const MovementQueries = {
         };
     },
     async search(term, limit = 10) {
-        return await db.movement.findMany({
+        return await prisma_1.db.movement.findMany({
             where: {
                 OR: [
                     {
@@ -224,7 +227,7 @@ export const MovementQueries = {
             }
         }
         const [items, total] = await Promise.all([
-            db.movement.findMany({
+            prisma_1.db.movement.findMany({
                 where,
                 skip,
                 take: limit,
@@ -252,7 +255,7 @@ export const MovementQueries = {
                     }
                 }
             }),
-            db.movement.count({ where })
+            prisma_1.db.movement.count({ where })
         ]);
         return {
             items,
@@ -281,7 +284,7 @@ export const MovementQueries = {
             }
         }
         const [items, total] = await Promise.all([
-            db.movement.findMany({
+            prisma_1.db.movement.findMany({
                 where,
                 skip,
                 take: limit,
@@ -308,7 +311,7 @@ export const MovementQueries = {
                     }
                 }
             }),
-            db.movement.count({ where })
+            prisma_1.db.movement.count({ where })
         ]);
         return {
             items,
@@ -337,7 +340,7 @@ export const MovementQueries = {
             }
         }
         const [items, total] = await Promise.all([
-            db.movement.findMany({
+            prisma_1.db.movement.findMany({
                 where,
                 skip,
                 take: limit,
@@ -365,7 +368,7 @@ export const MovementQueries = {
                     }
                 }
             }),
-            db.movement.count({ where })
+            prisma_1.db.movement.count({ where })
         ]);
         return {
             items,
@@ -389,7 +392,7 @@ export const MovementQueries = {
                 where.createdAt.lte = new Date(endDate);
             }
         }
-        return await db.movement.findMany({
+        return await prisma_1.db.movement.findMany({
             where,
             orderBy: { createdAt: 'asc' },
             select: {
@@ -411,7 +414,7 @@ export const MovementQueries = {
         });
     },
     async getCurrentStock(productId, storeId) {
-        const movements = await db.movement.findMany({
+        const movements = await prisma_1.db.movement.findMany({
             where: {
                 productId,
                 storeId
@@ -433,27 +436,27 @@ export const MovementQueries = {
     },
     async getStats() {
         const [total, entrada, saida, perda, totalValue, averageValue, _byType, byStore, byProduct, bySupplier] = await Promise.all([
-            db.movement.count(),
-            db.movement.count({ where: { type: 'ENTRADA' } }),
-            db.movement.count({ where: { type: 'SAIDA' } }),
-            db.movement.count({ where: { type: 'PERDA' } }),
-            db.movement.aggregate({
+            prisma_1.db.movement.count(),
+            prisma_1.db.movement.count({ where: { type: 'ENTRADA' } }),
+            prisma_1.db.movement.count({ where: { type: 'SAIDA' } }),
+            prisma_1.db.movement.count({ where: { type: 'PERDA' } }),
+            prisma_1.db.movement.aggregate({
                 _sum: {
                     price: true
                 }
             }),
-            db.movement.aggregate({
+            prisma_1.db.movement.aggregate({
                 _avg: {
                     price: true
                 }
             }),
-            db.movement.groupBy({
+            prisma_1.db.movement.groupBy({
                 by: ['type'],
                 _count: {
                     id: true
                 }
             }),
-            db.movement.groupBy({
+            prisma_1.db.movement.groupBy({
                 by: ['storeId'],
                 _count: {
                     id: true
@@ -462,7 +465,7 @@ export const MovementQueries = {
                     price: true
                 }
             }),
-            db.movement.groupBy({
+            prisma_1.db.movement.groupBy({
                 by: ['productId'],
                 _count: {
                     id: true
@@ -471,7 +474,7 @@ export const MovementQueries = {
                     quantity: true
                 }
             }),
-            db.movement.groupBy({
+            prisma_1.db.movement.groupBy({
                 by: ['supplierId'],
                 _count: {
                     id: true
@@ -491,15 +494,15 @@ export const MovementQueries = {
         const productIds = byProduct.map(item => item.productId);
         const supplierIds = bySupplier.map(item => item.supplierId).filter(Boolean);
         const [stores, products, suppliers] = await Promise.all([
-            storeIds.length > 0 ? db.store.findMany({
+            storeIds.length > 0 ? prisma_1.db.store.findMany({
                 where: { id: { in: storeIds } },
                 select: { id: true, name: true }
             }) : [],
-            productIds.length > 0 ? db.product.findMany({
+            productIds.length > 0 ? prisma_1.db.product.findMany({
                 where: { id: { in: productIds } },
                 select: { id: true, name: true }
             }) : [],
-            supplierIds.length > 0 ? db.supplier.findMany({
+            supplierIds.length > 0 ? prisma_1.db.supplier.findMany({
                 where: { id: { in: supplierIds } },
                 select: { id: true, corporateName: true }
             }) : []
@@ -544,7 +547,7 @@ export const MovementQueries = {
         if (storeId) {
             where.storeId = storeId;
         }
-        const products = await db.product.findMany({
+        const products = await prisma_1.db.product.findMany({
             where: {
                 ...where,
                 status: true
@@ -568,7 +571,7 @@ export const MovementQueries = {
         });
         const lowStockProducts = [];
         for (const product of products) {
-            const currentStock = await MovementQueries.getCurrentStock(product.id, product.storeId);
+            const currentStock = await exports.MovementQueries.getCurrentStock(product.id, product.storeId);
             const alertThreshold = Math.floor((product.stockMin * product.alertPercentage) / 100);
             if (currentStock <= alertThreshold) {
                 lowStockProducts.push({
@@ -608,7 +611,7 @@ export const MovementQueries = {
             if (endDate)
                 where.createdAt.lte = new Date(endDate);
         }
-        const movements = await db.movement.findMany({
+        const movements = await prisma_1.db.movement.findMany({
             where,
             orderBy: { createdAt: 'desc' },
             include: {
@@ -646,7 +649,7 @@ export const MovementQueries = {
                 where.createdAt.lte = new Date(endDate);
         }
         const [items, total] = await Promise.all([
-            db.movement.findMany({
+            prisma_1.db.movement.findMany({
                 where,
                 skip,
                 take: limit,
@@ -680,7 +683,7 @@ export const MovementQueries = {
                     }
                 }
             }),
-            db.movement.count({ where })
+            prisma_1.db.movement.count({ where })
         ]);
         return {
             items,
@@ -706,7 +709,7 @@ export const MovementQueries = {
                 where.cancelledAt.lte = new Date(endDate);
         }
         const [items, total] = await Promise.all([
-            db.movement.findMany({
+            prisma_1.db.movement.findMany({
                 where,
                 skip,
                 take: limit,
@@ -740,7 +743,7 @@ export const MovementQueries = {
                     }
                 }
             }),
-            db.movement.count({ where })
+            prisma_1.db.movement.count({ where })
         ]);
         return {
             items,
@@ -769,63 +772,63 @@ export const MovementQueries = {
                 where.createdAt.lte = new Date(endDate);
         }
         const [totalMovements, totalValue, averageValue, byType, byMonth, byStore, byProduct, bySupplier, verifiedCount, cancelledCount] = await Promise.all([
-            db.movement.count({ where }),
-            db.movement.aggregate({
+            prisma_1.db.movement.count({ where }),
+            prisma_1.db.movement.aggregate({
                 where,
                 _sum: { price: true }
             }),
-            db.movement.aggregate({
+            prisma_1.db.movement.aggregate({
                 where,
                 _avg: { price: true }
             }),
-            db.movement.groupBy({
+            prisma_1.db.movement.groupBy({
                 by: ['type'],
                 where,
                 _count: { id: true },
                 _sum: { quantity: true, price: true }
             }),
-            db.movement.groupBy({
+            prisma_1.db.movement.groupBy({
                 by: ['createdAt'],
                 where,
                 _count: { id: true },
                 _sum: { price: true },
                 orderBy: { createdAt: 'asc' }
             }),
-            db.movement.groupBy({
+            prisma_1.db.movement.groupBy({
                 by: ['storeId'],
                 where,
                 _count: { id: true },
                 _sum: { price: true }
             }),
-            db.movement.groupBy({
+            prisma_1.db.movement.groupBy({
                 by: ['productId'],
                 where,
                 _count: { id: true },
                 _sum: { quantity: true, price: true }
             }),
-            db.movement.groupBy({
+            prisma_1.db.movement.groupBy({
                 by: ['supplierId'],
                 where: { ...where, supplierId: { not: null } },
                 _count: { id: true },
                 _sum: { price: true }
             }),
-            db.movement.count({ where: { ...where, verified: true } }),
-            db.movement.count({ where: { ...where, cancelled: true } })
+            prisma_1.db.movement.count({ where: { ...where, verified: true } }),
+            prisma_1.db.movement.count({ where: { ...where, cancelled: true } })
         ]);
         // Buscar nomes das entidades
         const storeIds = byStore.map(item => item.storeId);
         const productIds = byProduct.map(item => item.productId);
         const supplierIds = bySupplier.map(item => item.supplierId).filter(Boolean);
         const [stores, products, suppliers] = await Promise.all([
-            storeIds.length > 0 ? db.store.findMany({
+            storeIds.length > 0 ? prisma_1.db.store.findMany({
                 where: { id: { in: storeIds } },
                 select: { id: true, name: true }
             }) : [],
-            productIds.length > 0 ? db.product.findMany({
+            productIds.length > 0 ? prisma_1.db.product.findMany({
                 where: { id: { in: productIds } },
                 select: { id: true, name: true }
             }) : [],
-            supplierIds.length > 0 ? db.supplier.findMany({
+            supplierIds.length > 0 ? prisma_1.db.supplier.findMany({
                 where: { id: { in: supplierIds } },
                 select: { id: true, corporateName: true }
             }) : []
@@ -876,7 +879,7 @@ export const MovementQueries = {
         };
     },
     async summarize() {
-        const movements = await db.movement.findMany();
+        const movements = await prisma_1.db.movement.findMany();
         const summary = movements
             .map((m) => `Produto: ${m.productId}, Tipo: ${m.type}, Quantidade: ${m.quantity}`)
             .join("\n");
@@ -891,7 +894,7 @@ export const MovementQueries = {
       - Alguma observação importante que devo saber
  
     ${summary}`;
-        const result = LLMService.executePrompt(prompt);
+        const result = llm_1.LLMService.executePrompt(prompt);
         return result;
     },
     /*
@@ -926,7 +929,7 @@ export const MovementQueries = {
     async getProductSummary(productId, params) {
         const { startDate, endDate, storeId } = params;
         // Buscar informações do produto
-        const product = await db.product.findUnique({
+        const product = await prisma_1.db.product.findUnique({
             where: { id: productId },
             select: {
                 id: true,
@@ -953,7 +956,7 @@ export const MovementQueries = {
                 where.createdAt.lte = new Date(endDate);
         }
         // Buscar todas as movimentações do produto
-        const movements = await db.movement.findMany({
+        const movements = await prisma_1.db.movement.findMany({
             where,
             orderBy: { createdAt: 'desc' },
             include: {
@@ -990,7 +993,7 @@ export const MovementQueries = {
         // Calcular estoque atual por loja
         const stores = [...new Set(movements.map(m => m.storeId))];
         const currentStockByStore = await Promise.all(stores.map(async (storeId) => {
-            const currentStock = await MovementQueries.getCurrentStock(productId, storeId);
+            const currentStock = await exports.MovementQueries.getCurrentStock(productId, storeId);
             const store = movements.find(m => m.storeId === storeId)?.store;
             return {
                 storeId,
@@ -1038,7 +1041,7 @@ export const MovementQueries = {
       3. Alertas importantes (estoque baixo, perdas, etc.)
       4. Recomendações de ação
     `;
-        const llmSummary = await LLMService.executePrompt(prompt);
+        const llmSummary = await llm_1.LLMService.executePrompt(prompt);
         return {
             product: {
                 id: product.id,

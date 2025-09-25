@@ -1,8 +1,11 @@
-import { db } from '../../../plugins/prisma';
-export const MovementCommands = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MovementCommands = void 0;
+const prisma_1 = require("../../../plugins/prisma");
+exports.MovementCommands = {
     async create(data) {
         // Verificar se o produto existe na loja
-        const product = await db.product.findFirst({
+        const product = await prisma_1.db.product.findFirst({
             where: {
                 id: data.productId,
                 storeId: data.storeId,
@@ -14,7 +17,7 @@ export const MovementCommands = {
         }
         // Verificar se o fornecedor existe (se fornecido)
         if (data.supplierId) {
-            const supplier = await db.supplier.findUnique({
+            const supplier = await prisma_1.db.supplier.findUnique({
                 where: {
                     id: data.supplierId,
                     status: true
@@ -25,7 +28,7 @@ export const MovementCommands = {
             }
         }
         // Calcular o saldo após a movimentação
-        const currentStock = await MovementCommands.getCurrentStock(data.productId, data.storeId);
+        const currentStock = await exports.MovementCommands.getCurrentStock(data.productId, data.storeId);
         let balanceAfter = currentStock;
         if (data.type === 'ENTRADA') {
             balanceAfter = currentStock + data.quantity;
@@ -37,7 +40,7 @@ export const MovementCommands = {
             balanceAfter = currentStock - data.quantity;
         }
         // Criar a movimentação
-        const movement = await db.movement.create({
+        const movement = await prisma_1.db.movement.create({
             data: {
                 ...data,
                 expiration: data.expiration ? new Date(data.expiration) : null,
@@ -77,7 +80,7 @@ export const MovementCommands = {
         return movement;
     },
     async update(id, data) {
-        const existingMovement = await db.movement.findUnique({
+        const existingMovement = await prisma_1.db.movement.findUnique({
             where: { id },
             include: {
                 product: true
@@ -88,7 +91,7 @@ export const MovementCommands = {
         }
         // Se a quantidade ou tipo mudou, recalcular o saldo
         if (data.quantity !== undefined || data.type !== undefined) {
-            const currentStock = await MovementCommands.getCurrentStock(existingMovement.productId, existingMovement.storeId);
+            const currentStock = await exports.MovementCommands.getCurrentStock(existingMovement.productId, existingMovement.storeId);
             // Reverter a movimentação anterior
             let revertedStock = currentStock;
             if (existingMovement.type === 'ENTRADA') {
@@ -117,7 +120,7 @@ export const MovementCommands = {
             expiration: data.expiration ? new Date(data.expiration) : undefined,
             updatedAt: new Date()
         };
-        return await db.movement.update({
+        return await prisma_1.db.movement.update({
             where: { id },
             data: updateData,
             include: {
@@ -151,27 +154,27 @@ export const MovementCommands = {
         });
     },
     async delete(id) {
-        const movement = await db.movement.findUnique({
+        const movement = await prisma_1.db.movement.findUnique({
             where: { id }
         });
         if (!movement) {
             throw new Error('Movement not found');
         }
         // Verificar se é possível reverter o estoque
-        const currentStock = await MovementCommands.getCurrentStock(movement.productId, movement.storeId);
+        const currentStock = await exports.MovementCommands.getCurrentStock(movement.productId, movement.storeId);
         if (movement.type === 'SAIDA' || movement.type === 'PERDA') {
             // Se for saída ou perda, verificar se há estoque suficiente para reverter
             if (currentStock < movement.quantity) {
                 throw new Error('Cannot delete movement: insufficient stock to revert');
             }
         }
-        await db.movement.delete({
+        await prisma_1.db.movement.delete({
             where: { id }
         });
         return { success: true };
     },
     async getCurrentStock(productId, storeId) {
-        const movements = await db.movement.findMany({
+        const movements = await prisma_1.db.movement.findMany({
             where: {
                 productId,
                 storeId
@@ -192,7 +195,7 @@ export const MovementCommands = {
         return Math.max(0, stock);
     },
     async recalculateStock(productId, storeId) {
-        const movements = await db.movement.findMany({
+        const movements = await prisma_1.db.movement.findMany({
             where: {
                 productId,
                 storeId
@@ -220,7 +223,7 @@ export const MovementCommands = {
         }
         // Atualizar os balanceAfter em lote
         if (updatedMovements.length > 0) {
-            await db.$transaction(updatedMovements.map(movement => db.movement.update({
+            await prisma_1.db.$transaction(updatedMovements.map(movement => prisma_1.db.movement.update({
                 where: { id: movement.id },
                 data: { balanceAfter: movement.balanceAfter }
             })));
@@ -234,7 +237,7 @@ export const MovementCommands = {
         let failedCount = 0;
         for (let i = 0; i < movements.length; i++) {
             try {
-                const movement = await MovementCommands.create({
+                const movement = await exports.MovementCommands.create({
                     ...movements[i],
                     userId
                 });
@@ -261,13 +264,13 @@ export const MovementCommands = {
         };
     },
     async verify(id, verified, note, userId) {
-        const movement = await db.movement.findUnique({
+        const movement = await prisma_1.db.movement.findUnique({
             where: { id }
         });
         if (!movement) {
             throw new Error('Movement not found');
         }
-        return await db.movement.update({
+        return await prisma_1.db.movement.update({
             where: { id },
             data: {
                 verified,
@@ -307,7 +310,7 @@ export const MovementCommands = {
         });
     },
     async cancel(id, reason, userId) {
-        const movement = await db.movement.findUnique({
+        const movement = await prisma_1.db.movement.findUnique({
             where: { id }
         });
         if (!movement) {
@@ -317,14 +320,14 @@ export const MovementCommands = {
             throw new Error('Movement already cancelled');
         }
         // Verificar se é possível cancelar (reverter estoque)
-        const currentStock = await MovementCommands.getCurrentStock(movement.productId, movement.storeId);
+        const currentStock = await exports.MovementCommands.getCurrentStock(movement.productId, movement.storeId);
         if (movement.type === 'SAIDA' || movement.type === 'PERDA') {
             // Se for saída ou perda, verificar se há estoque suficiente para reverter
             if (currentStock < movement.quantity) {
                 throw new Error('Cannot cancel movement: insufficient stock to revert');
             }
         }
-        return await db.movement.update({
+        return await prisma_1.db.movement.update({
             where: { id },
             data: {
                 cancelled: true,
@@ -383,7 +386,7 @@ export const MovementCommands = {
                 where.createdAt.lte = new Date(endDate);
         }
         // Buscar movimentações
-        const movements = await db.movement.findMany({
+        const movements = await prisma_1.db.movement.findMany({
             where,
             include: {
                 store: {

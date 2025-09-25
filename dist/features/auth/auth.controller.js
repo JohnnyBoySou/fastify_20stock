@@ -1,11 +1,14 @@
-import { AuthCommands } from './commands/auth.commands';
-import { AuthQueries } from './queries/auth.queries';
-export const AuthController = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuthController = void 0;
+const auth_commands_1 = require("./commands/auth.commands");
+const auth_queries_1 = require("./queries/auth.queries");
+exports.AuthController = {
     // === AUTH CRUD ===
     async register(request, reply) {
         try {
             const { name, email, password, phone } = request.body;
-            const user = await AuthCommands.register({
+            const user = await auth_commands_1.AuthCommands.register({
                 name,
                 email,
                 phone,
@@ -31,7 +34,7 @@ export const AuthController = {
     async login(request, reply) {
         try {
             const { email, password } = request.body;
-            const result = await AuthCommands.login({
+            const result = await auth_commands_1.AuthCommands.login({
                 email,
                 password
             });
@@ -57,7 +60,7 @@ export const AuthController = {
     async forgotPassword(request, reply) {
         try {
             const { email } = request.body;
-            await AuthCommands.forgotPassword(email);
+            await auth_commands_1.AuthCommands.forgotPassword(email);
             return reply.send({
                 message: 'If the email exists, a reset password code has been sent.'
             });
@@ -77,7 +80,7 @@ export const AuthController = {
     async verifyResetCode(request, reply) {
         try {
             const { email, code } = request.body;
-            await AuthCommands.verifyResetCode(email, code);
+            await auth_commands_1.AuthCommands.verifyResetCode(email, code);
             return reply.send({
                 message: 'Reset code verified successfully'
             });
@@ -102,7 +105,7 @@ export const AuthController = {
     async resetPassword(request, reply) {
         try {
             const { email, code, password } = request.body;
-            await AuthCommands.resetPassword(email, code, password);
+            await auth_commands_1.AuthCommands.resetPassword(email, code, password);
             return reply.send({
                 message: 'Password reset successfully'
             });
@@ -127,7 +130,7 @@ export const AuthController = {
     async verifyEmail(request, reply) {
         try {
             const { token } = request.body;
-            await AuthCommands.verifyEmail(token);
+            await auth_commands_1.AuthCommands.verifyEmail(token);
             return reply.send({
                 message: 'Email verified successfully'
             });
@@ -147,7 +150,7 @@ export const AuthController = {
     async verifyEmailCode(request, reply) {
         try {
             const { email, code } = request.body;
-            const user = await AuthCommands.verifyEmailCode(email, code);
+            const user = await auth_commands_1.AuthCommands.verifyEmailCode(email, code);
             return reply.send({
                 message: 'Email verified successfully',
                 user: {
@@ -178,7 +181,7 @@ export const AuthController = {
     async resendVerification(request, reply) {
         try {
             const { email } = request.body;
-            await AuthCommands.resendVerification(email);
+            await auth_commands_1.AuthCommands.resendVerification(email);
             return reply.send({
                 message: 'Verification email sent successfully'
             });
@@ -208,9 +211,9 @@ export const AuthController = {
                     error: 'Authorization header required'
                 });
             }
-            const token = AuthCommands.extractToken(authHeader);
-            const payload = AuthCommands.verifyToken(token);
-            const result = await AuthCommands.refreshToken(payload.userId);
+            const token = auth_commands_1.AuthCommands.extractToken(authHeader);
+            const payload = auth_commands_1.AuthCommands.verifyToken(token);
+            const result = await auth_commands_1.AuthCommands.refreshToken(payload.userId);
             return reply.send(result);
         }
         catch (error) {
@@ -249,9 +252,9 @@ export const AuthController = {
                     error: 'Authorization header required'
                 });
             }
-            const token = AuthCommands.extractToken(authHeader);
-            const payload = AuthCommands.verifyToken(token);
-            const user = await AuthQueries.getUserProfile(payload.userId);
+            const token = auth_commands_1.AuthCommands.extractToken(authHeader);
+            const payload = auth_commands_1.AuthCommands.verifyToken(token);
+            const user = await auth_queries_1.AuthQueries.getUserProfile(payload.userId);
             return reply.send({ user });
         }
         catch (error) {
@@ -274,8 +277,8 @@ export const AuthController = {
                     error: 'Authorization header required'
                 });
             }
-            const token = AuthCommands.extractToken(authHeader);
-            const payload = AuthCommands.verifyToken(token);
+            const token = auth_commands_1.AuthCommands.extractToken(authHeader);
+            const payload = auth_commands_1.AuthCommands.verifyToken(token);
             const { name, email } = request.body;
             // Validate that at least one field is provided
             if (!name && !email) {
@@ -283,7 +286,7 @@ export const AuthController = {
                     error: 'At least one field (name or email) must be provided'
                 });
             }
-            const user = await AuthCommands.updateProfile(payload.userId, { name, email });
+            const user = await auth_commands_1.AuthCommands.updateProfile(payload.userId, { name, email });
             return reply.send({
                 user,
                 message: 'Profile updated successfully'
@@ -314,10 +317,10 @@ export const AuthController = {
                     error: 'Authorization header required'
                 });
             }
-            const token = AuthCommands.extractToken(authHeader);
-            const payload = AuthCommands.verifyToken(token);
+            const token = auth_commands_1.AuthCommands.extractToken(authHeader);
+            const payload = auth_commands_1.AuthCommands.verifyToken(token);
             const { storeId, active, page, limit } = request.query;
-            const permissions = await AuthQueries.getProfilePermissions(payload.userId, {
+            const permissions = await auth_queries_1.AuthQueries.getProfilePermissions(payload.userId, {
                 storeId,
                 active,
                 page,
@@ -344,7 +347,7 @@ export const AuthController = {
     },
     async getActive(request, reply) {
         try {
-            const users = await AuthQueries.getActiveUsers();
+            const users = await auth_queries_1.AuthQueries.getActiveUsers();
             return reply.send({ users });
         }
         catch (error) {
@@ -356,7 +359,7 @@ export const AuthController = {
     },
     async getVerified(request, reply) {
         try {
-            const users = await AuthQueries.getVerifiedUsers();
+            const users = await auth_queries_1.AuthQueries.getVerifiedUsers();
             return reply.send({ users });
         }
         catch (error) {
@@ -368,7 +371,7 @@ export const AuthController = {
     },
     async getUnverified(request, reply) {
         try {
-            const users = await AuthQueries.getUnverifiedUsers();
+            const users = await auth_queries_1.AuthQueries.getUnverifiedUsers();
             return reply.send({ users });
         }
         catch (error) {
@@ -380,7 +383,7 @@ export const AuthController = {
     },
     async getStats(request, reply) {
         try {
-            const stats = await AuthQueries.getUserStats();
+            const stats = await auth_queries_1.AuthQueries.getUserStats();
             return reply.send(stats);
         }
         catch (error) {
@@ -393,7 +396,7 @@ export const AuthController = {
     async search(request, reply) {
         try {
             const { q, limit = 10 } = request.query;
-            const users = await AuthQueries.searchUsers(q, limit);
+            const users = await auth_queries_1.AuthQueries.searchUsers(q, limit);
             return reply.send({ users });
         }
         catch (error) {
@@ -405,7 +408,7 @@ export const AuthController = {
     },
     async getPendingVerification(request, reply) {
         try {
-            const users = await AuthQueries.getUsersWithPendingVerification();
+            const users = await auth_queries_1.AuthQueries.getUsersWithPendingVerification();
             return reply.send({ users });
         }
         catch (error) {
@@ -417,7 +420,7 @@ export const AuthController = {
     },
     async getPendingReset(request, reply) {
         try {
-            const users = await AuthQueries.getUsersWithPendingReset();
+            const users = await auth_queries_1.AuthQueries.getUsersWithPendingReset();
             return reply.send({ users });
         }
         catch (error) {

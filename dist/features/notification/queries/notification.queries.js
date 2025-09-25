@@ -1,7 +1,10 @@
-import { db } from '../../../plugins/prisma';
-export const NotificationQueries = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.NotificationQueries = void 0;
+const prisma_1 = require("../../../plugins/prisma");
+exports.NotificationQueries = {
     async getById(id) {
-        return await db.notification.findUnique({
+        return await prisma_1.db.notification.findUnique({
             where: { id },
             include: {
                 user: {
@@ -42,7 +45,7 @@ export const NotificationQueries = {
             { expiresAt: { gt: new Date() } }
         ];
         const [items, total] = await Promise.all([
-            db.notification.findMany({
+            prisma_1.db.notification.findMany({
                 where,
                 skip,
                 take: limit,
@@ -57,7 +60,7 @@ export const NotificationQueries = {
                     }
                 }
             }),
-            db.notification.count({ where })
+            prisma_1.db.notification.count({ where })
         ]);
         return {
             items,
@@ -70,13 +73,13 @@ export const NotificationQueries = {
         };
     },
     async getByUser(userId, params) {
-        return await NotificationQueries.list({
+        return await exports.NotificationQueries.list({
             userId,
             ...params
         });
     },
     async getUnread(userId, limit) {
-        return await db.notification.findMany({
+        return await prisma_1.db.notification.findMany({
             where: {
                 userId,
                 isRead: false,
@@ -102,7 +105,7 @@ export const NotificationQueries = {
         });
     },
     async getByType(type, limit) {
-        return await db.notification.findMany({
+        return await prisma_1.db.notification.findMany({
             where: {
                 type,
                 OR: [
@@ -124,7 +127,7 @@ export const NotificationQueries = {
         });
     },
     async getByPriority(priority, limit) {
-        return await db.notification.findMany({
+        return await prisma_1.db.notification.findMany({
             where: {
                 priority,
                 OR: [
@@ -146,7 +149,7 @@ export const NotificationQueries = {
         });
     },
     async search(term, limit = 10) {
-        return await db.notification.findMany({
+        return await prisma_1.db.notification.findMany({
             where: {
                 AND: [
                     {
@@ -179,8 +182,8 @@ export const NotificationQueries = {
     async getStats(userId) {
         const where = userId ? { userId } : {};
         const [total, unread, byType, byPriority] = await Promise.all([
-            db.notification.count({ where }),
-            db.notification.count({
+            prisma_1.db.notification.count({ where }),
+            prisma_1.db.notification.count({
                 where: {
                     ...where,
                     isRead: false,
@@ -190,12 +193,12 @@ export const NotificationQueries = {
                     ]
                 }
             }),
-            db.notification.groupBy({
+            prisma_1.db.notification.groupBy({
                 by: ['type'],
                 where,
                 _count: true
             }),
-            db.notification.groupBy({
+            prisma_1.db.notification.groupBy({
                 by: ['priority'],
                 where,
                 _count: true
@@ -218,7 +221,7 @@ export const NotificationQueries = {
     async getRecent(userId, days = 7, limit = 20) {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
-        return await db.notification.findMany({
+        return await prisma_1.db.notification.findMany({
             where: {
                 userId,
                 createdAt: {

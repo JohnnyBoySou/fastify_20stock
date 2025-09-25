@@ -1,12 +1,14 @@
-import { NodeSDK } from '@opentelemetry/sdk-node';
-import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-const traceExporter = new OTLPTraceExporter({
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const sdk_node_1 = require("@opentelemetry/sdk-node");
+const auto_instrumentations_node_1 = require("@opentelemetry/auto-instrumentations-node");
+const exporter_trace_otlp_http_1 = require("@opentelemetry/exporter-trace-otlp-http");
+const traceExporter = new exporter_trace_otlp_http_1.OTLPTraceExporter({
     url: 'http://localhost:4318/v1/traces', // Endpoint OTLP HTTP do Uptrace
 });
-const sdk = new NodeSDK({
+const sdk = new sdk_node_1.NodeSDK({
     traceExporter,
-    instrumentations: [getNodeAutoInstrumentations()],
+    instrumentations: [(0, auto_instrumentations_node_1.getNodeAutoInstrumentations)()],
 });
 try {
     sdk.start();

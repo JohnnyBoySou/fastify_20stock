@@ -1,8 +1,11 @@
-import { PaginationUtils } from '../../../utils/pagination';
-import { db } from '../../../plugins/prisma';
-export const StoreQueries = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.StoreQueries = void 0;
+const pagination_1 = require("../../../utils/pagination");
+const prisma_1 = require("../../../plugins/prisma");
+exports.StoreQueries = {
     async getById(id) {
-        const store = await db.store.findUnique({
+        const store = await prisma_1.db.store.findUnique({
             where: { id },
             include: {
                 owner: {
@@ -35,7 +38,7 @@ export const StoreQueries = {
         return store;
     },
     async getByCnpj(cnpj) {
-        const store = await db.store.findUnique({
+        const store = await prisma_1.db.store.findUnique({
             where: { cnpj },
             include: {
                 owner: {
@@ -75,7 +78,7 @@ export const StoreQueries = {
             where.ownerId = params.ownerId;
         }
         // Usar o util de paginação
-        const result = await PaginationUtils.paginate(db, 'store', {
+        const result = await pagination_1.PaginationUtils.paginate(prisma_1.db, 'store', {
             where,
             include: {
                 owner: {
@@ -104,10 +107,10 @@ export const StoreQueries = {
             }
         });
         // Transformar para o formato esperado
-        return PaginationUtils.transformPaginationResult(result, 'stores');
+        return pagination_1.PaginationUtils.transformPaginationResult(result, 'stores');
     },
     async search(term, limit = 10) {
-        return await db.store.findMany({
+        return await prisma_1.db.store.findMany({
             where: {
                 OR: [
                     { name: { contains: term, mode: 'insensitive' } },
@@ -134,7 +137,7 @@ export const StoreQueries = {
         });
     },
     async getByOwner(ownerId) {
-        return await db.store.findMany({
+        return await prisma_1.db.store.findMany({
             where: { ownerId },
             orderBy: { id: 'desc' },
             include: {
@@ -148,7 +151,7 @@ export const StoreQueries = {
         });
     },
     async getActive() {
-        return await db.store.findMany({
+        return await prisma_1.db.store.findMany({
             where: { status: true },
             orderBy: { name: 'asc' },
             select: {
@@ -167,17 +170,17 @@ export const StoreQueries = {
     },
     async getStats() {
         const [total, active, inactive, withProducts, withoutProducts] = await Promise.all([
-            db.store.count(),
-            db.store.count({ where: { status: true } }),
-            db.store.count({ where: { status: false } }),
-            db.store.count({
+            prisma_1.db.store.count(),
+            prisma_1.db.store.count({ where: { status: true } }),
+            prisma_1.db.store.count({ where: { status: false } }),
+            prisma_1.db.store.count({
                 where: {
                     products: {
                         some: {}
                     }
                 }
             }),
-            db.store.count({
+            prisma_1.db.store.count({
                 where: {
                     products: {
                         none: {}
@@ -185,7 +188,7 @@ export const StoreQueries = {
                 }
             })
         ]);
-        const storesByState = await db.store.groupBy({
+        const storesByState = await prisma_1.db.store.groupBy({
             by: ['state'],
             _count: { id: true },
             where: {
@@ -204,7 +207,7 @@ export const StoreQueries = {
         };
     },
     async getRecent(limit = 5) {
-        return await db.store.findMany({
+        return await prisma_1.db.store.findMany({
             take: limit,
             orderBy: { id: 'desc' },
             include: {
@@ -226,7 +229,7 @@ export const StoreQueries = {
     // === CONSULTAS PARA GERENCIAMENTO DE USUÁRIOS DA LOJA ===
     async getStoreUsers(storeId, params) {
         // Verificar se a loja existe
-        const store = await db.store.findUnique({
+        const store = await prisma_1.db.store.findUnique({
             where: { id: storeId }
         });
         if (!store) {
@@ -248,7 +251,7 @@ export const StoreQueries = {
             where.role = params.role;
         }
         // Usar o util de paginação
-        const result = await PaginationUtils.paginate(db, 'storeUser', {
+        const result = await pagination_1.PaginationUtils.paginate(prisma_1.db, 'storeUser', {
             where,
             include: {
                 user: {
@@ -281,10 +284,10 @@ export const StoreQueries = {
             }
         });
         // Transformar para o formato esperado
-        return PaginationUtils.transformPaginationResult(result, 'storeUsers');
+        return pagination_1.PaginationUtils.transformPaginationResult(result, 'storeUsers');
     },
     async getStoreUser(storeId, userId) {
-        const storeUser = await db.storeUser.findUnique({
+        const storeUser = await prisma_1.db.storeUser.findUnique({
             where: {
                 storeId_userId: {
                     storeId,
@@ -317,7 +320,7 @@ export const StoreQueries = {
         return storeUser;
     },
     async getStoreUsersByRole(storeId, role) {
-        return await db.storeUser.findMany({
+        return await prisma_1.db.storeUser.findMany({
             where: {
                 storeId,
                 role
@@ -337,7 +340,7 @@ export const StoreQueries = {
         });
     },
     async getStoreOwner(storeId) {
-        const storeUser = await db.storeUser.findFirst({
+        const storeUser = await prisma_1.db.storeUser.findFirst({
             where: {
                 storeId,
                 role: 'OWNER'
@@ -360,7 +363,7 @@ export const StoreQueries = {
         return storeUser;
     },
     async getStoreAdmins(storeId) {
-        return await db.storeUser.findMany({
+        return await prisma_1.db.storeUser.findMany({
             where: {
                 storeId,
                 role: 'ADMIN'
@@ -380,7 +383,7 @@ export const StoreQueries = {
         });
     },
     async getStoreManagers(storeId) {
-        return await db.storeUser.findMany({
+        return await prisma_1.db.storeUser.findMany({
             where: {
                 storeId,
                 role: 'MANAGER'
@@ -400,7 +403,7 @@ export const StoreQueries = {
         });
     },
     async getStoreStaff(storeId) {
-        return await db.storeUser.findMany({
+        return await prisma_1.db.storeUser.findMany({
             where: {
                 storeId,
                 role: 'STAFF'
@@ -421,21 +424,21 @@ export const StoreQueries = {
     },
     async getStoreUserStats(storeId) {
         const [total, byRole, active, inactive] = await Promise.all([
-            db.storeUser.count({
+            prisma_1.db.storeUser.count({
                 where: { storeId }
             }),
-            db.storeUser.groupBy({
+            prisma_1.db.storeUser.groupBy({
                 by: ['role'],
                 where: { storeId },
                 _count: { id: true }
             }),
-            db.storeUser.count({
+            prisma_1.db.storeUser.count({
                 where: {
                     storeId,
                     user: { status: true }
                 }
             }),
-            db.storeUser.count({
+            prisma_1.db.storeUser.count({
                 where: {
                     storeId,
                     user: { status: false }
@@ -450,7 +453,7 @@ export const StoreQueries = {
         };
     },
     async searchStoreUsers(storeId, searchTerm, limit = 10) {
-        return await db.storeUser.findMany({
+        return await prisma_1.db.storeUser.findMany({
             where: {
                 storeId,
                 user: {

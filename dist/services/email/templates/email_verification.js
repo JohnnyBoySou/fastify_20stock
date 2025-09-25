@@ -1,4 +1,7 @@
-export const generateEmailVerificationHTML = (data) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.generateEmailVerificationText = exports.generateEmailVerificationHTML = void 0;
+const generateEmailVerificationHTML = (data) => {
     return `
     <!DOCTYPE html>
     <html>
@@ -56,7 +59,8 @@ export const generateEmailVerificationHTML = (data) => {
     </html>
   `;
 };
-export const generateEmailVerificationText = (data) => {
+exports.generateEmailVerificationHTML = generateEmailVerificationHTML;
+const generateEmailVerificationText = (data) => {
     return `
 Confirmação de Email - 25Stock
 
@@ -82,3 +86,4 @@ Este é um email automático, não responda a esta mensagem.
 © 2024 25Stock. Todos os direitos reservados.
   `;
 };
+exports.generateEmailVerificationText = generateEmailVerificationText;

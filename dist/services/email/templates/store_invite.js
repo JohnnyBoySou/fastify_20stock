@@ -1,4 +1,7 @@
-export const generateStoreInviteEmailHTML = (data) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.generateStoreInviteEmailText = exports.generateStoreInviteEmailHTML = void 0;
+const generateStoreInviteEmailHTML = (data) => {
     return `
     <!DOCTYPE html>
     <html>
@@ -46,7 +49,8 @@ export const generateStoreInviteEmailHTML = (data) => {
     </html>
   `;
 };
-export const generateStoreInviteEmailText = (data) => {
+exports.generateStoreInviteEmailHTML = generateStoreInviteEmailHTML;
+const generateStoreInviteEmailText = (data) => {
     return `
 Convite para Loja - 25Stock
 
@@ -68,3 +72,4 @@ Este é um email automático, não responda a esta mensagem.
 © 2024 25Stock. Todos os direitos reservados.
   `;
 };
+exports.generateStoreInviteEmailText = generateStoreInviteEmailText;

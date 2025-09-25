@@ -1,4 +1,7 @@
-export const createUserSchema = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserSchemas = exports.listUsersSchema = exports.deleteUserSchema = exports.updateUserSchema = exports.getUserSchema = exports.createUserSchema = void 0;
+exports.createUserSchema = {
     body: {
         type: 'object',
         required: ['email', 'password', 'name'],
@@ -27,7 +30,7 @@ export const createUserSchema = {
         }
     }
 };
-export const getUserSchema = {
+exports.getUserSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -52,7 +55,7 @@ export const getUserSchema = {
         }
     }
 };
-export const updateUserSchema = {
+exports.updateUserSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -86,7 +89,7 @@ export const updateUserSchema = {
         }
     }
 };
-export const deleteUserSchema = {
+exports.deleteUserSchema = {
     params: {
         type: 'object',
         required: ['id'],
@@ -98,7 +101,7 @@ export const deleteUserSchema = {
         204: { type: 'null' }
     }
 };
-export const listUsersSchema = {
+exports.listUsersSchema = {
     querystring: {
         type: 'object',
         properties: {
@@ -141,10 +144,10 @@ export const listUsersSchema = {
         }
     }
 };
-export const UserSchemas = {
-    create: createUserSchema,
-    get: getUserSchema,
-    update: updateUserSchema,
-    delete: deleteUserSchema,
-    list: listUsersSchema
+exports.UserSchemas = {
+    create: exports.createUserSchema,
+    get: exports.getUserSchema,
+    update: exports.updateUserSchema,
+    delete: exports.deleteUserSchema,
+    list: exports.listUsersSchema
 };

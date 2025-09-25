@@ -1,4 +1,7 @@
-export const generateNotificationEmailHTML = (data) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.generateNotificationEmailText = exports.generateNotificationEmailHTML = void 0;
+const generateNotificationEmailHTML = (data) => {
     return `
     <!DOCTYPE html>
     <html>
@@ -35,7 +38,8 @@ export const generateNotificationEmailHTML = (data) => {
     </html>
   `;
 };
-export const generateNotificationEmailText = (data) => {
+exports.generateNotificationEmailHTML = generateNotificationEmailHTML;
+const generateNotificationEmailText = (data) => {
     return `
 ${data.title} - 25Stock
 
@@ -50,3 +54,4 @@ Este é um email automático, não responda a esta mensagem.
 © 2024 25Stock. Todos os direitos reservados.
   `;
 };
+exports.generateNotificationEmailText = generateNotificationEmailText;
