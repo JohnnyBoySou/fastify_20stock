@@ -31,6 +31,31 @@ fastify.register(prismaPlugin)
 //Conexão com o banco de dados
 connectPrisma(fastify)
 
+// Healthcheck route
+fastify.get('/health', async (request, reply) => {
+  try {
+    // Verificar conexão com o banco de dados
+    const prisma = (request.server as any).prisma
+    await prisma.$queryRaw`SELECT 1`
+    
+    return reply.send({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      database: 'connected'
+    })
+  } catch (error) {
+    request.log.error(error)
+    return reply.status(503).send({
+      status: 'error',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      database: 'disconnected',
+      error: 'Database connection failed'
+    })
+  }
+})
+
 // Registrar rotas
 fastify.register(AuthRoutes, { prefix: '/auth' })
 fastify.register(UserRoutes, { prefix: '/users' })
@@ -42,6 +67,7 @@ fastify.register(MovementRoutes, { prefix: '/movements' })
 fastify.register(PermissionRoutes, { prefix: '/permissions' })
 fastify.register(ReportRoutes, { prefix: '/reports' })
 fastify.register(NotificationRoutes, { prefix: '/notifications' })
+
 
 try {
   fastify.listen({ port: 3000 })
