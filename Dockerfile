@@ -74,7 +74,6 @@ EXPOSE 3000
 
 # Configurar variáveis de ambiente
 ENV NODE_ENV=production
-ENV PORT=3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
