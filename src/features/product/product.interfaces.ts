@@ -9,7 +9,7 @@ export interface CreateProductRequest extends FastifyRequest {
     referencePrice: number
     categoryIds?: string[]
     supplierId?: string
-    storeId: string
+    storeId?: string
     stockMin: number
     stockMax: number
     alertPercentage: number

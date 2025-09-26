@@ -3,7 +3,7 @@ import { FastifySchema } from 'fastify';
 export const createProductSchema: FastifySchema = {
   body: {
     type: 'object',
-    required: ['name', 'unitOfMeasure', 'referencePrice', 'storeId', 'stockMin', 'stockMax', 'alertPercentage'],
+    required: ['name', 'unitOfMeasure', 'referencePrice', 'stockMin', 'stockMax', 'alertPercentage'],
     properties: {
       name: { type: 'string', minLength: 1 },
       description: { type: 'string' },

@@ -1,6 +1,35 @@
 import { db } from '@/plugins/prisma';
 import { UnitOfMeasure } from '@/generated/prisma';
 
+// Função auxiliar para obter a loja do usuário autenticado
+export const getUserStore = async (userId: string) => {
+  // Primeiro, verificar se o usuário é dono de alguma loja
+  const ownedStore = await db.store.findFirst({
+    where: { ownerId: userId },
+    select: { id: true, name: true }
+  });
+
+  if (ownedStore) {
+    return ownedStore;
+  }
+
+  // Se não for dono, verificar se tem acesso a alguma loja como usuário
+  const storeUser = await db.storeUser.findFirst({
+    where: { userId },
+    include: {
+      store: {
+        select: { id: true, name: true }
+      }
+    }
+  });
+
+  if (storeUser) {
+    return storeUser.store;
+  }
+
+  throw new Error('User has no associated store');
+};
+
 export const ProductCommands = {
   async create(data: {
     name: string
