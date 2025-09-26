@@ -85,6 +85,11 @@ export const AuthCommands = {
       throw new Error('Invalid credentials');
     }
 
+    // Check if email is verified
+    if (!user.emailVerified) {
+      throw new Error('Email verification required');
+    }
+
     // Update last login
     await db.user.update({
       where: { id: user.id },
