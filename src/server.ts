@@ -37,7 +37,7 @@ fastify.get('/health', async (request, reply) => {
     // Verificar conexão com o banco de dados
     const prisma = (request.server as any).prisma
     await prisma.$queryRaw`SELECT 1`
-    
+
     return reply.send({
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -68,14 +68,16 @@ fastify.register(PermissionRoutes, { prefix: '/permissions' })
 fastify.register(ReportRoutes, { prefix: '/reports' })
 fastify.register(NotificationRoutes, { prefix: '/notifications' })
 
+const PORT = Number(process.env.PORT) || 3000
+const HOST = '0.0.0.0'
 
-try {
-  fastify.listen({ port: 3000 })
-  fastify.log.info(`Servidor rodando na porta ${3000}`)
-  console.log(`✅ Servidor rodando na porta ${3000}`)
-} catch (err) {
-  fastify.log.error(err)
-  console.log('❌ Falha ao iniciar o servidor:')
-  console.error(err)
-  process.exit(1)
-}
+fastify.listen({ port: PORT, host: HOST })
+  .then(() => {
+    fastify.log.info(`🚀 Servidor rodando na porta ${PORT}`)
+    console.log(`✅ Servidor rodando em http://${HOST}:${PORT}`)
+  })
+  .catch((err) => {
+    fastify.log.error(err)
+    console.error('❌ Falha ao iniciar o servidor:', err)
+    process.exit(1)
+  })
