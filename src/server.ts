@@ -5,7 +5,7 @@ import { prismaPlugin, connectPrisma } from './plugins/prisma'
 
 import { UserRoutes } from '@/features/user/user.routes'
 import { AuthRoutes } from '@/features/auth/auth.routes'
-import { ProductRoutes } from '@/features/product/product.routes'
+import { ProductRoutesWithMiddleware } from '@/features/product/product.routes.with-middleware'
 import { SupplierRoutes } from '@/features/supplier/supplier.routes'
 import { StoreRoutes } from '@/features/store/store.routes'
 import { CategoryRoutes } from '@/features/category/category.routes'
@@ -59,7 +59,7 @@ fastify.get('/health', async (request, reply) => {
 // Registrar rotas
 fastify.register(AuthRoutes, { prefix: '/auth' })
 fastify.register(UserRoutes, { prefix: '/users' })
-fastify.register(ProductRoutes, { prefix: '/products' })
+fastify.register(ProductRoutesWithMiddleware, { prefix: '/products' })
 fastify.register(SupplierRoutes, { prefix: '/suppliers' })
 fastify.register(StoreRoutes, { prefix: '/stores' })
 fastify.register(CategoryRoutes, { prefix: '/categories' })
