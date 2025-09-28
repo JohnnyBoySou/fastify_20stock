@@ -3,7 +3,7 @@ import { FastifySchema } from 'fastify';
 export const createMovementSchema: FastifySchema = {
   body: {
     type: 'object',
-    required: ['type', 'quantity', 'storeId', 'productId'],
+    required: ['type', 'quantity', 'productId'],
     properties: {
       type: {
         type: 'string',

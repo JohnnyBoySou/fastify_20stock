@@ -5,7 +5,7 @@ export interface CreateMovementRequest {
   Body: {
     type: 'ENTRADA' | 'SAIDA' | 'PERDA'
     quantity: number
-    storeId: string
+    storeId?: string
     productId: string
     supplierId?: string
     batch?: string

@@ -1,9 +1,39 @@
 import { db } from '@/plugins/prisma';
+
+// Função auxiliar para obter a loja do usuário autenticado
+export const getUserStore = async (userId: string) => {
+  // Primeiro, verificar se o usuário é dono de alguma loja
+  const ownedStore = await db.store.findFirst({
+    where: { ownerId: userId },
+    select: { id: true, name: true }
+  });
+
+  if (ownedStore) {
+    return ownedStore;
+  }
+
+  // Se não for dono, verificar se tem acesso a alguma loja como usuário
+  const storeUser = await db.storeUser.findFirst({
+    where: { userId },
+    include: {
+      store: {
+        select: { id: true, name: true }
+      }
+    }
+  });
+
+  if (storeUser) {
+    return storeUser.store;
+  }
+
+  throw new Error('User has no associated store');
+};
+
 export const MovementCommands = {
   async create(data: {
     type: 'ENTRADA' | 'SAIDA' | 'PERDA'
     quantity: number
-    storeId: string
+    storeId?: string
     productId: string
     supplierId?: string
     batch?: string
@@ -12,11 +42,22 @@ export const MovementCommands = {
     note?: string
     userId?: string
   }) {
+    // Se storeId não foi fornecido, obter a store do usuário
+    let storeId = data.storeId;
+    if (!storeId && data.userId) {
+      const userStore = await getUserStore(data.userId);
+      storeId = userStore.id;
+    }
+
+    if (!storeId) {
+      throw new Error('Store ID is required');
+    }
+
     // Verificar se o produto existe na loja
     const product = await db.product.findFirst({
       where: {
         id: data.productId,
-        storeId: data.storeId,
+        storeId: storeId,
         status: true
       }
     });
@@ -40,7 +81,7 @@ export const MovementCommands = {
     }
 
     // Calcular o saldo após a movimentação
-    const currentStock = await MovementCommands.getCurrentStock(data.productId, data.storeId);
+    const currentStock = await MovementCommands.getCurrentStock(data.productId, storeId);
     let balanceAfter = currentStock;
 
     if (data.type === 'ENTRADA') {
@@ -55,8 +96,16 @@ export const MovementCommands = {
     // Criar a movimentação
     const movement = await db.movement.create({
       data: {
-        ...data,
+        type: data.type,
+        quantity: data.quantity,
+        storeId: storeId,
+        productId: data.productId,
+        supplierId: data.supplierId,
+        batch: data.batch,
         expiration: data.expiration ? new Date(data.expiration) : null,
+        price: data.price,
+        note: data.note,
+        userId: data.userId,
         balanceAfter,
         createdAt: new Date(),
         updatedAt: new Date()

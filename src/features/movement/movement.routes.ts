@@ -1,11 +1,13 @@
 import { FastifyInstance } from 'fastify';
 import { MovementController } from './movement.controller';
 import { MovementSchemas } from './movement.schema';
+import { authMiddleware } from '../../middlewares';
 
 export async function MovementRoutes(fastify: FastifyInstance) {
   // CRUD básico
   fastify.post('/', {
     schema: MovementSchemas.create,
+    preHandler: [authMiddleware],
     handler: MovementController.create
   });
 
@@ -21,11 +23,13 @@ export async function MovementRoutes(fastify: FastifyInstance) {
 
   fastify.put('/:id', {
     schema: MovementSchemas.update,
+    preHandler: [authMiddleware],
     handler: MovementController.update
   });
 
   fastify.delete('/:id', {
     schema: MovementSchemas.delete,
+    preHandler: [authMiddleware],
     handler: MovementController.delete
   });
 

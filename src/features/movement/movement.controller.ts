@@ -7,7 +7,7 @@ export const MovementController = {
   async create(request: FastifyRequest<{ Body: {
     type: 'ENTRADA' | 'SAIDA' | 'PERDA'
     quantity: number
-    storeId: string
+    storeId?: string
     productId: string
     supplierId?: string
     batch?: string
@@ -17,8 +17,21 @@ export const MovementController = {
     userId?: string
   } }>, reply: FastifyReply) {
     try {
+      const { type, quantity, storeId, productId, supplierId, batch, expiration, price, note } = request.body;
+      const userId = request.user?.id; // Obtém o ID do usuário autenticado
 
-      const result = await MovementCommands.create(request.body);
+      const result = await MovementCommands.create({
+        type,
+        quantity,
+        storeId,
+        productId,
+        supplierId,
+        batch,
+        expiration,
+        price,
+        note,
+        userId
+      });
 
       return reply.status(201).send(result);
     } catch (error: any) {
