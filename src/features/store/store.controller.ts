@@ -23,10 +23,13 @@ export const StoreController = {
       const { name, cnpj, email, phone, cep, city, state, address, status } = request.body;
       const ownerId = request.user!.id; // Obtém o ID do usuário autenticado
 
+      // Remove formatação do CNPJ (mantém apenas números)
+      const cleanCnpj = cnpj.replace(/\D/g, '');
+
       const result = await StoreCommands.create({
         ownerId,
         name,
-        cnpj,
+        cnpj: cleanCnpj,
         email,
         phone,
         cep,
@@ -84,6 +87,11 @@ export const StoreController = {
     try {
       const { id } = request.params;
       const updateData = { ...request.body };
+
+      // Remove formatação do CNPJ se estiver presente
+      if (updateData.cnpj) {
+        updateData.cnpj = updateData.cnpj.replace(/\D/g, '');
+      }
 
       const result = await StoreCommands.update(id, updateData);
 
@@ -163,7 +171,10 @@ export const StoreController = {
     try {
       const { cnpj } = request.params;
 
-      const result = await StoreQueries.getByCnpj(cnpj);
+      // Remove formatação do CNPJ para busca
+      const cleanCnpj = cnpj.replace(/\D/g, '');
+
+      const result = await StoreQueries.getByCnpj(cleanCnpj);
 
       return reply.send(result);
     } catch (error: any) {
@@ -258,7 +269,10 @@ export const StoreController = {
     try {
       const { cnpj } = request.params;
 
-      const result = await StoreCommands.verifyCnpj(cnpj);
+      // Remove formatação do CNPJ para verificação
+      const cleanCnpj = cnpj.replace(/\D/g, '');
+
+      const result = await StoreCommands.verifyCnpj(cleanCnpj);
 
       return reply.send(result);
     } catch (error) {
