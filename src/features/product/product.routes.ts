@@ -1,11 +1,13 @@
 import { FastifyInstance } from 'fastify';
 import { ProductController } from './product.controller';
 import { ProductSchemas } from './product.schema';
+import { authMiddleware } from '../../middlewares/auth.middleware';
 
 export async function ProductRoutes(fastify: FastifyInstance) {
   // CRUD básico
   fastify.post('/', {
     schema: ProductSchemas.create,
+    preHandler: [authMiddleware],
     handler: ProductController.create
   });
 
@@ -21,11 +23,13 @@ export async function ProductRoutes(fastify: FastifyInstance) {
 
   fastify.put('/:id', {
     schema: ProductSchemas.update,
+    preHandler: [authMiddleware],
     handler: ProductController.update
   });
 
   fastify.delete('/:id', {
     schema: ProductSchemas.delete,
+    preHandler: [authMiddleware],
     handler: ProductController.delete
   });
 
@@ -99,16 +103,19 @@ export async function ProductRoutes(fastify: FastifyInstance) {
   // === ENDPOINTS PARA GERENCIAR CATEGORIAS DO PRODUTO ===
   fastify.post('/:id/categories', {
     schema: ProductSchemas.addCategories,
+    preHandler: [authMiddleware],
     handler: ProductController.addCategories
   });
 
   fastify.delete('/:id/categories', {
     schema: ProductSchemas.removeCategories,
+    preHandler: [authMiddleware],
     handler: ProductController.removeCategories
   });
 
   fastify.put('/:id/categories', {
     schema: ProductSchemas.setCategories,
+    preHandler: [authMiddleware],
     handler: ProductController.setCategories
   });
 

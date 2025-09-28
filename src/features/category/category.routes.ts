@@ -1,11 +1,13 @@
 import { FastifyInstance } from 'fastify';
 import { CategoryController } from './category.controller';
 import { CategorySchemas } from './category.schema';
+import { authMiddleware } from '../../middlewares/auth.middleware';
 
 export async function CategoryRoutes(fastify: FastifyInstance) {
   // CRUD básico
   fastify.post('/', {
     schema: CategorySchemas.create,
+    preHandler: [authMiddleware],
     handler: CategoryController.create
   });
 
@@ -21,11 +23,13 @@ export async function CategoryRoutes(fastify: FastifyInstance) {
 
   fastify.put('/:id', {
     schema: CategorySchemas.update,
+    preHandler: [authMiddleware],
     handler: CategoryController.update
   });
 
   fastify.delete('/:id', {
     schema: CategorySchemas.delete,
+    preHandler: [authMiddleware],
     handler: CategoryController.delete
   });
 
@@ -82,6 +86,7 @@ export async function CategoryRoutes(fastify: FastifyInstance) {
   // Funções adicionais - Commands
   fastify.patch('/:id/status', {
     schema: CategorySchemas.updateStatus,
+    preHandler: [authMiddleware],
     handler: CategoryController.updateStatus
   });
 
@@ -101,6 +106,7 @@ export async function CategoryRoutes(fastify: FastifyInstance) {
         }
       }
     },
+    preHandler: [authMiddleware],
     handler: CategoryController.moveToParent
   });
 }

@@ -1,11 +1,13 @@
 import { FastifyInstance } from 'fastify';
 import { SupplierResponsibleController } from './supplier-responsible.controller';
 import { SupplierResponsibleSchemas } from './supplier-responsible.schema';
+import { authMiddleware } from '../../middlewares/auth.middleware';
 
 export async function SupplierResponsibleRoutes(fastify: FastifyInstance) {
   // CRUD básico
   fastify.post('/:supplierId/responsibles', {
     schema: SupplierResponsibleSchemas.create,
+    preHandler: [authMiddleware],
     handler: SupplierResponsibleController.create
   });
 
@@ -21,11 +23,13 @@ export async function SupplierResponsibleRoutes(fastify: FastifyInstance) {
 
   fastify.put('/:supplierId/responsibles/:responsibleId', {
     schema: SupplierResponsibleSchemas.update,
+    preHandler: [authMiddleware],
     handler: SupplierResponsibleController.update
   });
 
   fastify.delete('/:supplierId/responsibles/:responsibleId', {
     schema: SupplierResponsibleSchemas.delete,
+    preHandler: [authMiddleware],
     handler: SupplierResponsibleController.delete
   });
 
@@ -58,10 +62,12 @@ export async function SupplierResponsibleRoutes(fastify: FastifyInstance) {
 
   // Funções de comando
   fastify.patch('/:supplierId/responsibles/:responsibleId/toggle-status', {
+    preHandler: [authMiddleware],
     handler: SupplierResponsibleController.toggleStatus
   });
 
   fastify.post('/:supplierId/responsibles/bulk', {
+    preHandler: [authMiddleware],
     handler: SupplierResponsibleController.bulkCreate
   });
 }
