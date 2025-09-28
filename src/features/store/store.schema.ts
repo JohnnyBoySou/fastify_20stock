@@ -3,9 +3,8 @@ import { FastifySchema } from 'fastify';
 export const createStoreSchema: FastifySchema = {
   body: {
     type: 'object',
-    required: ['ownerId', 'name', 'cnpj'],
+    required: ['name', 'cnpj'],
     properties: {
-      ownerId: { type: 'string', minLength: 1 },
       name: { type: 'string', minLength: 1, maxLength: 255 },
       cnpj: { type: 'string', minLength: 14, maxLength: 14 },
       email: { type: 'string', format: 'email' },

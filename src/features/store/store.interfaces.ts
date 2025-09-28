@@ -2,7 +2,6 @@ import { FastifyRequest } from 'fastify';
 
 export interface CreateStoreRequest extends FastifyRequest {
   body: {
-    ownerId: string
     name: string
     cnpj: string
     email?: string

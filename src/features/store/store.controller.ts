@@ -20,7 +20,8 @@ export const StoreController = {
   // === CRUD BÁSICO ===
   async create(request: CreateStoreRequest, reply: FastifyReply) {
     try {
-      const { ownerId, name, cnpj, email, phone, cep, city, state, address, status } = request.body;
+      const { name, cnpj, email, phone, cep, city, state, address, status } = request.body;
+      const ownerId = request.user!.id; // Obtém o ID do usuário autenticado
 
       const result = await StoreCommands.create({
         ownerId,
