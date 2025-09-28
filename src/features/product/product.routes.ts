@@ -117,8 +117,8 @@ export async function ProductRoutes(fastify: FastifyInstance) {
     handler: ProductController.getCategories
   });
 
- // fastify.get('/category/:categoryId', {
- //   schema: ProductSchemas.getByCategory,
- //   handler: ProductController.getByCategory
- // });
+  // fastify.get('/category/:categoryId', {
+  //   schema: ProductSchemas.getByCategory,
+  //   handler: ProductController.getByCategory
+  // });
 }
