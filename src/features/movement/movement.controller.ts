@@ -1,13 +1,14 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { MovementCommands } from './commands/movement.commands';
 import { MovementQueries } from './queries/movement.queries';
+import { db } from '@/plugins/prisma';
 
 export const MovementController = {
   // === CRUD BÁSICO ===
   async create(request: FastifyRequest<{ Body: {
     type: 'ENTRADA' | 'SAIDA' | 'PERDA'
     quantity: number
-    storeId?: string
+    storeId: string // Agora obrigatório, vem do middleware
     productId: string
     supplierId?: string
     batch?: string
@@ -20,10 +21,22 @@ export const MovementController = {
       const { type, quantity, storeId, productId, supplierId, batch, expiration, price, note } = request.body;
       const userId = request.user?.id; // Obtém o ID do usuário autenticado
 
-      const result = await MovementCommands.create({
+      console.log('Creating movement with data:', {
         type,
         quantity,
         storeId,
+        productId,
+        supplierId,
+        batch,
+        price,
+        note,
+        userId
+      });
+
+      const result = await MovementCommands.create({
+        type,
+        quantity,
+        storeId, // Agora vem do middleware
         productId,
         supplierId,
         batch,
@@ -32,6 +45,8 @@ export const MovementController = {
         note,
         userId
       });
+
+      console.log('Movement created successfully:', result);
 
       return reply.status(201).send(result);
     } catch (error: any) {
@@ -55,6 +70,12 @@ export const MovementController = {
         });
       }
 
+      if (error.message.includes('Store ID is required')) {
+        return reply.status(400).send({
+          error: error.message
+        });
+      }
+
       return reply.status(500).send({
         error: 'Internal server error'
       });
@@ -65,13 +86,50 @@ export const MovementController = {
     try {
       const { id } = request.params;
 
+      console.log('MovementController.get: Getting movement with id:', id);
+
       const result = await MovementQueries.getById(id);
 
       if (!result) {
+        console.log('MovementController.get: Movement not found');
         return reply.status(404).send({
           error: 'Movement not found'
         });
       }
+
+      console.log('MovementController.get: Returning movement:', {
+        id: result.id,
+        store: result.store,
+        product: result.product,
+        supplier: result.supplier,
+        user: result.user
+      });
+
+      console.log('MovementController.get: Full result JSON:', JSON.stringify(result, null, 2));
+
+      // Forçar serialização correta dos dados relacionados
+      const serializedResult = {
+        ...result,
+        store: result.store ? {
+          id: result.store.id,
+          name: result.store.name
+        } : null,
+        product: result.product ? {
+          id: result.product.id,
+          name: result.product.name,
+          unitOfMeasure: result.product.unitOfMeasure
+        } : null,
+        supplier: result.supplier ? {
+          id: result.supplier.id,
+          corporateName: result.supplier.corporateName
+        } : null,
+        user: result.user ? {
+          id: result.user.id,
+          name: result.user.name,
+          email: result.user.email
+        } : null
+      };
+
 
       return reply.send(result);
     } catch (error: any) {
@@ -158,6 +216,106 @@ export const MovementController = {
         storeId,
         productId,
         supplierId,
+        startDate,
+        endDate
+      });
+
+      return reply.send(result);
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(500).send({
+        error: 'Internal server error'
+      });
+    }
+  },
+
+  // === NOVOS ENDPOINTS ESPECÍFICOS ===
+  async listByStore(request: FastifyRequest<{ Querystring: { page?: number; limit?: number; search?: string; type?: 'ENTRADA' | 'SAIDA' | 'PERDA'; productId?: string; supplierId?: string; startDate?: string; endDate?: string } }>, reply: FastifyReply) {
+    try {
+      const { page = 1, limit = 10, search, type, productId, supplierId, startDate, endDate } = request.query;
+      
+      // Obter storeId do middleware ou do request.store
+      const storeId = request.store?.id;
+      
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store ID is required. User must be associated with a store.'
+        });
+      }
+
+      console.log('Listing movements for store:', storeId);
+
+      const result = await MovementQueries.getByStore(storeId, {
+        page,
+        limit,
+        type,
+        startDate,
+        endDate
+      });
+
+      // Se houver filtros adicionais, aplicar na query
+      if (search || productId || supplierId) {
+        const filteredResult = await MovementQueries.list({
+          page,
+          limit,
+          search,
+          type,
+          storeId,
+          productId,
+          supplierId,
+          startDate,
+          endDate
+        });
+        return reply.send(filteredResult);
+      }
+
+      return reply.send(result);
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(500).send({
+        error: 'Internal server error'
+      });
+    }
+  },
+
+  async listByProduct(request: FastifyRequest<{ 
+    Params: { productId: string }
+    Querystring: { page?: number; limit?: number; type?: 'ENTRADA' | 'SAIDA' | 'PERDA'; startDate?: string; endDate?: string } 
+  }>, reply: FastifyReply) {
+    try {
+      const { productId } = request.params;
+      const { page = 1, limit = 10, type, startDate, endDate } = request.query;
+      
+      // Obter storeId do middleware ou do request.store
+      const storeId = request.store?.id;
+      
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store ID is required. User must be associated with a store.'
+        });
+      }
+
+      console.log('Listing movements for product:', productId, 'in store:', storeId);
+
+      // Verificar se o produto existe na loja
+      const product = await db.product.findFirst({
+        where: {
+          id: productId,
+          storeId: storeId,
+          status: true
+        }
+      });
+
+      if (!product) {
+        return reply.status(404).send({
+          error: 'Product not found in this store'
+        });
+      }
+
+      const result = await MovementQueries.getByProduct(productId, {
+        page,
+        limit,
+        type,
         startDate,
         endDate
       });

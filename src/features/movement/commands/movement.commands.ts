@@ -26,14 +26,14 @@ export const getUserStore = async (userId: string) => {
     return storeUser.store;
   }
 
-  throw new Error('User has no associated store');
+  return null; // Retorna null em vez de lançar erro
 };
 
 export const MovementCommands = {
   async create(data: {
     type: 'ENTRADA' | 'SAIDA' | 'PERDA'
     quantity: number
-    storeId?: string
+    storeId: string // Agora é obrigatório, vem do middleware
     productId: string
     supplierId?: string
     batch?: string
@@ -42,16 +42,10 @@ export const MovementCommands = {
     note?: string
     userId?: string
   }) {
-    // Se storeId não foi fornecido, obter a store do usuário
-    let storeId = data.storeId;
-    if (!storeId && data.userId) {
-      const userStore = await getUserStore(data.userId);
-      storeId = userStore.id;
-    }
+    console.log('MovementCommands.create called with:', data);
 
-    if (!storeId) {
-      throw new Error('Store ID is required');
-    }
+    const storeId = data.storeId; // Agora sempre vem do middleware
+    console.log('Using storeId:', storeId);
 
     // Verificar se o produto existe na loja
     const product = await db.product.findFirst({
@@ -61,6 +55,8 @@ export const MovementCommands = {
         status: true
       }
     });
+
+    console.log('Product found:', product);
 
     if (!product) {
       throw new Error('Product not found in this store');
@@ -81,7 +77,10 @@ export const MovementCommands = {
     }
 
     // Calcular o saldo após a movimentação
+    console.log('Calculating current stock for product:', data.productId, 'store:', storeId);
     const currentStock = await MovementCommands.getCurrentStock(data.productId, storeId);
+    console.log('Current stock:', currentStock);
+    
     let balanceAfter = currentStock;
 
     if (data.type === 'ENTRADA') {
@@ -93,7 +92,10 @@ export const MovementCommands = {
       balanceAfter = currentStock - data.quantity;
     }
 
+    console.log('Balance after movement:', balanceAfter);
+
     // Criar a movimentação
+    console.log('Creating movement in database...');
     const movement = await db.movement.create({
       data: {
         type: data.type,
@@ -140,6 +142,7 @@ export const MovementCommands = {
       }
     });
 
+    console.log('Movement created successfully:', movement);
     return movement;
   },
 

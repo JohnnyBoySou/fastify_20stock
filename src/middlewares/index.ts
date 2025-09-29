@@ -1,6 +1,9 @@
 // Auth middlewares
 export { authMiddleware, optionalAuthMiddleware } from './auth.middleware';
 
+// Store context middlewares
+export { storeContextMiddleware, optionalStoreContextMiddleware } from './store-context.middleware';
+
 // Authorization middlewares
 export {
   UserRole,

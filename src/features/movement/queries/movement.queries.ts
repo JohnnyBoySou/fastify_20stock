@@ -3,7 +3,9 @@ import { LLMService } from '@/services/llm';
 
 export const MovementQueries = {
   async getById(id: string) {
-    return await db.movement.findUnique({
+    console.log('MovementQueries.getById: Searching for movement with id:', id);
+    
+    const movement = await db.movement.findUnique({
       where: { id },
       include: {
         store: {
@@ -34,6 +36,36 @@ export const MovementQueries = {
         }
       }
     });
+
+    if (!movement) {
+      console.log('MovementQueries.getById: Movement not found');
+      return null;
+    }
+
+    console.log('MovementQueries.getById: Found movement with relations:', {
+      id: movement.id,
+      storeId: movement.storeId,
+      productId: movement.productId,
+      supplierId: movement.supplierId,
+      userId: movement.userId,
+      store: movement.store,
+      product: movement.product,
+      supplier: movement.supplier,
+      user: movement.user
+    });
+
+    // Garantir que os objetos relacionados não sejam undefined
+    const result = {
+      ...movement,
+      store: movement.store || null,
+      product: movement.product || null,
+      supplier: movement.supplier || null,
+      user: movement.user || null
+    };
+
+    console.log('MovementQueries.getById: Final result:', JSON.stringify(result, null, 2));
+
+    return result;
   },
 
   async list(params: {
@@ -273,6 +305,12 @@ export const MovementQueries = {
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
+          store: {
+            select: {
+              id: true,
+              name: true
+            }
+          },
           product: {
             select: {
               id: true,
