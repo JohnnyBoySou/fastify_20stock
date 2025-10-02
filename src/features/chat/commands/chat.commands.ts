@@ -23,16 +23,16 @@ export const ChatCommands = {
 
   // === CRIAÇÃO DE MENSAGEM ===
   async createMessage(data: {
-    message: string
-    response: string
+    content: string
+    isFromUser: boolean
     sessionId: string
     context?: any
     options?: any
   }) {
     const chatMessage = await db.chatMessage.create({
       data: {
-        message: data.message,
-        response: data.response,
+        content: data.content,
+        isFromUser: data.isFromUser,
         sessionId: data.sessionId,
         context: data.context || {},
         options: data.options || {}
@@ -164,8 +164,8 @@ Mensagem do usuário: ${data.message}
 
     // Salvar mensagem no banco
     const chatMessage = await ChatCommands.createMessage({
-      message: data.message,
-      response,
+      content: data.message,
+      isFromUser: true,
       sessionId,
       context: data.context || {},
       options: data.options || {}
@@ -282,12 +282,12 @@ Mensagem do usuário: ${data.message}
     // Buscar todas as mensagens da sessão
     const messages = await db.chatMessage.findMany({
       where: { sessionId },
-      select: { message: true, response: true },
+      select: { content: true, isFromUser: true },
       orderBy: { createdAt: 'asc' }
     });
 
     // Gerar título inteligente
-    const smartTitle = await ChatCommands.generateSmartTitle(messages);
+    const smartTitle = await ChatCommands.generateSmartTitle(messages as any);
 
     // Atualizar título da sessão
     await db.chatSession.update({
@@ -406,16 +406,16 @@ Mensagem do usuário: ${data.message}
 
   // === BATCH OPERATIONS ===
   async createMultipleMessages(messages: Array<{
-    message: string
-    response: string
+      content: string
+    isFromUser: boolean
     sessionId: string
     context?: any
     options?: any
   }>) {
     const createdMessages = await db.chatMessage.createMany({
       data: messages.map(msg => ({
-        message: msg.message,
-        response: msg.response,
+        content: msg.content,
+        isFromUser: msg.isFromUser,
         sessionId: msg.sessionId,
         context: msg.context || {},
         options: msg.options || {}

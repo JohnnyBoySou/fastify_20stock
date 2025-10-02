@@ -345,11 +345,11 @@ export const ChatQueries = {
       id: item.id,
       interaction: {
         user: {
-          message: item.message,
+          message: item.content,
           timestamp: item.createdAt
         },
         ai: {
-          response: item.response,
+          response: item.content,
           timestamp: item.createdAt
         }
       },
@@ -447,8 +447,8 @@ export const ChatQueries = {
         messages: {
           select: {
             id: true,
-            message: true,
-            response: true,
+            content: true,
+            isFromUser: true,
             createdAt: true,
             updatedAt: true
           },
@@ -475,7 +475,7 @@ export const ChatQueries = {
       // Adicionar mensagem do usuário
       formattedMessages.push({
         id: `${message.id}_user`,
-        content: message.message,
+        content: message.content,
         isUser: true,
         createdAt: message.createdAt,
         updatedAt: message.updatedAt
@@ -484,7 +484,7 @@ export const ChatQueries = {
       // Adicionar resposta da IA
       formattedMessages.push({
         id: `${message.id}_ai`,
-        content: message.response,
+        content: message.content,
         isUser: false,
         createdAt: message.createdAt,
         updatedAt: message.updatedAt
@@ -687,8 +687,7 @@ export const ChatQueries = {
     const messages = await db.chatMessage.findMany({
       where: {
         OR: [
-          { message: { contains: term, mode: 'insensitive' } },
-          { response: { contains: term, mode: 'insensitive' } }
+          { content: { contains: term, mode: 'insensitive' } }
         ]
       },
       take: Number(limit),
