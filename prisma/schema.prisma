@@ -366,3 +366,31 @@ enum NotificationPriority {
   HIGH        // Alta prioridade
   URGENT      // Urgente
 }
+
+// === CHAT MODELS ===
+model ChatSession {
+  id        String        @id @default(cuid())
+  userId    String
+  storeId   String?
+  title     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  messages  ChatMessage[]
+  
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  content   String      // Conteúdo da mensagem (pergunta do usuário OU resposta da IA)
+  isFromUser Boolean     @default(true) // true = usuário, false = IA
+  sessionId String
+  context   Json?       // Contexto adicional (storeId, userId, etc.)
+  options   Json?       // Opções do LLM (temperature, numPredict, etc.)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  @@map("chat_messages")
+}

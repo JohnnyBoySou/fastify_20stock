@@ -1,17 +1,46 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MovementCommands = void 0;
+exports.MovementCommands = exports.getUserStore = void 0;
 const prisma_1 = require("../../../plugins/prisma");
+// Função auxiliar para obter a loja do usuário autenticado
+const getUserStore = async (userId) => {
+    // Primeiro, verificar se o usuário é dono de alguma loja
+    const ownedStore = await prisma_1.db.store.findFirst({
+        where: { ownerId: userId },
+        select: { id: true, name: true }
+    });
+    if (ownedStore) {
+        return ownedStore;
+    }
+    // Se não for dono, verificar se tem acesso a alguma loja como usuário
+    const storeUser = await prisma_1.db.storeUser.findFirst({
+        where: { userId },
+        include: {
+            store: {
+                select: { id: true, name: true }
+            }
+        }
+    });
+    if (storeUser) {
+        return storeUser.store;
+    }
+    return null; // Retorna null em vez de lançar erro
+};
+exports.getUserStore = getUserStore;
 exports.MovementCommands = {
     async create(data) {
+        console.log('MovementCommands.create called with:', data);
+        const storeId = data.storeId; // Agora sempre vem do middleware
+        console.log('Using storeId:', storeId);
         // Verificar se o produto existe na loja
         const product = await prisma_1.db.product.findFirst({
             where: {
                 id: data.productId,
-                storeId: data.storeId,
+                storeId: storeId,
                 status: true
             }
         });
+        console.log('Product found:', product);
         if (!product) {
             throw new Error('Product not found in this store');
         }
@@ -28,7 +57,9 @@ exports.MovementCommands = {
             }
         }
         // Calcular o saldo após a movimentação
-        const currentStock = await exports.MovementCommands.getCurrentStock(data.productId, data.storeId);
+        console.log('Calculating current stock for product:', data.productId, 'store:', storeId);
+        const currentStock = await exports.MovementCommands.getCurrentStock(data.productId, storeId);
+        console.log('Current stock:', currentStock);
         let balanceAfter = currentStock;
         if (data.type === 'ENTRADA') {
             balanceAfter = currentStock + data.quantity;
@@ -39,11 +70,21 @@ exports.MovementCommands = {
             }
             balanceAfter = currentStock - data.quantity;
         }
+        console.log('Balance after movement:', balanceAfter);
         // Criar a movimentação
+        console.log('Creating movement in database...');
         const movement = await prisma_1.db.movement.create({
             data: {
-                ...data,
+                type: data.type,
+                quantity: data.quantity,
+                storeId: storeId,
+                productId: data.productId,
+                supplierId: data.supplierId,
+                batch: data.batch,
                 expiration: data.expiration ? new Date(data.expiration) : null,
+                price: data.price,
+                note: data.note,
+                userId: data.userId,
                 balanceAfter,
                 createdAt: new Date(),
                 updatedAt: new Date()
@@ -77,6 +118,7 @@ exports.MovementCommands = {
                 }
             }
         });
+        console.log('Movement created successfully:', movement);
         return movement;
     },
     async update(id, data) {

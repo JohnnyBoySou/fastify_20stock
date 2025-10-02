@@ -258,5 +258,124 @@ exports.CategoryController = {
                 error: 'Internal server error'
             });
         }
+    },
+    // === RELATÓRIOS ===
+    async getTopCategoriesByProducts(request, reply) {
+        try {
+            const { limit = 10, status, includeInactive = false, includeProductDetails = false } = request.query;
+            const result = await category_queries_1.CategoryQueries.getTopCategoriesByProductsWithDetails({
+                limit: parseInt(limit),
+                status,
+                includeInactive: includeInactive === 'true',
+                includeProductDetails: includeProductDetails === 'true'
+            });
+            return reply.send({
+                categories: result,
+                metadata: {
+                    total: result.length,
+                    limit: parseInt(limit),
+                    description: 'Top categorias com mais produtos',
+                    chartType: 'horizontalBar',
+                    recommendedLimit: Math.min(parseInt(limit), 10)
+                }
+            });
+        }
+        catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({
+                error: 'Internal server error'
+            });
+        }
+    },
+    async getCategoryCreationEvolution(request, reply) {
+        try {
+            const { period = 'month', startDate, endDate, status, includeInactive = false, includeDetails = false } = request.query;
+            // Converter strings de data para Date se fornecidas
+            const startDateObj = startDate ? new Date(startDate) : undefined;
+            const endDateObj = endDate ? new Date(endDate) : undefined;
+            // Validar datas
+            if (startDateObj && isNaN(startDateObj.getTime())) {
+                return reply.status(400).send({
+                    error: 'Data de início inválida'
+                });
+            }
+            if (endDateObj && isNaN(endDateObj.getTime())) {
+                return reply.status(400).send({
+                    error: 'Data de fim inválida'
+                });
+            }
+            if (startDateObj && endDateObj && startDateObj > endDateObj) {
+                return reply.status(400).send({
+                    error: 'Data de início deve ser anterior à data de fim'
+                });
+            }
+            const result = await category_queries_1.CategoryQueries.getCategoryCreationEvolutionDetailed({
+                period,
+                startDate: startDateObj,
+                endDate: endDateObj,
+                status,
+                includeInactive: includeInactive === 'true',
+                includeDetails: includeDetails === 'true'
+            });
+            return reply.send(result);
+        }
+        catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({
+                error: 'Internal server error'
+            });
+        }
+    },
+    async getActiveInactiveRatio(request, reply) {
+        try {
+            const { includeDetails = false, includeHierarchy = false } = request.query;
+            const result = await category_queries_1.CategoryQueries.getActiveInactiveRatio({
+                includeDetails: includeDetails === 'true',
+                includeHierarchy: includeHierarchy === 'true'
+            });
+            return reply.send(result);
+        }
+        catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({
+                error: 'Internal server error'
+            });
+        }
+    },
+    async getActiveInactiveTrend(request, reply) {
+        try {
+            const { period = 'month', startDate, endDate } = request.query;
+            // Converter strings de data para Date se fornecidas
+            const startDateObj = startDate ? new Date(startDate) : undefined;
+            const endDateObj = endDate ? new Date(endDate) : undefined;
+            // Validar datas
+            if (startDateObj && isNaN(startDateObj.getTime())) {
+                return reply.status(400).send({
+                    error: 'Data de início inválida'
+                });
+            }
+            if (endDateObj && isNaN(endDateObj.getTime())) {
+                return reply.status(400).send({
+                    error: 'Data de fim inválida'
+                });
+            }
+            if (startDateObj && endDateObj && startDateObj > endDateObj) {
+                return reply.status(400).send({
+                    error: 'Data de início deve ser anterior à data de fim'
+                });
+            }
+            const result = await category_queries_1.CategoryQueries.getActiveInactiveTrend({
+                period,
+                startDate: startDateObj,
+                endDate: endDateObj
+            });
+            return reply.send(result);
+        }
+        catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({
+                error: 'Internal server error'
+            });
+        }
     }
 };

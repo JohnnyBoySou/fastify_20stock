@@ -8,6 +8,17 @@ exports.ProductController = {
     async create(request, reply) {
         try {
             const { name, description, unitOfMeasure, referencePrice, categoryIds, supplierId, storeId, stockMin, stockMax, alertPercentage, status } = request.body;
+            // Se storeId não foi enviado, buscar a loja do usuário autenticado
+            let finalStoreId = storeId;
+            if (!finalStoreId) {
+                if (!request.user?.id) {
+                    return reply.status(401).send({
+                        error: 'Authentication required to determine store'
+                    });
+                }
+                const userStore = await (0, product_commands_1.getUserStore)(request.user.id);
+                finalStoreId = userStore.id;
+            }
             const result = await product_commands_1.ProductCommands.create({
                 name,
                 description,
@@ -15,7 +26,7 @@ exports.ProductController = {
                 referencePrice,
                 categoryIds,
                 supplierId,
-                storeId,
+                storeId: finalStoreId,
                 stockMin,
                 stockMax,
                 alertPercentage,
@@ -33,6 +44,11 @@ exports.ProductController = {
             if (error.message.includes('Categories not found')) {
                 return reply.status(400).send({
                     error: error.message
+                });
+            }
+            if (error.message === 'User has no associated store') {
+                return reply.status(400).send({
+                    error: 'User has no associated store. Please provide a storeId or ensure user has access to a store.'
                 });
             }
             if (error.code === 'P2003') {

@@ -4,11 +4,10 @@ exports.StoreSchemas = exports.transferOwnershipSchema = exports.searchStoreUser
 exports.createStoreSchema = {
     body: {
         type: 'object',
-        required: ['ownerId', 'name', 'cnpj'],
+        required: ['name', 'cnpj'],
         properties: {
-            ownerId: { type: 'string', minLength: 1 },
             name: { type: 'string', minLength: 1, maxLength: 255 },
-            cnpj: { type: 'string', minLength: 14, maxLength: 14 },
+            cnpj: { type: 'string', minLength: 14, maxLength: 18 },
             email: { type: 'string', format: 'email' },
             phone: { type: 'string' },
             cep: { type: 'string' },
@@ -58,7 +57,7 @@ exports.updateStoreSchema = {
         type: 'object',
         properties: {
             name: { type: 'string', minLength: 1, maxLength: 255 },
-            cnpj: { type: 'string', minLength: 14, maxLength: 14 },
+            cnpj: { type: 'string', minLength: 14, maxLength: 18 },
             email: { type: 'string', format: 'email' },
             phone: { type: 'string' },
             cep: { type: 'string' },

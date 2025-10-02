@@ -13,6 +13,7 @@ import { MovementRoutes } from '@/features/movement/movement.routes'
 import { PermissionRoutes } from '@/features/permission/permission.routes'
 import { ReportRoutes } from '@/features/report/report.routes'
 import { NotificationRoutes } from '@/features/notification/notification.routes'
+import { ChatRoutes } from '@/features/chat/chat.routes'
 
 const fastify = Fastify({
   logger: true
@@ -67,6 +68,7 @@ fastify.register(MovementRoutes, { prefix: '/movements' })
 fastify.register(PermissionRoutes, { prefix: '/permissions' })
 fastify.register(ReportRoutes, { prefix: '/reports' })
 fastify.register(NotificationRoutes, { prefix: '/notifications' })
+fastify.register(ChatRoutes, { prefix: '/chat' })
 
 const PORT = Number(process.env.PORT) || 3000
 const HOST = '0.0.0.0'

@@ -5,7 +5,8 @@ const prisma_1 = require("../../../plugins/prisma");
 const llm_1 = require("../../../services/llm");
 exports.MovementQueries = {
     async getById(id) {
-        return await prisma_1.db.movement.findUnique({
+        console.log('MovementQueries.getById: Searching for movement with id:', id);
+        const movement = await prisma_1.db.movement.findUnique({
             where: { id },
             include: {
                 store: {
@@ -36,6 +37,31 @@ exports.MovementQueries = {
                 }
             }
         });
+        if (!movement) {
+            console.log('MovementQueries.getById: Movement not found');
+            return null;
+        }
+        console.log('MovementQueries.getById: Found movement with relations:', {
+            id: movement.id,
+            storeId: movement.storeId,
+            productId: movement.productId,
+            supplierId: movement.supplierId,
+            userId: movement.userId,
+            store: movement.store,
+            product: movement.product,
+            supplier: movement.supplier,
+            user: movement.user
+        });
+        // Garantir que os objetos relacionados não sejam undefined
+        const result = {
+            ...movement,
+            store: movement.store || null,
+            product: movement.product || null,
+            supplier: movement.supplier || null,
+            user: movement.user || null
+        };
+        console.log('MovementQueries.getById: Final result:', JSON.stringify(result, null, 2));
+        return result;
     },
     async list(params) {
         const { page = 1, limit = 10, search, type, storeId, productId, supplierId, startDate, endDate } = params;
@@ -233,6 +259,12 @@ exports.MovementQueries = {
                 take: limit,
                 orderBy: { createdAt: 'desc' },
                 include: {
+                    store: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
                     product: {
                         select: {
                             id: true,

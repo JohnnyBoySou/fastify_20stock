@@ -1,10 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.requireTimeBasedPermission = exports.requireResourcePermission = exports.requireGranularPermission = exports.GranularPermissionService = exports.requireStoreResourceAccess = exports.requireStoreUserManagement = exports.requireStoreRoleAccess = exports.requireStoreAccess = exports.requireOwnership = exports.requireStoreRole = exports.requireAnyPermission = exports.requireAllPermissions = exports.requirePermission = exports.requireRole = exports.hasStoreRole = exports.hasRole = exports.hasPermission = exports.Action = exports.StoreRole = exports.UserRole = exports.optionalAuthMiddleware = exports.authMiddleware = void 0;
+exports.requireTimeBasedPermission = exports.requireResourcePermission = exports.requireGranularPermission = exports.GranularPermissionService = exports.requireStoreResourceAccess = exports.requireStoreUserManagement = exports.requireStoreRoleAccess = exports.requireStoreAccess = exports.requireOwnership = exports.requireStoreRole = exports.requireAnyPermission = exports.requireAllPermissions = exports.requirePermission = exports.requireRole = exports.hasStoreRole = exports.hasRole = exports.hasPermission = exports.Action = exports.StoreRole = exports.UserRole = exports.optionalStoreContextMiddleware = exports.storeContextMiddleware = exports.optionalAuthMiddleware = exports.authMiddleware = void 0;
 // Auth middlewares
 var auth_middleware_1 = require("./auth.middleware");
 Object.defineProperty(exports, "authMiddleware", { enumerable: true, get: function () { return auth_middleware_1.authMiddleware; } });
 Object.defineProperty(exports, "optionalAuthMiddleware", { enumerable: true, get: function () { return auth_middleware_1.optionalAuthMiddleware; } });
+// Store context middlewares
+var store_context_middleware_1 = require("./store-context.middleware");
+Object.defineProperty(exports, "storeContextMiddleware", { enumerable: true, get: function () { return store_context_middleware_1.storeContextMiddleware; } });
+Object.defineProperty(exports, "optionalStoreContextMiddleware", { enumerable: true, get: function () { return store_context_middleware_1.optionalStoreContextMiddleware; } });
 // Authorization middlewares
 var authorization_middleware_1 = require("./authorization.middleware");
 Object.defineProperty(exports, "UserRole", { enumerable: true, get: function () { return authorization_middleware_1.UserRole; } });

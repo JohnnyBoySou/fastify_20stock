@@ -7,11 +7,14 @@ exports.StoreController = {
     // === CRUD BÁSICO ===
     async create(request, reply) {
         try {
-            const { ownerId, name, cnpj, email, phone, cep, city, state, address, status } = request.body;
+            const { name, cnpj, email, phone, cep, city, state, address, status } = request.body;
+            const ownerId = request.user.id; // Obtém o ID do usuário autenticado
+            // Remove formatação do CNPJ (mantém apenas números)
+            const cleanCnpj = cnpj.replace(/\D/g, '');
             const result = await store_commands_1.StoreCommands.create({
                 ownerId,
                 name,
-                cnpj,
+                cnpj: cleanCnpj,
                 email,
                 phone,
                 cep,
@@ -61,6 +64,10 @@ exports.StoreController = {
         try {
             const { id } = request.params;
             const updateData = { ...request.body };
+            // Remove formatação do CNPJ se estiver presente
+            if (updateData.cnpj) {
+                updateData.cnpj = updateData.cnpj.replace(/\D/g, '');
+            }
             const result = await store_commands_1.StoreCommands.update(id, updateData);
             return reply.send(result);
         }
@@ -127,7 +134,9 @@ exports.StoreController = {
     async getByCnpj(request, reply) {
         try {
             const { cnpj } = request.params;
-            const result = await store_queries_1.StoreQueries.getByCnpj(cnpj);
+            // Remove formatação do CNPJ para busca
+            const cleanCnpj = cnpj.replace(/\D/g, '');
+            const result = await store_queries_1.StoreQueries.getByCnpj(cleanCnpj);
             return reply.send(result);
         }
         catch (error) {
@@ -209,7 +218,9 @@ exports.StoreController = {
     async verifyCnpj(request, reply) {
         try {
             const { cnpj } = request.params;
-            const result = await store_commands_1.StoreCommands.verifyCnpj(cnpj);
+            // Remove formatação do CNPJ para verificação
+            const cleanCnpj = cnpj.replace(/\D/g, '');
+            const result = await store_commands_1.StoreCommands.verifyCnpj(cleanCnpj);
             return reply.send(result);
         }
         catch (error) {

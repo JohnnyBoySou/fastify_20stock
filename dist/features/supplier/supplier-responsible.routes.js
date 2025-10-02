@@ -3,10 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SupplierResponsibleRoutes = SupplierResponsibleRoutes;
 const supplier_responsible_controller_1 = require("./supplier-responsible.controller");
 const supplier_responsible_schema_1 = require("./supplier-responsible.schema");
+const auth_middleware_1 = require("../../middlewares/auth.middleware");
 async function SupplierResponsibleRoutes(fastify) {
     // CRUD básico
     fastify.post('/:supplierId/responsibles', {
         schema: supplier_responsible_schema_1.SupplierResponsibleSchemas.create,
+        preHandler: [auth_middleware_1.authMiddleware],
         handler: supplier_responsible_controller_1.SupplierResponsibleController.create
     });
     fastify.get('/:supplierId/responsibles', {
@@ -19,10 +21,12 @@ async function SupplierResponsibleRoutes(fastify) {
     });
     fastify.put('/:supplierId/responsibles/:responsibleId', {
         schema: supplier_responsible_schema_1.SupplierResponsibleSchemas.update,
+        preHandler: [auth_middleware_1.authMiddleware],
         handler: supplier_responsible_controller_1.SupplierResponsibleController.update
     });
     fastify.delete('/:supplierId/responsibles/:responsibleId', {
         schema: supplier_responsible_schema_1.SupplierResponsibleSchemas.delete,
+        preHandler: [auth_middleware_1.authMiddleware],
         handler: supplier_responsible_controller_1.SupplierResponsibleController.delete
     });
     // Funções adicionais
@@ -48,9 +52,11 @@ async function SupplierResponsibleRoutes(fastify) {
     });
     // Funções de comando
     fastify.patch('/:supplierId/responsibles/:responsibleId/toggle-status', {
+        preHandler: [auth_middleware_1.authMiddleware],
         handler: supplier_responsible_controller_1.SupplierResponsibleController.toggleStatus
     });
     fastify.post('/:supplierId/responsibles/bulk', {
+        preHandler: [auth_middleware_1.authMiddleware],
         handler: supplier_responsible_controller_1.SupplierResponsibleController.bulkCreate
     });
 }

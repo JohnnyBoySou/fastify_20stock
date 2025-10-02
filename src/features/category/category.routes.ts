@@ -109,4 +109,25 @@ export async function CategoryRoutes(fastify: FastifyInstance) {
     preHandler: [authMiddleware],
     handler: CategoryController.moveToParent
   });
+
+  // === RELATÓRIOS ===
+  fastify.get('/reports/top-by-products', {
+    schema: CategorySchemas.getTopCategoriesByProducts,
+    handler: CategoryController.getTopCategoriesByProducts
+  });
+
+  fastify.get('/reports/creation-evolution', {
+    schema: CategorySchemas.getCategoryCreationEvolution,
+    handler: CategoryController.getCategoryCreationEvolution
+  });
+
+  fastify.get('/reports/active-inactive-ratio', {
+    schema: CategorySchemas.getActiveInactiveRatio,
+    handler: CategoryController.getActiveInactiveRatio
+  });
+
+  fastify.get('/reports/active-inactive-trend', {
+    schema: CategorySchemas.getActiveInactiveTrend,
+    handler: CategoryController.getActiveInactiveTrend
+  });
 }

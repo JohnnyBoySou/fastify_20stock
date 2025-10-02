@@ -3,10 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CategoryRoutes = CategoryRoutes;
 const category_controller_1 = require("./category.controller");
 const category_schema_1 = require("./category.schema");
+const auth_middleware_1 = require("../../middlewares/auth.middleware");
 async function CategoryRoutes(fastify) {
     // CRUD básico
     fastify.post('/', {
         schema: category_schema_1.CategorySchemas.create,
+        preHandler: [auth_middleware_1.authMiddleware],
         handler: category_controller_1.CategoryController.create
     });
     fastify.get('/', {
@@ -19,10 +21,12 @@ async function CategoryRoutes(fastify) {
     });
     fastify.put('/:id', {
         schema: category_schema_1.CategorySchemas.update,
+        preHandler: [auth_middleware_1.authMiddleware],
         handler: category_controller_1.CategoryController.update
     });
     fastify.delete('/:id', {
         schema: category_schema_1.CategorySchemas.delete,
+        preHandler: [auth_middleware_1.authMiddleware],
         handler: category_controller_1.CategoryController.delete
     });
     // Funções adicionais - Queries
@@ -71,6 +75,7 @@ async function CategoryRoutes(fastify) {
     // Funções adicionais - Commands
     fastify.patch('/:id/status', {
         schema: category_schema_1.CategorySchemas.updateStatus,
+        preHandler: [auth_middleware_1.authMiddleware],
         handler: category_controller_1.CategoryController.updateStatus
     });
     fastify.patch('/:id/move', {
@@ -89,6 +94,24 @@ async function CategoryRoutes(fastify) {
                 }
             }
         },
+        preHandler: [auth_middleware_1.authMiddleware],
         handler: category_controller_1.CategoryController.moveToParent
+    });
+    // === RELATÓRIOS ===
+    fastify.get('/reports/top-by-products', {
+        schema: category_schema_1.CategorySchemas.getTopCategoriesByProducts,
+        handler: category_controller_1.CategoryController.getTopCategoriesByProducts
+    });
+    fastify.get('/reports/creation-evolution', {
+        schema: category_schema_1.CategorySchemas.getCategoryCreationEvolution,
+        handler: category_controller_1.CategoryController.getCategoryCreationEvolution
+    });
+    fastify.get('/reports/active-inactive-ratio', {
+        schema: category_schema_1.CategorySchemas.getActiveInactiveRatio,
+        handler: category_controller_1.CategoryController.getActiveInactiveRatio
+    });
+    fastify.get('/reports/active-inactive-trend', {
+        schema: category_schema_1.CategorySchemas.getActiveInactiveTrend,
+        handler: category_controller_1.CategoryController.getActiveInactiveTrend
     });
 }

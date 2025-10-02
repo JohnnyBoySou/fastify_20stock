@@ -4,14 +4,14 @@ exports.MovementSchemas = exports.getMovementAnalyticsSchema = exports.getCancel
 exports.createMovementSchema = {
     body: {
         type: 'object',
-        required: ['type', 'quantity', 'storeId', 'productId'],
+        required: ['type', 'quantity', 'productId'],
         properties: {
             type: {
                 type: 'string',
                 enum: ['ENTRADA', 'SAIDA', 'PERDA']
             },
             quantity: { type: 'number', minimum: 1 },
-            storeId: { type: 'string', minLength: 1 },
+            storeId: { type: 'string', minLength: 1 }, // Obrigatório, vem do middleware
             productId: { type: 'string', minLength: 1 },
             supplierId: { type: 'string' },
             batch: { type: 'string' },

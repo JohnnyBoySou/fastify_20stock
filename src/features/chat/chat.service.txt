@@ -1,0 +1,248 @@
+import { fetchAuth } from '@/hooks/api';
+
+const URI = '/chat';
+
+// === INTERFACES ===
+export interface ChatMessage {
+    id: string;
+    message: string;
+    response: string;
+    sessionId: string;
+    context?: any;
+    options?: any;
+    createdAt: string;
+    updatedAt: string;
+    session: {
+        id: string;
+        userId: string;
+        storeId?: string;
+        title?: string;
+    };
+}
+
+export interface ChatSession {
+    id: string;
+    userId: string;
+    storeId?: string;
+    title?: string;
+    createdAt: string;
+    updatedAt: string;
+    _count: {
+        messages: number;
+    };
+}
+
+export interface SendMessageRequest {
+    message: string;
+    context?: {
+        storeId?: string;
+        userId?: string;
+        sessionId?: string;
+    };
+    options?: {
+        temperature?: number;
+        numPredict?: number;
+        repeatPenalty?: number;
+    };
+}
+
+export interface SendMessageResponse {
+    id: string;
+    message: string;
+    response: string;
+    sessionId: string;
+    context: any;
+    options: any;
+    createdAt: string;
+    updatedAt: string;
+    session: {
+        id: string;
+        userId: string;
+        storeId?: string;
+        title?: string;
+    };
+}
+
+export interface ChatHistoryResponse {
+    items: ChatMessage[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
+
+export interface ChatSessionsResponse {
+    items: ChatSession[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
+
+export interface UpdateTitleRequest {
+    title: string;
+}
+
+export interface ChatStats {
+    totalSessions: number;
+    totalMessages: number;
+    activeSessions: number;
+    averageMessagesPerSession: number;
+    lastActivity: string;
+}
+
+export const ChatService = {
+    // === ENVIO DE MENSAGENS ===
+    sendMessage: (data: SendMessageRequest): Promise<SendMessageResponse> =>
+        fetchAuth(`${URI}/messages`, { method: "POST", data }),
+
+    // === HISTÓRICO DE CHAT ===
+    getHistory: (params?: {
+        page?: number;
+        limit?: number;
+        sessionId?: string;
+    }): Promise<ChatHistoryResponse> =>
+        fetchAuth(`${URI}/messages`, { method: "GET", params }),
+
+    getMessage: (id: string): Promise<ChatMessage> =>
+        fetchAuth(`${URI}/messages/${id}`, { method: "GET" }),
+
+    // === SESSÕES DE CHAT ===
+    getSessions: (params?: {
+        page?: number;
+        limit?: number;
+    }): Promise<ChatSessionsResponse> =>
+        fetchAuth(`${URI}/sessions`, { method: "GET", params }),
+
+    getSession: (sessionId: string): Promise<ChatSession> =>
+        fetchAuth(`${URI}/sessions/${sessionId}`, { method: "GET" }),
+
+    updateSessionTitle: (sessionId: string, data: UpdateTitleRequest): Promise<ChatSession> =>
+        fetchAuth(`${URI}/sessions/${sessionId}/title`, { method: "PUT", data }),
+
+    updateSessionTitleIntelligent: (sessionId: string): Promise<{
+        sessionId: string;
+        title: string;
+        message: string;
+    }> =>
+        fetchAuth(`${URI}/sessions/${sessionId}/title/intelligent`, { method: "PATCH" }),
+
+    deleteSession: (sessionId: string): Promise<void> =>
+        fetchAuth(`${URI}/sessions/${sessionId}`, { method: "DELETE" }),
+
+    // === COMANDOS DA TOOLBOX ===
+    executeCommand: (command: string, params?: any): Promise<any> =>
+        fetchAuth(`${URI}/toolbox/execute`, { method: "POST", data: { command, params } }),
+
+    getToolboxInfo: (): Promise<any> =>
+        fetchAuth(`${URI}/toolbox/info`, { method: "GET" }),
+
+    // === ESTATÍSTICAS ===
+    getStats: (): Promise<ChatStats> =>
+        fetchAuth(`${URI}/stats`, { method: "GET" }),
+
+    // === UTILITÁRIOS ===
+    createNewSession: (): Promise<ChatSession> =>
+        fetchAuth(`${URI}/sessions`, { method: "POST" }),
+
+    getActiveSessions: (): Promise<{ sessions: ChatSession[] }> =>
+        fetchAuth(`${URI}/sessions/active`, { method: "GET" }),
+
+    searchMessages: (q: string, limit?: number): Promise<{ messages: ChatMessage[] }> =>
+        fetchAuth(`${URI}/messages/search`, { method: "GET", params: { q, limit } }),
+
+    getRecentSessions: (limit?: number): Promise<{ sessions: ChatSession[] }> =>
+        fetchAuth(`${URI}/sessions/recent`, { method: "GET", params: { limit } }),
+
+    // === OPERAÇÕES EM LOTE ===
+    deleteMultipleSessions: (sessionIds: string[]): Promise<{ deletedCount: number }> =>
+        fetchAuth(`${URI}/sessions/bulk-delete`, { method: "POST", data: { sessionIds } }),
+
+    exportSession: (sessionId: string): Promise<{ session: ChatSession; messages: ChatMessage[] }> =>
+        fetchAuth(`${URI}/sessions/${sessionId}/export`, { method: "GET" }),
+
+    // === FUNÇÕES DE CONVENIÊNCIA ===
+    startNewConversation: async (initialMessage?: string): Promise<{
+        session: ChatSession;
+        message?: SendMessageResponse;
+    }> => {
+        const session = await fetchAuth(`${URI}/sessions`, { method: "POST" });
+        
+        if (initialMessage) {
+            const message = await fetchAuth(`${URI}/messages`, { 
+                method: "POST", 
+                data: { 
+                    message: initialMessage,
+                    context: { sessionId: session.id }
+                }
+            });
+            return { session, message };
+        }
+        
+        return { session };
+    },
+
+    continueConversation: (sessionId: string, message: string): Promise<SendMessageResponse> =>
+        fetchAuth(`${URI}/messages`, { 
+            method: "POST", 
+            data: { 
+                message,
+                context: { sessionId }
+            }
+        }),
+
+    getConversationContext: (sessionId: string): Promise<{
+        session: ChatSession;
+        recentMessages: ChatMessage[];
+        context: any;
+    }> =>
+        fetchAuth(`${URI}/sessions/${sessionId}/context`, { method: "GET" }),
+
+    // === FUNÇÕES ESPECÍFICAS PARA IA ===
+    askAboutProducts: (question: string, sessionId?: string): Promise<SendMessageResponse> =>
+        fetchAuth(`${URI}/messages`, { 
+            method: "POST", 
+            data: { 
+                message: question,
+                context: { sessionId }
+            }
+        }),
+
+    askAboutCategories: (question: string, sessionId?: string): Promise<SendMessageResponse> =>
+        fetchAuth(`${URI}/messages`, { 
+            method: "POST", 
+            data: { 
+                message: question,
+                context: { sessionId }
+            }
+        }),
+
+    askAboutInventory: (question: string, sessionId?: string): Promise<SendMessageResponse> =>
+        fetchAuth(`${URI}/messages`, { 
+            method: "POST", 
+            data: { 
+                message: question,
+                context: { sessionId }
+            }
+        }),
+
+    generateReport: (reportType: string, sessionId?: string): Promise<SendMessageResponse> =>
+        fetchAuth(`${URI}/messages`, { 
+            method: "POST", 
+            data: { 
+                message: `Gere um relatório de ${reportType}`,
+                context: { sessionId }
+            }
+        }),
+
+    // === FUNÇÕES DE LIMPEZA ===
+    cleanupOldSessions: (daysOld?: number): Promise<{ deletedSessions: number; cutoffDate: string }> =>
+        fetchAuth(`${URI}/cleanup/sessions`, { method: "POST", data: { daysOld } }),
+
+    cleanupOldMessages: (daysOld?: number): Promise<{ deletedMessages: number; cutoffDate: string }> =>
+        fetchAuth(`${URI}/cleanup/messages`, { method: "POST", data: { daysOld } })
+};

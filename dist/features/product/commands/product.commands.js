@@ -1,7 +1,32 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProductCommands = void 0;
+exports.ProductCommands = exports.getUserStore = void 0;
 const prisma_1 = require("../../../plugins/prisma");
+// Função auxiliar para obter a loja do usuário autenticado
+const getUserStore = async (userId) => {
+    // Primeiro, verificar se o usuário é dono de alguma loja
+    const ownedStore = await prisma_1.db.store.findFirst({
+        where: { ownerId: userId },
+        select: { id: true, name: true }
+    });
+    if (ownedStore) {
+        return ownedStore;
+    }
+    // Se não for dono, verificar se tem acesso a alguma loja como usuário
+    const storeUser = await prisma_1.db.storeUser.findFirst({
+        where: { userId },
+        include: {
+            store: {
+                select: { id: true, name: true }
+            }
+        }
+    });
+    if (storeUser) {
+        return storeUser.store;
+    }
+    throw new Error('User has no associated store');
+};
+exports.getUserStore = getUserStore;
 exports.ProductCommands = {
     async create(data) {
         const { categoryIds, supplierId, storeId, ...createData } = data;

@@ -3,10 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.StoreRoutes = StoreRoutes;
 const store_controller_1 = require("./store.controller");
 const store_schema_1 = require("./store.schema");
+const middlewares_1 = require("../../middlewares");
 async function StoreRoutes(fastify) {
     // CRUD básico
     fastify.post('/', {
         schema: store_schema_1.StoreSchemas.create,
+        preHandler: [middlewares_1.authMiddleware],
         handler: store_controller_1.StoreController.create
     });
     fastify.get('/', {
@@ -19,10 +21,12 @@ async function StoreRoutes(fastify) {
     });
     fastify.put('/:id', {
         schema: store_schema_1.StoreSchemas.update,
+        preHandler: [middlewares_1.authMiddleware],
         handler: store_controller_1.StoreController.update
     });
     fastify.delete('/:id', {
         schema: store_schema_1.StoreSchemas.delete,
+        preHandler: [middlewares_1.authMiddleware],
         handler: store_controller_1.StoreController.delete
     });
     // Funções adicionais - Queries
@@ -67,10 +71,12 @@ async function StoreRoutes(fastify) {
     // Funções adicionais - Commands
     fastify.get('/verify-cnpj/:cnpj', {
         schema: store_schema_1.StoreSchemas.verifyCnpj,
+        preHandler: [middlewares_1.authMiddleware],
         handler: store_controller_1.StoreController.verifyCnpj
     });
     fastify.patch('/:id/toggle-status', {
         schema: store_schema_1.StoreSchemas.toggleStatus,
+        preHandler: [middlewares_1.authMiddleware],
         handler: store_controller_1.StoreController.toggleStatus
     });
 }

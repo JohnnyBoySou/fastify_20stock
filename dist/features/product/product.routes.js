@@ -3,10 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductRoutes = ProductRoutes;
 const product_controller_1 = require("./product.controller");
 const product_schema_1 = require("./product.schema");
+const auth_middleware_1 = require("../../middlewares/auth.middleware");
 async function ProductRoutes(fastify) {
     // CRUD básico
     fastify.post('/', {
         schema: product_schema_1.ProductSchemas.create,
+        preHandler: [auth_middleware_1.authMiddleware],
         handler: product_controller_1.ProductController.create
     });
     fastify.get('/', {
@@ -19,10 +21,12 @@ async function ProductRoutes(fastify) {
     });
     fastify.put('/:id', {
         schema: product_schema_1.ProductSchemas.update,
+        preHandler: [auth_middleware_1.authMiddleware],
         handler: product_controller_1.ProductController.update
     });
     fastify.delete('/:id', {
         schema: product_schema_1.ProductSchemas.delete,
+        preHandler: [auth_middleware_1.authMiddleware],
         handler: product_controller_1.ProductController.delete
     });
     // Funções adicionais
@@ -88,14 +92,17 @@ async function ProductRoutes(fastify) {
     // === ENDPOINTS PARA GERENCIAR CATEGORIAS DO PRODUTO ===
     fastify.post('/:id/categories', {
         schema: product_schema_1.ProductSchemas.addCategories,
+        preHandler: [auth_middleware_1.authMiddleware],
         handler: product_controller_1.ProductController.addCategories
     });
     fastify.delete('/:id/categories', {
         schema: product_schema_1.ProductSchemas.removeCategories,
+        preHandler: [auth_middleware_1.authMiddleware],
         handler: product_controller_1.ProductController.removeCategories
     });
     fastify.put('/:id/categories', {
         schema: product_schema_1.ProductSchemas.setCategories,
+        preHandler: [auth_middleware_1.authMiddleware],
         handler: product_controller_1.ProductController.setCategories
     });
     fastify.get('/:id/categories', {

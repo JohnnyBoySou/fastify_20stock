@@ -76,6 +76,10 @@ exports.AuthCommands = {
         if (!isValidPassword) {
             throw new Error('Invalid credentials');
         }
+        // Check if email is verified
+        if (!user.emailVerified) {
+            throw new Error('Email verification required');
+        }
         // Update last login
         await prisma_1.db.user.update({
             where: { id: user.id },

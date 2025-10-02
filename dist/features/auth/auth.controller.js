@@ -52,6 +52,11 @@ exports.AuthController = {
                     error: error.message
                 });
             }
+            if (error.message === 'Email verification required') {
+                return reply.status(403).send({
+                    error: 'Necessário verificar o email'
+                });
+            }
             return reply.status(500).send({
                 error: 'Internal server error'
             });
