@@ -154,9 +154,44 @@ export const ProductController = {
     } catch (error: any) {
       request.log.error(error);
 
-      if (error.code === 'P2025') {
+      if (error.message === 'Product not found') {
         return reply.status(404).send({
-          error: 'Product not found'
+          error: error.message
+        });
+      }
+
+      if (error.message.includes('Cannot delete product') && error.message.includes('associated movements')) {
+        return reply.status(400).send({
+          error: error.message,
+          suggestion: 'Use DELETE /products/:id/force to delete the product and all its movements'
+        });
+      }
+
+      if (error.code === 'P2003') {
+        return reply.status(400).send({
+          error: 'Cannot delete product due to foreign key constraints'
+        });
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      });
+    }
+  },
+
+  async forceDelete(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { id } = request.params as any;
+
+      await ProductCommands.forceDelete(id);
+
+      return reply.status(204).send();
+    } catch (error: any) {
+      request.log.error(error);
+
+      if (error.message === 'Product not found') {
+        return reply.status(404).send({
+          error: error.message
         });
       }
 

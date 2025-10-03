@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserCommands = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const prisma_1 = require("../../../plugins/prisma");
+const prisma_1 = require("@/plugins/prisma");
 exports.UserCommands = {
     async create(data) {
         // Verificar se o usuário já existe

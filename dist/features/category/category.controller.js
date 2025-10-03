@@ -290,7 +290,6 @@ exports.CategoryController = {
     async getCategoryCreationEvolution(request, reply) {
         try {
             const { period = 'month', startDate, endDate, status, includeInactive = false, includeDetails = false } = request.query;
-            // Converter strings de data para Date se fornecidas
             const startDateObj = startDate ? new Date(startDate) : undefined;
             const endDateObj = endDate ? new Date(endDate) : undefined;
             // Validar datas

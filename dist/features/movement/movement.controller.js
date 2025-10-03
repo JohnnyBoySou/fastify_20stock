@@ -3,7 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MovementController = void 0;
 const movement_commands_1 = require("./commands/movement.commands");
 const movement_queries_1 = require("./queries/movement.queries");
-const prisma_1 = require("../../plugins/prisma");
+const prisma_1 = require("@/plugins/prisma");
+const stock_alert_service_1 = require("@/services/stock-monitoring/stock-alert.service");
 exports.MovementController = {
     // === CRUD BÁSICO ===
     async create(request, reply) {
@@ -34,6 +35,27 @@ exports.MovementController = {
                 userId
             });
             console.log('Movement created successfully:', result);
+            // Verificar alertas de estoque após criar a movimentação
+            try {
+                const stockAlert = await stock_alert_service_1.StockAlertService.checkStockAlerts(productId, storeId, type, quantity, result.id);
+                if (stockAlert.alertTriggered) {
+                    console.log('Stock alert triggered:', stockAlert);
+                    // Criar novo objeto com informação do alerta
+                    const resultWithAlert = {
+                        ...result,
+                        stockAlert: {
+                            triggered: true,
+                            type: stockAlert.alertType,
+                            message: stockAlert.message
+                        }
+                    };
+                    return reply.status(201).send(resultWithAlert);
+                }
+            }
+            catch (alertError) {
+                console.error('Error checking stock alerts:', alertError);
+                // Não falhar a criação da movimentação se houver erro no alerta
+            }
             return reply.status(201).send(result);
         }
         catch (error) {
@@ -603,6 +625,58 @@ exports.MovementController = {
                     error: error.message
                 });
             }
+            return reply.status(500).send({
+                error: 'Internal server error'
+            });
+        }
+    },
+    // === ENDPOINTS PARA ALERTAS DE ESTOQUE ===
+    async checkStockAlerts(request, reply) {
+        try {
+            const { storeId } = request.query;
+            const finalStoreId = storeId || request.store?.id;
+            if (!finalStoreId) {
+                return reply.status(400).send({
+                    error: 'Store ID is required'
+                });
+            }
+            const lowStockProducts = await stock_alert_service_1.StockAlertService.checkLowStockProducts(finalStoreId);
+            return reply.send({
+                storeId: finalStoreId,
+                lowStockCount: lowStockProducts.length,
+                products: lowStockProducts
+            });
+        }
+        catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({
+                error: 'Internal server error'
+            });
+        }
+    },
+    async createLowStockSummaryNotification(request, reply) {
+        try {
+            const { storeId } = request.query;
+            const finalStoreId = storeId || request.store?.id;
+            if (!finalStoreId) {
+                return reply.status(400).send({
+                    error: 'Store ID is required'
+                });
+            }
+            const notification = await stock_alert_service_1.StockAlertService.createLowStockSummaryNotification(finalStoreId);
+            if (!notification) {
+                return reply.send({
+                    message: 'No low stock products found',
+                    notification: null
+                });
+            }
+            return reply.status(201).send({
+                message: 'Low stock summary notification created',
+                notification
+            });
+        }
+        catch (error) {
+            request.log.error(error);
             return reply.status(500).send({
                 error: 'Internal server error'
             });

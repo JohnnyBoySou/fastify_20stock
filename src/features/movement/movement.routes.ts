@@ -134,4 +134,31 @@ export async function MovementRoutes(fastify: FastifyInstance) {
   fastify.get('/summarize', {
     handler: MovementController.summarize
   });
-  }
+
+  // === ENDPOINTS PARA ALERTAS DE ESTOQUE ===
+  fastify.get('/stock-alerts', {
+    schema: {
+      querystring: {
+        type: 'object',
+        properties: {
+          storeId: { type: 'string' }
+        }
+      }
+    },
+    preHandler: [authMiddleware, storeContextMiddleware],
+    handler: MovementController.checkStockAlerts
+  });
+
+  fastify.post('/stock-alerts/summary', {
+    schema: {
+      querystring: {
+        type: 'object',
+        properties: {
+          storeId: { type: 'string' }
+        }
+      }
+    },
+    preHandler: [authMiddleware, storeContextMiddleware],
+    handler: MovementController.createLowStockSummaryNotification
+  });
+}

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MovementCommands = exports.getUserStore = void 0;
-const prisma_1 = require("../../../plugins/prisma");
+const prisma_1 = require("@/plugins/prisma");
 // Função auxiliar para obter a loja do usuário autenticado
 const getUserStore = async (userId) => {
     // Primeiro, verificar se o usuário é dono de alguma loja

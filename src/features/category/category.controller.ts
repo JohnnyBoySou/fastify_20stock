@@ -346,7 +346,6 @@ export const CategoryController = {
         includeDetails = false 
       } = request.query as any;
 
-      // Converter strings de data para Date se fornecidas
       const startDateObj = startDate ? new Date(startDate) : undefined;
       const endDateObj = endDate ? new Date(endDate) : undefined;
 

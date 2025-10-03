@@ -7,9 +7,9 @@ exports.AuthCommands = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const crypto_1 = __importDefault(require("crypto"));
-const prisma_1 = require("../../../plugins/prisma");
+const prisma_1 = require("@/plugins/prisma");
 const auth_queries_1 = require("../queries/auth.queries");
-const email_service_1 = require("../../../services/email/email.service");
+const email_service_1 = require("@/services/email/email.service");
 exports.AuthCommands = {
     async register(data) {
         const { name, email, password, phone } = data;

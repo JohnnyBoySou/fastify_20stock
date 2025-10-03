@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductCommands = exports.getUserStore = void 0;
-const prisma_1 = require("../../../plugins/prisma");
+const prisma_1 = require("@/plugins/prisma");
 // Função auxiliar para obter a loja do usuário autenticado
 const getUserStore = async (userId) => {
     // Primeiro, verificar se o usuário é dono de alguma loja
@@ -170,6 +170,38 @@ exports.ProductCommands = {
         });
     },
     async delete(id) {
+        // Verificar se o produto existe
+        const product = await prisma_1.db.product.findUnique({
+            where: { id },
+            include: {
+                movements: {
+                    select: { id: true }
+                }
+            }
+        });
+        if (!product) {
+            throw new Error('Product not found');
+        }
+        // Verificar se existem movimentações associadas
+        if (product.movements.length > 0) {
+            throw new Error(`Cannot delete product. It has ${product.movements.length} associated movements. Please delete the movements first or use force delete.`);
+        }
+        return await prisma_1.db.product.delete({
+            where: { id }
+        });
+    },
+    async forceDelete(id) {
+        // Verificar se o produto existe
+        const product = await prisma_1.db.product.findUnique({
+            where: { id }
+        });
+        if (!product) {
+            throw new Error('Product not found');
+        }
+        // Exclusão em cascata - primeiro excluir movimentações, depois o produto
+        await prisma_1.db.movement.deleteMany({
+            where: { productId: id }
+        });
         return await prisma_1.db.product.delete({
             where: { id }
         });

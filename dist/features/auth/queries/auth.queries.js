@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthQueries = void 0;
-const prisma_1 = require("../../../plugins/prisma");
+const prisma_1 = require("@/plugins/prisma");
 exports.AuthQueries = {
     async getById(id) {
         const user = await prisma_1.prisma.user.findUnique({

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotificationQueries = void 0;
-const prisma_1 = require("../../../plugins/prisma");
+const prisma_1 = require("@/plugins/prisma");
 exports.NotificationQueries = {
     async getById(id) {
         return await prisma_1.db.notification.findUnique({
@@ -245,4 +245,71 @@ exports.NotificationQueries = {
             }
         });
     },
+    // === QUERIES ESPECÍFICAS PARA ALERTAS DE ESTOQUE ===
+    async getStockAlerts(params) {
+        const { userId, storeId, isRead, limit = 20 } = params;
+        const where = {
+            type: 'STOCK_ALERT',
+            OR: [
+                { expiresAt: null },
+                { expiresAt: { gt: new Date() } }
+            ]
+        };
+        if (userId) {
+            where.userId = userId;
+        }
+        if (isRead !== undefined) {
+            where.isRead = isRead;
+        }
+        if (storeId) {
+            where.data = {
+                path: ['storeId'],
+                equals: storeId
+            };
+        }
+        return await prisma_1.db.notification.findMany({
+            where,
+            take: limit,
+            orderBy: [
+                { priority: 'desc' },
+                { createdAt: 'desc' }
+            ],
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
+                }
+            }
+        });
+    },
+    async getUnreadStockAlerts(userId, limit = 10) {
+        return await prisma_1.db.notification.findMany({
+            where: {
+                userId,
+                type: 'STOCK_ALERT',
+                isRead: false,
+                OR: [
+                    { expiresAt: null },
+                    { expiresAt: { gt: new Date() } }
+                ]
+            },
+            take: limit,
+            orderBy: [
+                { priority: 'desc' },
+                { createdAt: 'desc' }
+            ],
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
+                }
+            }
+        });
+    }
 };

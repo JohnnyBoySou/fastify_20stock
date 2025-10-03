@@ -369,5 +369,72 @@ export const NotificationController = {
         error: 'Internal server error'
       })
     }
+  },
+
+  // === ENDPOINTS ESPECÍFICOS PARA ALERTAS DE ESTOQUE ===
+  async getStockAlerts(request: FastifyRequest<{ 
+    Querystring: { 
+      userId?: string
+      storeId?: string
+      isRead?: boolean
+      limit?: number
+    }
+  }>, reply: FastifyReply) {
+    try {
+      const { userId, storeId, isRead, limit = 20 } = request.query
+
+      const result = await NotificationQueries.getStockAlerts({
+        userId,
+        storeId,
+        isRead,
+        limit
+      })
+
+      return reply.send({ notifications: result })
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async getUnreadStockAlerts(request: FastifyRequest<{ 
+    Params: { userId: string }
+    Querystring: { limit?: number }
+  }>, reply: FastifyReply) {
+    try {
+      const { userId } = request.params
+      const { limit = 10 } = request.query
+
+      const result = await NotificationQueries.getUnreadStockAlerts(userId, limit)
+
+      return reply.send({ notifications: result })
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async markStockAlertsAsRead(request: FastifyRequest<{ 
+    Body: { userId: string; storeId?: string }
+  }>, reply: FastifyReply) {
+    try {
+      const { userId, storeId } = request.body
+
+      const result = await NotificationCommands.markStockAlertsAsRead(userId, storeId)
+
+      return reply.send({ 
+        success: true, 
+        count: result.count 
+      })
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
   }
 }

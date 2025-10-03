@@ -33,6 +33,12 @@ export async function ProductRoutes(fastify: FastifyInstance) {
     handler: ProductController.delete
   });
 
+  fastify.delete('/:id/force', {
+    schema: ProductSchemas.delete,
+    preHandler: [authMiddleware],
+    handler: ProductController.forceDelete
+  });
+
   // Funções adicionais
   fastify.get('/active', {
     handler: ProductController.getActive

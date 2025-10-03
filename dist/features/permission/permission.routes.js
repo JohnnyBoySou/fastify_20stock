@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PermissionRoutes = PermissionRoutes;
 const permission_controller_1 = require("./permission.controller");
 const permission_schema_1 = require("./permission.schema");
-const middlewares_1 = require("../../middlewares");
-const authorization_middleware_1 = require("../../middlewares/authorization.middleware");
+const middlewares_1 = require("@/middlewares");
+const authorization_middleware_1 = require("@/middlewares/authorization.middleware");
 async function PermissionRoutes(fastify) {
     // ================================
     // ROTAS PARA PERMISSÕES CUSTOMIZADAS

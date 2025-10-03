@@ -88,4 +88,53 @@ export async function NotificationRoutes(fastify: FastifyInstance) {
   fastify.delete('/user/:userId', {
     handler: NotificationController.deleteByUser
   })
+
+  // === ROTAS ESPECÍFICAS PARA ALERTAS DE ESTOQUE ===
+  fastify.get('/stock-alerts', {
+    schema: {
+      querystring: {
+        type: 'object',
+        properties: {
+          userId: { type: 'string' },
+          storeId: { type: 'string' },
+          isRead: { type: 'boolean' },
+          limit: { type: 'number', minimum: 1, maximum: 100 }
+        }
+      }
+    },
+    handler: NotificationController.getStockAlerts
+  })
+
+  fastify.get('/user/:userId/stock-alerts/unread', {
+    schema: {
+      params: {
+        type: 'object',
+        required: ['userId'],
+        properties: {
+          userId: { type: 'string' }
+        }
+      },
+      querystring: {
+        type: 'object',
+        properties: {
+          limit: { type: 'number', minimum: 1, maximum: 100 }
+        }
+      }
+    },
+    handler: NotificationController.getUnreadStockAlerts
+  })
+
+  fastify.patch('/stock-alerts/mark-read', {
+    schema: {
+      body: {
+        type: 'object',
+        required: ['userId'],
+        properties: {
+          userId: { type: 'string' },
+          storeId: { type: 'string' }
+        }
+      }
+    },
+    handler: NotificationController.markStockAlertsAsRead
+  })
 }

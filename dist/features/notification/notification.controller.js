@@ -307,5 +307,54 @@ exports.NotificationController = {
                 error: 'Internal server error'
             });
         }
+    },
+    // === ENDPOINTS ESPECÍFICOS PARA ALERTAS DE ESTOQUE ===
+    async getStockAlerts(request, reply) {
+        try {
+            const { userId, storeId, isRead, limit = 20 } = request.query;
+            const result = await notification_queries_1.NotificationQueries.getStockAlerts({
+                userId,
+                storeId,
+                isRead,
+                limit
+            });
+            return reply.send({ notifications: result });
+        }
+        catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({
+                error: 'Internal server error'
+            });
+        }
+    },
+    async getUnreadStockAlerts(request, reply) {
+        try {
+            const { userId } = request.params;
+            const { limit = 10 } = request.query;
+            const result = await notification_queries_1.NotificationQueries.getUnreadStockAlerts(userId, limit);
+            return reply.send({ notifications: result });
+        }
+        catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({
+                error: 'Internal server error'
+            });
+        }
+    },
+    async markStockAlertsAsRead(request, reply) {
+        try {
+            const { userId, storeId } = request.body;
+            const result = await notification_commands_1.NotificationCommands.markStockAlertsAsRead(userId, storeId);
+            return reply.send({
+                success: true,
+                count: result.count
+            });
+        }
+        catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({
+                error: 'Internal server error'
+            });
+        }
     }
 };

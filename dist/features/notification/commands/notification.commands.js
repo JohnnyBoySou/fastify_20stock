@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotificationCommands = void 0;
-const prisma_1 = require("../../../plugins/prisma");
+const prisma_1 = require("@/plugins/prisma");
 exports.NotificationCommands = {
     async create(data) {
         return await prisma_1.db.notification.create({
@@ -106,6 +106,26 @@ exports.NotificationCommands = {
     async deleteByUser(userId) {
         return await prisma_1.db.notification.deleteMany({
             where: { userId }
+        });
+    },
+    async markStockAlertsAsRead(userId, storeId) {
+        const whereCondition = {
+            userId,
+            isRead: false,
+            type: 'STOCK_ALERT'
+        };
+        if (storeId) {
+            whereCondition.data = {
+                path: ['storeId'],
+                equals: storeId
+            };
+        }
+        return await prisma_1.db.notification.updateMany({
+            where: whereCondition,
+            data: {
+                isRead: true,
+                readAt: new Date()
+            }
         });
     }
 };

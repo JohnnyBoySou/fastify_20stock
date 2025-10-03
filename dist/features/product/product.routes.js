@@ -29,6 +29,11 @@ async function ProductRoutes(fastify) {
         preHandler: [auth_middleware_1.authMiddleware],
         handler: product_controller_1.ProductController.delete
     });
+    fastify.delete('/:id/force', {
+        schema: product_schema_1.ProductSchemas.delete,
+        preHandler: [auth_middleware_1.authMiddleware],
+        handler: product_controller_1.ProductController.forceDelete
+    });
     // Funções adicionais
     fastify.get('/active', {
         handler: product_controller_1.ProductController.getActive

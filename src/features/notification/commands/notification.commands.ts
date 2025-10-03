@@ -129,5 +129,28 @@ export const NotificationCommands = {
     return await db.notification.deleteMany({
       where: { userId }
     });
+  },
+
+  async markStockAlertsAsRead(userId: string, storeId?: string) {
+    const whereCondition: any = {
+      userId,
+      isRead: false,
+      type: 'STOCK_ALERT'
+    };
+
+    if (storeId) {
+      whereCondition.data = {
+        path: ['storeId'],
+        equals: storeId
+      };
+    }
+
+    return await db.notification.updateMany({
+      where: whereCondition,
+      data: {
+        isRead: true,
+        readAt: new Date()
+      }
+    });
   }
 };
