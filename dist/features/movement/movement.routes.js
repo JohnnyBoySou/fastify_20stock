@@ -83,6 +83,7 @@ async function MovementRoutes(fastify) {
     });
     fastify.get('/product/:productId', {
         schema: movement_schema_1.MovementSchemas.getByProduct,
+        preHandler: [middlewares_1.authMiddleware, middlewares_1.storeContextMiddleware],
         handler: movement_controller_1.MovementController.getByProduct
     });
     fastify.get('/product/:productId/summary', {

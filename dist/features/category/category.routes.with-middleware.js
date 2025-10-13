@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.categoryRoutesWithMiddleware = categoryRoutesWithMiddleware;
 const category_controller_1 = require("./category.controller");
 const category_schema_1 = require("./category.schema");
-const middlewares_1 = require("@/middlewares");
-const authorization_middleware_1 = require("@/middlewares/authorization.middleware");
+const middlewares_1 = require("../../middlewares");
+const authorization_middleware_1 = require("../../middlewares/authorization.middleware");
 async function categoryRoutesWithMiddleware(fastify) {
     // POST /categories - Criar categoria (requer permissão)
     fastify.post('/', {

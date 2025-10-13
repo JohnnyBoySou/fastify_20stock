@@ -14,9 +14,15 @@ import { PermissionRoutes } from '@/features/permission/permission.routes'
 import { ReportRoutes } from '@/features/report/report.routes'
 import { NotificationRoutes } from '@/features/notification/notification.routes'
 import { ChatRoutes } from '@/features/chat/chat.routes'
+import { queryRAG } from './services/llm/rag'
+import { authMiddleware, storeContextMiddleware } from './middlewares'
 
 const fastify = Fastify({
-  logger: true
+  logger: true,
+  requestTimeout: 60000, // 30 segundos para timeout de requisições
+  keepAliveTimeout: 5000, // 5 segundos para keep-alive
+  bodyLimit: 1048576, // 1MB para limite do body
+  maxParamLength: 200 // Limite de caracteres para parâmetros de rota
 })
 
 //Plugins
@@ -58,6 +64,21 @@ fastify.get('/health', async (request, reply) => {
 })
 
 // Registrar rotas
+
+fastify.get('/llm/rag', {
+  preHandler: [authMiddleware, storeContextMiddleware]
+}, async (request, reply) => {
+  try {
+    const productId = "cmg4ixgh90005e8vgqdn5k6qz"; // ID do produto para teste
+    const query = "Qual a última movimentação de entrada do produto?";
+    const response = await queryRAG(productId, query);
+    return reply.send(response);
+  } catch (error) {
+    console.error('Error in RAG:', error);
+    return reply.status(500).send({ error: 'RAG processing failed' });
+  }
+})
+
 fastify.register(AuthRoutes, { prefix: '/auth' })
 fastify.register(UserRoutes, { prefix: '/users' })
 fastify.register(ProductRoutes, { prefix: '/products' })

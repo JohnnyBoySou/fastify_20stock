@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CategoryQueries = void 0;
-const prisma_1 = require("@/plugins/prisma");
+const prisma_1 = require("../../../plugins/prisma");
 exports.CategoryQueries = {
     async getById(id) {
         return await prisma_1.db.category.findUnique({

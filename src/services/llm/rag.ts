@@ -1,0 +1,102 @@
+import { tool } from "@langchain/core/tools";
+import { ChatOllama, OllamaEmbeddings } from "@langchain/ollama";
+import { createRetrievalChain } from "langchain/chains/retrieval";
+import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
+import { PromptTemplate } from "@langchain/core/prompts";
+import { MemoryVectorStore } from "langchain/vectorstores/memory";
+
+import movements from "./movements.json";
+import { MovementQueries } from "@/features/movement/queries/movement.queries";
+
+const model = new ChatOllama({ model: "mistral" });
+// Cria a Tool para buscar movimentações de estoque
+const getStockMovementsTool = tool(
+  async (input: { productId: string }) => {
+    const productId = input.productId;
+    return movements;
+    //return await MovementQueries.getByProduct(productId, { page: 1, limit: 10 });
+  },
+  {
+    name: "get_stock_movements",
+    description: "Busca entradas, saídas e perdas de um produto pelo ID",
+    schema: {
+      type: "object",
+      properties: {
+        productId: { type: "string" }
+      },
+      required: ["productId"]
+    }
+  }
+);
+
+// ------------------------------
+// Função para gerar documentos do RAG
+// ------------------------------
+function generateDocuments(movements: any[]) {
+  // Filtra apenas entradas
+  const entries = movements.filter((m) => m.type === "ENTRADA");
+
+  // Ordena da mais recente para a mais antiga
+  entries.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  // Cria documentos legíveis para o vector store
+  return entries.map((m) => {
+    const date = new Date(m.createdAt).toLocaleDateString("pt-BR");
+    const time = new Date(m.createdAt).toLocaleTimeString("pt-BR");
+    const price = m.price ? ` | Preço: R$ ${m.price}` : ""; 
+    const balance = m.balanceAfter ? ` | Saldo após: ${m.balanceAfter}` : "";
+
+    return `Data: ${date} ${time} | Tipo: ${m.type} | Quantidade: ${m.quantity}${price}${balance}`;
+  });
+}
+
+// ------------------------------
+// Cria cadeia RAG
+// ------------------------------
+export async function createRAGChain(productId: string) {
+  // Obtem movimentações via Tool
+  const movements = await getStockMovementsTool.invoke({ productId });
+  const documents = generateDocuments(movements);
+
+  // Cria o vector store com os documentos
+  const vectorStore = await MemoryVectorStore.fromTexts(
+    documents,
+    [{ id: productId }],
+    new OllamaEmbeddings({ model: "mistral" })
+  );
+
+  // Cadeia que combina documentos e responde perguntas
+  const documentChain = await createStuffDocumentsChain({
+    llm: model,
+    prompt: new PromptTemplate({
+      template:
+        "Você é um assistente especializado em análise de movimentações de estoque. " +
+        "Responda a pergunta com base no contexto fornecido sobre as movimentações do produto.\n\n" +
+        "Contexto das movimentações:\n{context}\n\n" +
+        "Pergunta:\n{input}\n\nResponda de forma clara e precisa, utilizando as informações do contexto.",
+      inputVariables: ["context", "input"],
+    }),
+  });
+
+  return createRetrievalChain({
+    combineDocsChain: documentChain,
+    retriever: vectorStore.asRetriever(),
+  });
+}
+
+// ------------------------------
+// Função de consulta
+// ------------------------------
+export async function queryRAG(productId: string, query: string) {
+  try {
+    const chain = await createRAGChain(productId);
+    const result = await chain.invoke({ input: query });
+    return result;
+  } catch (error) {
+    return {
+      input: query,
+      context: [],
+      answer: "Erro ao processar a consulta. Verifique se o produto existe e possui movimentações nesta loja.",
+    };
+  }
+}

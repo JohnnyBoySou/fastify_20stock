@@ -1,0 +1,38 @@
+
+model Product {
+  id              String        @id @default(cuid())
+  name            String
+  description     String?
+  unitOfMeasure   UnitOfMeasure
+  referencePrice  Decimal       @db.Decimal(10, 2)
+  supplierId      String?
+  storeId         String
+  stockMin        Int
+  stockMax        Int
+  alertPercentage Int           @db.SmallInt
+  status          Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  store           Store         @relation(fields: [storeId], references: [id])
+  supplier        Supplier?     @relation(fields: [supplierId], references: [id])
+  movements       Movement[]
+  categories      ProductCategory[]
+}
+
+enum UnitOfMeasure {
+  UNIDADE
+  KG
+  L
+  ML
+  M
+  CM
+  MM
+  UN
+  DZ
+  CX
+  PCT
+  KIT
+  PAR
+  H
+  D
+}

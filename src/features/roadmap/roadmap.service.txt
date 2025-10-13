@@ -1,0 +1,397 @@
+import { fetchAuth } from "@/services/http/fetch";
+import { z } from "zod";
+
+// === SCHEMAS ZOD PARA VALIDAÇÃO ===
+
+// === ROADMAP SCHEMAS ===
+export const RoadmapSchema = z.object({
+    storeId: z.string().optional(),
+    userId: z.string().optional(),
+    title: z
+        .string()
+        .min(1, "O título é obrigatório")
+        .min(3, "O título deve ter pelo menos 3 caracteres")
+        .max(200, "O título deve ter no máximo 200 caracteres"),
+    description: z
+        .string()
+        .max(1000, "A descrição deve ter no máximo 1000 caracteres")
+        .optional(),
+    status: z.enum(['ACTIVE', 'COMPLETED', 'ARCHIVED']).default('ACTIVE'),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+});
+
+export type RoadmapFormData = z.infer<typeof RoadmapSchema>;
+
+export const RoadmapEditSchema = z.object({
+    storeId: z.string().optional(),
+    userId: z.string().optional(),
+    title: z
+        .string()
+        .min(1, "O título é obrigatório")
+        .min(3, "O título deve ter pelo menos 3 caracteres")
+        .max(200, "O título deve ter no máximo 200 caracteres")
+        .optional(),
+    description: z
+        .string()
+        .max(1000, "A descrição deve ter no máximo 1000 caracteres")
+        .optional(),
+    status: z.enum(['ACTIVE', 'COMPLETED', 'ARCHIVED']).optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+});
+
+export type RoadmapEditFormData = z.infer<typeof RoadmapEditSchema>;
+
+// === MILESTONE SCHEMAS ===
+export const MilestoneSchema = z.object({
+    title: z
+        .string()
+        .min(1, "O título é obrigatório")
+        .min(3, "O título deve ter pelo menos 3 caracteres")
+        .max(200, "O título deve ter no máximo 200 caracteres"),
+    description: z
+        .string()
+        .max(1000, "A descrição deve ter no máximo 1000 caracteres")
+        .optional(),
+    status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED']).default('PENDING'),
+    progress: z
+        .number()
+        .min(0, "O progresso mínimo é 0")
+        .max(100, "O progresso máximo é 100")
+        .default(0),
+    order: z.number().min(0, "A ordem não pode ser negativa").optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+});
+
+export type MilestoneFormData = z.infer<typeof MilestoneSchema>;
+
+export const MilestoneEditSchema = z.object({
+    title: z
+        .string()
+        .min(1, "O título é obrigatório")
+        .min(3, "O título deve ter pelo menos 3 caracteres")
+        .max(200, "O título deve ter no máximo 200 caracteres")
+        .optional(),
+    description: z
+        .string()
+        .max(1000, "A descrição deve ter no máximo 1000 caracteres")
+        .optional(),
+    status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED']).optional(),
+    progress: z
+        .number()
+        .min(0, "O progresso mínimo é 0")
+        .max(100, "O progresso máximo é 100")
+        .optional(),
+    order: z.number().min(0, "A ordem não pode ser negativa").optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+});
+
+export type MilestoneEditFormData = z.infer<typeof MilestoneEditSchema>;
+
+// === INTERFACES PARA ROADMAP ===
+
+export type RoadmapStatus = 'ACTIVE' | 'COMPLETED' | 'ARCHIVED';
+
+export interface Roadmap {
+    id: string;
+    storeId?: string;
+    userId?: string;
+    title: string;
+    description?: string;
+    status: RoadmapStatus;
+    startDate?: string;
+    endDate?: string;
+    createdAt: string;
+    updatedAt: string;
+    store?: {
+        id: string;
+        name: string;
+    };
+    user?: {
+        id: string;
+        name: string;
+        email: string;
+    };
+    milestones?: Milestone[];
+    _count?: {
+        milestones: number;
+    };
+}
+
+export interface Pagination {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+}
+
+export interface RoadmapListResponse {
+    items: Roadmap[];
+    pagination: Pagination;
+}
+
+export interface RoadmapCreateRequest {
+    storeId?: string;
+    userId?: string;
+    title: string;
+    description?: string;
+    status?: RoadmapStatus;
+    startDate?: string;
+    endDate?: string;
+}
+
+export interface RoadmapUpdateRequest {
+    storeId?: string;
+    userId?: string;
+    title?: string;
+    description?: string;
+    status?: RoadmapStatus;
+    startDate?: string;
+    endDate?: string;
+}
+
+export interface RoadmapStats {
+    total: number;
+    active: number;
+    inactive: number;
+}
+
+// === INTERFACES PARA MILESTONE ===
+
+export type MilestoneStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED';
+
+export interface Milestone {
+    id: string;
+    roadmapId: string;
+    title: string;
+    description?: string;
+    status: MilestoneStatus;
+    progress: number;
+    order: number;
+    startDate?: string;
+    endDate?: string;
+    completedAt?: string;
+    createdAt: string;
+    updatedAt: string;
+    roadmap?: {
+        id: string;
+        title: string;
+        status: RoadmapStatus;
+    };
+}
+
+export interface MilestoneListResponse {
+    items: Milestone[];
+    pagination: Pagination;
+}
+
+export interface MilestoneCreateRequest {
+    title: string;
+    description?: string;
+    status?: MilestoneStatus;
+    progress?: number;
+    order?: number;
+    startDate?: string;
+    endDate?: string;
+}
+
+export interface MilestoneUpdateRequest {
+    title?: string;
+    description?: string;
+    status?: MilestoneStatus;
+    progress?: number;
+    order?: number;
+    startDate?: string;
+    endDate?: string;
+}
+
+export interface MilestoneStats {
+    total: number;
+    byStatus: {
+        pending: number;
+        inProgress: number;
+        completed: number;
+        blocked: number;
+    };
+    averageProgress: number;
+    completionRate: number;
+}
+
+export interface UpdateProgressRequest {
+    progress: number;
+}
+
+export interface UpdateStatusRequest {
+    status: MilestoneStatus;
+}
+
+export interface ReorderMilestonesRequest {
+    milestoneIds: string[];
+}
+
+// === ROADMAP SERVICE ===
+
+const ROADMAP_URI = "/roadmaps";
+
+export const RoadmapService = {
+    // === CRUD BÁSICO ===
+    create: (params: RoadmapCreateRequest): Promise<Roadmap> => 
+        fetchAuth(ROADMAP_URI, { method: "POST", data: params as unknown as Record<string, unknown> }) as Promise<Roadmap>,
+    
+    list: (params?: { 
+        page?: number; 
+        limit?: number; 
+        search?: string; 
+        status?: RoadmapStatus;
+    }): Promise<RoadmapListResponse> => 
+        fetchAuth(ROADMAP_URI, { method: "GET", params }) as Promise<RoadmapListResponse>,
+    
+    single: (id: string): Promise<Roadmap> => 
+        fetchAuth(`${ROADMAP_URI}/${id}`, { method: "GET" }) as Promise<Roadmap>,
+    
+    update: (id: string, params: RoadmapUpdateRequest): Promise<Roadmap> => 
+        fetchAuth(`${ROADMAP_URI}/${id}`, { method: "PUT", data: params as unknown as Record<string, unknown> }) as Promise<Roadmap>,
+    
+    delete: (id: string): Promise<void> => 
+        fetchAuth(`${ROADMAP_URI}/${id}`, { method: "DELETE" }) as Promise<void>,
+
+    // === CONSULTAS ESPECÍFICAS ===
+    getActive: (): Promise<{ roadmaps: Roadmap[] }> => 
+        fetchAuth(`${ROADMAP_URI}/active`, { method: "GET" }) as Promise<{ roadmaps: Roadmap[] }>,
+    
+    getStats: (): Promise<RoadmapStats> => 
+        fetchAuth(`${ROADMAP_URI}/stats`, { method: "GET" }) as Promise<RoadmapStats>,
+    
+    search: (q: string, limit?: number): Promise<{ roadmaps: Roadmap[] }> => 
+        fetchAuth(`${ROADMAP_URI}/search`, { method: "GET", params: { q, limit } }) as Promise<{ roadmaps: Roadmap[] }>,
+
+    // === GERENCIAMENTO DE STATUS ===
+    updateStatus: (id: string, status: RoadmapStatus): Promise<Roadmap> => 
+        fetchAuth(`${ROADMAP_URI}/${id}/status`, { method: "PATCH", data: { status } }) as Promise<Roadmap>,
+
+    // === REACT QUERY KEYS ===
+    keys: {
+        all: ["roadmaps"] as const,
+        lists: () => [...RoadmapService.keys.all, "list"] as const,
+        list: (page: number) => [...RoadmapService.keys.lists(), page.toString()] as const,
+        details: () => [...RoadmapService.keys.all, "detail"] as const,
+        single: (id: string) => [...RoadmapService.keys.details(), id] as const,
+        active: () => [...RoadmapService.keys.all, "active"] as const,
+        stats: () => [...RoadmapService.keys.all, "stats"] as const,
+        search: (q: string) => [...RoadmapService.keys.all, "search", q] as const,
+    }
+};
+
+// === MILESTONE SERVICE ===
+
+export const MilestoneService = {
+    // === CRUD BÁSICO ===
+    create: (roadmapId: string, params: MilestoneCreateRequest): Promise<Milestone> => 
+        fetchAuth(`${ROADMAP_URI}/${roadmapId}/milestones`, { 
+            method: "POST", 
+            data: params as unknown as Record<string, unknown> 
+        }) as Promise<Milestone>,
+    
+    list: (roadmapId: string, params?: { 
+        page?: number; 
+        limit?: number; 
+        status?: MilestoneStatus;
+    }): Promise<MilestoneListResponse> => 
+        fetchAuth(`${ROADMAP_URI}/${roadmapId}/milestones`, { 
+            method: "GET", 
+            params 
+        }) as Promise<MilestoneListResponse>,
+    
+    single: (roadmapId: string, id: string): Promise<Milestone> => 
+        fetchAuth(`${ROADMAP_URI}/${roadmapId}/milestones/${id}`, { 
+            method: "GET" 
+        }) as Promise<Milestone>,
+    
+    update: (roadmapId: string, id: string, params: MilestoneUpdateRequest): Promise<Milestone> => 
+        fetchAuth(`${ROADMAP_URI}/${roadmapId}/milestones/${id}`, { 
+            method: "PUT", 
+            data: params as unknown as Record<string, unknown> 
+        }) as Promise<Milestone>,
+    
+    delete: (roadmapId: string, id: string): Promise<void> => 
+        fetchAuth(`${ROADMAP_URI}/${roadmapId}/milestones/${id}`, { 
+            method: "DELETE" 
+        }) as Promise<void>,
+
+    // === CONSULTAS ESPECÍFICAS ===
+    getStats: (roadmapId: string): Promise<MilestoneStats> => 
+        fetchAuth(`${ROADMAP_URI}/${roadmapId}/milestones/stats`, { 
+            method: "GET" 
+        }) as Promise<MilestoneStats>,
+    
+    getUpcoming: (roadmapId: string, limit?: number): Promise<{ milestones: Milestone[] }> => 
+        fetchAuth(`${ROADMAP_URI}/${roadmapId}/milestones/upcoming`, { 
+            method: "GET", 
+            params: { limit } 
+        }) as Promise<{ milestones: Milestone[] }>,
+    
+    getOverdue: (roadmapId: string): Promise<{ milestones: Milestone[] }> => 
+        fetchAuth(`${ROADMAP_URI}/${roadmapId}/milestones/overdue`, { 
+            method: "GET" 
+        }) as Promise<{ milestones: Milestone[] }>,
+    
+    getInProgress: (roadmapId: string): Promise<{ milestones: Milestone[] }> => 
+        fetchAuth(`${ROADMAP_URI}/${roadmapId}/milestones/in-progress`, { 
+            method: "GET" 
+        }) as Promise<{ milestones: Milestone[] }>,
+    
+    getTimeline: (roadmapId: string): Promise<{ timeline: Milestone[] }> => 
+        fetchAuth(`${ROADMAP_URI}/${roadmapId}/milestones/timeline`, { 
+            method: "GET" 
+        }) as Promise<{ timeline: Milestone[] }>,
+    
+    search: (roadmapId: string, q: string, limit?: number): Promise<{ milestones: Milestone[] }> => 
+        fetchAuth(`${ROADMAP_URI}/${roadmapId}/milestones/search`, { 
+            method: "GET", 
+            params: { q, limit } 
+        }) as Promise<{ milestones: Milestone[] }>,
+
+    // === GERENCIAMENTO DE PROGRESSO E STATUS ===
+    updateProgress: (roadmapId: string, id: string, progress: number): Promise<Milestone> => 
+        fetchAuth(`${ROADMAP_URI}/${roadmapId}/milestones/${id}/progress`, { 
+            method: "PATCH", 
+            data: { progress } 
+        }) as Promise<Milestone>,
+    
+    updateStatus: (roadmapId: string, id: string, status: MilestoneStatus): Promise<Milestone> => 
+        fetchAuth(`${ROADMAP_URI}/${roadmapId}/milestones/${id}/status`, { 
+            method: "PATCH", 
+            data: { status } 
+        }) as Promise<Milestone>,
+
+    // === REORDENAÇÃO (DRAG & DROP) ===
+    reorder: (roadmapId: string, milestoneIds: string[]): Promise<{ milestones: Milestone[] }> => 
+        fetchAuth(`${ROADMAP_URI}/${roadmapId}/milestones/reorder`, { 
+            method: "POST", 
+            data: { milestoneIds } as unknown as Record<string, unknown> 
+        }) as Promise<{ milestones: Milestone[] }>,
+
+    // === REACT QUERY KEYS ===
+    keys: {
+        all: (roadmapId: string) => ["roadmaps", roadmapId, "milestones"] as const,
+        lists: (roadmapId: string) => [...MilestoneService.keys.all(roadmapId), "list"] as const,
+        list: (roadmapId: string, page: number) => [...MilestoneService.keys.lists(roadmapId), page.toString()] as const,
+        details: (roadmapId: string) => [...MilestoneService.keys.all(roadmapId), "detail"] as const,
+        single: (roadmapId: string, id: string) => [...MilestoneService.keys.details(roadmapId), id] as const,
+        stats: (roadmapId: string) => [...MilestoneService.keys.all(roadmapId), "stats"] as const,
+        upcoming: (roadmapId: string) => [...MilestoneService.keys.all(roadmapId), "upcoming"] as const,
+        overdue: (roadmapId: string) => [...MilestoneService.keys.all(roadmapId), "overdue"] as const,
+        inProgress: (roadmapId: string) => [...MilestoneService.keys.all(roadmapId), "inProgress"] as const,
+        timeline: (roadmapId: string) => [...MilestoneService.keys.all(roadmapId), "timeline"] as const,
+        search: (roadmapId: string, q: string) => [...MilestoneService.keys.all(roadmapId), "search", q] as const,
+    }
+};
+
+// === EXPORTS ===
+export default {
+    Roadmap: RoadmapService,
+    Milestone: MilestoneService
+};

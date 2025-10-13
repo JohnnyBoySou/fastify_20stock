@@ -3,8 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MovementController = void 0;
 const movement_commands_1 = require("./commands/movement.commands");
 const movement_queries_1 = require("./queries/movement.queries");
-const prisma_1 = require("@/plugins/prisma");
-const stock_alert_service_1 = require("@/services/stock-monitoring/stock-alert.service");
+const prisma_1 = require("../../plugins/prisma");
+const stock_alert_service_1 = require("../../services/stock-monitoring/stock-alert.service");
+const product_queries_1 = require("../product/queries/product.queries");
 exports.MovementController = {
     // === CRUD BÁSICO ===
     async create(request, reply) {
@@ -319,13 +320,31 @@ exports.MovementController = {
         try {
             const { productId } = request.params;
             const { page = 1, limit = 10, type, startDate, endDate } = request.query;
+            // Obter storeId do middleware ou do request.store
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store ID is required. User must be associated with a store.'
+                });
+            }
+            console.log('Getting movements for product:', productId, 'in store:', storeId);
+            // Verificar se o produto existe na loja
+            const product = await product_queries_1.ProductQueries.getById(productId, storeId);
+            console.log('Product:', product);
+            if (!product) {
+                return reply.status(404).send({
+                    error: 'Product not found in this store'
+                });
+            }
             const result = await movement_queries_1.MovementQueries.getByProduct(productId, {
                 page,
                 limit,
                 type,
                 startDate,
-                endDate
+                endDate,
+                storeId
             });
+            console.log('Result:', result);
             return reply.send(result);
         }
         catch (error) {

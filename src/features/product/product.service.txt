@@ -1,6 +1,101 @@
-import { fetchAuth } from "@/hooks/api";
-
+import { fetchAuth } from "@/services/http/fetch";
+import { z } from "zod";
 // === INTERFACES PARA PRODUCT ===
+
+
+export const ProductSchema = z.object({
+    name: z
+        .string()
+        .min(1, "O nome do produto é obrigatório")
+        .min(2, "O nome deve ter pelo menos 2 caracteres")
+        .max(100, "O nome deve ter no máximo 100 caracteres"),
+
+    description: z
+        .string()
+        .min(1, "A descrição é obrigatória")
+        .min(5, "A descrição deve ter pelo menos 5 caracteres")
+        .max(500, "A descrição deve ter no máximo 500 caracteres"),
+
+    referencePrice: z
+        .string()
+        .min(1, "O preço de referência é obrigatório")
+        .refine((val) => !isNaN(parseFloat(val)), "Por favor, insira um preço válido")
+        .refine((val) => parseFloat(val) >= 0, "O preço não pode ser negativo"),
+
+    unitOfMeasure: z.enum(['UNIDADE', 'KG', 'L', 'ML', 'M', 'CM', 'MM', 'UN', 'DZ', 'CX', 'PCT', 'KIT', 'PAR', 'H', 'D']),
+
+    categoryIds: z.array(z.string()).min(1, "Selecione pelo menos uma categoria"),
+
+    stockMin: z
+        .string()
+        .min(1, "O estoque mínimo é obrigatório")
+        .refine((val) => !isNaN(parseInt(val)), "Por favor, insira um valor válido")
+        .refine((val) => parseInt(val) >= 0, "O estoque mínimo não pode ser negativo"),
+
+    stockMax: z
+        .string()
+        .min(1, "O estoque máximo é obrigatório")
+        .refine((val) => !isNaN(parseInt(val)), "Por favor, insira um valor válido")
+        .refine((val) => parseInt(val) >= 0, "O estoque máximo não pode ser negativo"),
+
+    alertPercentage: z
+        .string()
+        .min(1, "O percentual de alerta é obrigatório")
+        .refine((val) => !isNaN(parseInt(val)), "Por favor, insira um valor válido")
+        .refine((val) => parseInt(val) >= 0 && parseInt(val) <= 100, "O percentual deve estar entre 0 e 100"),
+
+    status: z.boolean()
+});
+
+export type ProductFormData = z.infer<typeof ProductSchema>;
+
+// Schema para edição (com categorias opcionais)
+export const ProductEditSchema = z.object({
+    name: z
+        .string()
+        .min(1, "O nome do produto é obrigatório")
+        .min(2, "O nome deve ter pelo menos 2 caracteres")
+        .max(100, "O nome deve ter no máximo 100 caracteres"),
+
+    description: z
+        .string()
+        .min(1, "A descrição é obrigatória")
+        .min(5, "A descrição deve ter pelo menos 5 caracteres")
+        .max(500, "A descrição deve ter no máximo 500 caracteres"),
+
+    referencePrice: z
+        .string()
+        .min(1, "O preço de referência é obrigatório")
+        .refine((val) => !isNaN(parseFloat(val)), "Por favor, insira um preço válido")
+        .refine((val) => parseFloat(val) >= 0, "O preço não pode ser negativo"),
+
+    unitOfMeasure: z.enum(['UNIDADE', 'KG', 'L', 'ML', 'M', 'CM', 'MM', 'UN', 'DZ', 'CX', 'PCT', 'KIT', 'PAR', 'H', 'D']),
+
+    categoryIds: z.array(z.string()).optional(),
+
+    stockMin: z
+        .string()
+        .min(1, "O estoque mínimo é obrigatório")
+        .refine((val) => !isNaN(parseInt(val)), "Por favor, insira um valor válido")
+        .refine((val) => parseInt(val) >= 0, "O estoque mínimo não pode ser negativo"),
+
+    stockMax: z
+        .string()
+        .min(1, "O estoque máximo é obrigatório")
+        .refine((val) => !isNaN(parseInt(val)), "Por favor, insira um valor válido")
+        .refine((val) => parseInt(val) >= 0, "O estoque máximo não pode ser negativo"),
+
+    alertPercentage: z
+        .string()
+        .min(1, "O percentual de alerta é obrigatório")
+        .refine((val) => !isNaN(parseInt(val)), "Por favor, insira um valor válido")
+        .refine((val) => parseInt(val) >= 0 && parseInt(val) <= 100, "O percentual deve estar entre 0 e 100"),
+
+    status: z.boolean()
+});
+
+export type ProductEditFormData = z.infer<typeof ProductEditSchema>;
+
 
 export interface Product {
     id: string;
@@ -9,6 +104,16 @@ export interface Product {
     unitOfMeasure: 'UNIDADE' | 'KG' | 'L' | 'ML' | 'M' | 'CM' | 'MM' | 'UN' | 'DZ' | 'CX' | 'PCT' | 'KIT' | 'PAR' | 'H' | 'D';
     referencePrice: number;
     categoryId?: string;
+    categories?: Array<{
+        category: {
+            id: string;
+            name: string;
+            description?: string;
+            code?: string;
+            color?: string;
+            icon?: string;
+        };
+    }>;
     supplierId?: string;
     storeId: string;
     stockMin: number;
@@ -44,7 +149,7 @@ export interface Pagination {
 }
 
 export interface ProductListResponse {
-    products: Product[];
+    items: Product[];
     pagination: Pagination;
 }
 
@@ -54,8 +159,8 @@ export interface ProductCreateRequest {
     unitOfMeasure: 'UNIDADE' | 'KG' | 'L' | 'ML' | 'M' | 'CM' | 'MM' | 'UN' | 'DZ' | 'CX' | 'PCT' | 'KIT' | 'PAR' | 'H' | 'D';
     referencePrice: number;
     categoryId?: string;
+    categoryIds?: string[];
     supplierId?: string;
-    storeId: string;
     stockMin: number;
     stockMax: number;
     alertPercentage: number;
@@ -68,6 +173,7 @@ export interface ProductUpdateRequest {
     unitOfMeasure?: 'UNIDADE' | 'KG' | 'L' | 'ML' | 'M' | 'CM' | 'MM' | 'UN' | 'DZ' | 'CX' | 'PCT' | 'KIT' | 'PAR' | 'H' | 'D';
     referencePrice?: number;
     categoryId?: string;
+    categories?: Array<{ categoryId: string }>;
     supplierId?: string;
     storeId?: string;
     stockMin?: number;
@@ -174,7 +280,7 @@ const URI = "/products";
 export const ProductService = {
     // === CRUD BÁSICO ===
     create: (params: ProductCreateRequest): Promise<Product> => 
-        fetchAuth(URI, { method: "POST", data: params }),
+        fetchAuth(URI, { method: "POST", data: params as unknown as Record<string, unknown> }) as Promise<Product>,
     
     list: (params?: { 
         page?: number; 
@@ -185,52 +291,52 @@ export const ProductService = {
         supplierId?: string; 
         storeId?: string 
     }): Promise<ProductListResponse> => 
-        fetchAuth(URI, { method: "GET", params }),
+        fetchAuth(URI, { method: "GET", params }) as Promise<ProductListResponse>,
     
-    get: (id: string): Promise<Product> => 
-        fetchAuth(`${URI}/${id}`, { method: "GET" }),
+    single: (id: string): Promise<Product> => 
+        fetchAuth(`${URI}/${id}`, { method: "GET" }) as Promise<Product>,
     
     update: (id: string, params: ProductUpdateRequest): Promise<Product> => 
-        fetchAuth(`${URI}/${id}`, { method: "PUT", data: params }),
+        fetchAuth(`${URI}/${id}`, { method: "PUT", data: params as unknown as Record<string, unknown> }) as Promise<Product>,
     
     delete: (id: string): Promise<void> => 
-        fetchAuth(`${URI}/${id}`, { method: "DELETE" }),
+        fetchAuth(`${URI}/${id}`, { method: "DELETE" }) as Promise<void>,
 
     // === CONSULTAS ESPECÍFICAS ===
-    getActive: (): Promise<{ products: Product[] }> => 
-        fetchAuth(`${URI}/active`, { method: "GET" }),
+    getActive: (): Promise<{ items: Product[] }> => 
+        fetchAuth(`${URI}/active`, { method: "GET" }) as Promise<{ items: Product[] }>,
     
     getStats: (): Promise<ProductStats> => 
-        fetchAuth(`${URI}/stats`, { method: "GET" }),
+        fetchAuth(`${URI}/stats`, { method: "GET" }) as Promise<ProductStats>,
     
-    search: (q: string, limit?: number): Promise<{ products: Product[] }> => 
-        fetchAuth(`${URI}/search`, { method: "GET", params: { q, limit } }),
+    search: (q: string, limit?: number): Promise<{ items: Product[] }> => 
+        fetchAuth(`${URI}/search`, { method: "GET", params: { q, limit } }) as Promise<{ items: Product[] }>,
     
-    getByCategory: (categoryId: string): Promise<{ products: Product[] }> => 
-        fetchAuth(`${URI}/category/${categoryId}`, { method: "GET" }),
+    getByCategory: (categoryId: string): Promise<{ items: Product[] }> => 
+        fetchAuth(`${URI}/category/${categoryId}`, { method: "GET" }) as Promise<{ items: Product[] }>,
     
-    getBySupplier: (supplierId: string): Promise<{ products: Product[] }> => 
-        fetchAuth(`${URI}/supplier/${supplierId}`, { method: "GET" }),
+    getBySupplier: (supplierId: string): Promise<{ items: Product[] }> => 
+        fetchAuth(`${URI}/supplier/${supplierId}`, { method: "GET" }) as Promise<{ items: Product[] }>,
     
-    getByStore: (storeId: string): Promise<{ products: Product[] }> => 
-        fetchAuth(`${URI}/store/${storeId}`, { method: "GET" }),
+    getByStore: (storeId: string): Promise<{ items: Product[] }> => 
+        fetchAuth(`${URI}/store/${storeId}`, { method: "GET" }) as Promise<{ items: Product[] }>,
 
     // === GERENCIAMENTO DE STATUS ===
     updateStatus: (id: string, status: boolean): Promise<Product> => 
-        fetchAuth(`${URI}/${id}/status`, { method: "PATCH", data: { status } }),
+        fetchAuth(`${URI}/${id}/status`, { method: "PATCH", data: { status } }) as Promise<Product>,
 
     // === GERENCIAMENTO DE ESTOQUE ===
     getStock: (id: string): Promise<ProductStockResponse> => 
-        fetchAuth(`${URI}/${id}/stock`, { method: "GET" }),
+        fetchAuth(`${URI}/${id}/stock`, { method: "GET" }) as Promise<ProductStockResponse>,
     
     updateStock: (id: string, params: UpdateStockRequest): Promise<ProductStockResponse> => 
-        fetchAuth(`${URI}/${id}/stock`, { method: "PATCH", data: params }),
+        fetchAuth(`${URI}/${id}/stock`, { method: "PATCH", data: params as unknown as Record<string, unknown> }) as Promise<ProductStockResponse>,
     
     getStockHistory: (id: string, limit?: number): Promise<{ history: ProductStockResponse[] }> => 
-        fetchAuth(`${URI}/${id}/stock/history`, { method: "GET", params: { limit } }),
+        fetchAuth(`${URI}/${id}/stock/history`, { method: "GET", params: { limit } }) as Promise<{ history: ProductStockResponse[] }>,
     
-    getLowStock: (storeId?: string): Promise<{ products: ProductStockResponse[] }> => 
-        fetchAuth(`${URI}/low-stock`, { method: "GET", params: { storeId } }),
+    getLowStock: (storeId?: string): Promise<{ items: ProductStockResponse[] }> => 
+        fetchAuth(`${URI}/low-stock`, { method: "GET", params: { storeId } }) as Promise<{ items: ProductStockResponse[] }>,
 
     // === MOVIMENTAÇÕES DE ESTOQUE ===
     getMovements: (id: string, params?: {
@@ -240,48 +346,48 @@ export const ProductService = {
         startDate?: string;
         endDate?: string;
     }): Promise<ProductMovementListResponse> => 
-        fetchAuth(`${URI}/${id}/movements`, { method: "GET", params }),
+        fetchAuth(`${URI}/${id}/movements`, { method: "GET", params }) as Promise<ProductMovementListResponse>,
     
     createMovement: (id: string, params: CreateProductMovementRequest): Promise<ProductMovement> => 
-        fetchAuth(`${URI}/${id}/movements`, { method: "POST", data: params }),
+        fetchAuth(`${URI}/${id}/movements`, { method: "POST", data: params as unknown as Record<string, unknown> }) as Promise<ProductMovement>,
 
     // === ANÁLISES E RELATÓRIOS ===
     getAnalytics: (id: string): Promise<ProductAnalytics> => 
-        fetchAuth(`${URI}/${id}/analytics`, { method: "GET" }),
+        fetchAuth(`${URI}/${id}/analytics`, { method: "GET" }) as Promise<ProductAnalytics>,
     
-    getRecent: (limit?: number): Promise<{ products: Product[] }> => 
-        fetchAuth(`${URI}/recent`, { method: "GET", params: { limit } }),
+    getRecent: (limit?: number): Promise<{ items: Product[] }> => 
+        fetchAuth(`${URI}/recent`, { method: "GET", params: { limit } }) as Promise<{ items: Product[] }>,
 
     // === VALIDAÇÕES ===
     verifySku: (id: string, sku: string): Promise<SkuVerification> => 
-        fetchAuth(`${URI}/${id}/verify-sku`, { method: "POST", data: { sku } }),
+        fetchAuth(`${URI}/${id}/verify-sku`, { method: "POST", data: { sku } }) as Promise<SkuVerification>,
 
     // === FUNÇÕES DE BUSCA AVANÇADA ===
-    getByPriceRange: (minPrice: number, maxPrice: number, storeId?: string): Promise<{ products: Product[] }> => 
-        fetchAuth(`${URI}/price-range`, { method: "GET", params: { minPrice, maxPrice, storeId } }),
+    getByPriceRange: (minPrice: number, maxPrice: number, storeId?: string): Promise<{ items: Product[] }> => 
+        fetchAuth(`${URI}/price-range`, { method: "GET", params: { minPrice, maxPrice, storeId } }) as Promise<{ items: Product[] }>,
     
-    getByStockStatus: (status: 'OK' | 'LOW' | 'CRITICAL' | 'OVERSTOCK', storeId?: string): Promise<{ products: ProductStockResponse[] }> => 
-        fetchAuth(`${URI}/stock-status`, { method: "GET", params: { status, storeId } }),
+    getByStockStatus: (status: 'OK' | 'LOW' | 'CRITICAL' | 'OVERSTOCK', storeId?: string): Promise<{ items: ProductStockResponse[] }> => 
+        fetchAuth(`${URI}/stock-status`, { method: "GET", params: { status, storeId } }) as Promise<{ items: ProductStockResponse[] }>,
     
-    getExpiringSoon: (days: number = 30, storeId?: string): Promise<{ products: Product[] }> => 
-        fetchAuth(`${URI}/expiring-soon`, { method: "GET", params: { days, storeId } }),
+    getExpiringSoon: (days: number = 30, storeId?: string): Promise<{ items: Product[] }> => 
+        fetchAuth(`${URI}/expiring-soon`, { method: "GET", params: { days, storeId } }) as Promise<{ items: Product[] }>,
 
     // === RELATÓRIOS DE PERFORMANCE ===
-    getTopSelling: (storeId?: string, limit?: number): Promise<{ products: Product[] }> => 
-        fetchAuth(`${URI}/top-selling`, { method: "GET", params: { storeId, limit } }),
+    getTopSelling: (storeId?: string, limit?: number): Promise<{ items: Product[] }> => 
+        fetchAuth(`${URI}/top-selling`, { method: "GET", params: { storeId, limit } }) as Promise<{ items: Product[] }>,
     
-    getSlowMoving: (storeId?: string, days?: number): Promise<{ products: Product[] }> => 
-        fetchAuth(`${URI}/slow-moving`, { method: "GET", params: { storeId, days } }),
+    getSlowMoving: (storeId?: string, days?: number): Promise<{ items: Product[] }> => 
+        fetchAuth(`${URI}/slow-moving`, { method: "GET", params: { storeId, days } }) as Promise<{ items: Product[] }>,
     
-    getZeroStock: (storeId?: string): Promise<{ products: Product[] }> => 
-        fetchAuth(`${URI}/zero-stock`, { method: "GET", params: { storeId } }),
+    getZeroStock: (storeId?: string): Promise<{ items: Product[] }> => 
+        fetchAuth(`${URI}/zero-stock`, { method: "GET", params: { storeId } }) as Promise<{ items: Product[] }>,
 
     // === UTILITÁRIOS ===
     bulkUpdate: (updates: Array<{ id: string; data: ProductUpdateRequest }>): Promise<{ updated: number; errors: string[] }> => 
-        fetchAuth(`${URI}/bulk-update`, { method: "POST", data: { updates } }),
+        fetchAuth(`${URI}/bulk-update`, { method: "POST", data: { updates } as unknown as Record<string, unknown> }) as Promise<{ updated: number; errors: string[] }>,
     
     bulkDelete: (ids: string[]): Promise<{ deleted: number; errors: string[] }> => 
-        fetchAuth(`${URI}/bulk-delete`, { method: "POST", data: { ids } }),
+        fetchAuth(`${URI}/bulk-delete`, { method: "POST", data: { ids } as unknown as Record<string, unknown> }) as Promise<{ deleted: number; errors: string[] }>,
     
     export: (filters?: {
         storeId?: string;
@@ -290,5 +396,33 @@ export const ProductService = {
         status?: boolean;
         format?: 'csv' | 'xlsx';
     }): Promise<{ downloadUrl: string }> => 
-        fetchAuth(`${URI}/export`, { method: "POST", data: filters }),
+        fetchAuth(`${URI}/export`, { method: "POST", data: filters }) as Promise<{ downloadUrl: string }>,
+
+    keys: {
+        list: (page: number) => ["products", "list", page.toString()],
+        single: (id: string) => ["product", "single", id],
+        create: ["products"],
+        update: ["product"],
+        delete: ["product"],
+        search: (q: string) => ["products", "search", q],
+        stats: ["products", "stats"],
+        active: ["products", "active"],
+        byCategory: ["products", "byCategory"],
+        bySupplier: ["products", "bySupplier"],
+        byStore: ["products", "byStore"],
+        stock: ["products", "stock"],
+        lowStock: ["products", "lowStock"],
+        movements: ["products", "movements"],
+        analytics: ["products", "analytics"],
+        recent: ["products", "recent"],
+        topSelling: ["products", "topSelling"],
+        slowMoving: ["products", "slowMoving"],
+        zeroStock: ["products", "zeroStock"],
+        expiringSoon: ["products", "expiringSoon"],
+        byPriceRange: ["products", "byPriceRange"],
+        byStockStatus: ["products", "byStockStatus"],
+        bulkUpdate: ["products", "bulkUpdate"],
+        bulkDelete: ["products", "bulkDelete"],
+        export: ["products", "export"],
+    }
 };

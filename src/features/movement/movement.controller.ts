@@ -3,6 +3,7 @@ import { MovementCommands } from './commands/movement.commands';
 import { MovementQueries } from './queries/movement.queries';
 import { db } from '@/plugins/prisma';
 import { StockAlertService } from '@/services/stock-monitoring/stock-alert.service';
+import { ProductQueries } from '../product/queries/product.queries';
 
 export const MovementController = {
   // === CRUD BÁSICO ===
@@ -385,14 +386,39 @@ export const MovementController = {
     try {
       const { productId } = request.params;
       const { page = 1, limit = 10, type, startDate, endDate } = request.query;
+      
+      // Obter storeId do middleware ou do request.store
+      const storeId = request.store?.id;
+      
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store ID is required. User must be associated with a store.'
+        });
+      }
+
+      console.log('Getting movements for product:', productId, 'in store:', storeId);
+
+      // Verificar se o produto existe na loja
+
+      const product = await ProductQueries.getById(productId, storeId);
+      console.log('Product:', product);
+
+      if (!product) {
+        return reply.status(404).send({
+          error: 'Product not found in this store'
+        });
+      }
 
       const result = await MovementQueries.getByProduct(productId, {
         page,
         limit,
         type,
         startDate,
-        endDate
+        endDate,
+        storeId
       });
+
+      console.log('Result:', result);
 
       return reply.send(result);
     } catch (error) {

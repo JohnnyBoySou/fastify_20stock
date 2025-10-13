@@ -90,6 +90,7 @@ export async function MovementRoutes(fastify: FastifyInstance) {
 
   fastify.get('/product/:productId', {
     schema: MovementSchemas.getByProduct,
+    preHandler: [authMiddleware, storeContextMiddleware],
     handler: MovementController.getByProduct
   });
 

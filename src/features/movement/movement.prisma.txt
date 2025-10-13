@@ -1,0 +1,41 @@
+model Movement {
+  id          String         @id @default(cuid())
+  type        MovementType
+  quantity    Int
+  storeId     String
+  productId   String
+  supplierId  String?        // fornecedor opcional, pode variar
+  batch       String?        // lote
+  expiration  DateTime?      // validade
+  price       Decimal?       @db.Decimal(10,2) // preço da unidade na movimentação
+  note        String?        // observações
+  balanceAfter Int?          // estoque após a movimentação
+
+  // Campos de verificação
+  verified         Boolean?   @default(false)
+  verifiedAt       DateTime?
+  verifiedBy       String?
+  verificationNote String?
+
+  // Campos de cancelamento
+  cancelled         Boolean   @default(false)
+  cancelledAt       DateTime?
+  cancelledBy       String?
+  cancellationReason String?
+
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  // Relacionamentos
+  store       Store          @relation(fields: [storeId], references: [id])
+  product     Product        @relation(fields: [productId], references: [id])
+  supplier    Supplier?      @relation(fields: [supplierId], references: [id])
+  userId      String?        // quem registrou
+  user        User?          @relation(fields: [userId], references: [id])
+}
+
+enum MovementType {
+  ENTRADA
+  SAIDA
+  PERDA
+}

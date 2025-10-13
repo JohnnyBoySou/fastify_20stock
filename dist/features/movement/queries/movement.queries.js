@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MovementQueries = void 0;
-const prisma_1 = require("@/plugins/prisma");
-const llm_1 = require("@/services/llm");
+const prisma_1 = require("../../../plugins/prisma");
+const llm_1 = require("../../../services/llm");
 exports.MovementQueries = {
     async getById(id) {
         console.log('MovementQueries.getById: Searching for movement with id:', id);
@@ -300,9 +300,12 @@ exports.MovementQueries = {
         };
     },
     async getByProduct(productId, params) {
-        const { page = 1, limit = 10, type, startDate, endDate } = params;
+        const { page = 1, limit = 10, type, startDate, endDate, storeId } = params;
         const skip = (page - 1) * limit;
         const where = { productId };
+        if (storeId) {
+            where.storeId = storeId;
+        }
         if (type) {
             where.type = type;
         }

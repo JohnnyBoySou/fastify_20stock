@@ -7,19 +7,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fastify_1 = __importDefault(require("fastify"));
 const cors_1 = __importDefault(require("@fastify/cors"));
 const prisma_1 = require("./plugins/prisma");
-const user_routes_1 = require("@/features/user/user.routes");
-const auth_routes_1 = require("@/features/auth/auth.routes");
-const product_routes_1 = require("@/features/product/product.routes");
-const supplier_routes_1 = require("@/features/supplier/supplier.routes");
-const store_routes_1 = require("@/features/store/store.routes");
-const category_routes_1 = require("@/features/category/category.routes");
-const movement_routes_1 = require("@/features/movement/movement.routes");
-const permission_routes_1 = require("@/features/permission/permission.routes");
-const report_routes_1 = require("@/features/report/report.routes");
-const notification_routes_1 = require("@/features/notification/notification.routes");
-const chat_routes_1 = require("@/features/chat/chat.routes");
+const user_routes_1 = require("./features/user/user.routes");
+const auth_routes_1 = require("./features/auth/auth.routes");
+const product_routes_1 = require("./features/product/product.routes");
+const supplier_routes_1 = require("./features/supplier/supplier.routes");
+const store_routes_1 = require("./features/store/store.routes");
+const category_routes_1 = require("./features/category/category.routes");
+const movement_routes_1 = require("./features/movement/movement.routes");
+const permission_routes_1 = require("./features/permission/permission.routes");
+const report_routes_1 = require("./features/report/report.routes");
+const notification_routes_1 = require("./features/notification/notification.routes");
+const chat_routes_1 = require("./features/chat/chat.routes");
+const rag_1 = require("./services/llm/rag");
+const middlewares_1 = require("./middlewares");
 const fastify = (0, fastify_1.default)({
-    logger: true
+    logger: true,
+    requestTimeout: 60000, // 30 segundos para timeout de requisições
+    keepAliveTimeout: 5000, // 5 segundos para keep-alive
+    bodyLimit: 1048576, // 1MB para limite do body
+    maxParamLength: 200 // Limite de caracteres para parâmetros de rota
 });
 //Plugins
 fastify.register(cors_1.default, {
@@ -56,6 +62,20 @@ fastify.get('/health', async (request, reply) => {
     }
 });
 // Registrar rotas
+fastify.get('/llm/rag', {
+    preHandler: [middlewares_1.authMiddleware, middlewares_1.storeContextMiddleware]
+}, async (request, reply) => {
+    try {
+        const productId = "cmg4ixgh90005e8vgqdn5k6qz"; // ID do produto para teste
+        const query = "Qual a última movimentação de entrada do produto?";
+        const response = await (0, rag_1.queryRAG)(productId, query);
+        return reply.send(response);
+    }
+    catch (error) {
+        console.error('Error in RAG:', error);
+        return reply.status(500).send({ error: 'RAG processing failed' });
+    }
+});
 fastify.register(auth_routes_1.AuthRoutes, { prefix: '/auth' });
 fastify.register(user_routes_1.UserRoutes, { prefix: '/users' });
 fastify.register(product_routes_1.ProductRoutes, { prefix: '/products' });

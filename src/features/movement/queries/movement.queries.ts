@@ -353,11 +353,16 @@ export const MovementQueries = {
     type?: 'ENTRADA' | 'SAIDA' | 'PERDA'
     startDate?: string
     endDate?: string
+    storeId?: string
   }) {
-    const { page = 1, limit = 10, type, startDate, endDate } = params;
+    const { page = 1, limit = 10, type, startDate, endDate, storeId } = params;
     const skip = (page - 1) * limit;
 
     const where: any = { productId };
+    
+    if (storeId) {
+      where.storeId = storeId;
+    }
 
     if (type) {
       where.type = type;

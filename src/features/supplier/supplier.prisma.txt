@@ -1,0 +1,27 @@
+model Supplier {
+  id            String                @id @default(cuid())
+  corporateName String
+  cnpj          String                @unique
+  tradeName     String?
+  status        Boolean               @default(true)
+  cep           String?
+  city          String?
+  state         String?
+  address       String?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  products      Product[]
+  movements     Movement[]
+  responsibles  SupplierResponsible[]
+}
+
+model SupplierResponsible {
+  id         String   @id @default(cuid())
+  name       String
+  phone      String?
+  email      String?
+  cpf        String?
+  status     Boolean  @default(true)
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+}
