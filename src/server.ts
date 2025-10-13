@@ -16,6 +16,7 @@ import { NotificationRoutes } from '@/features/notification/notification.routes'
 import { ChatRoutes } from '@/features/chat/chat.routes'
 import { queryRAG } from './services/llm/rag'
 import { authMiddleware, storeContextMiddleware } from './middlewares'
+import { RoadmapRoutes } from '@/features/roadmap/roadmap.routes'
 
 const fastify = Fastify({
   logger: true,
@@ -90,6 +91,7 @@ fastify.register(PermissionRoutes, { prefix: '/permissions' })
 fastify.register(ReportRoutes, { prefix: '/reports' })
 fastify.register(NotificationRoutes, { prefix: '/notifications' })
 fastify.register(ChatRoutes, { prefix: '/chat' })
+fastify.register(RoadmapRoutes, { prefix: '/roadmaps' })
 
 const PORT = Number(process.env.PORT) || 3000
 const HOST = '0.0.0.0'
