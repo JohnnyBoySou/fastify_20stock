@@ -6,21 +6,25 @@ import {
   GetRoadmapRequest,
   UpdateRoadmapRequest,
   DeleteRoadmapRequest,
-  ListRoadmapsRequest
+  ListRoadmapsRequest,
+  RoadmapStatus
 } from './roadmap.interfaces'
-
-enum RoadmapStatus {
-  ACTIVE = 'ACTIVE',
-  COMPLETED = 'COMPLETED',
-  ARCHIVED = 'ARCHIVED'
-}
 
 export const RoadmapController = {
   // === CRUD BÁSICO ===
   async create(request: CreateRoadmapRequest, reply: FastifyReply) {
     try {
+      const data: any = { ...request.body }
       
-      const result = await RoadmapCommands.create(request.body)
+      // Converter datas string para Date objects se fornecidas
+      if (data.startDate) {
+        data.startDate = new Date(data.startDate)
+      }
+      if (data.endDate) {
+        data.endDate = new Date(data.endDate)
+      }
+      
+      const result = await RoadmapCommands.create(data)
 
       return reply.status(201).send(result)
     } catch (error: any) {
@@ -69,7 +73,15 @@ export const RoadmapController = {
   async update(request: UpdateRoadmapRequest, reply: FastifyReply) {
     try {
       const { id } = request.params
-      const updateData = { ...request.body }
+      const updateData: any = { ...request.body }
+
+      // Converter datas string para Date objects se fornecidas
+      if (updateData.startDate) {
+        updateData.startDate = new Date(updateData.startDate)
+      }
+      if (updateData.endDate) {
+        updateData.endDate = new Date(updateData.endDate)
+      }
 
       const result = await RoadmapCommands.update(id, updateData)
 

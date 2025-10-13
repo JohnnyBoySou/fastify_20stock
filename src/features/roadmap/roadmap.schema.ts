@@ -3,9 +3,15 @@ import { FastifySchema } from 'fastify';
 export const createRoadmapSchema: FastifySchema = {
   body: {
     type: 'object',
-    required: [],
+    required: ['title'],
     properties: {
-
+      storeId: { type: 'string' },
+      userId: { type: 'string' },
+      title: { type: 'string' },
+      description: { type: 'string' },
+      status: { type: 'string', enum: ['ACTIVE', 'COMPLETED', 'ARCHIVED'] },
+      startDate: { type: 'string', format: 'date-time' },
+      endDate: { type: 'string', format: 'date-time' }
     }
   },
   response: {
@@ -13,7 +19,13 @@ export const createRoadmapSchema: FastifySchema = {
       type: 'object',
       properties: {
         id: { type: 'string' },
-        name: { type: 'string' },
+        storeId: { type: ['string', 'null'] },
+        userId: { type: ['string', 'null'] },
+        title: { type: 'string' },
+        description: { type: ['string', 'null'] },
+        status: { type: 'string' },
+        startDate: { type: ['string', 'null'] },
+        endDate: { type: ['string', 'null'] },
         createdAt: { type: 'string', format: 'date-time' },
         updatedAt: { type: 'string', format: 'date-time' }
       }
@@ -38,7 +50,13 @@ export const updateRoadmapSchema: FastifySchema = {
   body: {
     type: 'object',
     properties: {
-
+      storeId: { type: 'string' },
+      userId: { type: 'string' },
+      title: { type: 'string' },
+      description: { type: 'string' },
+      status: { type: 'string', enum: ['ACTIVE', 'COMPLETED', 'ARCHIVED'] },
+      startDate: { type: 'string', format: 'date-time' },
+      endDate: { type: 'string', format: 'date-time' }
     }
   },
   response: {
@@ -46,7 +64,14 @@ export const updateRoadmapSchema: FastifySchema = {
       type: 'object',
       properties: {
         id: { type: 'string' },
-        name: { type: 'string' },
+        storeId: { type: ['string', 'null'] },
+        userId: { type: ['string', 'null'] },
+        title: { type: 'string' },
+        description: { type: ['string', 'null'] },
+        status: { type: 'string' },
+        startDate: { type: ['string', 'null'] },
+        endDate: { type: ['string', 'null'] },
+        createdAt: { type: 'string', format: 'date-time' },
         updatedAt: { type: 'string', format: 'date-time' }
       }
     },
@@ -78,7 +103,13 @@ export const getRoadmapSchema: FastifySchema = {
       type: 'object',
       properties: {
         id: { type: 'string' },
-        name: { type: 'string' },
+        storeId: { type: ['string', 'null'] },
+        userId: { type: ['string', 'null'] },
+        title: { type: 'string' },
+        description: { type: ['string', 'null'] },
+        status: { type: 'string' },
+        startDate: { type: ['string', 'null'] },
+        endDate: { type: ['string', 'null'] },
         createdAt: { type: 'string', format: 'date-time' },
         updatedAt: { type: 'string', format: 'date-time' }
       }
@@ -99,7 +130,7 @@ export const listRoadmapsSchema: FastifySchema = {
       page: { type: 'number', minimum: 1, default: 1 },
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       search: { type: 'string' },
-      status: { type: 'string' }
+      status: { type: 'string', enum: ['ACTIVE', 'COMPLETED', 'ARCHIVED'] }
     }
   },
   response: {
@@ -112,7 +143,13 @@ export const listRoadmapsSchema: FastifySchema = {
             type: 'object',
             properties: {
               id: { type: 'string' },
-              name: { type: 'string' },
+              storeId: { type: ['string', 'null'] },
+              userId: { type: ['string', 'null'] },
+              title: { type: 'string' },
+              description: { type: ['string', 'null'] },
+              status: { type: 'string' },
+              startDate: { type: ['string', 'null'] },
+              endDate: { type: ['string', 'null'] },
               createdAt: { type: 'string', format: 'date-time' },
               updatedAt: { type: 'string', format: 'date-time' }
             }

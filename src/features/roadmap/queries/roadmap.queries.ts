@@ -1,10 +1,5 @@
 import { db } from '@/plugins/prisma';
-
-enum RoadmapStatus {
-  ACTIVE = 'ACTIVE',
-  COMPLETED = 'COMPLETED',
-  ARCHIVED = 'ARCHIVED'
-}
+import { RoadmapStatus } from '../roadmap.interfaces';
 
 export const RoadmapQueries = {
   async getById(id: string) {
@@ -48,7 +43,8 @@ export const RoadmapQueries = {
     
     if (search) {
       where.OR = [
-          
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } }
       ]
     }
 
@@ -94,7 +90,8 @@ export const RoadmapQueries = {
     return await db.roadmap.findMany({
       where: {
         OR: [
-          
+          { title: { contains: term, mode: 'insensitive' } },
+          { description: { contains: term, mode: 'insensitive' } }
         ]
       },
       take: limit,

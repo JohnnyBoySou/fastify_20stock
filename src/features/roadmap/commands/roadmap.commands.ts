@@ -1,9 +1,5 @@
 import { db } from '@/plugins/prisma';
-enum RoadmapStatus {
-  ACTIVE = 'ACTIVE',
-  COMPLETED = 'COMPLETED',
-  ARCHIVED = 'ARCHIVED'
-}
+import { RoadmapStatus } from '../roadmap.interfaces';
 
 export const RoadmapCommands = {
   async create(data: any) {
