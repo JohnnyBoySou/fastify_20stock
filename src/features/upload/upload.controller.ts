@@ -152,14 +152,15 @@ export const UploadController = {
       const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
 
       // Adicionar fullUrl para cada upload
-      if (result.uploads) {
-        result.uploads = result.uploads.map((upload: any) => ({
+      const responseData = {
+        ...result,
+        uploads: result.uploads?.map((upload: any) => ({
           ...upload,
           fullUrl: `${protocol}://${host}${upload.url}`
-        }))
+        })) || []
       }
 
-      return reply.send(result)
+      return reply.send(responseData)
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
