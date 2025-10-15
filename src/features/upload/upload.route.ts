@@ -18,7 +18,9 @@ export async function UploadRoutes(fastify: FastifyInstance) {
     limits: {
       fileSize: 10 * 1024 * 1024, // 10MB
       files: 10 // máximo 10 arquivos por request
-    }
+    },
+    attachFieldsToBody: false, // Manter arquivos separados do body
+    sharedSchemaId: 'MultipartFileType' // Schema para validação
   })
 
   // === CRUD BÁSICO ===

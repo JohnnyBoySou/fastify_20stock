@@ -458,27 +458,74 @@ export const UploadController = {
         })
       }
 
-      // Verificar se o arquivo tem as propriedades necessárias
-      if (!data.file) {
-        return reply.status(400).send({
-          error: 'Arquivo inválido - propriedade file não encontrada'
-        })
-      }
+      // Debug: Log da estrutura do objeto para entender melhor
+      console.log('Estrutura do objeto data:', JSON.stringify({
+        fieldname: data.fieldname,
+        filename: data.filename,
+        mimetype: data.mimetype,
+        encoding: data.encoding,
+        hasFile: !!data.file,
+        fileKeys: data.file ? Object.keys(data.file) : 'no file object',
+        filePath: data.file?.path,
+        fileFilename: data.file?.filename,
+        // Verificar se é um stream
+        isStream: data.file?.toBuffer ? 'yes' : 'no',
+        // Verificar outras propriedades possíveis
+        allKeys: Object.keys(data)
+      }, null, 2))
 
       // Obter configurações do body ou query
       const { entityType = 'general' } = request.body as any || request.query as any
 
+      // Determinar o path do arquivo baseado na estrutura
+      let filePath: string | undefined
+      let fileSize: number = 0
+
+      // Tentar diferentes formas de obter o path e tamanho
+      if (data.file) {
+        // Método 1: Arquivo salvo temporariamente
+        filePath = data.file.path || data.file.filepath || data.file.filename
+        
+        // Método 2: Stream (precisa ser salvo primeiro)
+        if (!filePath && data.file.toBuffer) {
+          // Para streams, precisamos salvar temporariamente
+          const buffer = await data.file.toBuffer()
+          fileSize = buffer.length
+          
+          // Salvar em arquivo temporário
+          const tempPath = require('path').join(require('os').tmpdir(), `temp-${Date.now()}-${data.filename}`)
+          await require('fs').promises.writeFile(tempPath, buffer)
+          filePath = tempPath
+        } else {
+          fileSize = data.file.bytesRead || 0
+        }
+      }
+
+      // Se ainda não temos path, tentar usar o próprio data
+      if (!filePath) {
+        filePath = data.path || data.filepath || data.filename
+        fileSize = data.size || data.bytesRead || 0
+      }
+
       // Preparar objeto de arquivo no formato esperado pelo service
       const fileData = {
-        fieldname: data.fieldname,
-        filename: data.filename,
-        originalname: data.filename,
-        encoding: data.encoding,
-        mimetype: data.mimetype,
-        size: data.file.bytesRead,
+        fieldname: data.fieldname || 'file',
+        filename: data.filename || 'unknown',
+        originalname: data.filename || 'unknown',
+        encoding: data.encoding || '7bit',
+        mimetype: data.mimetype || 'application/octet-stream',
+        size: fileSize,
         destination: '', // Será definido pelo service
-        path: data.file.path || data.file.filename, // Usar filename se path não estiver disponível
+        path: filePath,
         url: '' // Será definido pelo service
+      }
+
+      // Validação adicional do path
+      if (!fileData.path) {
+        console.error('Estrutura completa do data:', JSON.stringify(data, null, 2))
+        return reply.status(400).send({
+          error: 'Não foi possível determinar o caminho do arquivo. Estrutura do objeto inesperada.'
+        })
       }
 
       // Upload do arquivo físico
