@@ -477,6 +477,14 @@ export const UploadController = {
       // Obter configurações do body ou query
       const { entityType = 'general' } = request.body as any || request.query as any
 
+      // Obter userId do contexto de autenticação
+      const userId = (request as any).user?.id
+      if (!userId) {
+        return reply.status(401).send({
+          error: 'Usuário não autenticado'
+        })
+      }
+
       // Determinar o path do arquivo baseado na estrutura
       let filePath: string | undefined
       let fileSize: number = 0
@@ -539,7 +547,8 @@ export const UploadController = {
 
       // Upload do arquivo físico
       const uploadResult = await uploadService.uploadSingle(fileData, {
-        entityType: entityType as any
+        entityType: entityType as any,
+        userId: userId
       })
 
       // Criar registro no banco
@@ -593,6 +602,14 @@ export const UploadController = {
       // Obter configurações do body ou query
       const { entityType = 'general', maxFiles = 10 } = request.body as any || request.query as any
 
+      // Obter userId do contexto de autenticação
+      const userId = (request as any).user?.id
+      if (!userId) {
+        return reply.status(401).send({
+          error: 'Usuário não autenticado'
+        })
+      }
+
       // Processar arquivos
       for await (const file of files) {
         // Verificar se o arquivo tem as propriedades necessárias
@@ -621,6 +638,7 @@ export const UploadController = {
       // Upload dos arquivos físicos
       const uploadResults = await uploadService.uploadMultiple(uploadedFiles, {
         entityType: entityType as any,
+        userId: userId,
         maxFiles: maxFiles as number
       })
 

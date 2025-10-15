@@ -43,6 +43,7 @@ export interface UploadResult {
 
 export interface UploadConfig {
   entityType?: 'product' | 'supplier' | 'user' | 'store' | 'general'
+  userId?: string
   maxFiles?: number
   allowedTypes?: string[]
   maxFileSize?: number
@@ -83,6 +84,17 @@ export class UploadService {
         await fs.mkdir(dir, { recursive: true })
       }
     }
+  }
+
+  // === CRIAR DIRETÓRIO DO USUÁRIO ===
+  private async ensureUserDirectory(userId: string) {
+    const userDir = path.join(UPLOAD_DIR, 'users', userId)
+    try {
+      await fs.access(userDir)
+    } catch {
+      await fs.mkdir(userDir, { recursive: true })
+    }
+    return userDir
   }
 
   // === VALIDAÇÃO ===
@@ -132,17 +144,37 @@ export class UploadService {
 
       // Determinar diretório de destino
       const entityType = config.entityType || 'general'
-      const entityDir = path.join(this.uploadDir, entityType)
+      let destinationDir: string
+      let publicUrl: string
+
+      if (config.userId) {
+        // Usar estrutura organizada por usuário: uploads/users/userId/entityType/
+        const userDir = await this.ensureUserDirectory(config.userId)
+        destinationDir = path.join(userDir, entityType)
+        
+        // Criar subdiretório se não existir
+        try {
+          await fs.access(destinationDir)
+        } catch {
+          await fs.mkdir(destinationDir, { recursive: true })
+        }
+        
+        publicUrl = `/uploads/users/${config.userId}/${entityType}`
+      } else {
+        // Estrutura tradicional: uploads/entityType/
+        destinationDir = path.join(this.uploadDir, entityType)
+        publicUrl = `/uploads/${entityType}`
+      }
 
       // Gerar nome único
       const uniqueFilename = this.generateUniqueFilename(file.originalname)
-      const destination = path.join(entityDir, uniqueFilename)
+      const destination = path.join(destinationDir, uniqueFilename)
 
       // Mover arquivo
       await fs.copyFile(file.path, destination)
 
-      // Gerar URL pública (relativa)
-      const publicUrl = `/uploads/${entityType}/${uniqueFilename}`
+      // Completar URL pública
+      publicUrl = `${publicUrl}/${uniqueFilename}`
 
       // Criar resultado
       const result: UploadResult = {
