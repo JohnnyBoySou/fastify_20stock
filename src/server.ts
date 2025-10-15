@@ -37,6 +37,13 @@ fastify.register(cors, {
 
 fastify.register(prismaPlugin)
 
+// Registrar plugin para servir arquivos estáticos de upload
+fastify.register(require('@fastify/static'), {
+  root: require('path').join(process.cwd(), 'src', 'uploads'),
+  prefix: '/uploads/',
+  decorateReply: false
+})
+
 //Conexão com o banco de dados
 connectPrisma(fastify)
 

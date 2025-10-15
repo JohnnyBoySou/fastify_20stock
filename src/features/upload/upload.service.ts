@@ -141,7 +141,7 @@ export class UploadService {
       // Mover arquivo
       await fs.copyFile(file.path, destination)
 
-      // Gerar URL pública
+      // Gerar URL pública (relativa)
       const publicUrl = `/uploads/${entityType}/${uniqueFilename}`
 
       // Criar resultado

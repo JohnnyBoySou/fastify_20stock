@@ -228,11 +228,5 @@ export async function UploadRoutes(fastify: FastifyInstance) {
   })
 
   // === SERVIÇO DE ARQUIVOS ESTÁTICOS ===
-  
-  // Servir arquivos estáticos
-  fastify.register(require('@fastify/static'), {
-    root: uploadService['uploadDir'],
-    prefix: '/uploads/',
-    decorateReply: false
-  })
+  // Nota: O serviço de arquivos estáticos é registrado no servidor principal
 }

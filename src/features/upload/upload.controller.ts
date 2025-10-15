@@ -560,9 +560,15 @@ export const UploadController = {
         }
       }
 
+      // Gerar URL completa baseada no request
+      const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+      const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
+      const fullUrl = `${protocol}://${host}${uploadResult.url}`
+
       return reply.status(201).send({
         ...dbResult,
-        path: uploadResult.path
+        path: uploadResult.path,
+        fullUrl: fullUrl
       })
     } catch (error: any) {
       request.log.error(error)
@@ -627,9 +633,16 @@ export const UploadController = {
           type: uploadResult.type,
           size: uploadResult.size
         })
+
+        // Gerar URL completa baseada no request
+        const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+        const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
+        const fullUrl = `${protocol}://${host}${uploadResult.url}`
+
         dbResults.push({
           ...dbResult,
-          path: uploadResult.path
+          path: uploadResult.path,
+          fullUrl: fullUrl
         })
       }
 
