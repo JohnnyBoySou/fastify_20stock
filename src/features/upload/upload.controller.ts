@@ -481,28 +481,37 @@ export const UploadController = {
       let filePath: string | undefined
       let fileSize: number = 0
 
-      // Tentar diferentes formas de obter o path e tamanho
-      if (data.file) {
-        // Método 1: Arquivo salvo temporariamente
-        filePath = data.file.path || data.file.filepath || data.file.filename
+      // O @fastify/multipart retorna streams, precisamos convertê-los para arquivos temporários
+      if (data.toBuffer) {
+        // Método 1: Usar toBuffer do próprio data
+        console.log('Convertendo stream para buffer usando data.toBuffer...')
+        const buffer = await data.toBuffer()
+        fileSize = buffer.length
         
-        // Método 2: Stream (precisa ser salvo primeiro)
-        if (!filePath && data.file.toBuffer) {
-          // Para streams, precisamos salvar temporariamente
-          const buffer = await data.file.toBuffer()
-          fileSize = buffer.length
-          
-          // Salvar em arquivo temporário
-          const tempPath = require('path').join(require('os').tmpdir(), `temp-${Date.now()}-${data.filename}`)
-          await require('fs').promises.writeFile(tempPath, buffer)
-          filePath = tempPath
-        } else {
-          fileSize = data.file.bytesRead || 0
-        }
-      }
-
-      // Se ainda não temos path, tentar usar o próprio data
-      if (!filePath) {
+        // Salvar em arquivo temporário
+        const tempPath = require('path').join(require('os').tmpdir(), `temp-${Date.now()}-${data.filename}`)
+        await require('fs').promises.writeFile(tempPath, buffer)
+        filePath = tempPath
+        
+        console.log(`Arquivo temporário criado: ${tempPath}`)
+      } else if (data.file && data.file.toBuffer) {
+        // Método 2: Usar toBuffer do data.file
+        console.log('Convertendo stream para buffer usando data.file.toBuffer...')
+        const buffer = await data.file.toBuffer()
+        fileSize = buffer.length
+        
+        // Salvar em arquivo temporário
+        const tempPath = require('path').join(require('os').tmpdir(), `temp-${Date.now()}-${data.filename}`)
+        await require('fs').promises.writeFile(tempPath, buffer)
+        filePath = tempPath
+        
+        console.log(`Arquivo temporário criado: ${tempPath}`)
+      } else if (data.file && data.file.bytesRead) {
+        // Método 3: Arquivo já salvo temporariamente
+        filePath = data.file.path || data.file.filepath || data.file.filename
+        fileSize = data.file.bytesRead
+      } else {
+        // Método 4: Tentar outras propriedades
         filePath = data.path || data.filepath || data.filename
         fileSize = data.size || data.bytesRead || 0
       }
@@ -540,6 +549,16 @@ export const UploadController = {
         type: uploadResult.type,
         size: uploadResult.size
       })
+
+      // Limpar arquivo temporário se foi criado
+      if (filePath && filePath.includes('temp-')) {
+        try {
+          await require('fs').promises.unlink(filePath)
+          console.log(`Arquivo temporário removido: ${filePath}`)
+        } catch (cleanupError) {
+          console.warn(`Erro ao remover arquivo temporário ${filePath}:`, cleanupError)
+        }
+      }
 
       return reply.status(201).send({
         ...dbResult,
