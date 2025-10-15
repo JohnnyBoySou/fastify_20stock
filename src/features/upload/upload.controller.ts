@@ -458,11 +458,31 @@ export const UploadController = {
         })
       }
 
+      // Verificar se o arquivo tem as propriedades necessárias
+      if (!data.file) {
+        return reply.status(400).send({
+          error: 'Arquivo inválido - propriedade file não encontrada'
+        })
+      }
+
       // Obter configurações do body ou query
       const { entityType = 'general' } = request.body as any || request.query as any
 
+      // Preparar objeto de arquivo no formato esperado pelo service
+      const fileData = {
+        fieldname: data.fieldname,
+        filename: data.filename,
+        originalname: data.filename,
+        encoding: data.encoding,
+        mimetype: data.mimetype,
+        size: data.file.bytesRead,
+        destination: '', // Será definido pelo service
+        path: data.file.path || data.file.filename, // Usar filename se path não estiver disponível
+        url: '' // Será definido pelo service
+      }
+
       // Upload do arquivo físico
-      const uploadResult = await uploadService.uploadSingle(data, {
+      const uploadResult = await uploadService.uploadSingle(fileData, {
         entityType: entityType as any
       })
 
@@ -503,12 +523,26 @@ export const UploadController = {
 
       // Processar arquivos
       for await (const file of files) {
-        uploadedFiles.push(file)
+        // Verificar se o arquivo tem as propriedades necessárias
+        if (file.file) {
+          const fileData = {
+            fieldname: file.fieldname,
+            filename: file.filename,
+            originalname: file.filename,
+            encoding: file.encoding,
+            mimetype: file.mimetype,
+            size: file.file.bytesRead,
+            destination: '', // Será definido pelo service
+            path: file.file.path || file.file.filename, // Usar filename se path não estiver disponível
+            url: '' // Será definido pelo service
+          }
+          uploadedFiles.push(fileData)
+        }
       }
 
       if (uploadedFiles.length === 0) {
         return reply.status(400).send({
-          error: 'Nenhum arquivo enviado'
+          error: 'Nenhum arquivo válido enviado'
         })
       }
 

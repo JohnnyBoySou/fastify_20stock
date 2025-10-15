@@ -118,6 +118,18 @@ export class UploadService {
       // Validar arquivo
       this.validateFile(file, config)
 
+      // Validar se o path do arquivo existe
+      if (!file.path || typeof file.path !== 'string') {
+        throw new Error('Caminho do arquivo inválido ou não fornecido')
+      }
+
+      // Verificar se o arquivo temporário existe
+      try {
+        await fs.access(file.path)
+      } catch (error) {
+        throw new Error(`Arquivo temporário não encontrado: ${file.path}`)
+      }
+
       // Determinar diretório de destino
       const entityType = config.entityType || 'general'
       const entityDir = path.join(this.uploadDir, entityType)
