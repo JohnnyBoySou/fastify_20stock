@@ -147,6 +147,18 @@ export const UploadController = {
         entityId
       })
 
+      // Gerar URL completa baseada no request
+      const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+      const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
+
+      // Adicionar fullUrl para cada upload
+      if (result.uploads) {
+        result.uploads = result.uploads.map((upload: any) => ({
+          ...upload,
+          fullUrl: `${protocol}://${host}${upload.url}`
+        }))
+      }
+
       return reply.send(result)
     } catch (error) {
       request.log.error(error)
@@ -163,7 +175,17 @@ export const UploadController = {
 
       const result = await UploadQueries.getByType(type, limit)
 
-      return reply.send({ uploads: result })
+      // Gerar URL completa baseada no request
+      const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+      const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
+
+      // Adicionar fullUrl para cada upload
+      const uploadsWithFullUrl = result.map((upload: any) => ({
+        ...upload,
+        fullUrl: `${protocol}://${host}${upload.url}`
+      }))
+
+      return reply.send({ uploads: uploadsWithFullUrl })
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
@@ -178,7 +200,17 @@ export const UploadController = {
 
       const result = await UploadQueries.getRecent(limit)
 
-      return reply.send({ uploads: result })
+      // Gerar URL completa baseada no request
+      const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+      const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
+
+      // Adicionar fullUrl para cada upload
+      const uploadsWithFullUrl = result.map((upload: any) => ({
+        ...upload,
+        fullUrl: `${protocol}://${host}${upload.url}`
+      }))
+
+      return reply.send({ uploads: uploadsWithFullUrl })
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
@@ -193,7 +225,17 @@ export const UploadController = {
 
       const result = await UploadQueries.getEntityMedia(entityType, entityId)
 
-      return reply.send({ media: result })
+      // Gerar URL completa baseada no request
+      const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+      const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
+
+      // Adicionar fullUrl para cada media
+      const mediaWithFullUrl = result.map((media: any) => ({
+        ...media,
+        fullUrl: `${protocol}://${host}${media.url}`
+      }))
+
+      return reply.send({ media: mediaWithFullUrl })
     } catch (error: any) {
       request.log.error(error)
       
@@ -221,7 +263,17 @@ export const UploadController = {
         })
       }
 
-      return reply.send(result)
+      // Gerar URL completa baseada no request
+      const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+      const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
+
+      // Adicionar fullUrl ao resultado
+      const resultWithFullUrl = {
+        ...result,
+        fullUrl: `${protocol}://${host}${result.url}`
+      }
+
+      return reply.send(resultWithFullUrl)
     } catch (error: any) {
       request.log.error(error)
       
@@ -257,7 +309,17 @@ export const UploadController = {
 
       const result = await UploadQueries.search(q, limit)
 
-      return reply.send({ uploads: result })
+      // Gerar URL completa baseada no request
+      const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+      const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
+
+      // Adicionar fullUrl para cada upload
+      const uploadsWithFullUrl = result.map((upload: any) => ({
+        ...upload,
+        fullUrl: `${protocol}://${host}${upload.url}`
+      }))
+
+      return reply.send({ uploads: uploadsWithFullUrl })
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
@@ -287,7 +349,17 @@ export const UploadController = {
 
       const result = await UploadQueries.getUnusedMedia(daysOld)
 
-      return reply.send({ uploads: result })
+      // Gerar URL completa baseada no request
+      const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+      const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
+
+      // Adicionar fullUrl para cada upload
+      const uploadsWithFullUrl = result.map((upload: any) => ({
+        ...upload,
+        fullUrl: `${protocol}://${host}${upload.url}`
+      }))
+
+      return reply.send({ uploads: uploadsWithFullUrl })
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
