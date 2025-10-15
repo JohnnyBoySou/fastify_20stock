@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.searchPermissions = exports.getExpiringPermissions = exports.getPermissionsByStore = exports.getPermissionsByUser = exports.getPermissionStats = exports.testPermission = exports.getUserEffectivePermissions = exports.getStoreUserPermission = exports.getStoreUserPermissions = exports.getUserPermissionById = exports.getUserPermissions = void 0;
-const granular_permissions_middleware_1 = require("../../../middlewares/granular-permissions.middleware");
+const granular_permissions_middleware_1 = require("@/middlewares/granular-permissions.middleware");
 // ================================
 // CONSULTAS DE PERMISSÕES CUSTOMIZADAS
 // ================================

@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MovementQueries = void 0;
-const prisma_1 = require("../../../plugins/prisma");
-const llm_1 = require("../../../services/llm");
+const prisma_1 = require("@/plugins/prisma");
+const llm_1 = require("@/services/llm");
 exports.MovementQueries = {
     async getById(id) {
         console.log('MovementQueries.getById: Searching for movement with id:', id);

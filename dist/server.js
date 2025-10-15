@@ -7,21 +7,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fastify_1 = __importDefault(require("fastify"));
 const cors_1 = __importDefault(require("@fastify/cors"));
 const prisma_1 = require("./plugins/prisma");
-const user_routes_1 = require("./features/user/user.routes");
-const auth_routes_1 = require("./features/auth/auth.routes");
-const product_routes_1 = require("./features/product/product.routes");
-const supplier_routes_1 = require("./features/supplier/supplier.routes");
-const store_routes_1 = require("./features/store/store.routes");
-const category_routes_1 = require("./features/category/category.routes");
-const movement_routes_1 = require("./features/movement/movement.routes");
-const permission_routes_1 = require("./features/permission/permission.routes");
-const report_routes_1 = require("./features/report/report.routes");
-const notification_routes_1 = require("./features/notification/notification.routes");
-const chat_routes_1 = require("./features/chat/chat.routes");
+const user_routes_1 = require("@/features/user/user.routes");
+const auth_routes_1 = require("@/features/auth/auth.routes");
+const product_routes_1 = require("@/features/product/product.routes");
+const supplier_routes_1 = require("@/features/supplier/supplier.routes");
+const store_routes_1 = require("@/features/store/store.routes");
+const category_routes_1 = require("@/features/category/category.routes");
+const movement_routes_1 = require("@/features/movement/movement.routes");
+const permission_routes_1 = require("@/features/permission/permission.routes");
+const report_routes_1 = require("@/features/report/report.routes");
+const notification_routes_1 = require("@/features/notification/notification.routes");
+const chat_routes_1 = require("@/features/chat/chat.routes");
 const rag_1 = require("./services/llm/rag");
 const middlewares_1 = require("./middlewares");
-const roadmap_routes_1 = require("./features/roadmap/roadmap.routes");
-const upload_route_1 = require("./features/upload/upload.route");
+const roadmap_routes_1 = require("@/features/roadmap/roadmap.routes");
+const upload_route_1 = require("@/features/upload/upload.route");
 const fastify = (0, fastify_1.default)({
     logger: true,
     requestTimeout: 60000, // 30 segundos para timeout de requisições

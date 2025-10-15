@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StoreQueries = void 0;
-const pagination_1 = require("../../../utils/pagination");
-const prisma_1 = require("../../../plugins/prisma");
+const pagination_1 = require("@/utils/pagination");
+const prisma_1 = require("@/plugins/prisma");
 exports.StoreQueries = {
     async getById(id) {
         const store = await prisma_1.db.store.findUnique({

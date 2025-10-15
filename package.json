@@ -5,7 +5,9 @@
   "main": "src/server.ts",
   "dependencies": {
     "@fastify/cors": "^11.1.0",
+    "@fastify/multipart": "^9.2.1",
     "@fastify/otel": "^0.9.4",
+    "@fastify/static": "^8.2.0",
     "@langchain/community": "^0.3.56",
     "@langchain/core": "^0.3.77",
     "@langchain/ollama": "^0.2.4",
