@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductRoutesWithMiddleware = ProductRoutesWithMiddleware;
 const product_controller_1 = require("./product.controller");
 const product_schema_1 = require("./product.schema");
-const middlewares_1 = require("@/middlewares");
+const middlewares_1 = require("../../middlewares");
 async function ProductRoutesWithMiddleware(fastify) {
     // POST /products - Criar produto (requer permissão + acesso à loja)
     fastify.post('/', {

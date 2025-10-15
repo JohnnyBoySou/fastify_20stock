@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PermissionSchemas = void 0;
-const authorization_middleware_1 = require("@/middlewares/authorization.middleware");
+const authorization_middleware_1 = require("../../middlewares/authorization.middleware");
 // ================================
 // SCHEMAS PARA PERMISSÕES CUSTOMIZADAS
 // ================================

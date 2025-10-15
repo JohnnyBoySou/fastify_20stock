@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SupplierCommands = void 0;
-const prisma_1 = require("@/plugins/prisma");
+const prisma_1 = require("../../../plugins/prisma");
 exports.SupplierCommands = {
     async create(data) {
         // Verificar se CNPJ já existe
