@@ -45,6 +45,9 @@ model User {
   // Roadmap
   roadmaps               Roadmap[]
 
+  // Media
+  media                  UserMedia[]
+
   @@map("users")
 }
 
@@ -67,6 +70,7 @@ model Product {
   supplier        Supplier?     @relation(fields: [supplierId], references: [id])
   movements       Movement[]
   categories      ProductCategory[]
+  media           ProductMedia[]
 }
 
 model Category {
@@ -113,6 +117,7 @@ model Supplier {
   products      Product[]
   movements     Movement[]
   responsibles  SupplierResponsible[]
+  media         SupplierMedia[]
 }
 
 model SupplierResponsible {
@@ -150,6 +155,9 @@ model Store {
   
   // Roadmap
   roadmaps  Roadmap[]
+
+  // Media
+  media     StoreMedia[]
 }
 
 model StoreUser {
@@ -455,4 +463,72 @@ enum MilestoneStatus {
   IN_PROGRESS
   COMPLETED
   BLOCKED
+}
+
+//Upload Feature
+
+model Media {
+  id          String   @id @default(cuid())
+  url         String   // link público da imagem (ex: Cloudinary, S3, etc.)
+  name        String?  // nome do arquivo
+  type        String?  // tipo MIME (ex: image/png)
+  size        Int?     // tamanho em bytes
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // relações
+  productMedia   ProductMedia[]
+  supplierMedia  SupplierMedia[]
+  userMedia      UserMedia[]
+  storeMedia     StoreMedia[]
+    
+  @@map("media")
+}
+
+ 
+
+// tabelas de ligação (muitos-para-muitos com metadados opcionais)
+model ProductMedia {
+  id        String   @id @default(cuid())
+  productId String
+  mediaId   String
+  isPrimary Boolean  @default(false) // define se é a imagem principal do produto
+
+  product   Product  @relation(fields: [productId], references: [id])
+  media     Media    @relation(fields: [mediaId], references: [id])
+
+  @@map("product_media")
+}
+
+model SupplierMedia {
+  id         String   @id @default(cuid())
+  supplierId String
+  mediaId    String
+
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+  media      Media    @relation(fields: [mediaId], references: [id])
+
+  @@map("supplier_media")
+}
+
+model UserMedia {
+  id       String @id @default(cuid())
+  userId   String
+  mediaId  String
+
+  user     User   @relation(fields: [userId], references: [id])
+  media    Media  @relation(fields: [mediaId], references: [id])
+
+  @@map("user_media")
+}
+
+model StoreMedia {
+  id       String @id @default(cuid())
+  storeId  String
+  mediaId  String
+
+  store    Store  @relation(fields: [storeId], references: [id])
+  media    Media  @relation(fields: [mediaId], references: [id])
+
+  @@map("store_media")
 }

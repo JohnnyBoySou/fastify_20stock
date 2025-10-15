@@ -17,6 +17,7 @@ import { ChatRoutes } from '@/features/chat/chat.routes'
 import { queryRAG } from './services/llm/rag'
 import { authMiddleware, storeContextMiddleware } from './middlewares'
 import { RoadmapRoutes } from '@/features/roadmap/roadmap.routes'
+import { UploadRoutes } from '@/features/upload/upload.route'
 
 const fastify = Fastify({
   logger: true,
@@ -92,6 +93,7 @@ fastify.register(ReportRoutes, { prefix: '/reports' })
 fastify.register(NotificationRoutes, { prefix: '/notifications' })
 fastify.register(ChatRoutes, { prefix: '/chat' })
 fastify.register(RoadmapRoutes, { prefix: '/roadmaps' })
+fastify.register(UploadRoutes, { prefix: '/uploads' })
 
 const PORT = Number(process.env.PORT) || 3000
 const HOST = '0.0.0.0'

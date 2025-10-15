@@ -21,6 +21,7 @@ const chat_routes_1 = require("./features/chat/chat.routes");
 const rag_1 = require("./services/llm/rag");
 const middlewares_1 = require("./middlewares");
 const roadmap_routes_1 = require("./features/roadmap/roadmap.routes");
+const upload_route_1 = require("./features/upload/upload.route");
 const fastify = (0, fastify_1.default)({
     logger: true,
     requestTimeout: 60000, // 30 segundos para timeout de requisições
@@ -89,6 +90,7 @@ fastify.register(report_routes_1.ReportRoutes, { prefix: '/reports' });
 fastify.register(notification_routes_1.NotificationRoutes, { prefix: '/notifications' });
 fastify.register(chat_routes_1.ChatRoutes, { prefix: '/chat' });
 fastify.register(roadmap_routes_1.RoadmapRoutes, { prefix: '/roadmaps' });
+fastify.register(upload_route_1.UploadRoutes, { prefix: '/uploads' });
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = '0.0.0.0';
 fastify.listen({ port: PORT, host: HOST })

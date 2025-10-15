@@ -12,7 +12,7 @@ import {
   UserRole,
   Action,
   StoreRole
-} from '../../middlewares';
+} from '@/middlewares';
 
 export async function ProductRoutesWithMiddleware(fastify: FastifyInstance) {
   // POST /products - Criar produto (requer permissão + acesso à loja)
