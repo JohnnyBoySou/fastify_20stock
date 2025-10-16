@@ -18,6 +18,11 @@ import { queryRAG } from './services/llm/rag'
 import { authMiddleware, storeContextMiddleware } from './middlewares'
 import { RoadmapRoutes } from '@/features/roadmap/roadmap.routes'
 import { UploadRoutes } from '@/features/upload/upload.route'
+import { QuoteRoutes } from '@/features/quote/quote.routes'
+import { PlanRoutes } from '@/features/plan/plan.routes'
+import { CustomerRoutes } from '@/features/customer/customer.routes'
+import { InvoiceRoutes } from '@/features/invoice/invoice.routes'
+import { WebhookRoutes } from '@/features/webhook/webhook.routes'
 
 const fastify = Fastify({
   logger: true,
@@ -101,6 +106,11 @@ fastify.register(NotificationRoutes, { prefix: '/notifications' })
 fastify.register(ChatRoutes, { prefix: '/chat' })
 fastify.register(RoadmapRoutes, { prefix: '/roadmaps' })
 fastify.register(UploadRoutes, { prefix: '/uploads' })
+fastify.register(QuoteRoutes, { prefix: '/quotes' })
+fastify.register(PlanRoutes, { prefix: '/plans' })
+fastify.register(CustomerRoutes, { prefix: '/customers' })
+fastify.register(InvoiceRoutes, { prefix: '/invoices' })
+fastify.register(WebhookRoutes, { prefix: '/webhooks' })
 
 const PORT = Number(process.env.PORT) || 3000
 const HOST = '0.0.0.0'

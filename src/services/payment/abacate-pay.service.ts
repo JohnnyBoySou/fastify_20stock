@@ -1,0 +1,250 @@
+import { 
+  PaymentGateway, 
+  PaymentData, 
+  PaymentResult, 
+  PaymentStatus, 
+  RefundData, 
+  RefundResult, 
+  WebhookResult, 
+  GatewayConfig,
+  WebhookEventType 
+} from './payment-gateway.interface';
+
+export class AbacatePayService implements PaymentGateway {
+  private config: GatewayConfig;
+
+  constructor() {
+    this.config = {
+      name: 'Abacate Pay',
+      version: '1.0.0',
+      supportedCurrencies: ['BRL'],
+      supportedMethods: ['pix', 'credit_card', 'debit_card', 'boleto'],
+      environment: process.env.ABACATE_PAY_ENV === 'production' ? 'production' : 'sandbox',
+      apiKey: process.env.ABACATE_PAY_API_KEY,
+      secretKey: process.env.ABACATE_PAY_SECRET_KEY,
+      webhookUrl: process.env.ABACATE_PAY_WEBHOOK_URL
+    };
+  }
+
+  async createPayment(data: PaymentData): Promise<PaymentResult> {
+    try {
+      // Simular chamada para API do Abacate Pay
+      // Em uma implementação real, aqui seria feita a chamada HTTP para a API
+      console.log('Creating payment with Abacate Pay:', data);
+
+      // Simular resposta da API
+      const paymentId = `abacate_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Simular diferentes cenários baseados no valor
+      const success = data.amount > 0 && data.amount < 10000; // Simular falha para valores muito altos
+      
+      return {
+        success,
+        paymentId: success ? paymentId : undefined,
+        status: success ? 'pending' : 'failed',
+        gatewayResponse: {
+          payment_id: paymentId,
+          status: success ? 'pending' : 'failed',
+          amount: data.amount,
+          currency: data.currency || 'BRL',
+          created_at: new Date().toISOString()
+        },
+        error: success ? undefined : 'Payment amount exceeds limit'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        status: 'failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  async getPaymentStatus(paymentId: string): Promise<PaymentStatus> {
+    try {
+      // Simular chamada para API do Abacate Pay
+      console.log('Getting payment status from Abacate Pay:', paymentId);
+
+      // Simular resposta da API
+      const statuses = ['pending', 'completed', 'failed', 'cancelled'];
+      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+      
+      return {
+        paymentId,
+        status: randomStatus as any,
+        amount: Math.random() * 1000,
+        currency: 'BRL',
+        gatewayResponse: {
+          payment_id: paymentId,
+          status: randomStatus,
+          amount: Math.random() * 1000,
+          currency: 'BRL',
+          updated_at: new Date().toISOString()
+        }
+      };
+    } catch (error) {
+      return {
+        paymentId,
+        status: 'failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  async cancelPayment(paymentId: string): Promise<void> {
+    try {
+      // Simular chamada para API do Abacate Pay
+      console.log('Cancelling payment with Abacate Pay:', paymentId);
+      
+      // Em uma implementação real, aqui seria feita a chamada HTTP para cancelar o pagamento
+      // Por enquanto, apenas logamos a ação
+    } catch (error) {
+      console.error('Error cancelling payment:', error);
+      throw error;
+    }
+  }
+
+  async refundPayment(data: RefundData): Promise<RefundResult> {
+    try {
+      // Simular chamada para API do Abacate Pay
+      console.log('Processing refund with Abacate Pay:', data);
+
+      const refundId = `refund_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      return {
+        success: true,
+        refundId,
+        amount: data.amount,
+        gatewayResponse: {
+          refund_id: refundId,
+          payment_id: data.paymentId,
+          amount: data.amount,
+          reason: data.reason,
+          status: 'processed',
+          created_at: new Date().toISOString()
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  async handleWebhook(payload: any, signature?: string): Promise<WebhookResult> {
+    try {
+      // Verificar assinatura do webhook (em produção)
+      if (signature && !this.verifySignature(payload, signature)) {
+        return {
+          success: false,
+          eventType: 'unknown',
+          error: 'Invalid signature'
+        };
+      }
+
+      // Processar diferentes tipos de eventos do Abacate Pay
+      const eventType = this.mapEventType(payload.type);
+      
+      return {
+        success: true,
+        eventType,
+        paymentId: payload.data?.payment_id,
+        invoiceId: payload.data?.invoice_id,
+        customerId: payload.data?.customer_id,
+        status: payload.data?.status,
+        gatewayResponse: payload
+      };
+    } catch (error) {
+      return {
+        success: false,
+        eventType: 'unknown',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  async isAvailable(): Promise<boolean> {
+    try {
+      // Simular verificação de disponibilidade da API
+      // Em uma implementação real, aqui seria feita uma chamada de health check
+      return this.config.apiKey !== undefined && this.config.secretKey !== undefined;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  getConfig(): GatewayConfig {
+    return { ...this.config };
+  }
+
+  private verifySignature(payload: any, signature: string): boolean {
+    // Em uma implementação real, aqui seria verificada a assinatura HMAC
+    // Por enquanto, sempre retornamos true
+    return true;
+  }
+
+  private mapEventType(abacateEventType: string): WebhookEventType {
+    // Mapear tipos de eventos específicos do Abacate Pay para nossos tipos padrão
+    const eventMap: Record<string, WebhookEventType> = {
+      'payment.created': 'payment.created',
+      'payment.completed': 'payment.completed',
+      'payment.failed': 'payment.failed',
+      'payment.cancelled': 'payment.cancelled',
+      'payment.refunded': 'payment.refunded',
+      'invoice.created': 'invoice.created',
+      'invoice.paid': 'invoice.paid',
+      'invoice.failed': 'invoice.failed'
+    };
+
+    return eventMap[abacateEventType] || 'payment.created';
+  }
+
+  // Métodos específicos do Abacate Pay
+  async generatePixPayment(data: PaymentData): Promise<PaymentResult> {
+    // Método específico para gerar pagamento PIX
+    const paymentData = {
+      ...data,
+      paymentMethod: 'pix'
+    };
+    
+    return this.createPayment(paymentData);
+  }
+
+  async generateBoletoPayment(data: PaymentData): Promise<PaymentResult> {
+    // Método específico para gerar boleto
+    const paymentData = {
+      ...data,
+      paymentMethod: 'boleto'
+    };
+    
+    return this.createPayment(paymentData);
+  }
+
+  async createSubscription(data: {
+    customerId: string
+    planId: string
+    amount: number
+    interval: 'monthly' | 'yearly'
+  }): Promise<PaymentResult> {
+    // Método específico para criar assinatura recorrente
+    console.log('Creating subscription with Abacate Pay:', data);
+    
+    const subscriptionId = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    return {
+      success: true,
+      paymentId: subscriptionId,
+      status: 'completed',
+      gatewayResponse: {
+        subscription_id: subscriptionId,
+        customer_id: data.customerId,
+        plan_id: data.planId,
+        amount: data.amount,
+        interval: data.interval,
+        status: 'active',
+        created_at: new Date().toISOString()
+      }
+    };
+  }
+}

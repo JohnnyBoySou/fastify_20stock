@@ -22,6 +22,11 @@ const rag_1 = require("./services/llm/rag");
 const middlewares_1 = require("./middlewares");
 const roadmap_routes_1 = require("./features/roadmap/roadmap.routes");
 const upload_route_1 = require("./features/upload/upload.route");
+const quote_routes_1 = require("./features/quote/quote.routes");
+const plan_routes_1 = require("./features/plan/plan.routes");
+const customer_routes_1 = require("./features/customer/customer.routes");
+const invoice_routes_1 = require("./features/invoice/invoice.routes");
+const webhook_routes_1 = require("./features/webhook/webhook.routes");
 const fastify = (0, fastify_1.default)({
     logger: true,
     requestTimeout: 60000, // 30 segundos para timeout de requisições
@@ -37,6 +42,12 @@ fastify.register(cors_1.default, {
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 });
 fastify.register(prisma_1.prismaPlugin);
+// Registrar plugin para servir arquivos estáticos de upload
+fastify.register(require('@fastify/static'), {
+    root: require('path').join(process.cwd(), 'src', 'uploads'),
+    prefix: '/uploads/',
+    decorateReply: false
+});
 //Conexão com o banco de dados
 (0, prisma_1.connectPrisma)(fastify);
 // Healthcheck route
@@ -91,6 +102,11 @@ fastify.register(notification_routes_1.NotificationRoutes, { prefix: '/notificat
 fastify.register(chat_routes_1.ChatRoutes, { prefix: '/chat' });
 fastify.register(roadmap_routes_1.RoadmapRoutes, { prefix: '/roadmaps' });
 fastify.register(upload_route_1.UploadRoutes, { prefix: '/uploads' });
+fastify.register(quote_routes_1.QuoteRoutes, { prefix: '/quotes' });
+fastify.register(plan_routes_1.PlanRoutes, { prefix: '/plans' });
+fastify.register(customer_routes_1.CustomerRoutes, { prefix: '/customers' });
+fastify.register(invoice_routes_1.InvoiceRoutes, { prefix: '/invoices' });
+fastify.register(webhook_routes_1.WebhookRoutes, { prefix: '/webhooks' });
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = '0.0.0.0';
 fastify.listen({ port: PORT, host: HOST })

@@ -48,6 +48,12 @@ model User {
   // Media
   media                  UserMedia[]
 
+  // Quotes
+  quotes                 Quote[]
+
+  // Customers
+  customers              Customer[]
+
   @@map("users")
 }
 
@@ -71,6 +77,9 @@ model Product {
   movements       Movement[]
   categories      ProductCategory[]
   media           ProductMedia[]
+
+  // Quotes
+  quotes          QuoteItem[]
 }
 
 model Category {
@@ -531,4 +540,132 @@ model StoreMedia {
   media    Media  @relation(fields: [mediaId], references: [id])
 
   @@map("store_media")
+}
+
+
+//Quotation Feature
+model Quote {
+  id            String      @id @default(cuid())
+  userId        String
+  title         String
+  description   String?
+  publicId      String      @unique @default(uuid())
+  authCode      String      @default(uuid()) // Código de autorização para acesso público
+  status        QuoteStatus @default(DRAFT)
+  total         Decimal     @db.Decimal(10,2)
+  subtotal      Decimal     @db.Decimal(10,2) // total antes de desconto/juros
+  discount      Decimal?    @db.Decimal(10,2)
+  interest      Decimal?    @db.Decimal(10,2) // juros somados, se houver
+  paymentType   PaymentType @default(UNDEFINED)
+  paymentTerms  String?     // descrição livre, ex: "6x sem juros no cartão"
+  paymentDueDays Int?       // ex: 15 dias p/ pagamento no boleto
+  expiresAt     DateTime?   // validade do orçamento
+  observations  String?     // campo livre pro usuário
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  items         QuoteItem[]
+  installments  QuoteInstallment[]
+  user          User        @relation(fields: [userId], references: [id])
+}
+
+model QuoteItem {
+  id         String   @id @default(cuid())
+  quoteId    String
+  productId  String
+  quantity   Int
+  unitPrice  Decimal   @db.Decimal(10,2)
+  subtotal   Decimal   @db.Decimal(10,2)
+  discount   Decimal?  @db.Decimal(10,2)
+  note       String?
+
+  quote      Quote     @relation(fields: [quoteId], references: [id])
+  product    Product   @relation(fields: [productId], references: [id])
+}
+
+model QuoteInstallment {
+  id         String   @id @default(cuid())
+  quoteId    String
+  number     Int      // ex: parcela 1, 2, 3...
+  dueDate    DateTime
+  amount     Decimal  @db.Decimal(10,2)
+  interest   Decimal? @db.Decimal(10,2)
+
+  quote      Quote    @relation(fields: [quoteId], references: [id])
+}
+
+enum PaymentType {
+  UNDEFINED
+  PIX
+  BOLETO
+  CREDIT_CARD
+  CASH
+  TRANSFER
+}
+
+enum QuoteStatus {
+  DRAFT          // Orçamento ainda em edição (não publicado)
+  PUBLISHED      // Link público ativo (cliente pode visualizar)
+  SENT           // Enviado para o cliente (por e-mail/link/WhatsApp)
+  VIEWED         // Cliente visualizou o orçamento (tracking opcional)
+  APPROVED       // Cliente aprovou (pronto para virar venda)
+  REJECTED       // Cliente recusou
+  EXPIRED        // Passou da data de validade (expiresAt)
+  CONVERTED      // Convertido em venda / movimentação
+  CANCELED       // Cancelado pelo usuário
+}
+
+
+//Payment Feature
+model Customer {
+  id           String    @id @default(cuid())
+  userId       String    @unique
+  user         User      @relation(fields: [userId], references: [id])
+  planId       String?
+  plan         Plan?     @relation(fields: [planId], references: [id])
+  status       CustomerStatus @default(ACTIVE)
+  renewalDate  DateTime?
+  trialEndsAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  invoices     Invoice[]
+}
+
+model Plan {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Decimal  @db.Decimal(10,2)
+  interval    PlanInterval // MONTHLY, YEARLY
+  features    Json?
+  customers   Customer[]
+}
+
+model Invoice {
+  id                String         @id @default(cuid())
+  customerId        String
+  customer          Customer       @relation(fields: [customerId], references: [id])
+  amount            Decimal        @db.Decimal(10,2)
+  status            InvoiceStatus
+  gatewayPaymentId  String?        // ID de referência no Abacate Pay
+  paymentDate       DateTime?
+  createdAt         DateTime       @default(now())
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  CANCELLED
+  TRIAL
+}
+
+enum PlanInterval {
+  MONTHLY
+  YEARLY
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  FAILED
 }
