@@ -27,8 +27,12 @@ export class ChatToolbox {
     return await ProductQueries.getById(id, storeId);
   }
 
-  async searchProducts(term: string, limit: number = 10) {
-    return await ProductQueries.search(term, limit);
+  async searchProducts(term: string, params: {
+    page?: number
+    limit?: number
+    storeId?: string
+  } = {}) {
+    return await ProductQueries.search(term, params);
   }
 
   async getActiveProducts() {
