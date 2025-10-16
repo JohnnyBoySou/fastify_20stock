@@ -12,7 +12,8 @@ import {
   RenewCustomerRequest,
   StartTrialRequest,
   GetCustomerInvoicesRequest,
-  GetSubscriptionStatusRequest
+  GetSubscriptionStatusRequest,
+  CustomerStatus
 } from './customer.interfaces';
 
 export const CustomerController = {
@@ -24,7 +25,7 @@ export const CustomerController = {
       const result = await CustomerCommands.create({
         userId,
         planId,
-        status,
+        status: status as unknown as CustomerStatus,
         renewalDate: renewalDate ? new Date(renewalDate) : undefined,
         trialEndsAt: trialEndsAt ? new Date(trialEndsAt) : undefined
       });
@@ -431,7 +432,7 @@ export const CustomerController = {
       const { id } = request.params;
       const { status } = request.body;
 
-      const result = await CustomerCommands.updateStatus(id, status);
+      const result = await CustomerCommands.updateStatus(id, status as unknown as CustomerStatus);
 
       return reply.send(result);
     } catch (error: any) {
