@@ -205,3 +205,21 @@ export interface GetProductsByCategoryRequest extends FastifyRequest {
     status?: boolean
   }
 }
+
+export enum UnitOfMeasure {
+  UNIDADE = 'UNIDADE',
+  KG = 'KG',
+  L = 'L',
+  ML = 'ML',
+  M = 'M',
+  CM = 'CM',
+  MM = 'MM',
+  UN = 'UN',
+  DZ = 'DZ',
+  CX = 'CX',
+  PCT = 'PCT',  
+  KIT = 'KIT',
+  PAR = 'PAR',
+  H = 'H',
+  D = 'D'
+}

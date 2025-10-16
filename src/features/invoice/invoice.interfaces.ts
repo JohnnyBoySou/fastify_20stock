@@ -136,3 +136,9 @@ export interface EmailSendResponse {
     error?: string
   }
 }
+
+export enum InvoiceStatus {
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  FAILED = 'FAILED'
+}

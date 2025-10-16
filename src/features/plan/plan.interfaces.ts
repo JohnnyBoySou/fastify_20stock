@@ -94,3 +94,8 @@ export interface PlanStatsResponse {
   totalRevenue: number
   averagePrice: number
 }
+
+export enum PlanInterval {
+  MONTHLY = 'MONTHLY',
+  YEARLY = 'YEARLY'
+}

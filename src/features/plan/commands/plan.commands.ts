@@ -1,6 +1,6 @@
 import { db } from '@/plugins/prisma';
-import { PlanInterval } from '@/generated/prisma';
-
+import { PlanInterval } from '../plan.interfaces';
+ 
 export const PlanCommands = {
 
   async create(data: {
@@ -22,7 +22,7 @@ export const PlanCommands = {
     return await db.plan.create({
       data: {
         ...data,
-        interval: data.interval as PlanInterval
+        interval: data.interval
       },
       include: {
         customers: {

@@ -1,5 +1,5 @@
 import { db } from '@/plugins/prisma';
-import { InvoiceStatus } from '@/generated/prisma';
+import { InvoiceStatus } from '../invoice.interfaces';
 
 export const InvoiceCommands = {
 

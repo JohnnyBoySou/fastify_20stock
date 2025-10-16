@@ -1,2 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.UnitOfMeasure = void 0;
+var UnitOfMeasure;
+(function (UnitOfMeasure) {
+    UnitOfMeasure["UNIDADE"] = "UNIDADE";
+    UnitOfMeasure["KG"] = "KG";
+    UnitOfMeasure["L"] = "L";
+    UnitOfMeasure["ML"] = "ML";
+    UnitOfMeasure["M"] = "M";
+    UnitOfMeasure["CM"] = "CM";
+    UnitOfMeasure["MM"] = "MM";
+    UnitOfMeasure["UN"] = "UN";
+    UnitOfMeasure["DZ"] = "DZ";
+    UnitOfMeasure["CX"] = "CX";
+    UnitOfMeasure["PCT"] = "PCT";
+    UnitOfMeasure["KIT"] = "KIT";
+    UnitOfMeasure["PAR"] = "PAR";
+    UnitOfMeasure["H"] = "H";
+    UnitOfMeasure["D"] = "D";
+})(UnitOfMeasure || (exports.UnitOfMeasure = UnitOfMeasure = {}));

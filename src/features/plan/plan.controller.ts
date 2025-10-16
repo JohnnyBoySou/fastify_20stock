@@ -9,7 +9,8 @@ import {
   DeletePlanRequest,
   UpdatePlanStatusRequest,
   ComparePlansRequest,
-  GetPlanCustomersRequest
+  GetPlanCustomersRequest,
+  PlanInterval
 } from './plan.interfaces';
 
 export const PlanController = {
@@ -21,7 +22,7 @@ export const PlanController = {
         name,
         description,
         price,
-        interval,
+        interval: interval as unknown as PlanInterval,
         features
       });
 
@@ -74,7 +75,7 @@ export const PlanController = {
       const { id } = request.params;
       const updateData = { ...request.body };
 
-      const result = await PlanCommands.update(id, updateData);
+      const result = await PlanCommands.update(id, updateData as unknown as { name?: string; description?: string; price?: number; interval?: PlanInterval; features?: any });
 
       return reply.send(result);
     } catch (error: any) {

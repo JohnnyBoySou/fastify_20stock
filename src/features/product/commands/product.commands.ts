@@ -1,5 +1,6 @@
 import { db } from '@/plugins/prisma';
-import { UnitOfMeasure } from '@/generated/prisma';
+
+import { UnitOfMeasure } from '../product.interfaces';
 
 // Função auxiliar para obter a loja do usuário autenticado
 export const getUserStore = async (userId: string) => {

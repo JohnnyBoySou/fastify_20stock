@@ -11,7 +11,8 @@ import {
   RetryPaymentRequest,
   SendInvoiceEmailRequest,
   GetInvoicePdfRequest,
-  GetCustomerInvoicesRequest
+  GetCustomerInvoicesRequest,
+  InvoiceStatus
 } from './invoice.interfaces';
 
 export const InvoiceController = {
@@ -23,7 +24,7 @@ export const InvoiceController = {
       const result = await InvoiceCommands.create({
         customerId,
         amount,
-        status,
+        status: status as unknown as InvoiceStatus,
         gatewayPaymentId,
         paymentDate: paymentDate ? new Date(paymentDate) : undefined
       });
@@ -285,7 +286,7 @@ export const InvoiceController = {
 
       const result = await InvoiceCommands.updateStatus(
         id, 
-        status, 
+        status as unknown as InvoiceStatus, 
         paymentDate ? new Date(paymentDate) : undefined,
         gatewayPaymentId
       );
