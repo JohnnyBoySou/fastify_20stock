@@ -252,13 +252,18 @@ export const ProductController = {
     }
   },
 
-  async search(request: FastifyRequest<{ Querystring: { q: string; limit?: number } }>, reply: FastifyReply) {
+  async search(request: FastifyRequest<{ Querystring: { q: string; limit?: number; page?: number } }>, reply: FastifyReply) {
     try {
-      const { q, limit = 10 } = request.query;
+      const { q, limit = 10, page = 1 } = request.query;
+      const storeId = request.store?.id;
 
-      const result = await ProductQueries.search(q, limit);
+      const result = await ProductQueries.search(q, {
+        page,
+        limit,
+        storeId
+      });
 
-      return reply.send({ products: result });
+      return reply.send(result);
     } catch (error) {
       request.log.error(error);
       return reply.status(500).send({
