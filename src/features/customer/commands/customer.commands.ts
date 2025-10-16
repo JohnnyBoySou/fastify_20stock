@@ -1,5 +1,5 @@
-import { db } from '@/plugins/prisma';
-import { CustomerStatus } from '@/generated/prisma';
+import { db } from '@/plugins/prisma'; 
+import { CustomerStatus} from '../customer.interfaces'
 
 export const CustomerCommands = {
 

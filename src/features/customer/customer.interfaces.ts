@@ -153,3 +153,10 @@ export interface CustomerStatsResponse {
   churnRate: number
   conversionRate: number
 }
+
+export enum CustomerStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  CANCELLED = 'CANCELLED',
+  TRIAL = 'TRIAL'
+}
