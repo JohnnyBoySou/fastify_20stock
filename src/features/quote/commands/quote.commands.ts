@@ -1,9 +1,9 @@
 import { db } from '@/plugins/prisma';
 import { MovementCommands } from '../../movement/commands/movement.commands';
 import { QuoteStatus, PaymentType } from '../quote.interfaces';
+import { Decimal } from '@prisma/client/runtime/library';
 
-export class QuoteCommands {
-  constructor(private prisma: any) {}
+export const QuoteCommands = {
 
   async create(data: {
     userId: string
@@ -34,7 +34,7 @@ export class QuoteCommands {
 
     // Verificar se os produtos existem
     const productIds = items.map(item => item.productId);
-    const existingProducts = await this.prisma.product.findMany({
+    const existingProducts = await db.product.findMany({
       where: { id: { in: productIds } },
       select: { id: true, name: true }
     });
@@ -46,32 +46,32 @@ export class QuoteCommands {
     }
 
     // Calcular subtotal dos items
-    let subtotal = 0;
+    let subtotal = new Decimal(0);
     const itemsWithSubtotal = items.map(item => {
-      const itemSubtotal = (item.quantity * item.unitPrice) - (item.discount || 0);
-      subtotal += itemSubtotal;
+      const itemSubtotal = new Decimal(item.quantity * item.unitPrice).minus(item.discount || 0);
+      subtotal = subtotal.plus(itemSubtotal);
       return {
         ...item,
-        subtotal: itemSubtotal
+        subtotal: itemSubtotal.toNumber()
       };
     });
 
     // Calcular total final
-    const total = subtotal - (quoteData.discount || 0) + (quoteData.interest || 0);
+    const total = subtotal.minus(quoteData.discount || 0).plus(quoteData.interest || 0);
 
     // Criar quote com items e installments
-    const quote = await this.prisma.quote.create({
+    const quote = await db.quote.create({
       data: {
         ...quoteData,
-        subtotal,
-        total,
+        subtotal: new Decimal(subtotal),
+        total: new Decimal(total),
         expiresAt: quoteData.expiresAt ? new Date(quoteData.expiresAt) : null,
         items: {
           create: itemsWithSubtotal.map(item => ({
             productId: item.productId,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
-            subtotal: item.subtotal,
+            subtotal: new Decimal(item.subtotal),
             discount: item.discount,
             note: item.note
           }))
@@ -81,8 +81,8 @@ export class QuoteCommands {
             create: installments.map(installment => ({
               number: installment.number,
               dueDate: new Date(installment.dueDate),
-              amount: installment.amount,
-              interest: installment.interest
+              amount: new Decimal(installment.amount),
+              interest: installment.interest ? new Decimal(installment.interest) : null
             }))
           }
         })
@@ -113,7 +113,7 @@ export class QuoteCommands {
     });
 
     return quote;
-  }
+  },
 
   async update(id: string, data: {
     title?: string
@@ -142,7 +142,7 @@ export class QuoteCommands {
     }>
   }) {
     // Verificar se o quote existe e está em DRAFT
-    const existingQuote = await this.prisma.quote.findUnique({
+    const existingQuote = await db.quote.findUnique({
       where: { id },
       include: { items: true, installments: true }
     });
@@ -164,7 +164,7 @@ export class QuoteCommands {
     if (items) {
       // Verificar se os produtos existem
       const productIds = items.map(item => item.productId);
-      const existingProducts = await this.prisma.product.findMany({
+      const existingProducts = await db.product.findMany({
         where: { id: { in: productIds } },
         select: { id: true }
       });
@@ -176,27 +176,29 @@ export class QuoteCommands {
       }
 
       // Calcular novo subtotal
-      subtotal = 0;
+      subtotal = new Decimal(0);
       const itemsWithSubtotal = items.map(item => {
-        const itemSubtotal = (item.quantity * item.unitPrice) - (item.discount || 0);
-        subtotal += itemSubtotal;
+        const itemSubtotal = new Decimal(item.quantity * item.unitPrice).minus(item.discount || 0);
+        subtotal = subtotal.plus(itemSubtotal);
         return {
           ...item,
-          subtotal: itemSubtotal
+          subtotal: itemSubtotal.toNumber()
         };
       });
 
       // Calcular novo total
-      total = subtotal - (updateData.discount || existingQuote.discount || 0) + (updateData.interest || existingQuote.interest || 0);
+      const discount = updateData.discount || existingQuote.discount || 0;
+      const interest = updateData.interest || existingQuote.interest || 0;
+      total = subtotal.minus(discount).plus(interest);
     }
 
     // Atualizar quote
-    const quote = await this.prisma.quote.update({
+    const quote = await db.quote.update({
       where: { id },
       data: {
         ...updateData,
-        subtotal,
-        total,
+        subtotal: new Decimal(subtotal),
+        total: new Decimal(total),
         expiresAt: updateData.expiresAt ? new Date(updateData.expiresAt) : undefined,
         ...(items && {
           items: {
@@ -205,7 +207,7 @@ export class QuoteCommands {
               productId: item.productId,
               quantity: item.quantity,
               unitPrice: item.unitPrice,
-              subtotal: (item.quantity * item.unitPrice) - (item.discount || 0),
+              subtotal: new Decimal((item.quantity * item.unitPrice) - (item.discount || 0)),
               discount: item.discount,
               note: item.note
             }))
@@ -217,8 +219,8 @@ export class QuoteCommands {
             create: installments.map(installment => ({
               number: installment.number,
               dueDate: new Date(installment.dueDate),
-              amount: installment.amount,
-              interest: installment.interest
+              amount: new Decimal(installment.amount),
+              interest: installment.interest ? new Decimal(installment.interest) : null
             }))
           }
         })
@@ -249,11 +251,11 @@ export class QuoteCommands {
     });
 
     return quote;
-  }
+  },
 
   async delete(id: string) {
     // Verificar se o quote existe
-    const quote = await this.prisma.quote.findUnique({
+    const quote = await db.quote.findUnique({
       where: { id }
     });
 
@@ -266,13 +268,13 @@ export class QuoteCommands {
       throw new Error('Only DRAFT or CANCELED quotes can be deleted');
     }
 
-    return await this.prisma.quote.delete({
+    return await db.quote.delete({
       where: { id }
     });
-  }
+  },
 
   async updateStatus(id: string, status: QuoteStatus) {
-    const quote = await this.prisma.quote.findUnique({
+    const quote = await db.quote.findUnique({
       where: { id }
     });
 
@@ -280,7 +282,7 @@ export class QuoteCommands {
       throw new Error('Quote not found');
     }
 
-    return await this.prisma.quote.update({
+    return await db.quote.update({
       where: { id },
       data: { status },
       include: {
@@ -307,11 +309,11 @@ export class QuoteCommands {
         }
       }
     });
-  }
+  },
 
   async approve(publicId: string, authCode: string) {
     // Buscar quote por publicId e authCode
-    const quote = await this.prisma.quote.findFirst({
+    const quote = await db.quote.findFirst({
       where: {
         publicId,
         authCode,
@@ -352,7 +354,7 @@ export class QuoteCommands {
     const movements = await this.convertToMovements(quote.id);
 
     // Atualizar status para APPROVED
-    await this.prisma.quote.update({
+    await db.quote.update({
       where: { id: quote.id },
       data: { status: 'APPROVED' }
     });
@@ -364,11 +366,11 @@ export class QuoteCommands {
       },
       movements
     };
-  }
+  },
 
   async reject(publicId: string, authCode: string, reason?: string) {
     // Buscar quote por publicId e authCode
-    const quote = await this.prisma.quote.findFirst({
+    const quote = await db.quote.findFirst({
       where: {
         publicId,
         authCode,
@@ -381,7 +383,7 @@ export class QuoteCommands {
     }
 
     // Atualizar status para REJECTED
-    const updatedQuote = await this.prisma.quote.update({
+    const updatedQuote = await db.quote.update({
       where: { id: quote.id },
       data: { 
         status: 'REJECTED',
@@ -413,10 +415,10 @@ export class QuoteCommands {
     });
 
     return updatedQuote;
-  }
+  },
 
   async convertToMovements(quoteId: string) {
-    const quote = await this.prisma.quote.findUnique({
+    const quote = await db.quote.findUnique({
       where: { id: quoteId },
       include: {
         items: {
@@ -471,16 +473,16 @@ export class QuoteCommands {
     }
 
     // Atualizar status do quote para CONVERTED
-    await this.prisma.quote.update({
+    await db.quote.update({
       where: { id: quoteId },
       data: { status: 'CONVERTED' }
     });
 
     return movements;
-  }
+  },
 
   async publish(id: string) {
-    const quote = await this.prisma.quote.findUnique({
+    const quote = await db.quote.findUnique({
       where: { id }
     });
 
@@ -492,7 +494,7 @@ export class QuoteCommands {
       throw new Error('Only DRAFT quotes can be published');
     }
 
-    return await this.prisma.quote.update({
+    return await db.quote.update({
       where: { id },
       data: { status: 'PUBLISHED' },
       include: {
@@ -519,10 +521,10 @@ export class QuoteCommands {
         }
       }
     });
-  }
+  },
 
   async send(id: string) {
-    const quote = await this.prisma.quote.findUnique({
+    const quote = await db.quote.findUnique({
       where: { id }
     });
 
@@ -534,7 +536,7 @@ export class QuoteCommands {
       throw new Error('Only PUBLISHED quotes can be sent');
     }
 
-    return await this.prisma.quote.update({
+    return await db.quote.update({
       where: { id },
       data: { status: 'SENT' },
       include: {

@@ -2,15 +2,7 @@ import { WebhookHandler } from '../../services/payment/webhook-handler';
 import { PaymentService } from '../../services/payment/payment.service';
 import { WebhookEventType } from '../../services/payment/payment-gateway.interface';
 
-export class WebhookService {
-  private webhookHandler: WebhookHandler;
-  private paymentService: PaymentService;
-
-  constructor() {
-    this.webhookHandler = new WebhookHandler();
-    this.paymentService = new PaymentService();
-  }
-
+export const WebhookService = {
   async processWebhook(
     gateway: string,
     payload: any,
@@ -23,7 +15,7 @@ export class WebhookService {
   }> {
     try {
       // Validar gateway
-      const availableGateways = this.paymentService.getAvailableGateways();
+      const availableGateways = PaymentService.getAvailableGateways();
       const gatewayExists = availableGateways.some(g => g.name === gateway);
       
       if (!gatewayExists) {
@@ -34,14 +26,14 @@ export class WebhookService {
       }
 
       // Processar webhook
-      const result = await this.webhookHandler.processWebhook(
+      const result = await WebhookHandler.processWebhook(
         gateway,
         payload,
         signature
       );
 
       // Log do webhook (em uma implementação real, isso seria salvo no banco)
-      await this.logWebhook({
+      await WebhookService.logWebhook({
         gateway,
         eventType: result.event?.type || 'unknown',
         eventId: result.event?.id,
@@ -60,7 +52,7 @@ export class WebhookService {
       };
     } catch (error) {
       // Log do erro
-      await this.logWebhook({
+      await WebhookService.logWebhook({
         gateway,
         eventType: 'error',
         success: false,
@@ -74,7 +66,7 @@ export class WebhookService {
         error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
-  }
+  },    
 
   async verifyWebhook(
     gateway: string,
@@ -82,7 +74,7 @@ export class WebhookService {
     signature: string
   ): Promise<boolean> {
     try {
-      return await this.webhookHandler.verifyWebhook(
+      return await WebhookHandler.verifyWebhook(
         gateway,
         payload,
         signature
@@ -91,7 +83,7 @@ export class WebhookService {
       console.error('Error verifying webhook:', error);
       return false;
     }
-  }
+  },
 
   async getWebhookLogs(params: {
     page?: number
@@ -171,7 +163,7 @@ export class WebhookService {
         totalPages: Math.ceil(total / limit)
       }
     };
-  }
+  },
 
   async getWebhookStats() {
     // Em uma implementação real, isso seria calculado do banco de dados
@@ -206,11 +198,11 @@ export class WebhookService {
     };
 
     return mockStats;
-  }
+  },
 
   async getWebhookHealth() {
     try {
-      const gatewayHealth = await this.paymentService.getGatewayHealth();
+      const gatewayHealth = await PaymentService.getGatewayHealth();
       
       const gateways = gatewayHealth.map(gateway => ({
         name: gateway.name,
@@ -241,11 +233,11 @@ export class WebhookService {
         }
       };
     }
-  }
+  },
 
   async getSupportedEvents(): Promise<WebhookEventType[]> {
-    return this.webhookHandler.getSupportedEvents();
-  }
+    return WebhookHandler.getSupportedEvents();
+  },
 
   async retryFailedWebhook(webhookId: string): Promise<{
     success: boolean;
@@ -265,7 +257,7 @@ export class WebhookService {
         error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
-  }
+  },
 
   async deleteWebhookLog(webhookId: string): Promise<{
     success: boolean;
@@ -284,9 +276,9 @@ export class WebhookService {
         error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
-  }
+  },
 
-  private async logWebhook(data: {
+  async logWebhook(data: {
     gateway: string
     eventType: string
     eventId?: string
@@ -302,5 +294,5 @@ export class WebhookService {
       id: `webhook_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date()
     });
-  }
+  },
 }

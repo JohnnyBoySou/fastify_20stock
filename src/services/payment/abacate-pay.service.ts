@@ -10,21 +10,17 @@ import {
   WebhookEventType 
 } from './payment-gateway.interface';
 
-export class AbacatePayService implements PaymentGateway {
-  private config: GatewayConfig;
-
-  constructor() {
-    this.config = {
-      name: 'Abacate Pay',
-      version: '1.0.0',
-      supportedCurrencies: ['BRL'],
-      supportedMethods: ['pix', 'credit_card', 'debit_card', 'boleto'],
-      environment: process.env.ABACATE_PAY_ENV === 'production' ? 'production' : 'sandbox',
-      apiKey: process.env.ABACATE_PAY_API_KEY,
-      secretKey: process.env.ABACATE_PAY_SECRET_KEY,
-      webhookUrl: process.env.ABACATE_PAY_WEBHOOK_URL
-    };
-  }
+export const AbacatePayService = {
+  config: {
+    name: 'Abacate Pay',
+    version: '1.0.0',
+    supportedCurrencies: ['BRL'],
+    supportedMethods: ['pix', 'credit_card', 'debit_card', 'boleto'],
+    environment: process.env.ABACATE_PAY_ENV === 'production' ? 'production' : 'sandbox',
+    apiKey: process.env.ABACATE_PAY_API_KEY,
+    secretKey: process.env.ABACATE_PAY_SECRET_KEY,
+    webhookUrl: process.env.ABACATE_PAY_WEBHOOK_URL
+  },
 
   async createPayment(data: PaymentData): Promise<PaymentResult> {
     try {
@@ -58,7 +54,7 @@ export class AbacatePayService implements PaymentGateway {
         error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
-  }
+  },
 
   async getPaymentStatus(paymentId: string): Promise<PaymentStatus> {
     try {
@@ -89,7 +85,7 @@ export class AbacatePayService implements PaymentGateway {
         error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
-  }
+  },
 
   async cancelPayment(paymentId: string): Promise<void> {
     try {
@@ -102,7 +98,7 @@ export class AbacatePayService implements PaymentGateway {
       console.error('Error cancelling payment:', error);
       throw error;
     }
-  }
+  },
 
   async refundPayment(data: RefundData): Promise<RefundResult> {
     try {
@@ -130,7 +126,7 @@ export class AbacatePayService implements PaymentGateway {
         error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
-  }
+  },    
 
   async handleWebhook(payload: any, signature?: string): Promise<WebhookResult> {
     try {
@@ -162,7 +158,7 @@ export class AbacatePayService implements PaymentGateway {
         error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
-  }
+  },
 
   async isAvailable(): Promise<boolean> {
     try {
@@ -172,19 +168,19 @@ export class AbacatePayService implements PaymentGateway {
     } catch (error) {
       return false;
     }
-  }
+  },
 
   getConfig(): GatewayConfig {
     return { ...this.config };
-  }
+  },
 
-  private verifySignature(payload: any, signature: string): boolean {
+   async verifySignature(payload: any, signature: string): Promise<boolean> {
     // Em uma implementação real, aqui seria verificada a assinatura HMAC
     // Por enquanto, sempre retornamos true
     return true;
-  }
+  },
 
-  private mapEventType(abacateEventType: string): WebhookEventType {
+  async mapEventType(abacateEventType: string): Promise<WebhookEventType> {
     // Mapear tipos de eventos específicos do Abacate Pay para nossos tipos padrão
     const eventMap: Record<string, WebhookEventType> = {
       'payment.created': 'payment.created',
@@ -198,7 +194,7 @@ export class AbacatePayService implements PaymentGateway {
     };
 
     return eventMap[abacateEventType] || 'payment.created';
-  }
+  },
 
   // Métodos específicos do Abacate Pay
   async generatePixPayment(data: PaymentData): Promise<PaymentResult> {
@@ -209,7 +205,7 @@ export class AbacatePayService implements PaymentGateway {
     };
     
     return this.createPayment(paymentData);
-  }
+  },
 
   async generateBoletoPayment(data: PaymentData): Promise<PaymentResult> {
     // Método específico para gerar boleto
@@ -219,7 +215,7 @@ export class AbacatePayService implements PaymentGateway {
     };
     
     return this.createPayment(paymentData);
-  }
+  },
 
   async createSubscription(data: {
     customerId: string
@@ -246,5 +242,5 @@ export class AbacatePayService implements PaymentGateway {
         created_at: new Date().toISOString()
       }
     };
-  }
+  },
 }

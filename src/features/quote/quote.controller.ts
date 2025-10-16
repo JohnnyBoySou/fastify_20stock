@@ -29,11 +29,8 @@ export const QuoteController = {
           error: 'Authentication required'
         });
       }
-
-      const prisma = (request.server as any).prisma;
-      const quoteCommands = new QuoteCommands(prisma);
-
-      const result = await quoteCommands.create({
+      
+      const result = await QuoteCommands.create({
         userId,
         title,
         description,
@@ -67,10 +64,8 @@ export const QuoteController = {
   async get(request: GetQuoteRequest, reply: FastifyReply) {
     try {
       const { id } = request.params;
-      const prisma = (request.server as any).prisma;
-      const quoteQueries = new QuoteQueries(prisma);
 
-      const result = await quoteQueries.getById(id);
+      const result = await QuoteQueries.getById(id);
 
       if (!result) {
         return reply.status(404).send({
@@ -98,10 +93,8 @@ export const QuoteController = {
     try {
       const { id } = request.params;
       const updateData = { ...request.body };
-      const prisma = (request.server as any).prisma;
-      const quoteCommands = new QuoteCommands(prisma);
 
-      const result = await quoteCommands.update(id, updateData);
+      const result = await QuoteCommands.update(id, updateData);
 
       return reply.send(result);
     } catch (error: any) {
@@ -134,10 +127,8 @@ export const QuoteController = {
   async delete(request: DeleteQuoteRequest, reply: FastifyReply) {
     try {
       const { id } = request.params;
-      const prisma = (request.server as any).prisma;
-      const quoteCommands = new QuoteCommands(prisma);
 
-      await quoteCommands.delete(id);
+      await QuoteCommands.delete(id);
 
       return reply.status(204).send();
     } catch (error: any) {
@@ -164,10 +155,8 @@ export const QuoteController = {
   async list(request: ListQuotesRequest, reply: FastifyReply) {
     try {
       const { page = 1, limit = 10, search, status, userId, startDate, endDate } = request.query;
-      const prisma = (request.server as any).prisma;
-      const quoteQueries = new QuoteQueries(prisma);
 
-      const result = await quoteQueries.list({
+      const result = await QuoteQueries.list({
         page,
         limit,
         search,
@@ -191,10 +180,8 @@ export const QuoteController = {
     try {
       const { publicId } = request.params;
       const { authCode } = request.query;
-      const prisma = (request.server as any).prisma;
-      const quoteQueries = new QuoteQueries(prisma);
 
-      const result = await quoteQueries.getByPublicId(publicId, authCode);
+      const result = await QuoteQueries.getByPublicId(publicId, authCode);
 
       if (!result) {
         return reply.status(404).send({
@@ -229,10 +216,8 @@ export const QuoteController = {
     try {
       const { publicId } = request.params;
       const { authCode } = request.body;
-      const prisma = (request.server as any).prisma;
-      const quoteCommands = new QuoteCommands(prisma);
 
-      const result = await quoteCommands.approve(publicId, authCode);
+      const result = await QuoteCommands.approve(publicId, authCode);
 
       return reply.send(result);
     } catch (error: any) {
@@ -266,10 +251,8 @@ export const QuoteController = {
     try {
       const { publicId } = request.params;
       const { authCode, reason } = request.body;
-      const prisma = (request.server as any).prisma;
-      const quoteCommands = new QuoteCommands(prisma);
 
-      const result = await quoteCommands.reject(publicId, authCode, reason);
+      const result = await QuoteCommands.reject(publicId, authCode, reason);
 
       return reply.send(result);
     } catch (error: any) {
@@ -292,10 +275,8 @@ export const QuoteController = {
     try {
       const { id } = request.params;
       const { status } = request.body;
-      const prisma = (request.server as any).prisma;
-      const quoteCommands = new QuoteCommands(prisma);
 
-      const result = await quoteCommands.updateStatus(id, status);
+      const result = await QuoteCommands.updateStatus(id, status);
 
       return reply.send(result);
     } catch (error: any) {
@@ -316,10 +297,8 @@ export const QuoteController = {
   async publish(request: PublishQuoteRequest, reply: FastifyReply) {
     try {
       const { id } = request.params;
-      const prisma = (request.server as any).prisma;
-      const quoteCommands = new QuoteCommands(prisma);
 
-      const result = await quoteCommands.publish(id);
+      const result = await QuoteCommands.publish(id);
 
       return reply.send(result);
     } catch (error: any) {
@@ -346,10 +325,8 @@ export const QuoteController = {
   async send(request: SendQuoteRequest, reply: FastifyReply) {
     try {
       const { id } = request.params;
-      const prisma = (request.server as any).prisma;
-      const quoteCommands = new QuoteCommands(prisma);
 
-      const result = await quoteCommands.send(id);
+      const result = await QuoteCommands.send(id);
 
       return reply.send(result);
     } catch (error: any) {
@@ -376,10 +353,8 @@ export const QuoteController = {
   async convertToMovements(request: ConvertToMovementRequest, reply: FastifyReply) {
     try {
       const { id } = request.params;
-      const prisma = (request.server as any).prisma;
-      const quoteCommands = new QuoteCommands(prisma);
 
-      const movements = await quoteCommands.convertToMovements(id);
+      const movements = await QuoteCommands.convertToMovements(id);
 
       return reply.send({
         message: 'Quote converted to movements successfully',
@@ -415,10 +390,8 @@ export const QuoteController = {
   async getStats(request: FastifyRequest<{ Querystring: { userId?: string } }>, reply: FastifyReply) {
     try {
       const { userId } = request.query;
-      const prisma = (request.server as any).prisma;
-      const quoteQueries = new QuoteQueries(prisma);
 
-      const result = await quoteQueries.getStats(userId);
+      const result = await QuoteQueries.getStats(userId);
 
       return reply.send(result);
     } catch (error) {
@@ -433,10 +406,8 @@ export const QuoteController = {
     try {
       const { userId } = request.params;
       const { page = 1, limit = 10, status } = request.query;
-      const prisma = (request.server as any).prisma;
-      const quoteQueries = new QuoteQueries(prisma);
 
-      const result = await quoteQueries.getByUser(userId, {
+      const result = await QuoteQueries.getByUser(userId, {
         page,
         limit,
         status
@@ -454,10 +425,8 @@ export const QuoteController = {
   async search(request: FastifyRequest<{ Querystring: { q: string; limit?: number; userId?: string } }>, reply: FastifyReply) {
     try {
       const { q, limit = 10, userId } = request.query;
-      const prisma = (request.server as any).prisma;
-      const quoteQueries = new QuoteQueries(prisma);
 
-      const result = await quoteQueries.search(q, limit, userId);
+      const result = await QuoteQueries.search(q, limit, userId);
 
       return reply.send({ quotes: result });
     } catch (error) {
@@ -475,10 +444,8 @@ export const QuoteController = {
     try {
       const { status } = request.params;
       const { page = 1, limit = 10, userId } = request.query;
-      const prisma = (request.server as any).prisma;
-      const quoteQueries = new QuoteQueries(prisma);
 
-      const result = await quoteQueries.getByStatus(status as any, {
+      const result = await QuoteQueries.getByStatus(status as any, {
         page,
         limit,
         userId
@@ -496,10 +463,8 @@ export const QuoteController = {
   async getRecent(request: FastifyRequest<{ Querystring: { limit?: number; userId?: string } }>, reply: FastifyReply) {
     try {
       const { limit = 5, userId } = request.query;
-      const prisma = (request.server as any).prisma;
-      const quoteQueries = new QuoteQueries(prisma);
 
-      const result = await quoteQueries.getRecentQuotes(limit, userId);
+      const result = await QuoteQueries.getRecentQuotes(limit, userId);
 
       return reply.send({ quotes: result });
     } catch (error) {
@@ -513,10 +478,8 @@ export const QuoteController = {
   async getAnalytics(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     try {
       const { id } = request.params;
-      const prisma = (request.server as any).prisma;
-      const quoteQueries = new QuoteQueries(prisma);
 
-      const result = await quoteQueries.getQuoteAnalytics(id);
+      const result = await QuoteQueries.getQuoteAnalytics(id);
 
       return reply.send(result);
     } catch (error: any) {
@@ -536,10 +499,8 @@ export const QuoteController = {
 
   async markExpired(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const prisma = (request.server as any).prisma;
-      const quoteQueries = new QuoteQueries(prisma);
 
-      const count = await quoteQueries.markAsExpired();
+      const count = await QuoteQueries.markAsExpired();
 
       return reply.send({
         message: `${count} quotes marked as expired`,

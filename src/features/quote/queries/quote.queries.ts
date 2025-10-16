@@ -1,13 +1,10 @@
 import { db } from '@/plugins/prisma';
+import { QuoteStatus } from '../quote.interfaces';
 
-// Tipo temporário até a migração ser executada
-type QuoteStatus = 'DRAFT' | 'PUBLISHED' | 'SENT' | 'VIEWED' | 'APPROVED' | 'REJECTED' | 'EXPIRED' | 'CONVERTED' | 'CANCELED';
-
-export class QuoteQueries {
-  constructor(private prisma: any) {}
+export const QuoteQueries = {
 
   async getById(id: string) {
-    const quote = await this.prisma.quote.findUnique({
+    const quote = await db.quote.findUnique({
       where: { id },
       include: {
         items: {
@@ -35,10 +32,10 @@ export class QuoteQueries {
     });
 
     return quote;
-  }
+  },
 
   async getByPublicId(publicId: string, authCode: string) {
-    const quote = await this.prisma.quote.findFirst({
+    const quote = await db.quote.findFirst({
       where: {
         publicId,
         authCode
@@ -66,7 +63,7 @@ export class QuoteQueries {
     });
 
     return quote;
-  }
+  },
 
   async list(params: {
     page?: number
@@ -108,7 +105,7 @@ export class QuoteQueries {
     }
 
     const [quotes, total] = await Promise.all([
-      this.prisma.quote.findMany({
+      db.quote.findMany({
         where,
         skip,
         take: limit,
@@ -137,7 +134,7 @@ export class QuoteQueries {
           }
         }
       }),
-      this.prisma.quote.count({ where })
+      db.quote.count({ where })
     ]);
 
     return {
@@ -149,7 +146,7 @@ export class QuoteQueries {
         totalPages: Math.ceil(total / limit)
       }
     };
-  }
+  },
 
   async getByUser(userId: string, params: {
     page?: number
@@ -166,7 +163,7 @@ export class QuoteQueries {
     }
 
     const [quotes, total] = await Promise.all([
-      this.prisma.quote.findMany({
+      db.quote.findMany({
         where,
         skip,
         take: limit,
@@ -195,7 +192,7 @@ export class QuoteQueries {
           }
         }
       }),
-      this.prisma.quote.count({ where })
+      db.quote.count({ where })
     ]);
 
     return {
@@ -207,7 +204,7 @@ export class QuoteQueries {
         totalPages: Math.ceil(total / limit)
       }
     };
-  }
+  },
 
   async getByStatus(status: QuoteStatus, params: {
     page?: number
@@ -224,7 +221,7 @@ export class QuoteQueries {
     }
 
     const [quotes, total] = await Promise.all([
-      this.prisma.quote.findMany({
+      db.quote.findMany({
         where,
         skip,
         take: limit,
@@ -253,7 +250,7 @@ export class QuoteQueries {
           }
         }
       }),
-      this.prisma.quote.count({ where })
+      db.quote.count({ where })
     ]);
 
     return {
@@ -265,7 +262,7 @@ export class QuoteQueries {
         totalPages: Math.ceil(total / limit)
       }
     };
-  }
+  },  
 
   async getStats(userId?: string) {
     const where = userId ? { userId } : {};
@@ -285,25 +282,25 @@ export class QuoteQueries {
       averageValue,
       recentCount
     ] = await Promise.all([
-      this.prisma.quote.count({ where }),
-      this.prisma.quote.count({ where: { ...where, status: 'DRAFT' } }),
-      this.prisma.quote.count({ where: { ...where, status: 'PUBLISHED' } }),
-      this.prisma.quote.count({ where: { ...where, status: 'SENT' } }),
-      this.prisma.quote.count({ where: { ...where, status: 'VIEWED' } }),
-      this.prisma.quote.count({ where: { ...where, status: 'APPROVED' } }),
-      this.prisma.quote.count({ where: { ...where, status: 'REJECTED' } }),
-      this.prisma.quote.count({ where: { ...where, status: 'EXPIRED' } }),
-      this.prisma.quote.count({ where: { ...where, status: 'CONVERTED' } }),
-      this.prisma.quote.count({ where: { ...where, status: 'CANCELED' } }),
-      this.prisma.quote.aggregate({
+      db.quote.count({ where }),
+      db.quote.count({ where: { ...where, status: 'DRAFT' } }),
+      db.quote.count({ where: { ...where, status: 'PUBLISHED' } }),
+      db.quote.count({ where: { ...where, status: 'SENT' } }),
+      db.quote.count({ where: { ...where, status: 'VIEWED' } }),
+      db.quote.count({ where: { ...where, status: 'APPROVED' } }),
+      db.quote.count({ where: { ...where, status: 'REJECTED' } }),
+      db.quote.count({ where: { ...where, status: 'EXPIRED' } }),
+      db.quote.count({ where: { ...where, status: 'CONVERTED' } }),
+      db.quote.count({ where: { ...where, status: 'CANCELED' } }),
+      db.quote.aggregate({
         where,
         _sum: { total: true }
       }),
-      this.prisma.quote.aggregate({
+      db.quote.aggregate({
         where,
         _avg: { total: true }
       }),
-      this.prisma.quote.count({
+      db.quote.count({
         where: {
           ...where,
           createdAt: {
@@ -330,7 +327,7 @@ export class QuoteQueries {
       averageValue: averageValue._avg.total || 0,
       recentCount
     };
-  }
+  },
 
   async search(term: string, limit: number = 10, userId?: string) {
     const where: any = {
@@ -345,7 +342,7 @@ export class QuoteQueries {
       where.userId = userId;
     }
 
-    const quotes = await this.prisma.quote.findMany({
+    const quotes = await db.quote.findMany({
       where,
       take: limit,
       orderBy: { createdAt: 'desc' },
@@ -375,12 +372,12 @@ export class QuoteQueries {
     });
 
     return quotes;
-  }
+  },
 
   async getExpiredQuotes() {
     const now = new Date();
     
-    const quotes = await this.prisma.quote.findMany({
+    const quotes = await db.quote.findMany({
       where: {
         expiresAt: {
           lt: now
@@ -411,12 +408,12 @@ export class QuoteQueries {
     });
 
     return quotes;
-  }
+  },
 
   async markAsExpired() {
     const now = new Date();
     
-    const result = await this.prisma.quote.updateMany({
+    const result = await db.quote.updateMany({
       where: {
         expiresAt: {
           lt: now
@@ -431,12 +428,12 @@ export class QuoteQueries {
     });
 
     return result.count;
-  }
+  },
 
   async getRecentQuotes(limit: number = 5, userId?: string) {
     const where = userId ? { userId } : {};
 
-    const quotes = await this.prisma.quote.findMany({
+    const quotes = await db.quote.findMany({
       where,
       take: limit,
       orderBy: { createdAt: 'desc' },
@@ -462,10 +459,10 @@ export class QuoteQueries {
     });
 
     return quotes;
-  }
+  },
 
   async getQuoteAnalytics(quoteId: string) {
-    const quote = await this.prisma.quote.findUnique({
+    const quote = await db.quote.findUnique({
       where: { id: quoteId },
       include: {
         items: {
@@ -498,7 +495,7 @@ export class QuoteQueries {
     const totalItems = quote.items.length;
     const totalQuantity = quote.items.reduce((sum, item) => sum + item.quantity, 0);
     const totalInstallments = quote.installments.length;
-    const averageItemValue = quote.items.length > 0 ? quote.total / quote.items.length : 0;
+    const averageItemValue = quote.items.length > 0 ? quote.total as unknown as number / quote.items.length : 0;
 
     // Verificar se expirou
     const isExpired = quote.expiresAt ? new Date() > quote.expiresAt : false;

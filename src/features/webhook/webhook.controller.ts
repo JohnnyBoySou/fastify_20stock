@@ -10,9 +10,8 @@ export const WebhookController = {
     try {
       const { payload } = request.body;
       const signature = request.headers['x-abacate-signature'] || request.headers['x-signature'];
-      const webhookService = new WebhookService();
 
-      const result = await webhookService.processWebhook(
+      const result = await WebhookService.processWebhook(
         'abacate-pay',
         payload,
         signature
@@ -43,9 +42,8 @@ export const WebhookController = {
     try {
       const payload = request.body;
       const signature = request.headers['stripe-signature'];
-      const webhookService = new WebhookService();
 
-      const result = await webhookService.processWebhook(
+      const result = await WebhookService.processWebhook(
         'stripe',
         payload,
         signature
@@ -77,9 +75,8 @@ export const WebhookController = {
       const { gateway } = request.params;
       const payload = request.body;
       const signature = request.headers['x-signature'] || request.headers['x-hub-signature'];
-      const webhookService = new WebhookService();
 
-      const result = await webhookService.processWebhook(
+      const result = await WebhookService.processWebhook(
         gateway,
         payload,
         signature
@@ -109,9 +106,8 @@ export const WebhookController = {
   async getLogs(request: WebhookLogRequest, reply: FastifyReply) {
     try {
       const { page = 1, limit = 10, gateway, eventType, success, startDate, endDate } = request.query;
-      const webhookService = new WebhookService();
 
-      const result = await webhookService.getWebhookLogs({
+      const result = await WebhookService.getWebhookLogs({
         page,
         limit,
         gateway,
@@ -132,9 +128,8 @@ export const WebhookController = {
 
   async getStats(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const webhookService = new WebhookService();
 
-      const result = await webhookService.getWebhookStats();
+      const result = await WebhookService.getWebhookStats();
 
       return reply.send(result);
     } catch (error) {
@@ -147,9 +142,8 @@ export const WebhookController = {
 
   async getHealth(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const webhookService = new WebhookService();
 
-      const result = await webhookService.getWebhookHealth();
+      const result = await WebhookService.getWebhookHealth();
 
       return reply.send(result);
     } catch (error) {
@@ -162,9 +156,8 @@ export const WebhookController = {
 
   async getSupportedEvents(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const webhookService = new WebhookService();
 
-      const result = await webhookService.getSupportedEvents();
+      const result = await WebhookService.getSupportedEvents();
 
       return reply.send({
         events: result
@@ -180,9 +173,8 @@ export const WebhookController = {
   async retryFailed(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     try {
       const { id } = request.params;
-      const webhookService = new WebhookService();
 
-      const result = await webhookService.retryFailedWebhook(id);
+      const result = await WebhookService.retryFailedWebhook(id);
 
       if (!result.success) {
         return reply.status(400).send({
@@ -205,9 +197,8 @@ export const WebhookController = {
   async deleteLog(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     try {
       const { id } = request.params;
-      const webhookService = new WebhookService();
 
-      const result = await webhookService.deleteWebhookLog(id);
+      const result = await WebhookService.deleteWebhookLog(id);
 
       if (!result.success) {
         return reply.status(400).send({
