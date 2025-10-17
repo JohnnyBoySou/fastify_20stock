@@ -52,13 +52,9 @@ export const SupplierQueries = {
       where.status = status;
     }
 
-    // Filtrar apenas fornecedores que têm produtos da loja específica
+    // Filtrar fornecedores da loja específica
     if (storeId) {
-      where.products = {
-        some: {
-          storeId
-        }
-      };
+      where.storeId = storeId;
     }
 
     const [suppliers, total] = await Promise.all([

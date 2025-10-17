@@ -130,7 +130,7 @@ export const listSuppliersSchema: FastifySchema = {
     200: {
       type: 'object',
       properties: {
-        suppliers: {
+        items: {
           type: 'array',
           items: {
             type: 'object',
