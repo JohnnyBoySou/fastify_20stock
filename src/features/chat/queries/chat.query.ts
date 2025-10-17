@@ -35,12 +35,18 @@ export class ChatToolbox {
     return await ProductQueries.search(term, params);
   }
 
-  async getActiveProducts() {
-    return await ProductQueries.getActive();
+  async getActiveProducts(storeId?: string) {
+    if (!storeId) {
+      throw new Error('Store ID is required for product queries');
+    }
+    return await ProductQueries.getActive(storeId);
   }
 
-  async getProductStats() {
-    return await ProductQueries.getStats();
+  async getProductStats(storeId?: string) {
+    if (!storeId) {
+      throw new Error('Store ID is required for product queries');
+    }
+    return await ProductQueries.getStats(storeId);
   }
 
   async getLowStockProducts(storeId?: string) {
@@ -77,20 +83,32 @@ export class ChatToolbox {
     return await CategoryQueries.getById(id);
   }
 
-  async searchCategories(term: string, limit: number = 10) {
-    return await CategoryQueries.search(term, limit);
+  async searchCategories(term: string, limit: number = 10, storeId?: string) {
+    if (!storeId) {
+      throw new Error('Store ID is required for category queries');
+    }
+    return await CategoryQueries.search(term, storeId, limit);
   }
 
-  async getActiveCategories() {
-    return await CategoryQueries.getActive();
+  async getActiveCategories(storeId?: string) {
+    if (!storeId) {
+      throw new Error('Store ID is required for category queries');
+    }
+    return await CategoryQueries.getActive(storeId);
   }
 
-  async getCategoryStats() {
-    return await CategoryQueries.getStats();
+  async getCategoryStats(storeId?: string) {
+    if (!storeId) {
+      throw new Error('Store ID is required for category queries');
+    }
+    return await CategoryQueries.getStats(storeId);
   }
 
-  async getCategoryHierarchy() {
-    return await CategoryQueries.getHierarchy();
+  async getCategoryHierarchy(storeId?: string) {
+    if (!storeId) {
+      throw new Error('Store ID is required for category queries');
+    }
+    return await CategoryQueries.getHierarchy(storeId );
   }
 
   // === SERVIÇOS DE FORNECEDORES ===

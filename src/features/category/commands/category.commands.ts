@@ -9,11 +9,12 @@ export const CategoryCommands = {
     color?: string
     icon?: string
     parentId?: string
+    storeId: string
   }) {
     return await db.category.create({
       data: {
         ...data,
-        status: data.status ?? true
+        status: data.status ?? true,
       },
       include: {
         parent: {

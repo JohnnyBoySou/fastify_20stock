@@ -6,8 +6,18 @@ export const CategoryController = {
   // === CRUD BÁSICO ===
   async create(request: FastifyRequest, reply: FastifyReply) {
     try {
+      const storeId = request.store?.id;
 
-      const result = await CategoryCommands.create(request.body as any);
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
+
+      const result = await CategoryCommands.create({
+        ...(request.body as any),
+        storeId
+      });
 
       return reply.status(201).send(result);
     } catch (error: any) {
