@@ -202,6 +202,39 @@ export interface UpdateProfileResponse {
   message: string
 }
 
+// Google Login interfaces
+export interface GoogleLoginRequest extends FastifyRequest {
+  body: {
+    token: string
+  }
+}
+
+export interface GoogleLoginResponse {
+  user: {
+    id: string
+    name: string
+    email: string
+    emailVerified: boolean
+    lastLoginAt: Date | null
+  }
+  store?: {
+    id: string
+    name: string
+    cnpj: string
+    email?: string
+    phone?: string
+    status: boolean
+    cep?: string
+    city?: string
+    state?: string
+    address?: string
+    createdAt: Date
+    updatedAt: Date
+  }
+  token: string
+  message: string
+}
+
 // Get Profile Permissions interfaces
 export interface GetProfilePermissionsRequest extends FastifyRequest {
   headers: {

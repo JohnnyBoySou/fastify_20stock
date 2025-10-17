@@ -12,7 +12,8 @@ import {
   refreshTokenSchema,
   logoutSchema,
   updateProfileSchema,
-  getProfilePermissionsSchema
+  getProfilePermissionsSchema,
+  googleLoginSchema
 } from './auth.schema';
 
 export async function AuthRoutes(fastify: FastifyInstance) {
@@ -58,6 +59,13 @@ export async function AuthRoutes(fastify: FastifyInstance) {
   fastify.post('/verify-email-code', {
     schema: verifyEmailCodeSchema,
     handler: AuthController.verifyEmailCode
+  });
+
+
+  // Google Login
+  fastify.post('/google', {
+    schema: googleLoginSchema,
+    handler: AuthController.googleLogin
   });
 
   // Resend Verification
