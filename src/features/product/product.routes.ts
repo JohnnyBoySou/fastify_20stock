@@ -13,11 +13,13 @@ export async function ProductRoutes(fastify: FastifyInstance) {
 
   fastify.get('/', {
     schema: ProductSchemas.list,
+    preHandler: [authMiddleware],
     handler: ProductController.list
   });
 
   fastify.get('/:id', {
     schema: ProductSchemas.get,
+    preHandler: [authMiddleware],
     handler: ProductController.get
   });
 
@@ -41,10 +43,12 @@ export async function ProductRoutes(fastify: FastifyInstance) {
 
   // Funções adicionais
   fastify.get('/active', {
+    preHandler: [authMiddleware],
     handler: ProductController.getActive
   });
 
   fastify.get('/stats', {
+    preHandler: [authMiddleware],
     handler: ProductController.getStats
   });
 
@@ -59,6 +63,7 @@ export async function ProductRoutes(fastify: FastifyInstance) {
         required: ['q']
       }
     },
+    preHandler: [authMiddleware],
     handler: ProductController.search
   });
 
@@ -72,6 +77,7 @@ export async function ProductRoutes(fastify: FastifyInstance) {
         required: ['categoryId']
       }
     },
+    preHandler: [authMiddleware],
     handler: ProductController.getByCategory
   });
 
@@ -85,6 +91,7 @@ export async function ProductRoutes(fastify: FastifyInstance) {
         required: ['supplierId']
       }
     },
+    preHandler: [authMiddleware],
     handler: ProductController.getBySupplier
   });
 
@@ -98,11 +105,13 @@ export async function ProductRoutes(fastify: FastifyInstance) {
         required: ['storeId']
       }
     },
+    preHandler: [authMiddleware],
     handler: ProductController.getByStore
   });
 
   fastify.patch('/:id/status', {
     schema: ProductSchemas.updateStatus,
+    preHandler: [authMiddleware],
     handler: ProductController.updateStatus
   });
 
@@ -127,6 +136,7 @@ export async function ProductRoutes(fastify: FastifyInstance) {
 
   fastify.get('/:id/categories', {
     schema: ProductSchemas.getCategories,
+    preHandler: [authMiddleware],
     handler: ProductController.getCategories
   });
 

@@ -13,11 +13,13 @@ export async function CategoryRoutes(fastify: FastifyInstance) {
 
   fastify.get('/', {
     schema: CategorySchemas.list,
+    preHandler: [authMiddleware],
     handler: CategoryController.list
   });
 
   fastify.get('/:id', {
     schema: CategorySchemas.get,
+    preHandler: [authMiddleware],
     handler: CategoryController.get
   });
 
@@ -35,10 +37,12 @@ export async function CategoryRoutes(fastify: FastifyInstance) {
 
   // Funções adicionais - Queries
   fastify.get('/active', {
+    preHandler: [authMiddleware],
     handler: CategoryController.getActive
   });
 
   fastify.get('/stats', {
+    preHandler: [authMiddleware],
     handler: CategoryController.getStats
   });
 
@@ -53,20 +57,24 @@ export async function CategoryRoutes(fastify: FastifyInstance) {
         required: ['q']
       }
     },
+    preHandler: [authMiddleware],
     handler: CategoryController.search
   });
 
   fastify.get('/root', {
     schema: CategorySchemas.getRoot,
+    preHandler: [authMiddleware],
     handler: CategoryController.getRootCategories
   });
 
   fastify.get('/:id/children', {
     schema: CategorySchemas.getChildren,
+    preHandler: [authMiddleware],
     handler: CategoryController.getChildren
   });
 
   fastify.get('/hierarchy', {
+    preHandler: [authMiddleware],
     handler: CategoryController.getHierarchy
   });
 
@@ -80,6 +88,7 @@ export async function CategoryRoutes(fastify: FastifyInstance) {
         required: ['code']
       }
     },
+    preHandler: [authMiddleware],
     handler: CategoryController.getByCode
   });
 
@@ -113,21 +122,25 @@ export async function CategoryRoutes(fastify: FastifyInstance) {
   // === RELATÓRIOS ===
   fastify.get('/reports/top-by-products', {
     schema: CategorySchemas.getTopCategoriesByProducts,
+    preHandler: [authMiddleware],
     handler: CategoryController.getTopCategoriesByProducts
   });
 
   fastify.get('/reports/creation-evolution', {
     schema: CategorySchemas.getCategoryCreationEvolution,
+    preHandler: [authMiddleware],
     handler: CategoryController.getCategoryCreationEvolution
   });
 
   fastify.get('/reports/active-inactive-ratio', {
     schema: CategorySchemas.getActiveInactiveRatio,
+    preHandler: [authMiddleware],
     handler: CategoryController.getActiveInactiveRatio
   });
 
   fastify.get('/reports/active-inactive-trend', {
     schema: CategorySchemas.getActiveInactiveTrend,
+    preHandler: [authMiddleware],
     handler: CategoryController.getActiveInactiveTrend
   });
 }
