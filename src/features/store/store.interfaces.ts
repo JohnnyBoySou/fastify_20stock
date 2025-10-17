@@ -43,7 +43,6 @@ export interface ListStoresRequest extends FastifyRequest {
     limit?: number
     search?: string
     status?: boolean
-    ownerId?: string
   }
 }
 

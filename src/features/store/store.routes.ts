@@ -15,11 +15,13 @@ export async function StoreRoutes(fastify: FastifyInstance) {
 
   fastify.get('/', {
     schema: StoreSchemas.list,
+    preHandler: [authMiddleware],
     handler: StoreController.list
   });
 
   fastify.get('/:id', {
     schema: StoreSchemas.get,
+    preHandler: [authMiddleware],
     handler: StoreController.get
   });
 

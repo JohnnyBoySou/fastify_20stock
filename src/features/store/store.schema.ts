@@ -160,8 +160,7 @@ export const listStoresSchema: FastifySchema = {
       page: { type: 'number', minimum: 1, default: 1 },
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       search: { type: 'string' },
-      status: { type: 'boolean' },
-      ownerId: { type: 'string' }
+      status: { type: 'boolean' }
     }
   },
   response: {
