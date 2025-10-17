@@ -8,10 +8,16 @@ export const SupplierCommands = {
     city?: string
     state?: string
     address?: string
+    storeId?: string
   }) {
-    // Verificar se CNPJ já existe
+    // Verificar se CNPJ já existe para esta store
     const existingSupplier = await db.supplier.findUnique({
-      where: { cnpj: data.cnpj }
+      where: { 
+        cnpj_storeId: {
+          cnpj: data.cnpj,
+          storeId: data.storeId || null
+        }
+      }
     });
 
     if (existingSupplier) {
@@ -55,10 +61,15 @@ export const SupplierCommands = {
       throw new Error('Supplier not found');
     }
 
-    // Se CNPJ está sendo alterado, verificar se já existe
+    // Se CNPJ está sendo alterado, verificar se já existe para esta store
     if (data.cnpj && data.cnpj !== existingSupplier.cnpj) {
       const cnpjExists = await db.supplier.findUnique({
-        where: { cnpj: data.cnpj }
+        where: { 
+          cnpj_storeId: {
+            cnpj: data.cnpj,
+            storeId: existingSupplier.storeId
+          }
+        }
       });
 
       if (cnpjExists) {

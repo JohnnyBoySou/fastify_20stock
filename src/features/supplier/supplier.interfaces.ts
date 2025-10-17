@@ -9,6 +9,7 @@ export interface CreateSupplierRequest extends FastifyRequest {
     city?: string
     state?: string
     address?: string
+    storeId?: string
   }
 }
 

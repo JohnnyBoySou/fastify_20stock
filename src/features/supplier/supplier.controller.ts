@@ -17,7 +17,8 @@ export const SupplierController = {
   // === CRUD BÁSICO ===
   async create(request: CreateSupplierRequest, reply: FastifyReply) {
     try {
-      const { corporateName, cnpj, tradeName, cep, city, state, address } = request.body;
+      const { corporateName, cnpj, tradeName, cep, city, state, address, storeId } = request.body;
+      const contextStoreId = request.store?.id;
 
       const result = await SupplierCommands.create({
         corporateName,
@@ -26,7 +27,8 @@ export const SupplierController = {
         cep,
         city,
         state,
-        address
+        address,
+        storeId: storeId || contextStoreId
       });
 
       return reply.status(201).send(result);
@@ -156,8 +158,9 @@ export const SupplierController = {
   async getByCnpj(request: GetSupplierByCnpjRequest, reply: FastifyReply) {
     try {
       const { cnpj } = request.params;
+      const storeId = request.store?.id;
 
-      const result = await SupplierQueries.getByCnpj(cnpj);
+      const result = await SupplierQueries.getByCnpj(cnpj, storeId);
 
       return reply.send(result);
     } catch (error: any) {

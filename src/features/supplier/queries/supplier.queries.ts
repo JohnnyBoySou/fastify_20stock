@@ -96,7 +96,7 @@ export const SupplierQueries = {
 
   async getByCnpj(cnpj: string, storeId?: string) {
     const supplier = await db.supplier.findUnique({
-      where: { cnpj_storeId: { cnpj, storeId: storeId ?? undefined } },
+      where: { cnpj_storeId: { cnpj, storeId: storeId || null } },
       include: {
         responsibles: true,
         products: {

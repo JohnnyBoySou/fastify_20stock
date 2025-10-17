@@ -11,7 +11,8 @@ export const createSupplierSchema: FastifySchema = {
       cep: { type: 'string' },
       city: { type: 'string' },
       state: { type: 'string' },
-      address: { type: 'string' }
+      address: { type: 'string' },
+      storeId: { type: 'string' }
     }
   },
   response: {
