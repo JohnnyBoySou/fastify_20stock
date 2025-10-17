@@ -203,7 +203,14 @@ export const ProductController = {
 
   async list(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const { page = 1, limit = 10, search, status, categoryIds, supplierId, storeId } = request.query as any;
+      const { page = 1, limit = 10, search, status, categoryIds, supplierId } = request.query as any;
+      const storeId = request.store?.id;
+
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
 
       const result = await ProductQueries.list({
         page,
@@ -227,8 +234,15 @@ export const ProductController = {
   // === FUNÇÕES ADICIONAIS (QUERIES) ===
   async getActive(request: FastifyRequest, reply: FastifyReply) {
     try {
+      const storeId = request.store?.id;
 
-      const result = await ProductQueries.getActive();
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
+
+      const result = await ProductQueries.getActive(storeId);
 
       return reply.send({ products: result });
     } catch (error) {
@@ -241,7 +255,15 @@ export const ProductController = {
 
   async getStats(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const result = await ProductQueries.getStats();
+      const storeId = request.store?.id;
+
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
+
+      const result = await ProductQueries.getStats(storeId);
 
       return reply.send(result);
     } catch (error) {
@@ -275,8 +297,15 @@ export const ProductController = {
   async getByCategory(request: FastifyRequest<{ Params: { categoryId: string } }>, reply: FastifyReply) {
     try {
       const { categoryId } = request.params;
+      const storeId = request.store?.id;
 
-      const result = await ProductQueries.getByCategory(categoryId);
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
+
+      const result = await ProductQueries.getByCategory(categoryId, storeId);
 
       return reply.send({ products: result });
     } catch (error) {
@@ -290,8 +319,15 @@ export const ProductController = {
   async getBySupplier(request: FastifyRequest<{ Params: { supplierId: string } }>, reply: FastifyReply) {
     try {
       const { supplierId } = request.params;
+      const storeId = request.store?.id;
 
-      const result = await ProductQueries.getBySupplier(supplierId);
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
+
+      const result = await ProductQueries.getBySupplier(supplierId, storeId);
 
       return reply.send({ products: result });
     } catch (error) {
@@ -505,11 +541,15 @@ export const ProductController = {
     }
   },
 
-  async getLowStock(request: FastifyRequest<{ 
-    Querystring: { storeId?: string }
-  }>, reply: FastifyReply) {
+  async getLowStock(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const { storeId } = request.query;
+      const storeId = request.store?.id;
+
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
 
       const result = await ProductQueries.getLowStockProducts(storeId);
 

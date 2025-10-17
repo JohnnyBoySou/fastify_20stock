@@ -261,9 +261,12 @@ export const ProductQueries = {
     };
   },
 
-  async getActive() {
+  async getActive(storeId: string) {
     const products = await db.product.findMany({
-      where: { status: true },
+      where: { 
+        status: true,
+        storeId
+      },
       orderBy: { createdAt: 'desc' },
       include: {
         categories: {
@@ -312,11 +315,11 @@ export const ProductQueries = {
     return productsWithStock;
   },
 
-  async getStats() {
+  async getStats(storeId: string) {
     const [total, active, inactive] = await Promise.all([
-      db.product.count(),
-      db.product.count({ where: { status: true } }),
-      db.product.count({ where: { status: false } })
+      db.product.count({ where: { storeId } }),
+      db.product.count({ where: { status: true, storeId } }),
+      db.product.count({ where: { status: false, storeId } })
     ]);
 
     return {
@@ -326,7 +329,7 @@ export const ProductQueries = {
     };
   },
 
-  async getByCategory(categoryId: string) {
+  async getByCategory(categoryId: string, storeId: string) {
     const products = await db.product.findMany({
       where: { 
         categories: {
@@ -383,7 +386,7 @@ export const ProductQueries = {
     return productsWithStock;
   },
 
-  async getBySupplier(supplierId: string) {
+  async getBySupplier(supplierId: string, storeId: string) {
     const products = await db.product.findMany({
       where: { supplierId },
       orderBy: { createdAt: 'desc' },
@@ -824,7 +827,7 @@ export const ProductQueries = {
     };
   },
 
-  async getProductsByCategories(categoryIds: string[], params: {
+  async getProductsByCategories(categoryIds: string[], storeId: string, params: {
     page?: number
     limit?: number
     search?: string

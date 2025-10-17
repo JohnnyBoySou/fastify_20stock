@@ -53,8 +53,9 @@ export const CategoryQueries = {
     search?: string
     status?: boolean
     parentId?: string
+    storeId?: string
   }) {
-    const { page = 1, limit = 10, search, status, parentId } = params;
+    const { page = 1, limit = 10, search, status, parentId, storeId } = params;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -69,6 +70,11 @@ export const CategoryQueries = {
       } else {
         where.parentId = parentId;
       }
+    }
+
+    // Filtrar categorias pela loja específica
+    if (storeId) {
+      where.storeId = storeId;
     }
 
     if (search) {
@@ -141,9 +147,10 @@ export const CategoryQueries = {
     };
   },
 
-  async search(term: string, limit: number = 10) {
+  async search(term: string, storeId: string, limit: number = 10) {
     return await db.category.findMany({
       where: {
+        storeId,
         OR: [
           { name: { contains: term, mode: 'insensitive' } },
           { description: { contains: term, mode: 'insensitive' } },
@@ -182,9 +189,12 @@ export const CategoryQueries = {
     });
   },
 
-  async getActive() {
+  async getActive(storeId: string) {
     return await db.category.findMany({
-      where: { status: true },
+      where: { 
+        status: true,
+        storeId
+      },
       orderBy: { createdAt: 'desc' },
       include: {
         parent: {
@@ -216,18 +226,20 @@ export const CategoryQueries = {
     });
   },
 
-  async getStats() {
+  async getStats(storeId: string) {
     const [total, active, inactive, withChildren, withoutChildren] = await Promise.all([
-      db.category.count(),
-      db.category.count({ where: { status: true } }),
-      db.category.count({ where: { status: false } }),
+      db.category.count({ where: { storeId } }),
+      db.category.count({ where: { status: true, storeId } }),
+      db.category.count({ where: { status: false, storeId } }),
       db.category.count({
         where: {
+          storeId,
           children: { some: {} }
         }
       }),
       db.category.count({
         where: {
+          storeId,
           children: { none: {} }
         }
       })
@@ -242,8 +254,11 @@ export const CategoryQueries = {
     };
   },
 
-  async getRootCategories(status?: boolean) {
-    const where: any = { parentId: null };
+  async getRootCategories(storeId: string, status?: boolean) {
+    const where: any = { 
+      parentId: null,
+      storeId
+    };
 
     if (status !== undefined) {
       where.status = status;
@@ -274,9 +289,12 @@ export const CategoryQueries = {
     });
   },
 
-  async getChildren(parentId: string) {
+  async getChildren(parentId: string, storeId: string) {
     return await db.category.findMany({
-      where: { parentId },
+      where: { 
+        parentId,
+        storeId
+      },
       orderBy: { createdAt: 'desc' },
       include: {
         children: {
@@ -314,12 +332,12 @@ export const CategoryQueries = {
     });
   },
 
-  async getHierarchy() {
-    const rootCategories = await CategoryQueries.getRootCategories();
+  async getHierarchy(storeId: string) {
+    const rootCategories = await CategoryQueries.getRootCategories(storeId);
 
     const buildHierarchy = async(categories: any[]) => {
       for (const category of categories) {
-        category.children = await CategoryQueries.getChildren(category.id);
+        category.children = await CategoryQueries.getChildren(category.id, storeId);
         if (category.children.length > 0) {
           await buildHierarchy(category.children);
         }
@@ -330,9 +348,14 @@ export const CategoryQueries = {
     return rootCategories;
   },
 
-  async getByCode(code: string) {
+  async getByCode(code: string, storeId: string) {
     return await db.category.findUnique({
-      where: { code },
+      where: { 
+        code_storeId: {
+          code,
+          storeId
+        }
+      },
       include: {
         parent: {
           select: {
@@ -377,14 +400,16 @@ export const CategoryQueries = {
     });
   },
 
-  async getTopCategoriesByProducts(params: {
+  async getTopCategoriesByProducts(storeId: string, params: {
     limit?: number
     status?: boolean
     includeInactive?: boolean
   }) {
     const { limit = 10, status, includeInactive = false } = params;
 
-    const where: any = {};
+    const where: any = {
+      storeId
+    };
 
     // Se não incluir inativas, filtrar apenas ativas
     if (!includeInactive) {
@@ -435,7 +460,7 @@ export const CategoryQueries = {
     });
   },
 
-  async getTopCategoriesByProductsWithDetails(params: {
+  async getTopCategoriesByProductsWithDetails(storeId: string, params: {
     limit?: number
     status?: boolean
     includeInactive?: boolean
@@ -443,7 +468,9 @@ export const CategoryQueries = {
   }) {
     const { limit = 10, status, includeInactive = false, includeProductDetails = false } = params;
 
-    const where: any = {};
+    const where: any = {
+      storeId
+    };
 
     // Se não incluir inativas, filtrar apenas ativas
     if (!includeInactive) {
@@ -519,7 +546,7 @@ export const CategoryQueries = {
     });
   },
 
-  async getCategoryCreationEvolution(params: {
+  async getCategoryCreationEvolution(storeId: string, params: {
     period?: 'day' | 'week' | 'month' | 'year'
     startDate?: Date
     endDate?: Date
@@ -534,7 +561,9 @@ export const CategoryQueries = {
       includeInactive = false 
     } = params;
 
-    const where: any = {};
+    const where: any = {
+      storeId
+    };
 
     // Filtro por status
     if (!includeInactive) {
@@ -596,7 +625,7 @@ export const CategoryQueries = {
     };
   },
 
-  async getCategoryCreationEvolutionDetailed(params: {
+  async getCategoryCreationEvolutionDetailed(storeId: string, params: {
     period?: 'day' | 'week' | 'month' | 'year'
     startDate?: Date
     endDate?: Date
@@ -613,7 +642,9 @@ export const CategoryQueries = {
       includeDetails = false
     } = params;
 
-    const where: any = {};
+    const where: any = {
+      storeId
+    };
 
     // Filtro por status
     if (!includeInactive) {
@@ -798,7 +829,7 @@ export const CategoryQueries = {
     return stats;
   },
 
-  async getActiveInactiveRatio(params: {
+  async getActiveInactiveRatio(storeId: string, params: {
     includeDetails?: boolean
     includeHierarchy?: boolean
   }) {
@@ -806,9 +837,9 @@ export const CategoryQueries = {
 
     // Buscar contagem total de categorias ativas e inativas
     const [activeCount, inactiveCount, totalCount] = await Promise.all([
-      db.category.count({ where: { status: true } }),
-      db.category.count({ where: { status: false } }),
-      db.category.count()
+      db.category.count({ where: { status: true, storeId } }),
+      db.category.count({ where: { status: false, storeId } }),
+      db.category.count({ where: { storeId } })
     ]);
 
     // Calcular percentuais
@@ -840,7 +871,7 @@ export const CategoryQueries = {
     if (includeDetails) {
       const [activeCategories, inactiveCategories] = await Promise.all([
         db.category.findMany({
-          where: { status: true },
+          where: { status: true, storeId },
           select: {
             id: true,
             name: true,
@@ -858,7 +889,7 @@ export const CategoryQueries = {
           take: 10 // Limitar para não sobrecarregar
         }),
         db.category.findMany({
-          where: { status: false },
+          where: { status: false, storeId },
           select: {
             id: true,
             name: true,
@@ -886,24 +917,28 @@ export const CategoryQueries = {
       const [activeWithChildren, inactiveWithChildren, activeWithoutChildren, inactiveWithoutChildren] = await Promise.all([
         db.category.count({
           where: {
+            storeId,
             status: true,
             children: { some: {} }
           }
         }),
         db.category.count({
           where: {
+            storeId,
             status: false,
             children: { some: {} }
           }
         }),
         db.category.count({
           where: {
+            storeId,
             status: true,
             children: { none: {} }
           }
         }),
         db.category.count({
           where: {
+            storeId,
             status: false,
             children: { none: {} }
           }
@@ -923,14 +958,16 @@ export const CategoryQueries = {
     return result;
   },
 
-  async getActiveInactiveTrend(params: {
+  async getActiveInactiveTrend(storeId: string, params: {
     period?: 'day' | 'week' | 'month' | 'year'
     startDate?: Date
     endDate?: Date
   }) {
     const { period = 'month', startDate, endDate } = params;
 
-    const where: any = {};
+    const where: any = {
+      storeId
+    };
 
     // Filtro por data se fornecido
     if (startDate || endDate) {

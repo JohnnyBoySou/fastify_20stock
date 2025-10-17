@@ -86,16 +86,20 @@ model Category {
   id          String     @id @default(cuid())
   name        String
   description String?
-  code        String?    @unique
+  code        String?
   status      Boolean    @default(true)
   color       String?
   icon        String?
   parentId    String?
+  storeId     String
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  store       Store      @relation(fields: [storeId], references: [id])
   parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children    Category[] @relation("CategoryHierarchy")
   products    ProductCategory[]
+  
+  @@unique([code, storeId])
 }
 
 model ProductCategory {
@@ -154,6 +158,7 @@ model Store {
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   products  Product[]
+  categories Category[]
   movements Movement[]
   owner     User        @relation("StoreOwner", fields: [ownerId], references: [id])
   users     StoreUser[]
