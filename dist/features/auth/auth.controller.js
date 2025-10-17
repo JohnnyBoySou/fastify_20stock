@@ -434,5 +434,38 @@ exports.AuthController = {
                 error: 'Internal server error'
             });
         }
-    }
+    },
+    async googleLogin(request, reply) {
+        try {
+            const { token } = request.body;
+            const result = await auth_commands_1.AuthCommands.googleLogin(token);
+            return reply.send({
+                user: result.user,
+                store: result.store,
+                token: result.token,
+                message: 'Google login successful'
+            });
+        }
+        catch (error) {
+            request.log.error(error);
+            if (error.message === 'Google OAuth configuration missing') {
+                return reply.status(500).send({
+                    error: 'Google OAuth não configurado no servidor'
+                });
+            }
+            if (error.message === 'Invalid Google token') {
+                return reply.status(401).send({
+                    error: 'Token do Google inválido'
+                });
+            }
+            if (error.message === 'User account is disabled') {
+                return reply.status(403).send({
+                    error: 'Conta de usuário desabilitada'
+                });
+            }
+            return reply.status(500).send({
+                error: 'Internal server error'
+            });
+        }
+    },
 };

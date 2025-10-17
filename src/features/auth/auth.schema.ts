@@ -490,9 +490,9 @@ export const updateProfileSchema: FastifySchema = {
 export const googleLoginSchema: FastifySchema = {
   body: {
     type: 'object',
-    required: ['token'],
+    required: ['id_token'],
     properties: {
-      token: {
+      id_token: {
         type: 'string',
         description: 'Google ID token from client-side authentication'
       }

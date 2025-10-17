@@ -40,6 +40,11 @@ async function AuthRoutes(fastify) {
         schema: auth_schema_1.verifyEmailCodeSchema,
         handler: auth_controller_1.AuthController.verifyEmailCode
     });
+    // Google Login
+    fastify.post('/google', {
+        schema: auth_schema_1.googleLoginSchema,
+        handler: auth_controller_1.AuthController.googleLogin
+    });
     // Resend Verification
     fastify.post('/resend-verification', {
         schema: auth_schema_1.resendVerificationSchema,

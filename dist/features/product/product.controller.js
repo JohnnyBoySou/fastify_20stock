@@ -213,9 +213,14 @@ exports.ProductController = {
     },
     async search(request, reply) {
         try {
-            const { q, limit = 10 } = request.query;
-            const result = await product_queries_1.ProductQueries.search(q, limit);
-            return reply.send({ products: result });
+            const { q, limit = 10, page = 1 } = request.query;
+            const storeId = request.store?.id;
+            const result = await product_queries_1.ProductQueries.search(q, {
+                page,
+                limit,
+                storeId
+            });
+            return reply.send(result);
         }
         catch (error) {
             request.log.error(error);

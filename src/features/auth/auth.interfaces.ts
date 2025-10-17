@@ -205,7 +205,7 @@ export interface UpdateProfileResponse {
 // Google Login interfaces
 export interface GoogleLoginRequest extends FastifyRequest {
   body: {
-    token: string
+    id_token: string
   }
 }
 

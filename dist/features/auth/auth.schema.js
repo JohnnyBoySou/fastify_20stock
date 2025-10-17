@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProfilePermissionsSchema = exports.updateProfileSchema = exports.logoutSchema = exports.refreshTokenSchema = exports.resendVerificationSchema = exports.verifyEmailCodeSchema = exports.verifyEmailSchema = exports.resetPasswordSchema = exports.verifyResetCodeSchema = exports.forgotPasswordSchema = exports.loginSchema = exports.registerSchema = void 0;
+exports.getProfilePermissionsSchema = exports.googleLoginSchema = exports.updateProfileSchema = exports.logoutSchema = exports.refreshTokenSchema = exports.resendVerificationSchema = exports.verifyEmailCodeSchema = exports.verifyEmailSchema = exports.resetPasswordSchema = exports.verifyResetCodeSchema = exports.forgotPasswordSchema = exports.loginSchema = exports.registerSchema = void 0;
 // Register schema
 exports.registerSchema = {
     body: {
@@ -469,6 +469,73 @@ exports.updateProfileSchema = {
             }
         },
         409: {
+            type: 'object',
+            properties: {
+                error: { type: 'string' }
+            }
+        }
+    }
+};
+// Google Login schema
+exports.googleLoginSchema = {
+    body: {
+        type: 'object',
+        required: ['token'],
+        properties: {
+            token: {
+                type: 'string',
+                description: 'Google ID token from client-side authentication'
+            }
+        }
+    },
+    response: {
+        200: {
+            type: 'object',
+            properties: {
+                user: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        name: { type: 'string' },
+                        email: { type: 'string' },
+                        emailVerified: { type: 'boolean' },
+                        lastLoginAt: { type: ['string', 'null'], format: 'date-time' }
+                    }
+                },
+                store: {
+                    type: ['object', 'null'],
+                    properties: {
+                        id: { type: 'string' },
+                        name: { type: 'string' },
+                        cnpj: { type: 'string' },
+                        email: { type: ['string', 'null'] },
+                        phone: { type: ['string', 'null'] },
+                        status: { type: 'boolean' },
+                        cep: { type: ['string', 'null'] },
+                        city: { type: ['string', 'null'] },
+                        state: { type: ['string', 'null'] },
+                        address: { type: ['string', 'null'] },
+                        createdAt: { type: 'string', format: 'date-time' },
+                        updatedAt: { type: 'string', format: 'date-time' }
+                    }
+                },
+                token: { type: 'string' },
+                message: { type: 'string' }
+            }
+        },
+        400: {
+            type: 'object',
+            properties: {
+                error: { type: 'string' }
+            }
+        },
+        401: {
+            type: 'object',
+            properties: {
+                error: { type: 'string' }
+            }
+        },
+        500: {
             type: 'object',
             properties: {
                 error: { type: 'string' }

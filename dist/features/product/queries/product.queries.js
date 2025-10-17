@@ -152,51 +152,61 @@ exports.ProductQueries = {
             }
         };
     },
-    async search(term, limit = 10) {
-        const products = await prisma_1.db.product.findMany({
-            where: {
-                OR: [
-                    { name: { contains: term, mode: 'insensitive' } },
-                    { description: { contains: term, mode: 'insensitive' } },
-                    { categories: { some: { category: { name: { contains: term, mode: 'insensitive' } } } } },
-                    { supplier: { corporateName: { contains: term, mode: 'insensitive' } } },
-                    { supplier: { tradeName: { contains: term, mode: 'insensitive' } } }
-                ]
-            },
-            take: limit,
-            orderBy: { createdAt: 'desc' },
-            include: {
-                categories: {
-                    select: {
-                        category: {
-                            select: {
-                                id: true,
-                                name: true,
-                                description: true,
-                                code: true,
-                                color: true,
-                                icon: true
+    async search(term, params = {}) {
+        const { page = 1, limit = 10, storeId } = params;
+        const skip = (page - 1) * limit;
+        const where = {
+            OR: [
+                { name: { contains: term, mode: 'insensitive' } },
+                { description: { contains: term, mode: 'insensitive' } },
+                { categories: { some: { category: { name: { contains: term, mode: 'insensitive' } } } } },
+                { supplier: { corporateName: { contains: term, mode: 'insensitive' } } },
+                { supplier: { tradeName: { contains: term, mode: 'insensitive' } } }
+            ]
+        };
+        if (storeId) {
+            where.storeId = storeId;
+        }
+        const [products, total] = await Promise.all([
+            prisma_1.db.product.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    categories: {
+                        select: {
+                            category: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    description: true,
+                                    code: true,
+                                    color: true,
+                                    icon: true
+                                }
                             }
                         }
-                    }
-                },
-                supplier: {
-                    select: {
-                        id: true,
-                        corporateName: true,
-                        cnpj: true,
-                        tradeName: true
-                    }
-                },
-                store: {
-                    select: {
-                        id: true,
-                        name: true,
-                        cnpj: true
+                    },
+                    supplier: {
+                        select: {
+                            id: true,
+                            corporateName: true,
+                            cnpj: true,
+                            tradeName: true
+                        }
+                    },
+                    store: {
+                        select: {
+                            id: true,
+                            name: true,
+                            cnpj: true
+                        }
                     }
                 }
-            }
-        });
+            }),
+            prisma_1.db.product.count({ where })
+        ]);
         // Calcular estoque atual para todos os produtos
         const productsWithStock = await Promise.all(products.map(async (product) => {
             const currentStock = await calculateCurrentStock(product.id);
@@ -205,7 +215,15 @@ exports.ProductQueries = {
                 currentStock
             };
         }));
-        return productsWithStock;
+        return {
+            items: productsWithStock,
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit)
+            }
+        };
     },
     async getActive() {
         const products = await prisma_1.db.product.findMany({

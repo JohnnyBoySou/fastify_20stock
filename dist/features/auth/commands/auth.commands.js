@@ -10,6 +10,7 @@ const crypto_1 = __importDefault(require("crypto"));
 const prisma_1 = require("../../../plugins/prisma");
 const auth_queries_1 = require("../queries/auth.queries");
 const email_service_1 = require("../../../services/email/email.service");
+const google_auth_library_1 = require("google-auth-library");
 exports.AuthCommands = {
     async register(data) {
         const { name, email, password, phone } = data;
@@ -374,5 +375,125 @@ exports.AuthCommands = {
         //   await this.emailService.sendVerificationEmail(email, user.emailVerificationToken, user.name)
         // }
         return user;
+    },
+    async googleLogin(token) {
+        // Verificar se as variáveis de ambiente estão configuradas
+        if (!process.env.GOOGLE_CLIENT_ID) {
+            throw new Error('Google OAuth configuration missing');
+        }
+        const client = new google_auth_library_1.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+        try {
+            // Verificar o token do Google
+            const ticket = await client.verifyIdToken({
+                idToken: token,
+                audience: process.env.GOOGLE_CLIENT_ID
+            });
+            const payload = ticket.getPayload();
+            if (!payload || !payload.email || !payload.name) {
+                throw new Error('Invalid Google token payload');
+            }
+            // Buscar usuário existente
+            let user = await prisma_1.db.user.findUnique({
+                where: { email: payload.email }
+            });
+            // Se usuário não existe, criar novo usuário
+            if (!user) {
+                user = await prisma_1.db.user.create({
+                    data: {
+                        name: payload.name,
+                        email: payload.email,
+                        emailVerified: true, // Google já verifica o email
+                        status: true,
+                        roles: ['USER'], // Role padrão
+                        phone: '', // Campo obrigatório mas não temos do Google
+                        password: '', // Campo obrigatório mas não usamos para login Google
+                        lastLoginAt: new Date()
+                    },
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        emailVerified: true,
+                        status: true,
+                        roles: true,
+                        lastLoginAt: true,
+                        password: true,
+                        phone: true,
+                        createdAt: true,
+                        updatedAt: true,
+                        resetPasswordToken: true,
+                        resetPasswordCode: true,
+                        resetPasswordExpires: true,
+                        emailVerificationToken: true,
+                        emailVerificationCode: true,
+                        emailVerificationCodeExpires: true
+                    }
+                });
+            }
+            else {
+                // Se usuário existe, atualizar último login
+                user = await prisma_1.db.user.update({
+                    where: { id: user.id },
+                    data: { lastLoginAt: new Date() },
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        emailVerified: true,
+                        status: true,
+                        roles: true,
+                        lastLoginAt: true,
+                        password: true,
+                        phone: true,
+                        createdAt: true,
+                        updatedAt: true,
+                        resetPasswordToken: true,
+                        resetPasswordCode: true,
+                        resetPasswordExpires: true,
+                        emailVerificationToken: true,
+                        emailVerificationCode: true,
+                        emailVerificationCodeExpires: true
+                    }
+                });
+            }
+            // Verificar se usuário está ativo
+            if (!user.status) {
+                throw new Error('User account is disabled');
+            }
+            // Buscar store do usuário
+            const store = await auth_queries_1.AuthQueries.getStoreByOwner(user.id);
+            // Gerar JWT token
+            const jwtToken = exports.AuthCommands.generateJWT({
+                userId: user.id,
+                email: user.email,
+                roles: user.roles
+            });
+            return {
+                user: {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    emailVerified: user.emailVerified,
+                    lastLoginAt: user.lastLoginAt
+                },
+                store: store || undefined,
+                token: jwtToken
+            };
+        }
+        catch (error) {
+            // Log do erro para debugging
+            console.error('Google Login Error:', error);
+            if (error.message === 'Google OAuth configuration missing') {
+                throw new Error('Google OAuth configuration missing');
+            }
+            if (error.message === 'Invalid Google token payload') {
+                throw new Error('Invalid Google token');
+            }
+            if (error.message === 'User account is disabled') {
+                throw new Error('User account is disabled');
+            }
+            // Para outros erros, assumir token inválido
+            throw new Error('Invalid Google token');
+        }
     }
 };

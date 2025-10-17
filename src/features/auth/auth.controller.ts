@@ -534,9 +534,9 @@ export const AuthController = {
 
   async googleLogin(request: GoogleLoginRequest, reply: FastifyReply): Promise<GoogleLoginResponse> {
     try {
-      const { token } = request.body;
+      const { id_token } = request.body;
 
-      const result = await AuthCommands.googleLogin(token);
+      const result = await AuthCommands.googleLogin(id_token);
 
       return reply.send({
         user: result.user,
