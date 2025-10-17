@@ -234,9 +234,16 @@ export const MovementController = {
     }
   },
 
-  async list(request: FastifyRequest<{ Querystring: { page?: number; limit?: number; search?: string; type?: 'ENTRADA' | 'SAIDA' | 'PERDA'; storeId?: string; productId?: string; supplierId?: string; startDate?: string; endDate?: string } }>, reply: FastifyReply) {
+  async list(request: FastifyRequest<{ Querystring: { page?: number; limit?: number; search?: string; type?: 'ENTRADA' | 'SAIDA' | 'PERDA'; productId?: string; supplierId?: string; startDate?: string; endDate?: string } }>, reply: FastifyReply) {
     try {
-      const { page = 1, limit = 10, search, type, storeId, productId, supplierId, startDate, endDate } = request.query;
+      const { page = 1, limit = 10, search, type, productId, supplierId, startDate, endDate } = request.query;
+      const storeId = request.store?.id;
+
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
 
       const result = await MovementQueries.list({
         page,
@@ -514,9 +521,15 @@ export const MovementController = {
     }
   },
 
-  async getLowStockProducts(request: FastifyRequest<{ Querystring: { storeId?: string } }>, reply: FastifyReply) {
+  async getLowStockProducts(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const { storeId } = request.query;
+      const storeId = request.store?.id;
+
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
 
       const result = await MovementQueries.getLowStockProducts(storeId);
 
@@ -566,7 +579,14 @@ export const MovementController = {
     }
   }>, reply: FastifyReply) {
     try {
-      const { storeId, productId, supplierId, type, startDate, endDate, groupBy, format } = request.query;
+      const { productId, supplierId, type, startDate, endDate, groupBy, format } = request.query;
+      const storeId = request.store?.id;
+
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
 
       const result = await MovementQueries.getMovementReport({
         storeId,
@@ -707,7 +727,14 @@ export const MovementController = {
     } 
   }>, reply: FastifyReply) {
     try {
-      const { page = 1, limit = 10, storeId, verified, startDate, endDate } = request.query;
+      const { page = 1, limit = 10, verified, startDate, endDate } = request.query;
+      const storeId = request.store?.id;
+
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
 
       const result = await MovementQueries.getVerifiedMovements({
         page,
@@ -738,7 +765,14 @@ export const MovementController = {
     } 
   }>, reply: FastifyReply) {
     try {
-      const { page = 1, limit = 10, storeId, startDate, endDate } = request.query;
+      const { page = 1, limit = 10, startDate, endDate } = request.query;
+      const storeId = request.store?.id;
+
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
 
       const result = await MovementQueries.getCancelledMovements({
         page,
@@ -768,7 +802,14 @@ export const MovementController = {
     } 
   }>, reply: FastifyReply) {
     try {
-      const { storeId, productId, supplierId, startDate, endDate } = request.query;
+      const { productId, supplierId, startDate, endDate } = request.query;
+      const storeId = request.store?.id;
+
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
 
       const result = await MovementQueries.getMovementAnalytics({
         storeId,
@@ -811,7 +852,14 @@ export const MovementController = {
   }>, reply: FastifyReply) {
     try {
       const { productId } = request.params;
-      const { startDate, endDate, storeId } = request.query;
+      const { startDate, endDate } = request.query;
+      const storeId = request.store?.id;
+
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
 
       const result = await MovementQueries.getProductSummary(productId, {
         startDate,
@@ -840,8 +888,7 @@ export const MovementController = {
     Querystring: { storeId?: string }
   }>, reply: FastifyReply) {
     try {
-      const { storeId } = request.query;
-      const finalStoreId = storeId || request.store?.id;
+      const finalStoreId = request.store?.id;
 
       if (!finalStoreId) {
         return reply.status(400).send({
@@ -868,8 +915,7 @@ export const MovementController = {
     Querystring: { storeId?: string }
   }>, reply: FastifyReply) {
     try {
-      const { storeId } = request.query;
-      const finalStoreId = storeId || request.store?.id;
+      const finalStoreId = request.store?.id;
 
       if (!finalStoreId) {
         return reply.status(400).send({

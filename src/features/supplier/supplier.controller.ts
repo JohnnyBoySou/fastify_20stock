@@ -127,12 +127,20 @@ export const SupplierController = {
   async list(request: ListSuppliersRequest, reply: FastifyReply) {
     try {
       const { page = 1, limit = 10, search, status } = request.query;
+      const storeId = request.store?.id;
+
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
 
       const result = await SupplierQueries.list({
         page,
         limit,
         search,
-        status
+        status,
+        storeId
       });
 
       return reply.send(result);

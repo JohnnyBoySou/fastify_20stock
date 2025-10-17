@@ -31,8 +31,9 @@ export const SupplierQueries = {
     limit?: number
     search?: string
     status?: boolean
+    storeId?: string
   }) {
-    const { page = 1, limit = 10, search, status } = params;
+    const { page = 1, limit = 10, search, status, storeId } = params;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -49,6 +50,15 @@ export const SupplierQueries = {
 
     if (status !== undefined) {
       where.status = status;
+    }
+
+    // Filtrar apenas fornecedores que têm produtos da loja específica
+    if (storeId) {
+      where.products = {
+        some: {
+          storeId
+        }
+      };
     }
 
     const [suppliers, total] = await Promise.all([
@@ -74,7 +84,7 @@ export const SupplierQueries = {
     ]);
 
     return {
-      suppliers,
+      items: suppliers,
       pagination: {
         page,
         limit,
@@ -84,9 +94,9 @@ export const SupplierQueries = {
     };
   },
 
-  async getByCnpj(cnpj: string) {
+  async getByCnpj(cnpj: string, storeId?: string) {
     const supplier = await db.supplier.findUnique({
-      where: { cnpj },
+      where: { cnpj_storeId: { cnpj, storeId: storeId ?? undefined } },
       include: {
         responsibles: true,
         products: {

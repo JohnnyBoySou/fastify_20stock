@@ -91,10 +91,10 @@ model Category {
   color       String?
   icon        String?
   parentId    String?
-  storeId     String
+  storeId     String?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  store       Store      @relation(fields: [storeId], references: [id])
+  store       Store?     @relation(fields: [storeId], references: [id])
   parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children    Category[] @relation("CategoryHierarchy")
   products    ProductCategory[]
@@ -118,19 +118,23 @@ model ProductCategory {
 model Supplier {
   id            String                @id @default(cuid())
   corporateName String
-  cnpj          String                @unique
+  cnpj          String
   tradeName     String?
   status        Boolean               @default(true)
   cep           String?
   city          String?
   state         String?
   address       String?
+  storeId       String?
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
+  store         Store?                @relation(fields: [storeId], references: [id])
   products      Product[]
   movements     Movement[]
   responsibles  SupplierResponsible[]
   media         SupplierMedia[]
+  
+  @@unique([cnpj, storeId])
 }
 
 model SupplierResponsible {
@@ -159,6 +163,7 @@ model Store {
   updatedAt DateTime    @updatedAt
   products  Product[]
   categories Category[]
+  suppliers Supplier[]
   movements Movement[]
   owner     User        @relation("StoreOwner", fields: [ownerId], references: [id])
   users     StoreUser[]
