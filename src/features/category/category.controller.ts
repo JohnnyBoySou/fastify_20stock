@@ -147,7 +147,13 @@ export const CategoryController = {
   async getActive(request: FastifyRequest, reply: FastifyReply) {
     try {
 
-      const result = await CategoryQueries.getActive();
+      const result = await CategoryQueries.getActive(request.store?.id);
+
+      if (!result) {
+        return reply.status(404).send({
+          error: 'Categories not found'
+        });
+      }
 
       return reply.send({ categories: result });
     } catch (error) {
@@ -161,7 +167,13 @@ export const CategoryController = {
   async getStats(request: FastifyRequest, reply: FastifyReply) {
     try {
 
-      const result = await CategoryQueries.getStats();
+      const result = await CategoryQueries.getStats(request.store?.id);
+
+      if (!result) {
+        return reply.status(404).send({
+          error: 'Categories not found'
+        });
+      }
 
       return reply.send(result);
     } catch (error) {
@@ -206,7 +218,7 @@ export const CategoryController = {
     try {
       const { id } = request.params as any;
 
-      const result = await CategoryQueries.getChildren(id);
+      const result = await CategoryQueries.getChildren(id, request.store?.id);
 
       return reply.send({ categories: result });
     } catch (error) {
@@ -220,7 +232,7 @@ export const CategoryController = {
   async getHierarchy(request: FastifyRequest, reply: FastifyReply) {
     try {
 
-      const result = await CategoryQueries.getHierarchy();
+      const result = await CategoryQueries.getHierarchy(request.store?.id);
 
       return reply.send({ categories: result });
     } catch (error) {
@@ -235,7 +247,7 @@ export const CategoryController = {
     try {
       const { code } = request.params as any;
 
-      const result = await CategoryQueries.getByCode(code);
+      const result = await CategoryQueries.getByCode(code, request.store?.id);
 
       if (!result) {
         return reply.status(404).send({
@@ -310,7 +322,7 @@ export const CategoryController = {
     try {
       const { limit = 10, status, includeInactive = false, includeProductDetails = false } = request.query as any;
 
-      const result = await CategoryQueries.getTopCategoriesByProductsWithDetails({
+      const result = await CategoryQueries.getTopCategoriesByProductsWithDetails(request.store?.id, {
         limit: parseInt(limit),
         status,
         includeInactive: includeInactive === 'true',
@@ -368,7 +380,7 @@ export const CategoryController = {
         });
       }
 
-      const result = await CategoryQueries.getCategoryCreationEvolutionDetailed({
+      const result = await CategoryQueries.getCategoryCreationEvolutionDetailed(request.store?.id, {
         period,
         startDate: startDateObj,
         endDate: endDateObj,
@@ -390,7 +402,7 @@ export const CategoryController = {
     try {
       const { includeDetails = false, includeHierarchy = false } = request.query as any;
 
-      const result = await CategoryQueries.getActiveInactiveRatio({
+      const result = await CategoryQueries.getActiveInactiveRatio(request.store?.id, {
         includeDetails: includeDetails === 'true',
         includeHierarchy: includeHierarchy === 'true'
       });
@@ -435,7 +447,7 @@ export const CategoryController = {
         });
       }
 
-      const result = await CategoryQueries.getActiveInactiveTrend({
+      const result = await CategoryQueries.getActiveInactiveTrend(request.store?.id, {
         period,
         startDate: startDateObj,
         endDate: endDateObj
