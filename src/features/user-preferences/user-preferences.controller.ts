@@ -1,0 +1,410 @@
+import { FastifyRequest, FastifyReply } from 'fastify'
+import { UserPreferencesCommands } from './commands/user-preferences.commands'
+import { UserPreferencesQueries } from './queries/user-preferences.query'
+import {
+  CreateUserPreferencesRequest,
+  GetUserPreferencesRequest,
+  UpdateUserPreferencesRequest,
+  DeleteUserPreferencesRequest,
+  ListUserPreferencesRequest,
+  GetUserPreferencesByUserIdRequest,
+  UserPreferencesData
+} from './user-preferences.interfaces'
+
+// ================================
+// USER PREFERENCES CONTROLLER
+// ================================
+
+export const UserPreferencesController = {
+  // === CRUD BÁSICO ===
+  async create(request: CreateUserPreferencesRequest, reply: FastifyReply) {
+    try {
+      const preferencesData = request.body
+      const prisma = (request.server as any).prisma
+      const userPreferencesCommands = new UserPreferencesCommands(prisma)
+
+      const result = await userPreferencesCommands.create(preferencesData)
+
+      return reply.status(201).send(result)
+    } catch (error: any) {
+      request.log.error(error)
+      
+      if (error.message === 'User not found') {
+        return reply.status(404).send({
+          error: error.message
+        })
+      }
+
+      if (error.message === 'User preferences already exist for this user') {
+        return reply.status(409).send({
+          error: error.message
+        })
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async get(request: GetUserPreferencesRequest, reply: FastifyReply) {
+    try {
+      const { id } = request.params
+      const prisma = (request.server as any).prisma
+      const userPreferencesQueries = new UserPreferencesQueries(prisma)
+
+      const result = await userPreferencesQueries.getById(id)
+
+      return reply.send(result)
+    } catch (error: any) {
+      request.log.error(error)
+      
+      if (error.message === 'User preferences not found') {
+        return reply.status(404).send({
+          error: error.message
+        })
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async update(request: UpdateUserPreferencesRequest, reply: FastifyReply) {
+    try {
+      const { id } = request.params
+      const updateData = { ...request.body }
+      const prisma = (request.server as any).prisma
+      const userPreferencesCommands = new UserPreferencesCommands(prisma)
+
+      const result = await userPreferencesCommands.update(id, updateData)
+
+      return reply.send(result)
+    } catch (error: any) {
+      request.log.error(error)
+      
+      if (error.message === 'User preferences not found') {
+        return reply.status(404).send({
+          error: error.message
+        })
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async delete(request: DeleteUserPreferencesRequest, reply: FastifyReply) {
+    try {
+      const { id } = request.params
+      const prisma = (request.server as any).prisma
+      const userPreferencesCommands = new UserPreferencesCommands(prisma)
+
+      await userPreferencesCommands.delete(id)
+
+      return reply.status(204).send()
+    } catch (error: any) {
+      request.log.error(error)
+      
+      if (error.message === 'User preferences not found') {
+        return reply.status(404).send({
+          error: error.message
+        })
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async list(request: ListUserPreferencesRequest, reply: FastifyReply) {
+    try {
+      const { page = 1, limit = 10, search, theme, language, currency } = request.query
+      const prisma = (request.server as any).prisma
+      const userPreferencesQueries = new UserPreferencesQueries(prisma)
+
+      const result = await userPreferencesQueries.list({
+        page,
+        limit,
+        search,
+        theme,
+        language,
+        currency
+      })
+
+      return reply.send(result)
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  // === FUNÇÕES ADICIONAIS (QUERIES) ===
+  async getByUserId(request: GetUserPreferencesByUserIdRequest, reply: FastifyReply) {
+    try {
+      const { userId } = request.params
+      const prisma = (request.server as any).prisma
+      const userPreferencesQueries = new UserPreferencesQueries(prisma)
+
+      const result = await userPreferencesQueries.getByUserId(userId)
+
+      return reply.send(result)
+    } catch (error: any) {
+      request.log.error(error)
+      
+      if (error.message === 'User preferences not found') {
+        return reply.status(404).send({
+          error: error.message
+        })
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async getByUserIdOrCreate(request: GetUserPreferencesByUserIdRequest, reply: FastifyReply) {
+    try {
+      const { userId } = request.params
+      const prisma = (request.server as any).prisma
+      const userPreferencesQueries = new UserPreferencesQueries(prisma)
+
+      const result = await userPreferencesQueries.getByUserIdOrCreate(userId)
+
+      return reply.send(result)
+    } catch (error: any) {
+      request.log.error(error)
+      
+      if (error.message === 'User not found') {
+        return reply.status(404).send({
+          error: error.message
+        })
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async updateByUserId(request: FastifyRequest<{ Params: { userId: string }; Body: any }>, reply: FastifyReply) {
+    try {
+      const { userId } = request.params
+      const updateData = request.body as UserPreferencesData
+      const prisma = (request.server as any).prisma
+      const userPreferencesCommands = new UserPreferencesCommands(prisma)
+
+      const result = await userPreferencesCommands.updateByUserId(userId, updateData)
+
+      return reply.send(result)
+    } catch (error: any) {
+      request.log.error(error)
+      
+      if (error.message === 'User not found') {
+        return reply.status(404).send({
+          error: error.message
+        })
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async deleteByUserId(request: FastifyRequest<{ Params: { userId: string } }>, reply: FastifyReply) {
+    try {
+      const { userId } = request.params
+      const prisma = (request.server as any).prisma
+      const userPreferencesCommands = new UserPreferencesCommands(prisma)
+
+      await userPreferencesCommands.deleteByUserId(userId)
+
+      return reply.status(204).send()
+    } catch (error: any) {
+      request.log.error(error)
+      
+      if (error.message === 'User not found' || error.message === 'User preferences not found') {
+        return reply.status(404).send({
+          error: error.message
+        })
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async getByTheme(request: FastifyRequest<{ Querystring: { theme: string } }>, reply: FastifyReply) {
+    try {
+      const { theme } = request.query
+      const prisma = (request.server as any).prisma
+      const userPreferencesQueries = new UserPreferencesQueries(prisma)
+
+      const result = await userPreferencesQueries.getByTheme(theme)
+
+      return reply.send({ preferences: result })
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async getByLanguage(request: FastifyRequest<{ Querystring: { language: string } }>, reply: FastifyReply) {
+    try {
+      const { language } = request.query
+      const prisma = (request.server as any).prisma
+      const userPreferencesQueries = new UserPreferencesQueries(prisma)
+
+      const result = await userPreferencesQueries.getByLanguage(language)
+
+      return reply.send({ preferences: result })
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async getByCurrency(request: FastifyRequest<{ Querystring: { currency: string } }>, reply: FastifyReply) {
+    try {
+      const { currency } = request.query
+      const prisma = (request.server as any).prisma
+      const userPreferencesQueries = new UserPreferencesQueries(prisma)
+
+      const result = await userPreferencesQueries.getByCurrency(currency)
+
+      return reply.send({ preferences: result })
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async getWithCustomSettings(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const prisma = (request.server as any).prisma
+      const userPreferencesQueries = new UserPreferencesQueries(prisma)
+
+      const result = await userPreferencesQueries.getWithCustomSettings()
+
+      return reply.send({ preferences: result })
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async getStats(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const prisma = (request.server as any).prisma
+      const userPreferencesQueries = new UserPreferencesQueries(prisma)
+
+      const result = await userPreferencesQueries.getStats()
+
+      return reply.send(result)
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async search(request: FastifyRequest<{ Querystring: { q: string; limit?: number } }>, reply: FastifyReply) {
+    try {
+      const { q, limit = 10 } = request.query
+      const prisma = (request.server as any).prisma
+      const userPreferencesQueries = new UserPreferencesQueries(prisma)
+
+      const result = await userPreferencesQueries.search(q, limit)
+
+      return reply.send({ preferences: result })
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  // === FUNÇÕES ADICIONAIS (COMMANDS) ===
+  async resetToDefaults(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
+    try {
+      const { id } = request.params
+      const prisma = (request.server as any).prisma
+      const userPreferencesCommands = new UserPreferencesCommands(prisma)
+
+      const result = await userPreferencesCommands.resetToDefaults(id)
+
+      return reply.send(result)
+    } catch (error: any) {
+      request.log.error(error)
+      
+      if (error.message === 'User preferences not found') {
+        return reply.status(404).send({
+          error: error.message
+        })
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async resetToDefaultsByUserId(request: FastifyRequest<{ Params: { userId: string } }>, reply: FastifyReply) {
+    try {
+      const { userId } = request.params
+      const prisma = (request.server as any).prisma
+      const userPreferencesCommands = new UserPreferencesCommands(prisma)
+
+      const result = await userPreferencesCommands.resetToDefaultsByUserId(userId)
+
+      return reply.send(result)
+    } catch (error: any) {
+      request.log.error(error)
+      
+      if (error.message === 'User not found' || error.message === 'User preferences not found') {
+        return reply.status(404).send({
+          error: error.message
+        })
+      }
+
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  },
+
+  async validatePreferences(request: FastifyRequest<{ Body: any }>, reply: FastifyReply) {
+    try {
+      const preferencesData = request.body
+      const prisma = (request.server as any).prisma
+      const userPreferencesQueries = new UserPreferencesQueries(prisma)
+
+      const result = await userPreferencesQueries.validatePreferences(preferencesData)
+
+      return reply.send(result)
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error'
+      })
+    }
+  }
+}

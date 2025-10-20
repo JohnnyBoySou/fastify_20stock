@@ -86,7 +86,10 @@ export interface GetCrmStageRequest extends FastifyRequest {
 }
 
 export interface ListCrmStagesRequest extends FastifyRequest {
-  querystring: {}
+  querystring: {
+    page?: number
+    limit?: number
+  }
 }
 
 export interface DeleteCrmStageRequest extends FastifyRequest {

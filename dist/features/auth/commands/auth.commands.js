@@ -407,53 +407,23 @@ exports.AuthCommands = {
                         roles: ['USER'], // Role padrão
                         phone: '', // Campo obrigatório mas não temos do Google
                         password: '', // Campo obrigatório mas não usamos para login Google
-                        lastLoginAt: new Date()
-                    },
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        emailVerified: true,
-                        status: true,
-                        roles: true,
-                        lastLoginAt: true,
-                        password: true,
-                        phone: true,
-                        createdAt: true,
-                        updatedAt: true,
-                        resetPasswordToken: true,
-                        resetPasswordCode: true,
-                        resetPasswordExpires: true,
-                        emailVerificationToken: true,
-                        emailVerificationCode: true,
-                        emailVerificationCodeExpires: true
+                        lastLoginAt: new Date(),
+                        // User preferences defaults
+                        theme: 'light',
+                        language: 'pt-BR',
+                        currency: 'BRL',
+                        timezone: 'America/Sao_Paulo',
+                        dateFormat: 'DD/MM/YYYY',
+                        timeFormat: '24h',
+                        dashboard: null
                     }
                 });
             }
             else {
                 // Se usuário existe, atualizar último login
-                user = await prisma_1.db.user.update({
+                await prisma_1.db.user.update({
                     where: { id: user.id },
-                    data: { lastLoginAt: new Date() },
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        emailVerified: true,
-                        status: true,
-                        roles: true,
-                        lastLoginAt: true,
-                        password: true,
-                        phone: true,
-                        createdAt: true,
-                        updatedAt: true,
-                        resetPasswordToken: true,
-                        resetPasswordCode: true,
-                        resetPasswordExpires: true,
-                        emailVerificationToken: true,
-                        emailVerificationCode: true,
-                        emailVerificationCodeExpires: true
-                    }
+                    data: { lastLoginAt: new Date() }
                 });
             }
             // Verificar se usuário está ativo

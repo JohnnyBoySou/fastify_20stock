@@ -433,23 +433,44 @@ export const getCrmStageSchema: FastifySchema = {
 };
 
 export const listCrmStagesSchema: FastifySchema = {
+  querystring: {
+    type: 'object',
+    properties: {
+      page: { type: 'number', minimum: 1, default: 1 },
+      limit: { type: 'number', minimum: 1, maximum: 100, default: 10 }
+    }
+  },
   response: {
     200: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: { type: 'string' },
-          storeId: { type: 'string' },
-          name: { type: 'string' },
-          color: { type: 'string' },
-          order: { type: 'number' },
-          createdAt: { type: 'string', format: 'date-time' },
-          _count: {
+      type: 'object',
+      properties: {
+        items: {
+          type: 'array',
+          items: {
             type: 'object',
             properties: {
-              clients: { type: 'number' }
+              id: { type: 'string' },
+              storeId: { type: 'string' },
+              name: { type: 'string' },
+              color: { type: 'string' },
+              order: { type: 'number' },
+              createdAt: { type: 'string', format: 'date-time' },
+              _count: {
+                type: 'object',
+                properties: {
+                  clients: { type: 'number' }
+                }
+              }
             }
+          }
+        },
+        pagination: {
+          type: 'object',
+          properties: {
+            page: { type: 'number' },
+            limit: { type: 'number' },
+            total: { type: 'number' },
+            totalPages: { type: 'number' }
           }
         }
       }

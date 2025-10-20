@@ -26,6 +26,16 @@ model User {
   emailVerificationCodeExpires DateTime?
   lastLoginAt            DateTime?
   roles                  String[]    @default(["user"])
+  
+  // User Preferences/Configurations
+  theme                  String      @default("light") // light, dark, auto
+  language              String      @default("pt-BR") // pt-BR, en-US, es-ES
+  currency              String      @default("BRL") // BRL, USD, EUR
+  timezone              String      @default("America/Sao_Paulo")
+  dateFormat            String      @default("DD/MM/YYYY") // DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD
+  timeFormat            String      @default("24h") // 12h, 24h
+  dashboard             Json?       // Configurações do dashboard (widgets, layout, etc.)
+  
   auditLogs              AuditLog[]
   movements              Movement[]
   ownedStores            Store[]     @relation("StoreOwner")
@@ -53,6 +63,9 @@ model User {
 
   // Customers
   customers              Customer[]
+
+  // User Preferences
+  preferences            UserPreferences?
 
   @@map("users")
 }
@@ -715,4 +728,49 @@ model CrmClient {
   store       Store      @relation(fields: [storeId], references: [id])
   stage       CrmStage?  @relation(fields: [stageId], references: [id])
   @@map("crm_clients")
+}
+
+// User Preferences Model (Alternative approach for complex configurations)
+model UserPreferences {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Theme & UI Preferences
+  theme                 String   @default("light") // light, dark, auto
+  primaryColor          String?  // Cor primária personalizada
+  sidebarCollapsed      Boolean  @default(false)
+  compactMode           Boolean  @default(false)
+  
+  // Language & Localization
+  language              String   @default("pt-BR")
+  currency              String   @default("BRL")
+  timezone              String   @default("America/Sao_Paulo")
+  dateFormat            String   @default("DD/MM/YYYY")
+  timeFormat            String   @default("24h")
+  numberFormat          String   @default("pt-BR") // pt-BR, en-US
+  
+  // Notification Preferences
+  emailNotifications    Boolean  @default(true)
+  pushNotifications     Boolean  @default(true)
+  smsNotifications      Boolean  @default(false)
+  notificationTypes     Json?    // Tipos específicos de notificação
+  
+  // Dashboard & Layout
+  dashboardLayout       Json?    // Layout personalizado do dashboard
+  defaultPage           String?  // Página inicial padrão
+  itemsPerPage          Int      @default(20)
+  
+  // Business Preferences
+  defaultStoreId        String?  // Loja padrão para o usuário
+  autoRefresh           Boolean  @default(true)
+  refreshInterval       Int      @default(30) // segundos
+  
+  // Advanced Settings
+  customSettings        Json?    // Configurações personalizadas extensíveis
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  @@map("user_preferences")
 }

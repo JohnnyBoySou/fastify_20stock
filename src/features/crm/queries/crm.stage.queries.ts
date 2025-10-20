@@ -15,16 +15,36 @@ export const CrmStageQueries = {
     })
   },
 
-  async list(storeId: string,) {
-    return await db.crmStage.findMany({
-      where: { storeId },
-      orderBy: { order: 'asc' },
-      include: {
-        _count: {
-          select: { clients: true }
+  async list(storeId: string, params: { page?: number; limit?: number } = {}) {
+    const { page = 1, limit = 10 } = params
+    const skip = (page - 1) * limit
+
+    const [items, total] = await Promise.all([
+      db.crmStage.findMany({
+        where: { storeId },
+        skip,
+        take: limit,
+        orderBy: { order: 'asc' },
+        include: {
+          _count: {
+            select: { clients: true }
+          }
         }
+      }),
+      db.crmStage.count({
+        where: { storeId }
+      })
+    ])
+
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
       }
-    })
+    }
   },
 
   async getNextOrder(storeId: string) {

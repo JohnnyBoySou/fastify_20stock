@@ -390,6 +390,7 @@ export const CrmController = {
 
   async listStages(request: ListCrmStagesRequest, reply: FastifyReply) {
     try {
+      const { page = 1, limit = 10 } = request.query as { page?: number; limit?: number }
       const storeId = (request as any).store?.id
 
       if (!storeId) {
@@ -398,7 +399,7 @@ export const CrmController = {
         })
       }
 
-      const result = await CrmStageQueries.list(storeId)
+      const result = await CrmStageQueries.list(storeId, { page, limit })
 
       return reply.send(result)
     } catch (error) {

@@ -5,15 +5,16 @@ const movement_controller_1 = require("./movement.controller");
 const movement_schema_1 = require("./movement.schema");
 const middlewares_1 = require("../../middlewares");
 async function MovementRoutes(fastify) {
+    // Middlewares para todas as rotas
+    fastify.addHook('preHandler', middlewares_1.authMiddleware);
+    fastify.addHook('preHandler', middlewares_1.storeContextMiddleware);
     // CRUD básico
     fastify.post('/', {
         schema: movement_schema_1.MovementSchemas.create,
-        preHandler: [middlewares_1.authMiddleware, middlewares_1.storeContextMiddleware],
         handler: movement_controller_1.MovementController.create
     });
     fastify.get('/', {
         schema: movement_schema_1.MovementSchemas.list,
-        preHandler: [middlewares_1.authMiddleware, middlewares_1.storeContextMiddleware],
         handler: movement_controller_1.MovementController.list
     });
     // === NOVOS ENDPOINTS ESPECÍFICOS ===
@@ -34,7 +35,6 @@ async function MovementRoutes(fastify) {
                 }
             }
         },
-        preHandler: [middlewares_1.authMiddleware, middlewares_1.storeContextMiddleware],
         handler: movement_controller_1.MovementController.listByStore
     });
     // Listar movimentações por produto específico na loja do usuário
@@ -58,22 +58,18 @@ async function MovementRoutes(fastify) {
                 }
             }
         },
-        preHandler: [middlewares_1.authMiddleware, middlewares_1.storeContextMiddleware],
         handler: movement_controller_1.MovementController.listByProduct
     });
     fastify.get('/:id', {
         schema: movement_schema_1.MovementSchemas.get,
-        preHandler: [middlewares_1.authMiddleware, middlewares_1.storeContextMiddleware],
         handler: movement_controller_1.MovementController.get
     });
     fastify.put('/:id', {
         schema: movement_schema_1.MovementSchemas.update,
-        preHandler: [middlewares_1.authMiddleware, middlewares_1.storeContextMiddleware],
         handler: movement_controller_1.MovementController.update
     });
     fastify.delete('/:id', {
         schema: movement_schema_1.MovementSchemas.delete,
-        preHandler: [middlewares_1.authMiddleware, middlewares_1.storeContextMiddleware],
         handler: movement_controller_1.MovementController.delete
     });
     // Consultas por entidade
@@ -83,7 +79,6 @@ async function MovementRoutes(fastify) {
     });
     fastify.get('/product/:productId', {
         schema: movement_schema_1.MovementSchemas.getByProduct,
-        preHandler: [middlewares_1.authMiddleware, middlewares_1.storeContextMiddleware],
         handler: movement_controller_1.MovementController.getByProduct
     });
     fastify.get('/product/:productId/summary', {
@@ -129,7 +124,6 @@ async function MovementRoutes(fastify) {
                 }
             }
         },
-        preHandler: [middlewares_1.authMiddleware, middlewares_1.storeContextMiddleware],
         handler: movement_controller_1.MovementController.checkStockAlerts
     });
     fastify.post('/stock-alerts/summary', {
@@ -141,7 +135,6 @@ async function MovementRoutes(fastify) {
                 }
             }
         },
-        preHandler: [middlewares_1.authMiddleware, middlewares_1.storeContextMiddleware],
         handler: movement_controller_1.MovementController.createLowStockSummaryNotification
     });
 }

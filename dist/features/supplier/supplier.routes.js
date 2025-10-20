@@ -7,68 +7,58 @@ const supplier_responsible_routes_1 = require("./supplier-responsible.routes");
 const auth_middleware_1 = require("../../middlewares/auth.middleware");
 const store_context_middleware_1 = require("../../middlewares/store-context.middleware");
 async function SupplierRoutes(fastify) {
+    // Middlewares para todas as rotas
+    fastify.addHook('preHandler', auth_middleware_1.authMiddleware);
+    fastify.addHook('preHandler', store_context_middleware_1.storeContextMiddleware);
     // CRUD básico
     fastify.post('/', {
         schema: supplier_schema_1.SupplierSchemas.create,
-        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: supplier_controller_1.SupplierController.create
     });
     fastify.get('/', {
         schema: supplier_schema_1.SupplierSchemas.list,
-        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: supplier_controller_1.SupplierController.list
     });
     fastify.get('/:id', {
         schema: supplier_schema_1.SupplierSchemas.get,
-        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: supplier_controller_1.SupplierController.get
     });
     fastify.put('/:id', {
         schema: supplier_schema_1.SupplierSchemas.update,
-        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: supplier_controller_1.SupplierController.update
     });
     fastify.delete('/:id', {
         schema: supplier_schema_1.SupplierSchemas.delete,
-        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: supplier_controller_1.SupplierController.delete
     });
     // Funções adicionais
     fastify.get('/cnpj/:cnpj', {
         schema: supplier_schema_1.SupplierSchemas.getByCnpj,
-        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: supplier_controller_1.SupplierController.getByCnpj
     });
     fastify.get('/city/:city', {
         schema: supplier_schema_1.SupplierSchemas.getByCity,
-        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: supplier_controller_1.SupplierController.getByCity
     });
     fastify.get('/state/:state', {
         schema: supplier_schema_1.SupplierSchemas.getByState,
-        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: supplier_controller_1.SupplierController.getByState
     });
     fastify.get('/active', {
-        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: supplier_controller_1.SupplierController.getActive
     });
     fastify.get('/stats', {
-        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: supplier_controller_1.SupplierController.getStats
     });
     fastify.get('/search', {
         schema: supplier_schema_1.SupplierSchemas.search,
-        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: supplier_controller_1.SupplierController.search
     });
     fastify.get('/top', {
-        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: supplier_controller_1.SupplierController.getTopSuppliers
     });
     fastify.patch('/:id/toggle-status', {
         schema: supplier_schema_1.SupplierSchemas.get,
-        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: supplier_controller_1.SupplierController.toggleStatus
     });
     // Registrar rotas de responsáveis
