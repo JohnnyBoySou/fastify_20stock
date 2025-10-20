@@ -21,6 +21,36 @@ import {
 } from './crm.interfaces'
 
 export const CrmController = {
+  // === ENDPOINT DE TESTE TEMPORÁRIO ===
+  async testGrouped(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const storeId = (request as any).store?.id
+      
+      console.log('🧪 TEST: storeId:', storeId);
+      
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        })
+      }
+
+      // Teste direto da função
+      const result = await CrmQueries.listGroupedByStage(storeId)
+      
+      return reply.send({
+        success: true,
+        storeId,
+        result
+      })
+    } catch (error) {
+      console.error('❌ TEST Error:', error);
+      return reply.status(500).send({
+        error: 'Test failed',
+        details: error.message
+      })
+    }
+  },
+
   // === CRUD BÁSICO DE CLIENTES ===
   async createClient(request: CreateCrmClientRequest, reply: FastifyReply) {
     try {
@@ -158,14 +188,23 @@ export const CrmController = {
       const { page = 1, limit = 10, search, stageId, grouped } = request.query as any
       const storeId = (request as any).store?.id
 
+      console.log('🔍 DEBUG listClients:');
+      console.log('- Query params:', { page, limit, search, stageId, grouped });
+      console.log('- StoreId:', storeId);
+      console.log('- Request user:', (request as any).user);
+      console.log('- Request store:', (request as any).store);
+
       if (!storeId) {
+        console.log('❌ No storeId found');
         return reply.status(400).send({
           error: 'Store context required'
         })
       }
 
       if (grouped) {
+        console.log('📊 Calling listGroupedByStage...');
         const result = await CrmQueries.listGroupedByStage(storeId)
+        console.log('✅ listGroupedByStage result:', JSON.stringify(result, null, 2));
         return reply.send(result)
       }
 
@@ -178,6 +217,7 @@ export const CrmController = {
 
       return reply.send(result)
     } catch (error) {
+      console.error('❌ Error in listClients:', error);
       request.log.error(error)
       return reply.status(500).send({
         error: 'Internal server error'

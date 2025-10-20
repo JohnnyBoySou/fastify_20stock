@@ -168,45 +168,82 @@ export const listCrmClientsSchema: FastifySchema = {
   response: {
     200: {
       type: 'object',
-      properties: {
-        items: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              storeId: { type: 'string' },
-              stageId: { type: 'string' },
-              name: { type: 'string' },
-              email: { type: 'string' },
-              phone: { type: 'string' },
-              cpfCnpj: { type: 'string' },
-              company: { type: 'string' },
-              notes: { type: 'string' },
-              createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' },
-              stage: {
+      oneOf: [
+        {
+          // Schema para grouped=true
+          properties: {
+            stages: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: ['string', 'null'] },
+                  name: { type: 'string' },
+                  color: { type: 'string' },
+                  order: { type: 'number' },
+                  clients: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string' },
+                        name: { type: 'string' },
+                        email: { type: 'string' },
+                        phone: { type: 'string' },
+                        company: { type: 'string' },
+                        createdAt: { type: 'string', format: 'date-time' }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            totalClients: { type: 'number' }
+          }
+        },
+        {
+          // Schema para grouped=false (padrão)
+          properties: {
+            items: {
+              type: 'array',
+              items: {
                 type: 'object',
                 properties: {
                   id: { type: 'string' },
+                  storeId: { type: 'string' },
+                  stageId: { type: 'string' },
                   name: { type: 'string' },
-                  color: { type: 'string' },
-                  order: { type: 'number' }
+                  email: { type: 'string' },
+                  phone: { type: 'string' },
+                  cpfCnpj: { type: 'string' },
+                  company: { type: 'string' },
+                  notes: { type: 'string' },
+                  createdAt: { type: 'string', format: 'date-time' },
+                  updatedAt: { type: 'string', format: 'date-time' },
+                  stage: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'string' },
+                      name: { type: 'string' },
+                      color: { type: 'string' },
+                      order: { type: 'number' }
+                    }
+                  }
                 }
+              }
+            },
+            pagination: {
+              type: 'object',
+              properties: {
+                page: { type: 'number' },
+                limit: { type: 'number' },
+                total: { type: 'number' },
+                totalPages: { type: 'number' }
               }
             }
           }
-        },
-        pagination: {
-          type: 'object',
-          properties: {
-            page: { type: 'number' },
-            limit: { type: 'number' },
-            total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
         }
-      }
+      ]
     }
   }
 };

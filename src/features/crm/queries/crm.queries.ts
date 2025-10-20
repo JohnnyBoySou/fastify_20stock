@@ -66,8 +66,11 @@ export const CrmQueries = {
   },
 
   async listGroupedByStage(storeId: string) {
+    console.log('🔍 DEBUG listGroupedByStage: Starting with storeId:', storeId);
+    
     try {
       // Buscar todos os stages da store ordenados
+      console.log('📊 Searching for stages...');
       const stages = await db.crmStage.findMany({
         where: { storeId },
         orderBy: { order: 'asc' },
@@ -77,8 +80,12 @@ export const CrmQueries = {
           }
         }
       })
+      
+      console.log('✅ Found stages:', stages.length);
+      console.log('📋 Stages data:', JSON.stringify(stages, null, 2));
 
       // Buscar clientes sem stage
+      console.log('📊 Searching for clients without stage...');
       const clientsWithoutStage = await db.crmClient.findMany({
         where: {
           storeId,
@@ -86,11 +93,14 @@ export const CrmQueries = {
         },
         orderBy: { createdAt: 'desc' }
       })
+      
+      console.log('✅ Found clients without stage:', clientsWithoutStage.length);
 
       // Adicionar stage virtual para clientes sem stage apenas se houver clientes
       const stagesWithClients = [...stages]
       
       if (clientsWithoutStage.length > 0) {
+        console.log('📝 Adding virtual stage for clients without stage');
         stagesWithClients.push({
           id: null,
           name: 'Sem Stage',
@@ -102,16 +112,23 @@ export const CrmQueries = {
         } as any)
       }
       
+      console.log('📊 Counting total clients...');
       const totalClients = await db.crmClient.count({
         where: { storeId }
       })
       
-      return {
+      console.log('✅ Total clients in store:', totalClients);
+      
+      const result = {
         stages: stagesWithClients,
         totalClients
       }
+      
+      console.log('🎯 Final result:', JSON.stringify(result, null, 2));
+      
+      return result
     } catch (error) {
-      console.error('listGroupedByStage: Error:', error);
+      console.error('❌ Error in listGroupedByStage:', error);
       throw error;
     }
   },

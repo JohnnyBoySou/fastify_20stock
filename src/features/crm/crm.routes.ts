@@ -10,6 +10,11 @@ export async function CrmRoutes(fastify: FastifyInstance) {
 
   // === ROTAS DE CLIENTES ===
   
+  // Rota de teste temporária
+  fastify.get('/test-grouped', {
+    handler: CrmController.testGrouped
+  })
+  
   // CRUD básico de clientes
   fastify.post('/clients', {
     schema: CrmSchemas.createClient,
@@ -17,7 +22,7 @@ export async function CrmRoutes(fastify: FastifyInstance) {
   })
 
   fastify.get('/clients', {
-    schema: CrmSchemas.listClients,
+    // schema: CrmSchemas.listClients, // Temporariamente desabilitado para debug
     handler: CrmController.listClients
   })
 
