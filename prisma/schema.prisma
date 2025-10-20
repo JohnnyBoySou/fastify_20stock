@@ -30,7 +30,7 @@ model User {
   movements              Movement[]
   ownedStores            Store[]     @relation("StoreOwner")
   stores                 StoreUser[]
-  
+
   // Granular Permissions Relations
   userPermissions        UserPermission[]
   storePermissions       StorePermission[]
@@ -38,10 +38,10 @@ model User {
   createdStorePermissions StorePermission[] @relation("StorePermissionCreator")
   createdPermissionTemplates PermissionTemplate[] @relation("PermissionTemplateCreator")
   createdPermissionAudits PermissionAuditLog[] @relation("PermissionAuditCreator")
-  
+
   // Notifications
   notifications          Notification[]
-  
+
   // Roadmap
   roadmaps               Roadmap[]
 
@@ -98,7 +98,7 @@ model Category {
   parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children    Category[] @relation("CategoryHierarchy")
   products    ProductCategory[]
-  
+
   @@unique([code, storeId])
 }
 
@@ -107,10 +107,10 @@ model ProductCategory {
   productId  String
   categoryId String
   createdAt  DateTime @default(now())
-  
+
   product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  
+
   @@unique([productId, categoryId])
   @@map("ProductCategory")
 }
@@ -133,7 +133,7 @@ model Supplier {
   movements     Movement[]
   responsibles  SupplierResponsible[]
   media         SupplierMedia[]
-  
+
   @@unique([cnpj, storeId])
 }
 
@@ -167,16 +167,20 @@ model Store {
   movements Movement[]
   owner     User        @relation("StoreOwner", fields: [ownerId], references: [id])
   users     StoreUser[]
-  
+
   // Granular Permissions Relations
   userPermissions UserPermission[]
   storePermissions StorePermission[]
-  
+
   // Roadmap
   roadmaps  Roadmap[]
 
   // Media
   media     StoreMedia[]
+
+  // CRM
+  crmStages   CrmStage[]
+  crmClients  CrmClient[]
 }
 
 model StoreUser {
@@ -299,12 +303,12 @@ model UserPermission {
   reason     String?   // Reason for permission
   createdAt  DateTime  @default(now())
   createdBy  String    // Who created this permission
-  
+
   // Relations
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   store      Store?    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   creator    User      @relation("UserPermissionCreator", fields: [createdBy], references: [id])
-  
+
   @@map("UserPermission")
 }
 
@@ -318,12 +322,12 @@ model StorePermission {
   expiresAt    DateTime?  // When permission expires (null = never)
   createdAt    DateTime   @default(now())
   createdBy    String     // Who created this permission
-  
+
   // Relations
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   store        Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
   creator      User       @relation("StorePermissionCreator", fields: [createdBy], references: [id])
-  
+
   @@unique([userId, storeId])
   @@map("StorePermission")
 }
@@ -337,10 +341,10 @@ model PermissionTemplate {
   isDefault    Boolean   @default(false) // Whether this is a system default template
   createdAt    DateTime  @default(now())
   createdBy    String    // Who created this template
-  
+
   // Relations
   creator      User      @relation("PermissionTemplateCreator", fields: [createdBy], references: [id])
-  
+
   @@map("PermissionTemplate")
 }
 
@@ -354,10 +358,10 @@ model PermissionAuditLog {
   reason         String?  // Reason for the change
   createdAt      DateTime @default(now())
   createdBy      String   // Who made the change
-  
+
   // Relations
   creator        User     @relation("PermissionAuditCreator", fields: [createdBy], references: [id])
-  
+
   @@map("PermissionAuditLog")
 }
 
@@ -375,10 +379,10 @@ model Notification {
   expiresAt   DateTime?        // Quando a notificação expira (opcional)
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
-  
+
   // Relations
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@map("notifications")
 }
 
@@ -409,7 +413,7 @@ model ChatSession {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
   messages  ChatMessage[]
-  
+
   @@map("chat_sessions")
 }
 
@@ -422,9 +426,9 @@ model ChatMessage {
   options   Json?       // Opções do LLM (temperature, numPredict, etc.)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-  
+
   session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  
+
   @@map("chat_messages")
 }
 
@@ -500,11 +504,11 @@ model Media {
   supplierMedia  SupplierMedia[]
   userMedia      UserMedia[]
   storeMedia     StoreMedia[]
-    
+
   @@map("media")
 }
 
- 
+
 
 // tabelas de ligação (muitos-para-muitos com metadados opcionais)
 model ProductMedia {
@@ -678,4 +682,37 @@ enum InvoiceStatus {
   PENDING
   PAID
   FAILED
+}
+
+
+//CRM Feature
+model CrmStage {
+  id          String     @id @default(cuid())
+  storeId     String
+  name        String
+  color       String?    // cor da coluna no front
+  order       Int        // posição no pipeline
+  createdAt   DateTime   @default(now())
+
+  store       Store      @relation(fields: [storeId], references: [id])
+  clients     CrmClient[]
+  @@map("crm_stages")
+}
+
+model CrmClient {
+  id          String     @id @default(cuid())
+  storeId     String
+  stageId     String?    // cliente está em uma etapa
+  name        String
+  email       String?
+  phone       String?
+  cpfCnpj     String?
+  notes       String?
+  company     String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  store       Store      @relation(fields: [storeId], references: [id])
+  stage       CrmStage?  @relation(fields: [stageId], references: [id])
+  @@map("crm_clients")
 }

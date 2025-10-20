@@ -4,16 +4,21 @@ import { MovementSchemas } from './movement.schema';
 import { authMiddleware, storeContextMiddleware } from '../../middlewares';
 
 export async function MovementRoutes(fastify: FastifyInstance) {
+  
+  // Middlewares para todas as rotas
+  fastify.addHook('preHandler', authMiddleware)
+  fastify.addHook('preHandler', storeContextMiddleware)
+
   // CRUD básico
   fastify.post('/', {
     schema: MovementSchemas.create,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: MovementController.create
   });
 
   fastify.get('/', {
     schema: MovementSchemas.list,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: MovementController.list
   });
 
@@ -35,7 +40,7 @@ export async function MovementRoutes(fastify: FastifyInstance) {
         }
       }
     },
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: MovementController.listByStore
   });
 
@@ -60,25 +65,25 @@ export async function MovementRoutes(fastify: FastifyInstance) {
         }
       }
     },
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: MovementController.listByProduct
   });
 
   fastify.get('/:id', {
     schema: MovementSchemas.get,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: MovementController.get
   });
 
   fastify.put('/:id', {
     schema: MovementSchemas.update,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: MovementController.update
   });
 
   fastify.delete('/:id', {
     schema: MovementSchemas.delete,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: MovementController.delete
   });
 
@@ -90,7 +95,7 @@ export async function MovementRoutes(fastify: FastifyInstance) {
 
   fastify.get('/product/:productId', {
     schema: MovementSchemas.getByProduct,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: MovementController.getByProduct
   });
 
@@ -146,7 +151,7 @@ export async function MovementRoutes(fastify: FastifyInstance) {
         }
       }
     },
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: MovementController.checkStockAlerts
   });
 
@@ -159,7 +164,7 @@ export async function MovementRoutes(fastify: FastifyInstance) {
         }
       }
     },
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: MovementController.createLowStockSummaryNotification
   });
 }

@@ -5,51 +5,56 @@ import { authMiddleware } from '../../middlewares/auth.middleware';
 import { storeContextMiddleware } from '../../middlewares/store-context.middleware';
 
 export async function ProductRoutes(fastify: FastifyInstance) {
+  
+  // Middlewares para todas as rotas
+  fastify.addHook('preHandler', authMiddleware)
+  fastify.addHook('preHandler', storeContextMiddleware)
+
   // CRUD básico
   fastify.post('/', {
     schema: ProductSchemas.create,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.create
   });
 
   fastify.get('/', {
     schema: ProductSchemas.list,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.list
   });
 
   fastify.get('/:id', {
     schema: ProductSchemas.get,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.get
   });
 
   fastify.put('/:id', {
     schema: ProductSchemas.update,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.update
   });
 
   fastify.delete('/:id', {
     schema: ProductSchemas.delete,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.delete
   });
 
   fastify.delete('/:id/force', {
     schema: ProductSchemas.delete,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.forceDelete
   });
 
   // Funções adicionais
   fastify.get('/active', {
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.getActive
   });
 
   fastify.get('/stats', {
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.getStats
   });
 
@@ -64,7 +69,7 @@ export async function ProductRoutes(fastify: FastifyInstance) {
         required: ['q']
       }
     },
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.search
   });
 
@@ -78,7 +83,7 @@ export async function ProductRoutes(fastify: FastifyInstance) {
         required: ['categoryId']
       }
     },
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.getByCategory
   });
 
@@ -92,7 +97,7 @@ export async function ProductRoutes(fastify: FastifyInstance) {
         required: ['supplierId']
       }
     },
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.getBySupplier
   });
 
@@ -106,38 +111,38 @@ export async function ProductRoutes(fastify: FastifyInstance) {
         required: ['storeId']
       }
     },
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.getByStore
   });
 
   fastify.patch('/:id/status', {
     schema: ProductSchemas.updateStatus,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.updateStatus
   });
 
   // === ENDPOINTS PARA GERENCIAR CATEGORIAS DO PRODUTO ===
   fastify.post('/:id/categories', {
     schema: ProductSchemas.addCategories,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.addCategories
   });
 
   fastify.delete('/:id/categories', {
     schema: ProductSchemas.removeCategories,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.removeCategories
   });
 
   fastify.put('/:id/categories', {
     schema: ProductSchemas.setCategories,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.setCategories
   });
 
   fastify.get('/:id/categories', {
     schema: ProductSchemas.getCategories,
-    preHandler: [authMiddleware, storeContextMiddleware],
+    
     handler: ProductController.getCategories
   });
 

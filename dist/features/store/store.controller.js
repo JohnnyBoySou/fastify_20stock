@@ -113,13 +113,19 @@ exports.StoreController = {
     },
     async list(request, reply) {
         try {
-            const { page = 1, limit = 10, search, status, ownerId } = request.query;
+            const { page = 1, limit = 10, search, status } = request.query;
+            const userId = request.user?.id;
+            if (!userId) {
+                return reply.status(401).send({
+                    error: 'User not authenticated'
+                });
+            }
             const result = await store_queries_1.StoreQueries.list({
                 page,
                 limit,
                 search,
                 status,
-                ownerId
+                ownerId: userId // Filtrar apenas as lojas do usuário autenticado
             });
             return reply.send(result);
         }

@@ -49,7 +49,7 @@ exports.CategoryQueries = {
         });
     },
     async list(params) {
-        const { page = 1, limit = 10, search, status, parentId } = params;
+        const { page = 1, limit = 10, search, status, parentId, storeId } = params;
         const skip = (page - 1) * limit;
         const where = {};
         if (status !== undefined) {
@@ -62,6 +62,10 @@ exports.CategoryQueries = {
             else {
                 where.parentId = parentId;
             }
+        }
+        // Filtrar categorias pela loja específica
+        if (storeId) {
+            where.storeId = storeId;
         }
         if (search) {
             where.OR = [
@@ -130,9 +134,10 @@ exports.CategoryQueries = {
             }
         };
     },
-    async search(term, limit = 10) {
+    async search(term, storeId, limit = 10) {
         return await prisma_1.db.category.findMany({
             where: {
+                storeId,
                 OR: [
                     { name: { contains: term, mode: 'insensitive' } },
                     { description: { contains: term, mode: 'insensitive' } },
@@ -170,9 +175,12 @@ exports.CategoryQueries = {
             }
         });
     },
-    async getActive() {
+    async getActive(storeId) {
         return await prisma_1.db.category.findMany({
-            where: { status: true },
+            where: {
+                status: true,
+                storeId
+            },
             orderBy: { createdAt: 'desc' },
             include: {
                 parent: {
@@ -203,18 +211,20 @@ exports.CategoryQueries = {
             }
         });
     },
-    async getStats() {
+    async getStats(storeId) {
         const [total, active, inactive, withChildren, withoutChildren] = await Promise.all([
-            prisma_1.db.category.count(),
-            prisma_1.db.category.count({ where: { status: true } }),
-            prisma_1.db.category.count({ where: { status: false } }),
+            prisma_1.db.category.count({ where: { storeId } }),
+            prisma_1.db.category.count({ where: { status: true, storeId } }),
+            prisma_1.db.category.count({ where: { status: false, storeId } }),
             prisma_1.db.category.count({
                 where: {
+                    storeId,
                     children: { some: {} }
                 }
             }),
             prisma_1.db.category.count({
                 where: {
+                    storeId,
                     children: { none: {} }
                 }
             })
@@ -227,8 +237,11 @@ exports.CategoryQueries = {
             withoutChildren
         };
     },
-    async getRootCategories(status) {
-        const where = { parentId: null };
+    async getRootCategories(storeId, status) {
+        const where = {
+            parentId: null,
+            storeId
+        };
         if (status !== undefined) {
             where.status = status;
         }
@@ -256,9 +269,12 @@ exports.CategoryQueries = {
             }
         });
     },
-    async getChildren(parentId) {
+    async getChildren(parentId, storeId) {
         return await prisma_1.db.category.findMany({
-            where: { parentId },
+            where: {
+                parentId,
+                storeId
+            },
             orderBy: { createdAt: 'desc' },
             include: {
                 children: {
@@ -295,11 +311,11 @@ exports.CategoryQueries = {
             }
         });
     },
-    async getHierarchy() {
-        const rootCategories = await exports.CategoryQueries.getRootCategories();
+    async getHierarchy(storeId) {
+        const rootCategories = await exports.CategoryQueries.getRootCategories(storeId);
         const buildHierarchy = async (categories) => {
             for (const category of categories) {
-                category.children = await exports.CategoryQueries.getChildren(category.id);
+                category.children = await exports.CategoryQueries.getChildren(category.id, storeId);
                 if (category.children.length > 0) {
                     await buildHierarchy(category.children);
                 }
@@ -308,9 +324,14 @@ exports.CategoryQueries = {
         await buildHierarchy(rootCategories);
         return rootCategories;
     },
-    async getByCode(code) {
+    async getByCode(code, storeId) {
         return await prisma_1.db.category.findUnique({
-            where: { code },
+            where: {
+                code_storeId: {
+                    code,
+                    storeId
+                }
+            },
             include: {
                 parent: {
                     select: {
@@ -354,9 +375,11 @@ exports.CategoryQueries = {
             }
         });
     },
-    async getTopCategoriesByProducts(params) {
+    async getTopCategoriesByProducts(storeId, params) {
         const { limit = 10, status, includeInactive = false } = params;
-        const where = {};
+        const where = {
+            storeId
+        };
         // Se não incluir inativas, filtrar apenas ativas
         if (!includeInactive) {
             where.status = status !== undefined ? status : true;
@@ -404,9 +427,11 @@ exports.CategoryQueries = {
             }
         });
     },
-    async getTopCategoriesByProductsWithDetails(params) {
+    async getTopCategoriesByProductsWithDetails(storeId, params) {
         const { limit = 10, status, includeInactive = false, includeProductDetails = false } = params;
-        const where = {};
+        const where = {
+            storeId
+        };
         // Se não incluir inativas, filtrar apenas ativas
         if (!includeInactive) {
             where.status = status !== undefined ? status : true;
@@ -477,9 +502,11 @@ exports.CategoryQueries = {
             }
         });
     },
-    async getCategoryCreationEvolution(params) {
+    async getCategoryCreationEvolution(storeId, params) {
         const { period = 'month', startDate, endDate, status, includeInactive = false } = params;
-        const where = {};
+        const where = {
+            storeId
+        };
         // Filtro por status
         if (!includeInactive) {
             where.status = status !== undefined ? status : true;
@@ -534,9 +561,11 @@ exports.CategoryQueries = {
             }
         };
     },
-    async getCategoryCreationEvolutionDetailed(params) {
+    async getCategoryCreationEvolutionDetailed(storeId, params) {
         const { period = 'month', startDate, endDate, status, includeInactive = false, includeDetails = false } = params;
-        const where = {};
+        const where = {
+            storeId
+        };
         // Filtro por status
         if (!includeInactive) {
             where.status = status !== undefined ? status : true;
@@ -696,13 +725,13 @@ exports.CategoryQueries = {
         stats.minPerPeriod = stats.minPerPeriod === Infinity ? 0 : stats.minPerPeriod;
         return stats;
     },
-    async getActiveInactiveRatio(params) {
+    async getActiveInactiveRatio(storeId, params) {
         const { includeDetails = false, includeHierarchy = false } = params;
         // Buscar contagem total de categorias ativas e inativas
         const [activeCount, inactiveCount, totalCount] = await Promise.all([
-            prisma_1.db.category.count({ where: { status: true } }),
-            prisma_1.db.category.count({ where: { status: false } }),
-            prisma_1.db.category.count()
+            prisma_1.db.category.count({ where: { status: true, storeId } }),
+            prisma_1.db.category.count({ where: { status: false, storeId } }),
+            prisma_1.db.category.count({ where: { storeId } })
         ]);
         // Calcular percentuais
         const activePercentage = totalCount > 0 ? (activeCount / totalCount) * 100 : 0;
@@ -730,7 +759,7 @@ exports.CategoryQueries = {
         if (includeDetails) {
             const [activeCategories, inactiveCategories] = await Promise.all([
                 prisma_1.db.category.findMany({
-                    where: { status: true },
+                    where: { status: true, storeId },
                     select: {
                         id: true,
                         name: true,
@@ -748,7 +777,7 @@ exports.CategoryQueries = {
                     take: 10 // Limitar para não sobrecarregar
                 }),
                 prisma_1.db.category.findMany({
-                    where: { status: false },
+                    where: { status: false, storeId },
                     select: {
                         id: true,
                         name: true,
@@ -774,24 +803,28 @@ exports.CategoryQueries = {
             const [activeWithChildren, inactiveWithChildren, activeWithoutChildren, inactiveWithoutChildren] = await Promise.all([
                 prisma_1.db.category.count({
                     where: {
+                        storeId,
                         status: true,
                         children: { some: {} }
                     }
                 }),
                 prisma_1.db.category.count({
                     where: {
+                        storeId,
                         status: false,
                         children: { some: {} }
                     }
                 }),
                 prisma_1.db.category.count({
                     where: {
+                        storeId,
                         status: true,
                         children: { none: {} }
                     }
                 }),
                 prisma_1.db.category.count({
                     where: {
+                        storeId,
                         status: false,
                         children: { none: {} }
                     }
@@ -808,9 +841,11 @@ exports.CategoryQueries = {
         }
         return result;
     },
-    async getActiveInactiveTrend(params) {
+    async getActiveInactiveTrend(storeId, params) {
         const { period = 'month', startDate, endDate } = params;
-        const where = {};
+        const where = {
+            storeId
+        };
         // Filtro por data se fornecido
         if (startDate || endDate) {
             where.updatedAt = {};

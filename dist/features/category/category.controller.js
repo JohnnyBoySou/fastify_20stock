@@ -7,7 +7,16 @@ exports.CategoryController = {
     // === CRUD BÁSICO ===
     async create(request, reply) {
         try {
-            const result = await category_commands_1.CategoryCommands.create(request.body);
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store context required'
+                });
+            }
+            const result = await category_commands_1.CategoryCommands.create({
+                ...request.body,
+                storeId
+            });
             return reply.status(201).send(result);
         }
         catch (error) {
@@ -105,12 +114,19 @@ exports.CategoryController = {
     async list(request, reply) {
         try {
             const { page = 1, limit = 10, search, status, parentId } = request.query;
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store context required'
+                });
+            }
             const result = await category_queries_1.CategoryQueries.list({
                 page,
                 limit,
                 search,
                 status,
-                parentId
+                parentId,
+                storeId
             });
             return reply.send(result);
         }
@@ -124,7 +140,12 @@ exports.CategoryController = {
     // === FUNÇÕES ADICIONAIS (QUERIES) ===
     async getActive(request, reply) {
         try {
-            const result = await category_queries_1.CategoryQueries.getActive();
+            const result = await category_queries_1.CategoryQueries.getActive(request.store?.id);
+            if (!result) {
+                return reply.status(404).send({
+                    error: 'Categories not found'
+                });
+            }
             return reply.send({ categories: result });
         }
         catch (error) {
@@ -136,7 +157,12 @@ exports.CategoryController = {
     },
     async getStats(request, reply) {
         try {
-            const result = await category_queries_1.CategoryQueries.getStats();
+            const result = await category_queries_1.CategoryQueries.getStats(request.store?.id);
+            if (!result) {
+                return reply.status(404).send({
+                    error: 'Categories not found'
+                });
+            }
             return reply.send(result);
         }
         catch (error) {
@@ -175,7 +201,7 @@ exports.CategoryController = {
     async getChildren(request, reply) {
         try {
             const { id } = request.params;
-            const result = await category_queries_1.CategoryQueries.getChildren(id);
+            const result = await category_queries_1.CategoryQueries.getChildren(id, request.store?.id);
             return reply.send({ categories: result });
         }
         catch (error) {
@@ -187,7 +213,7 @@ exports.CategoryController = {
     },
     async getHierarchy(request, reply) {
         try {
-            const result = await category_queries_1.CategoryQueries.getHierarchy();
+            const result = await category_queries_1.CategoryQueries.getHierarchy(request.store?.id);
             return reply.send({ categories: result });
         }
         catch (error) {
@@ -200,7 +226,7 @@ exports.CategoryController = {
     async getByCode(request, reply) {
         try {
             const { code } = request.params;
-            const result = await category_queries_1.CategoryQueries.getByCode(code);
+            const result = await category_queries_1.CategoryQueries.getByCode(code, request.store?.id);
             if (!result) {
                 return reply.status(404).send({
                     error: 'Category not found'
@@ -263,7 +289,7 @@ exports.CategoryController = {
     async getTopCategoriesByProducts(request, reply) {
         try {
             const { limit = 10, status, includeInactive = false, includeProductDetails = false } = request.query;
-            const result = await category_queries_1.CategoryQueries.getTopCategoriesByProductsWithDetails({
+            const result = await category_queries_1.CategoryQueries.getTopCategoriesByProductsWithDetails(request.store?.id, {
                 limit: parseInt(limit),
                 status,
                 includeInactive: includeInactive === 'true',
@@ -308,7 +334,7 @@ exports.CategoryController = {
                     error: 'Data de início deve ser anterior à data de fim'
                 });
             }
-            const result = await category_queries_1.CategoryQueries.getCategoryCreationEvolutionDetailed({
+            const result = await category_queries_1.CategoryQueries.getCategoryCreationEvolutionDetailed(request.store?.id, {
                 period,
                 startDate: startDateObj,
                 endDate: endDateObj,
@@ -328,7 +354,7 @@ exports.CategoryController = {
     async getActiveInactiveRatio(request, reply) {
         try {
             const { includeDetails = false, includeHierarchy = false } = request.query;
-            const result = await category_queries_1.CategoryQueries.getActiveInactiveRatio({
+            const result = await category_queries_1.CategoryQueries.getActiveInactiveRatio(request.store?.id, {
                 includeDetails: includeDetails === 'true',
                 includeHierarchy: includeHierarchy === 'true'
             });
@@ -363,7 +389,7 @@ exports.CategoryController = {
                     error: 'Data de início deve ser anterior à data de fim'
                 });
             }
-            const result = await category_queries_1.CategoryQueries.getActiveInactiveTrend({
+            const result = await category_queries_1.CategoryQueries.getActiveInactiveTrend(request.store?.id, {
                 period,
                 startDate: startDateObj,
                 endDate: endDateObj

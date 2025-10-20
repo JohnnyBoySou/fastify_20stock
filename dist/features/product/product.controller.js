@@ -167,7 +167,13 @@ exports.ProductController = {
     },
     async list(request, reply) {
         try {
-            const { page = 1, limit = 10, search, status, categoryIds, supplierId, storeId } = request.query;
+            const { page = 1, limit = 10, search, status, categoryIds, supplierId } = request.query;
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store context required'
+                });
+            }
             const result = await product_queries_1.ProductQueries.list({
                 page,
                 limit,
@@ -189,7 +195,13 @@ exports.ProductController = {
     // === FUNÇÕES ADICIONAIS (QUERIES) ===
     async getActive(request, reply) {
         try {
-            const result = await product_queries_1.ProductQueries.getActive();
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store context required'
+                });
+            }
+            const result = await product_queries_1.ProductQueries.getActive(storeId);
             return reply.send({ products: result });
         }
         catch (error) {
@@ -201,7 +213,13 @@ exports.ProductController = {
     },
     async getStats(request, reply) {
         try {
-            const result = await product_queries_1.ProductQueries.getStats();
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store context required'
+                });
+            }
+            const result = await product_queries_1.ProductQueries.getStats(storeId);
             return reply.send(result);
         }
         catch (error) {
@@ -232,7 +250,13 @@ exports.ProductController = {
     async getByCategory(request, reply) {
         try {
             const { categoryId } = request.params;
-            const result = await product_queries_1.ProductQueries.getByCategory(categoryId);
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store context required'
+                });
+            }
+            const result = await product_queries_1.ProductQueries.getByCategory(categoryId, storeId);
             return reply.send({ products: result });
         }
         catch (error) {
@@ -245,7 +269,13 @@ exports.ProductController = {
     async getBySupplier(request, reply) {
         try {
             const { supplierId } = request.params;
-            const result = await product_queries_1.ProductQueries.getBySupplier(supplierId);
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store context required'
+                });
+            }
+            const result = await product_queries_1.ProductQueries.getBySupplier(supplierId, storeId);
             return reply.send({ products: result });
         }
         catch (error) {
@@ -426,7 +456,12 @@ exports.ProductController = {
     },
     async getLowStock(request, reply) {
         try {
-            const { storeId } = request.query;
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store context required'
+                });
+            }
             const result = await product_queries_1.ProductQueries.getLowStockProducts(storeId);
             return reply.send({ products: result });
         }

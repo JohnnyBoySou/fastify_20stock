@@ -1,0 +1,333 @@
+import { fetchAuth } from "@/services/http/fetch";
+import { z } from "zod";
+
+// === SCHEMAS ZOD PARA VALIDAÇÃO ===
+
+// === CRM CLIENT SCHEMAS ===
+export const CrmClientSchema = z.object({
+    name: z
+        .string()
+        .min(1, "O nome é obrigatório")
+        .min(2, "O nome deve ter pelo menos 2 caracteres")
+        .max(200, "O nome deve ter no máximo 200 caracteres"),
+    email: z
+        .string()
+        .email("Email inválido")
+        .optional(),
+    phone: z
+        .string()
+        .max(20, "O telefone deve ter no máximo 20 caracteres")
+        .optional(),
+    cpfCnpj: z
+        .string()
+        .max(20, "CPF/CNPJ deve ter no máximo 20 caracteres")
+        .optional(),
+    company: z
+        .string()
+        .max(200, "A empresa deve ter no máximo 200 caracteres")
+        .optional(),
+    notes: z
+        .string()
+        .max(1000, "As notas devem ter no máximo 1000 caracteres")
+        .optional(),
+    stageId: z.string().optional(),
+});
+
+export type CrmClientFormData = z.infer<typeof CrmClientSchema>;
+
+export const CrmClientEditSchema = z.object({
+    name: z
+        .string()
+        .min(1, "O nome é obrigatório")
+        .min(2, "O nome deve ter pelo menos 2 caracteres")
+        .max(200, "O nome deve ter no máximo 200 caracteres")
+        .optional(),
+    email: z
+        .string()
+        .email("Email inválido")
+        .optional(),
+    phone: z
+        .string()
+        .max(20, "O telefone deve ter no máximo 20 caracteres")
+        .optional(),
+    cpfCnpj: z
+        .string()
+        .max(20, "CPF/CNPJ deve ter no máximo 20 caracteres")
+        .optional(),
+    company: z
+        .string()
+        .max(200, "A empresa deve ter no máximo 200 caracteres")
+        .optional(),
+    notes: z
+        .string()
+        .max(1000, "As notas devem ter no máximo 1000 caracteres")
+        .optional(),
+    stageId: z.string().optional(),
+});
+
+export type CrmClientEditFormData = z.infer<typeof CrmClientEditSchema>;
+
+// === CRM STAGE SCHEMAS ===
+export const CrmStageSchema = z.object({
+    name: z
+        .string()
+        .min(1, "O nome é obrigatório")
+        .min(2, "O nome deve ter pelo menos 2 caracteres")
+        .max(100, "O nome deve ter no máximo 100 caracteres"),
+    color: z
+        .string()
+        .regex(/^#[0-9A-F]{6}$/i, "Cor deve estar no formato hexadecimal (#RRGGBB)")
+        .optional(),
+    order: z
+        .number()
+        .min(1, "A ordem deve ser maior que 0")
+        .optional(),
+});
+
+export type CrmStageFormData = z.infer<typeof CrmStageSchema>;
+
+export const CrmStageEditSchema = z.object({
+    name: z
+        .string()
+        .min(1, "O nome é obrigatório")
+        .min(2, "O nome deve ter pelo menos 2 caracteres")
+        .max(100, "O nome deve ter no máximo 100 caracteres")
+        .optional(),
+    color: z
+        .string()
+        .regex(/^#[0-9A-F]{6}$/i, "Cor deve estar no formato hexadecimal (#RRGGBB)")
+        .optional(),
+    order: z
+        .number()
+        .min(1, "A ordem deve ser maior que 0")
+        .optional(),
+});
+
+export type CrmStageEditFormData = z.infer<typeof CrmStageEditSchema>;
+
+// === INTERFACES PARA CRM CLIENT ===
+
+export interface CrmClient {
+    id: string;
+    storeId: string;
+    stageId?: string;
+    name: string;
+    email?: string;
+    phone?: string;
+    cpfCnpj?: string;
+    company?: string;
+    notes?: string;
+    createdAt: string;
+    updatedAt: string;
+    stage?: CrmStage;
+    _count?: {
+        interactions: number;
+    };
+}
+
+export interface Pagination {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+}
+
+export interface CrmClientListResponse {
+    items: CrmClient[];
+    pagination: Pagination;
+}
+
+export interface CrmClientCreateRequest {
+    name: string;
+    email?: string;
+    phone?: string;
+    cpfCnpj?: string;
+    company?: string;
+    notes?: string;
+    stageId?: string;
+}
+
+export interface CrmClientUpdateRequest {
+    name?: string;
+    email?: string;
+    phone?: string;
+    cpfCnpj?: string;
+    company?: string;
+    notes?: string;
+    stageId?: string;
+}
+
+export interface CrmClientStats {
+    totalClients: number;
+    clientsByStage: {
+        stageId: string;
+        stageName: string;
+        clientsCount: number;
+    }[];
+    clientsWithoutStage: number;
+    recentClients: number;
+}
+
+export interface TransitionStageRequest {
+    stageId: string | null;
+}
+
+export interface CrmClientsGroupedResponse {
+    stages: (CrmStage & { clients: CrmClient[] })[];
+    totalClients: number;
+}
+
+// === INTERFACES PARA CRM STAGE ===
+
+export interface CrmStage {
+    id: string;
+    storeId: string;
+    name: string;
+    color?: string;
+    order: number;
+    createdAt: string;
+    updatedAt: string;
+    clients?: CrmClient[];
+    _count?: {
+        clients: number;
+    };
+}
+
+export interface CrmStageListResponse {
+    items: CrmStage[];
+}
+
+export interface CrmStageCreateRequest {
+    name: string;
+    color?: string;
+    order?: number;
+}
+
+export interface CrmStageUpdateRequest {
+    name?: string;
+    color?: string;
+    order?: number;
+}
+
+export interface CrmStageStats {
+    totalStages: number;
+    stagesWithClients: number;
+    averageClientsPerStage: number;
+}
+
+export interface ReorderStageRequest {
+    order: number;
+}
+
+// === CRM CLIENT SERVICE ===
+
+const CRM_CLIENT_URI = "/crm/clients";
+
+export const CrmClientService = {
+    // === CRUD BÁSICO ===
+    create: (params: CrmClientCreateRequest): Promise<CrmClient> => 
+        fetchAuth(CRM_CLIENT_URI, { method: "POST", data: params as unknown as Record<string, unknown> }) as Promise<CrmClient>,
+    
+    list: (params?: { 
+        page?: number; 
+        limit?: number; 
+        search?: string; 
+        stageId?: string;
+        grouped?: boolean;
+    }): Promise<CrmClientListResponse | CrmClientsGroupedResponse> => 
+        fetchAuth(CRM_CLIENT_URI, { method: "GET", params }) as Promise<CrmClientListResponse | CrmClientsGroupedResponse>,
+    
+    single: (id: string): Promise<CrmClient> => 
+        fetchAuth(`${CRM_CLIENT_URI}/${id}`, { method: "GET" }) as Promise<CrmClient>,
+    
+    update: (id: string, params: CrmClientUpdateRequest): Promise<CrmClient> => 
+        fetchAuth(`${CRM_CLIENT_URI}/${id}`, { method: "PUT", data: params as unknown as Record<string, unknown> }) as Promise<CrmClient>,
+    
+    delete: (id: string): Promise<void> => 
+        fetchAuth(`${CRM_CLIENT_URI}/${id}`, { method: "DELETE" }) as Promise<void>,
+
+    // === CONSULTAS ESPECÍFICAS ===
+    search: (q: string, limit?: number): Promise<{ clients: CrmClient[] }> => 
+        fetchAuth(`${CRM_CLIENT_URI}/search`, { method: "GET", params: { q, limit } }) as Promise<{ clients: CrmClient[] }>,
+    
+    getStats: (): Promise<CrmClientStats> => 
+        fetchAuth(`${CRM_CLIENT_URI}/stats`, { method: "GET" }) as Promise<CrmClientStats>,
+    
+    listGrouped: (): Promise<CrmClientsGroupedResponse> => 
+        fetchAuth(`${CRM_CLIENT_URI}?grouped=true`, { method: "GET" }) as Promise<CrmClientsGroupedResponse>,
+
+    // === GERENCIAMENTO DE STAGE ===
+    transitionStage: (id: string, stageId: string | null): Promise<CrmClient> => 
+        fetchAuth(`${CRM_CLIENT_URI}/${id}/stage`, { method: "PATCH", data: { stageId } }) as Promise<CrmClient>,
+
+    // === REACT QUERY KEYS ===
+    keys: {
+        all: ["crm", "clients"] as const,
+        lists: () => [...CrmClientService.keys.all, "list"] as const,
+        list: (page: number) => [...CrmClientService.keys.lists(), page.toString()] as const,
+        details: () => [...CrmClientService.keys.all, "detail"] as const,
+        single: (id: string) => [...CrmClientService.keys.details(), id] as const,
+        stats: () => [...CrmClientService.keys.all, "stats"] as const,
+        search: (q: string) => [...CrmClientService.keys.all, "search", q] as const,
+        grouped: () => [...CrmClientService.keys.all, "grouped"] as const,
+    }
+};
+
+// === CRM STAGE SERVICE ===
+
+const CRM_STAGE_URI = "/crm/stages";
+
+export const CrmStageService = {
+    // === CRUD BÁSICO ===
+    create: (params: CrmStageCreateRequest): Promise<CrmStage> => 
+        fetchAuth(CRM_STAGE_URI, { method: "POST", data: params as unknown as Record<string, unknown> }) as Promise<CrmStage>,
+    
+    list: (): Promise<CrmStageListResponse> => 
+        fetchAuth(CRM_STAGE_URI, { method: "GET" }) as Promise<CrmStageListResponse>,
+    
+    single: (id: string): Promise<CrmStage> => 
+        fetchAuth(`${CRM_STAGE_URI}/${id}`, { method: "GET" }) as Promise<CrmStage>,
+    
+    update: (id: string, params: CrmStageUpdateRequest): Promise<CrmStage> => 
+        fetchAuth(`${CRM_STAGE_URI}/${id}`, { method: "PUT", data: params as unknown as Record<string, unknown> }) as Promise<CrmStage>,
+    
+    delete: (id: string): Promise<void> => 
+        fetchAuth(`${CRM_STAGE_URI}/${id}`, { method: "DELETE" }) as Promise<void>,
+
+    // === CONSULTAS ESPECÍFICAS ===
+    getStats: (): Promise<CrmStageStats> => 
+        fetchAuth(`${CRM_STAGE_URI}/stats`, { method: "GET" }) as Promise<CrmStageStats>,
+
+    // === REORDENAÇÃO ===
+    reorder: (id: string, order: number): Promise<CrmStage> => 
+        fetchAuth(`${CRM_STAGE_URI}/${id}/reorder`, { method: "PATCH", data: { order } }) as Promise<CrmStage>,
+
+    // === REACT QUERY KEYS ===
+    keys: {
+        all: ["crm", "stages"] as const,
+        lists: () => [...CrmStageService.keys.all, "list"] as const,
+        details: () => [...CrmStageService.keys.all, "detail"] as const,
+        single: (id: string) => [...CrmStageService.keys.details(), id] as const,
+        stats: () => [...CrmStageService.keys.all, "stats"] as const,
+    }
+};
+
+// === CRM SERVICE COMPLETO ===
+
+export const CrmService = {
+    // === CLIENTES ===
+    clients: CrmClientService,
+    
+    // === STAGES ===
+    stages: CrmStageService,
+
+    // === KEYS GERAIS ===
+    keys: {
+        all: ["crm"] as const,
+        clients: CrmClientService.keys,
+        stages: CrmStageService.keys,
+    }
+};
+
+// === EXPORTS ===
+export default CrmService;

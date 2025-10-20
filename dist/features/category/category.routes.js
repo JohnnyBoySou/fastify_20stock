@@ -4,36 +4,41 @@ exports.CategoryRoutes = CategoryRoutes;
 const category_controller_1 = require("./category.controller");
 const category_schema_1 = require("./category.schema");
 const auth_middleware_1 = require("../../middlewares/auth.middleware");
+const store_context_middleware_1 = require("../../middlewares/store-context.middleware");
 async function CategoryRoutes(fastify) {
     // CRUD básico
     fastify.post('/', {
         schema: category_schema_1.CategorySchemas.create,
-        preHandler: [auth_middleware_1.authMiddleware],
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.create
     });
     fastify.get('/', {
         schema: category_schema_1.CategorySchemas.list,
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.list
     });
     fastify.get('/:id', {
         schema: category_schema_1.CategorySchemas.get,
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.get
     });
     fastify.put('/:id', {
         schema: category_schema_1.CategorySchemas.update,
-        preHandler: [auth_middleware_1.authMiddleware],
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.update
     });
     fastify.delete('/:id', {
         schema: category_schema_1.CategorySchemas.delete,
-        preHandler: [auth_middleware_1.authMiddleware],
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.delete
     });
     // Funções adicionais - Queries
     fastify.get('/active', {
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.getActive
     });
     fastify.get('/stats', {
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.getStats
     });
     fastify.get('/search', {
@@ -47,17 +52,21 @@ async function CategoryRoutes(fastify) {
                 required: ['q']
             }
         },
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.search
     });
     fastify.get('/root', {
         schema: category_schema_1.CategorySchemas.getRoot,
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.getRootCategories
     });
     fastify.get('/:id/children', {
         schema: category_schema_1.CategorySchemas.getChildren,
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.getChildren
     });
     fastify.get('/hierarchy', {
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.getHierarchy
     });
     fastify.get('/code/:code', {
@@ -70,12 +79,13 @@ async function CategoryRoutes(fastify) {
                 required: ['code']
             }
         },
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.getByCode
     });
     // Funções adicionais - Commands
     fastify.patch('/:id/status', {
         schema: category_schema_1.CategorySchemas.updateStatus,
-        preHandler: [auth_middleware_1.authMiddleware],
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.updateStatus
     });
     fastify.patch('/:id/move', {
@@ -94,24 +104,28 @@ async function CategoryRoutes(fastify) {
                 }
             }
         },
-        preHandler: [auth_middleware_1.authMiddleware],
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.moveToParent
     });
     // === RELATÓRIOS ===
     fastify.get('/reports/top-by-products', {
         schema: category_schema_1.CategorySchemas.getTopCategoriesByProducts,
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.getTopCategoriesByProducts
     });
     fastify.get('/reports/creation-evolution', {
         schema: category_schema_1.CategorySchemas.getCategoryCreationEvolution,
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.getCategoryCreationEvolution
     });
     fastify.get('/reports/active-inactive-ratio', {
         schema: category_schema_1.CategorySchemas.getActiveInactiveRatio,
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.getActiveInactiveRatio
     });
     fastify.get('/reports/active-inactive-trend', {
         schema: category_schema_1.CategorySchemas.getActiveInactiveTrend,
+        preHandler: [auth_middleware_1.authMiddleware, store_context_middleware_1.storeContextMiddleware],
         handler: category_controller_1.CategoryController.getActiveInactiveTrend
     });
 }

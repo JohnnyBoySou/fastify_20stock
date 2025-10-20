@@ -26,7 +26,7 @@ exports.SupplierQueries = {
         return supplier;
     },
     async list(params) {
-        const { page = 1, limit = 10, search, status } = params;
+        const { page = 1, limit = 10, search, status, storeId } = params;
         const skip = (page - 1) * limit;
         const where = {};
         if (search) {
@@ -40,6 +40,10 @@ exports.SupplierQueries = {
         }
         if (status !== undefined) {
             where.status = status;
+        }
+        // Filtrar fornecedores da loja específica
+        if (storeId) {
+            where.storeId = storeId;
         }
         const [suppliers, total] = await Promise.all([
             prisma_1.db.supplier.findMany({
@@ -63,7 +67,7 @@ exports.SupplierQueries = {
             prisma_1.db.supplier.count({ where })
         ]);
         return {
-            suppliers,
+            items: suppliers,
             pagination: {
                 page,
                 limit,
@@ -72,9 +76,9 @@ exports.SupplierQueries = {
             }
         };
     },
-    async getByCnpj(cnpj) {
+    async getByCnpj(cnpj, storeId) {
         const supplier = await prisma_1.db.supplier.findUnique({
-            where: { cnpj },
+            where: { cnpj_storeId: { cnpj, storeId: storeId || null } },
             include: {
                 responsibles: true,
                 products: {

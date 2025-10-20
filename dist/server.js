@@ -27,6 +27,7 @@ const plan_routes_1 = require("./features/plan/plan.routes");
 const customer_routes_1 = require("./features/customer/customer.routes");
 const invoice_routes_1 = require("./features/invoice/invoice.routes");
 const webhook_routes_1 = require("./features/webhook/webhook.routes");
+const crm_routes_1 = require("./features/crm/crm.routes");
 const fastify = (0, fastify_1.default)({
     logger: true,
     requestTimeout: 60000, // 30 segundos para timeout de requisições
@@ -107,6 +108,7 @@ fastify.register(plan_routes_1.PlanRoutes, { prefix: '/plans' });
 fastify.register(customer_routes_1.CustomerRoutes, { prefix: '/customers' });
 fastify.register(invoice_routes_1.InvoiceRoutes, { prefix: '/invoices' });
 fastify.register(webhook_routes_1.WebhookRoutes, { prefix: '/webhooks' });
+fastify.register(crm_routes_1.CrmRoutes, { prefix: '/crm' });
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = '0.0.0.0';
 fastify.listen({ port: PORT, host: HOST })

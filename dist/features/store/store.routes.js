@@ -13,10 +13,12 @@ async function StoreRoutes(fastify) {
     });
     fastify.get('/', {
         schema: store_schema_1.StoreSchemas.list,
+        preHandler: [middlewares_1.authMiddleware],
         handler: store_controller_1.StoreController.list
     });
     fastify.get('/:id', {
         schema: store_schema_1.StoreSchemas.get,
+        preHandler: [middlewares_1.authMiddleware],
         handler: store_controller_1.StoreController.get
     });
     fastify.put('/:id', {

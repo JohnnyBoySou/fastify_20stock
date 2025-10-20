@@ -437,8 +437,8 @@ exports.AuthController = {
     },
     async googleLogin(request, reply) {
         try {
-            const { token } = request.body;
-            const result = await auth_commands_1.AuthCommands.googleLogin(token);
+            const { id_token } = request.body;
+            const result = await auth_commands_1.AuthCommands.googleLogin(id_token);
             return reply.send({
                 user: result.user,
                 store: result.store,

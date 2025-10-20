@@ -7,7 +7,8 @@ exports.SupplierController = {
     // === CRUD BÁSICO ===
     async create(request, reply) {
         try {
-            const { corporateName, cnpj, tradeName, cep, city, state, address } = request.body;
+            const { corporateName, cnpj, tradeName, cep, city, state, address, storeId } = request.body;
+            const contextStoreId = request.store?.id;
             const result = await supplier_commands_1.SupplierCommands.create({
                 corporateName,
                 cnpj,
@@ -15,7 +16,8 @@ exports.SupplierController = {
                 cep,
                 city,
                 state,
-                address
+                address,
+                storeId: storeId || contextStoreId
             });
             return reply.status(201).send(result);
         }
@@ -99,11 +101,18 @@ exports.SupplierController = {
     async list(request, reply) {
         try {
             const { page = 1, limit = 10, search, status } = request.query;
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store context required'
+                });
+            }
             const result = await supplier_queries_1.SupplierQueries.list({
                 page,
                 limit,
                 search,
-                status
+                status,
+                storeId
             });
             return reply.send(result);
         }
@@ -118,7 +127,8 @@ exports.SupplierController = {
     async getByCnpj(request, reply) {
         try {
             const { cnpj } = request.params;
-            const result = await supplier_queries_1.SupplierQueries.getByCnpj(cnpj);
+            const storeId = request.store?.id;
+            const result = await supplier_queries_1.SupplierQueries.getByCnpj(cnpj, storeId);
             return reply.send(result);
         }
         catch (error) {

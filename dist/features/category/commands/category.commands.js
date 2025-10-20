@@ -7,7 +7,7 @@ exports.CategoryCommands = {
         return await prisma_1.db.category.create({
             data: {
                 ...data,
-                status: data.status ?? true
+                status: data.status ?? true,
             },
             include: {
                 parent: {

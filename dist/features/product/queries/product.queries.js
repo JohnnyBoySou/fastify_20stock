@@ -225,9 +225,12 @@ exports.ProductQueries = {
             }
         };
     },
-    async getActive() {
+    async getActive(storeId) {
         const products = await prisma_1.db.product.findMany({
-            where: { status: true },
+            where: {
+                status: true,
+                storeId
+            },
             orderBy: { createdAt: 'desc' },
             include: {
                 categories: {
@@ -271,11 +274,11 @@ exports.ProductQueries = {
         }));
         return productsWithStock;
     },
-    async getStats() {
+    async getStats(storeId) {
         const [total, active, inactive] = await Promise.all([
-            prisma_1.db.product.count(),
-            prisma_1.db.product.count({ where: { status: true } }),
-            prisma_1.db.product.count({ where: { status: false } })
+            prisma_1.db.product.count({ where: { storeId } }),
+            prisma_1.db.product.count({ where: { status: true, storeId } }),
+            prisma_1.db.product.count({ where: { status: false, storeId } })
         ]);
         return {
             total,
@@ -283,7 +286,7 @@ exports.ProductQueries = {
             inactive
         };
     },
-    async getByCategory(categoryId) {
+    async getByCategory(categoryId, storeId) {
         const products = await prisma_1.db.product.findMany({
             where: {
                 categories: {
@@ -335,7 +338,7 @@ exports.ProductQueries = {
         }));
         return productsWithStock;
     },
-    async getBySupplier(supplierId) {
+    async getBySupplier(supplierId, storeId) {
         const products = await prisma_1.db.product.findMany({
             where: { supplierId },
             orderBy: { createdAt: 'desc' },
@@ -729,7 +732,7 @@ exports.ProductQueries = {
             categories: categories.map(pc => pc.category)
         };
     },
-    async getProductsByCategories(categoryIds, params) {
+    async getProductsByCategories(categoryIds, storeId, params) {
         const { page = 1, limit = 10, search, status } = params;
         const skip = (page - 1) * limit;
         const where = {

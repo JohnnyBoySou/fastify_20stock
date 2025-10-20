@@ -12,7 +12,8 @@ exports.createSupplierSchema = {
             cep: { type: 'string' },
             city: { type: 'string' },
             state: { type: 'string' },
-            address: { type: 'string' }
+            address: { type: 'string' },
+            storeId: { type: 'string' }
         }
     },
     response: {
@@ -126,7 +127,7 @@ exports.listSuppliersSchema = {
         200: {
             type: 'object',
             properties: {
-                suppliers: {
+                items: {
                     type: 'array',
                     items: {
                         type: 'object',

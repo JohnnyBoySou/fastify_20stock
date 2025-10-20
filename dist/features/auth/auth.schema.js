@@ -480,9 +480,9 @@ exports.updateProfileSchema = {
 exports.googleLoginSchema = {
     body: {
         type: 'object',
-        required: ['token'],
+        required: ['id_token'],
         properties: {
-            token: {
+            id_token: {
                 type: 'string',
                 description: 'Google ID token from client-side authentication'
             }

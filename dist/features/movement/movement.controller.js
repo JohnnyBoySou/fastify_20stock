@@ -190,7 +190,13 @@ exports.MovementController = {
     },
     async list(request, reply) {
         try {
-            const { page = 1, limit = 10, search, type, storeId, productId, supplierId, startDate, endDate } = request.query;
+            const { page = 1, limit = 10, search, type, productId, supplierId, startDate, endDate } = request.query;
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store context required'
+                });
+            }
             const result = await movement_queries_1.MovementQueries.list({
                 page,
                 limit,
@@ -431,7 +437,12 @@ exports.MovementController = {
     },
     async getLowStockProducts(request, reply) {
         try {
-            const { storeId } = request.query;
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store context required'
+                });
+            }
             const result = await movement_queries_1.MovementQueries.getLowStockProducts(storeId);
             return reply.send({ products: result });
         }
@@ -464,7 +475,13 @@ exports.MovementController = {
     // === FUNÇÕES ADICIONAIS DE MOVIMENTAÇÃO ===
     async getReport(request, reply) {
         try {
-            const { storeId, productId, supplierId, type, startDate, endDate, groupBy, format } = request.query;
+            const { productId, supplierId, type, startDate, endDate, groupBy, format } = request.query;
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store context required'
+                });
+            }
             const result = await movement_queries_1.MovementQueries.getMovementReport({
                 storeId,
                 productId,
@@ -558,7 +575,13 @@ exports.MovementController = {
     },
     async getVerifiedMovements(request, reply) {
         try {
-            const { page = 1, limit = 10, storeId, verified, startDate, endDate } = request.query;
+            const { page = 1, limit = 10, verified, startDate, endDate } = request.query;
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store context required'
+                });
+            }
             const result = await movement_queries_1.MovementQueries.getVerifiedMovements({
                 page,
                 limit,
@@ -578,7 +601,13 @@ exports.MovementController = {
     },
     async getCancelledMovements(request, reply) {
         try {
-            const { page = 1, limit = 10, storeId, startDate, endDate } = request.query;
+            const { page = 1, limit = 10, startDate, endDate } = request.query;
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store context required'
+                });
+            }
             const result = await movement_queries_1.MovementQueries.getCancelledMovements({
                 page,
                 limit,
@@ -597,7 +626,13 @@ exports.MovementController = {
     },
     async getAnalytics(request, reply) {
         try {
-            const { storeId, productId, supplierId, startDate, endDate } = request.query;
+            const { productId, supplierId, startDate, endDate } = request.query;
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store context required'
+                });
+            }
             const result = await movement_queries_1.MovementQueries.getMovementAnalytics({
                 storeId,
                 productId,
@@ -629,7 +664,13 @@ exports.MovementController = {
     async summarizeProduct(request, reply) {
         try {
             const { productId } = request.params;
-            const { startDate, endDate, storeId } = request.query;
+            const { startDate, endDate } = request.query;
+            const storeId = request.store?.id;
+            if (!storeId) {
+                return reply.status(400).send({
+                    error: 'Store context required'
+                });
+            }
             const result = await movement_queries_1.MovementQueries.getProductSummary(productId, {
                 startDate,
                 endDate,
@@ -652,8 +693,7 @@ exports.MovementController = {
     // === ENDPOINTS PARA ALERTAS DE ESTOQUE ===
     async checkStockAlerts(request, reply) {
         try {
-            const { storeId } = request.query;
-            const finalStoreId = storeId || request.store?.id;
+            const finalStoreId = request.store?.id;
             if (!finalStoreId) {
                 return reply.status(400).send({
                     error: 'Store ID is required'
@@ -675,8 +715,7 @@ exports.MovementController = {
     },
     async createLowStockSummaryNotification(request, reply) {
         try {
-            const { storeId } = request.query;
-            const finalStoreId = storeId || request.store?.id;
+            const finalStoreId = request.store?.id;
             if (!finalStoreId) {
                 return reply.status(400).send({
                     error: 'Store ID is required'

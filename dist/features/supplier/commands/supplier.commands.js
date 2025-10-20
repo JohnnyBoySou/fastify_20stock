@@ -4,9 +4,14 @@ exports.SupplierCommands = void 0;
 const prisma_1 = require("../../../plugins/prisma");
 exports.SupplierCommands = {
     async create(data) {
-        // Verificar se CNPJ já existe
+        // Verificar se CNPJ já existe para esta store
         const existingSupplier = await prisma_1.db.supplier.findUnique({
-            where: { cnpj: data.cnpj }
+            where: {
+                cnpj_storeId: {
+                    cnpj: data.cnpj,
+                    storeId: data.storeId || null
+                }
+            }
         });
         if (existingSupplier) {
             throw new Error('CNPJ already exists');
@@ -36,10 +41,15 @@ exports.SupplierCommands = {
         if (!existingSupplier) {
             throw new Error('Supplier not found');
         }
-        // Se CNPJ está sendo alterado, verificar se já existe
+        // Se CNPJ está sendo alterado, verificar se já existe para esta store
         if (data.cnpj && data.cnpj !== existingSupplier.cnpj) {
             const cnpjExists = await prisma_1.db.supplier.findUnique({
-                where: { cnpj: data.cnpj }
+                where: {
+                    cnpj_storeId: {
+                        cnpj: data.cnpj,
+                        storeId: existingSupplier.storeId
+                    }
+                }
             });
             if (cnpjExists) {
                 throw new Error('CNPJ already exists');
