@@ -227,7 +227,7 @@ export const listCrmClientsGroupedSchema: FastifySchema = {
           items: {
             type: 'object',
             properties: {
-              id: { type: 'string' },
+              id: { type: ['string', 'null'] },
               name: { type: 'string' },
               color: { type: 'string' },
               order: { type: 'number' },

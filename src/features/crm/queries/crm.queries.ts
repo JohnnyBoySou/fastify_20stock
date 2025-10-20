@@ -66,43 +66,53 @@ export const CrmQueries = {
   },
 
   async listGroupedByStage(storeId: string) {
-    // Buscar todos os stages da store ordenados
-    const stages = await db.crmStage.findMany({
-      where: { storeId },
-      orderBy: { order: 'asc' },
-      include: {
-        clients: {
-          orderBy: { createdAt: 'desc' }
+    try {
+      // Buscar todos os stages da store ordenados
+      const stages = await db.crmStage.findMany({
+        where: { storeId },
+        orderBy: { order: 'asc' },
+        include: {
+          clients: {
+            orderBy: { createdAt: 'desc' }
+          }
         }
+      })
+
+      // Buscar clientes sem stage
+      const clientsWithoutStage = await db.crmClient.findMany({
+        where: {
+          storeId,
+          stageId: null
+        },
+        orderBy: { createdAt: 'desc' }
+      })
+
+      // Adicionar stage virtual para clientes sem stage apenas se houver clientes
+      const stagesWithClients = [...stages]
+      
+      if (clientsWithoutStage.length > 0) {
+        stagesWithClients.push({
+          id: null,
+          name: 'Sem Stage',
+          color: '#6B7280',
+          order: -1,
+          createdAt: new Date(),
+          storeId: storeId,
+          clients: clientsWithoutStage
+        } as any)
       }
-    })
-
-    // Buscar clientes sem stage
-    const clientsWithoutStage = await db.crmClient.findMany({
-      where: {
-        storeId,
-        stageId: null
-      },
-      orderBy: { createdAt: 'desc' }
-    })
-
-    // Adicionar stage virtual para clientes sem stage
-    const stagesWithClients = [
-      ...stages,
-      {
-        id: null,
-        name: 'Sem Stage',
-        color: '#6B7280',
-        order: -1,
-        clients: clientsWithoutStage
-      }
-    ]
-
-    return {
-      stages: stagesWithClients,
-      totalClients: await db.crmClient.count({
+      
+      const totalClients = await db.crmClient.count({
         where: { storeId }
       })
+      
+      return {
+        stages: stagesWithClients,
+        totalClients
+      }
+    } catch (error) {
+      console.error('listGroupedByStage: Error:', error);
+      throw error;
     }
   },
 
