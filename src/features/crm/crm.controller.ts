@@ -209,8 +209,8 @@ export const CrmController = {
       }
 
       const result = await CrmQueries.list({
-        page,
-        limit,
+        page: Number(page),
+        limit: Number(limit),
         search,
         stageId
       }, storeId)

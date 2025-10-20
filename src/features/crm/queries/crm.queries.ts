@@ -20,7 +20,10 @@ export const CrmQueries = {
     stageId?: string
   }, storeId: string) {
     const { page = 1, limit = 10, search, stageId } = params
-    const skip = (page - 1) * limit
+    const skip = (Number(page) - 1) * Number(limit)
+    const take = Number(limit)
+
+    console.log('🔍 DEBUG list: params:', { page, limit, skip, take, search, stageId });
 
     const where: any = {
       storeId
@@ -45,7 +48,7 @@ export const CrmQueries = {
       db.crmClient.findMany({
         where,
         skip,
-        take: limit,
+        take,
         orderBy: { createdAt: 'desc' },
         include: {
           stage: true
@@ -57,10 +60,10 @@ export const CrmQueries = {
     return {
       items,
       pagination: {
-        page,
-        limit,
+        page: Number(page),
+        limit: Number(limit),
         total,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / Number(limit))
       }
     }
   },
