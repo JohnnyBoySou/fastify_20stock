@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SupplierQueries = void 0;
-const prisma_1 = require("../../../plugins/prisma");
+const prisma_1 = require("@/plugins/prisma");
 exports.SupplierQueries = {
     async getById(id) {
         const supplier = await prisma_1.db.supplier.findUnique({

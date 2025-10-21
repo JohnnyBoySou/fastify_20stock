@@ -3,6 +3,7 @@ import { UserPreferencesController } from './user-preferences.controller'
 import {
   createUserPreferencesSchema,
   updateUserPreferencesSchema,
+  updateUserPreferencesMeSchema,
   getUserPreferencesSchema,
   getUserPreferencesByUserIdSchema,
   getUserPreferencesMeSchema,
@@ -59,7 +60,7 @@ export async function UserPreferencesRoutes(fastify: FastifyInstance) {
   })
 
   fastify.put('/me', {
-    schema: updateUserPreferencesSchema,
+    schema: updateUserPreferencesMeSchema,
     handler: UserPreferencesController.updateByUserId
   })
 

@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MovementController = void 0;
 const movement_commands_1 = require("./commands/movement.commands");
 const movement_queries_1 = require("./queries/movement.queries");
-const prisma_1 = require("../../plugins/prisma");
-const stock_alert_service_1 = require("../../services/stock-monitoring/stock-alert.service");
+const prisma_1 = require("@/plugins/prisma");
+const stock_alert_service_1 = require("@/services/stock-monitoring/stock-alert.service");
 const product_queries_1 = require("../product/queries/product.queries");
 exports.MovementController = {
     // === CRUD BÁSICO ===

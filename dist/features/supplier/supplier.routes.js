@@ -4,8 +4,8 @@ exports.SupplierRoutes = SupplierRoutes;
 const supplier_controller_1 = require("./supplier.controller");
 const supplier_schema_1 = require("./supplier.schema");
 const supplier_responsible_routes_1 = require("./supplier-responsible.routes");
-const auth_middleware_1 = require("../../middlewares/auth.middleware");
-const store_context_middleware_1 = require("../../middlewares/store-context.middleware");
+const auth_middleware_1 = require("@/middlewares/auth.middleware");
+const store_context_middleware_1 = require("@/middlewares/store-context.middleware");
 async function SupplierRoutes(fastify) {
     // Middlewares para todas as rotas
     fastify.addHook('preHandler', auth_middleware_1.authMiddleware);

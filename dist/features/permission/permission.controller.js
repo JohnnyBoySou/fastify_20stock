@@ -34,7 +34,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PermissionController = void 0;
-const authorization_middleware_1 = require("../../middlewares/authorization.middleware");
+const authorization_middleware_1 = require("@/middlewares/authorization.middleware");
 const PermissionCommands = __importStar(require("./commands/permission.commands"));
 const PermissionQueries = __importStar(require("./queries/permission.queries"));
 exports.PermissionController = {

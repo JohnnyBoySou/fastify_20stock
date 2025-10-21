@@ -421,6 +421,164 @@ export const getUserPreferencesByUserIdSchema: FastifySchema = {
   }
 }
 
+// Schema para atualizar preferências do usuário autenticado (rota /me)
+export const updateUserPreferencesMeSchema: FastifySchema = {
+  body: {
+    type: 'object',
+    properties: {
+      theme: {
+        type: 'string',
+        enum: ['light', 'dark', 'auto'],
+        description: 'Theme preference'
+      },
+      primaryColor: {
+        type: 'string',
+        pattern: '^#[0-9A-Fa-f]{6}$',
+        description: 'Primary color in hex format'
+      },
+      sidebarCollapsed: {
+        type: 'boolean',
+        description: 'Whether sidebar is collapsed'
+      },
+      compactMode: {
+        type: 'boolean',
+        description: 'Whether to use compact mode'
+      },
+      language: {
+        type: 'string',
+        description: 'Language preference'
+      },
+      currency: {
+        type: 'string',
+        description: 'Currency preference'
+      },
+      timezone: {
+        type: 'string',
+        description: 'Timezone preference'
+      },
+      dateFormat: {
+        type: 'string',
+        description: 'Date format preference'
+      },
+      timeFormat: {
+        type: 'string',
+        enum: ['12h', '24h'],
+        description: 'Time format preference'
+      },
+      numberFormat: {
+        type: 'string',
+        description: 'Number format preference'
+      },
+      emailNotifications: {
+        type: 'boolean',
+        description: 'Email notifications preference'
+      },
+      pushNotifications: {
+        type: 'boolean',
+        description: 'Push notifications preference'
+      },
+      smsNotifications: {
+        type: 'boolean',
+        description: 'SMS notifications preference'
+      },
+      notificationTypes: {
+        type: 'object',
+        description: 'Notification types configuration'
+      },
+      dashboardLayout: {
+        type: 'object',
+        description: 'Dashboard layout configuration'
+      },
+      defaultPage: {
+        type: 'string',
+        description: 'Default page preference'
+      },
+      itemsPerPage: {
+        type: 'number',
+        minimum: 1,
+        maximum: 100,
+        description: 'Items per page preference'
+      },
+      defaultStoreId: {
+        type: 'string',
+        description: 'Default store ID'
+      },
+      autoRefresh: {
+        type: 'boolean',
+        description: 'Auto refresh preference'
+      },
+      refreshInterval: {
+        type: 'number',
+        minimum: 1000,
+        maximum: 300000,
+        description: 'Refresh interval in milliseconds'
+      },
+      customSettings: {
+        type: 'object',
+        description: 'Custom settings configuration'
+      }
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        userId: { type: 'string' },
+        theme: { type: 'string' },
+        primaryColor: { type: 'string' },
+        sidebarCollapsed: { type: 'boolean' },
+        compactMode: { type: 'boolean' },
+        language: { type: 'string' },
+        currency: { type: 'string' },
+        timezone: { type: 'string' },
+        dateFormat: { type: 'string' },
+        timeFormat: { type: 'string' },
+        numberFormat: { type: 'string' },
+        emailNotifications: { type: 'boolean' },
+        pushNotifications: { type: 'boolean' },
+        smsNotifications: { type: 'boolean' },
+        notificationTypes: { type: 'object' },
+        dashboardLayout: { type: 'object' },
+        defaultPage: { type: 'string' },
+        itemsPerPage: { type: 'number' },
+        defaultStoreId: { type: 'string' },
+        autoRefresh: { type: 'boolean' },
+        refreshInterval: { type: 'number' },
+        customSettings: { type: 'object' },
+        createdAt: { type: 'string', format: 'date-time' },
+        updatedAt: { type: 'string', format: 'date-time' },
+        user: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+            email: { type: 'string' }
+          }
+        }
+      }
+    },
+    401: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    404: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
+  }
+}
+
 // Schema para rotas /me (sem parâmetros)
 export const getUserPreferencesMeSchema: FastifySchema = {
   response: {
