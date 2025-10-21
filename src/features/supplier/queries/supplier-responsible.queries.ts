@@ -1,10 +1,8 @@
 import { db } from '@/plugins/prisma';
 
-export class SupplierResponsibleQueries {
-  constructor(private prisma: any) {}
-
-  async getById(supplierId: string, responsibleId: string) {
-    const responsible = await this.prisma.supplierResponsible.findFirst({
+export const SupplierResponsibleQueries = {
+  async getById({ supplierId, responsibleId }: { supplierId: string, responsibleId: string }) {
+    const responsible = await db.supplierResponsible.findFirst({
       where: {
         id: responsibleId,
         supplierId
@@ -16,19 +14,19 @@ export class SupplierResponsibleQueries {
     }
 
     return responsible;
-  }
+  },
 
-  async list(supplierId: string, params: {
+  async list({ supplierId, params }: { supplierId: string, params: {
     page?: number
     limit?: number
     search?: string
     status?: boolean
-  }) {
+  }}) {
     const { page = 1, limit = 10, search, status } = params;
     const skip = (page - 1) * limit;
 
     // Verificar se o supplier existe
-    const supplier = await this.prisma.supplier.findUnique({
+    const supplier = await db.supplier.findUnique({
       where: { id: supplierId }
     });
 
@@ -56,13 +54,12 @@ export class SupplierResponsibleQueries {
 
     // Buscar responsáveis
     const [responsibles, total] = await Promise.all([
-      this.prisma.supplierResponsible.findMany({
+      db.supplierResponsible.findMany({
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' }
       }),
-      this.prisma.supplierResponsible.count({ where })
+      db.supplierResponsible.count({ where })
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -76,10 +73,10 @@ export class SupplierResponsibleQueries {
         totalPages
       }
     };
-  }
+  },
 
-  async getByEmail(supplierId: string, email: string) {
-    const responsible = await this.prisma.supplierResponsible.findFirst({
+  async getByEmail({ supplierId, email }: { supplierId: string, email: string }) {
+    const responsible = await db.supplierResponsible.findFirst({
       where: {
         supplierId,
         email
@@ -91,10 +88,10 @@ export class SupplierResponsibleQueries {
     }
 
     return responsible;
-  }
+  },
 
-  async getByCpf(supplierId: string, cpf: string) {
-    const responsible = await this.prisma.supplierResponsible.findFirst({
+  async getByCpf({ supplierId, cpf }: { supplierId: string, cpf: string }) {
+    const responsible = await db.supplierResponsible.findFirst({
       where: {
         supplierId,
         cpf
@@ -106,11 +103,11 @@ export class SupplierResponsibleQueries {
     }
 
     return responsible;
-  }
+  },  
 
-  async getActive(supplierId: string) {
+  async getActive({ supplierId }: { supplierId: string }) {
     // Verificar se o supplier existe
-    const supplier = await this.prisma.supplier.findUnique({
+    const supplier = await db.supplier.findUnique({
       where: { id: supplierId }
     });
 
@@ -118,18 +115,18 @@ export class SupplierResponsibleQueries {
       throw new Error('Supplier not found');
     }
 
-    return await this.prisma.supplierResponsible.findMany({
+    return await db.supplierResponsible.findMany({
       where: {
         supplierId,
         status: true
       },
       orderBy: { name: 'asc' }
     });
-  }
+  },
 
-  async getStats(supplierId: string) {
+  async getStats({ supplierId }: { supplierId: string } ) {
     // Verificar se o supplier existe
-    const supplier = await this.prisma.supplier.findUnique({
+    const supplier = await db.supplier.findUnique({
       where: { id: supplierId }
     });
 
@@ -138,13 +135,13 @@ export class SupplierResponsibleQueries {
     }
 
     const [total, active, inactive] = await Promise.all([
-      this.prisma.supplierResponsible.count({
+      db.supplierResponsible.count({
         where: { supplierId }
       }),
-      this.prisma.supplierResponsible.count({
+      db.supplierResponsible.count({
         where: { supplierId, status: true }
       }),
-      this.prisma.supplierResponsible.count({
+      db.supplierResponsible.count({
         where: { supplierId, status: false }
       })
     ]);
@@ -154,11 +151,11 @@ export class SupplierResponsibleQueries {
       active,
       inactive
     };
-  }
+  },
 
-  async search(supplierId: string, searchTerm: string, limit: number = 10) {
+  async search({ supplierId, searchTerm, limit }: { supplierId: string, searchTerm: string, limit: number }) {
     // Verificar se o supplier existe
-    const supplier = await this.prisma.supplier.findUnique({
+    const supplier = await db.supplier.findUnique({
       where: { id: supplierId }
     });
 
@@ -166,7 +163,7 @@ export class SupplierResponsibleQueries {
       throw new Error('Supplier not found');
     }
 
-    return await this.prisma.supplierResponsible.findMany({
+    return await db.supplierResponsible.findMany({
       where: {
         supplierId,
         OR: [
@@ -179,11 +176,11 @@ export class SupplierResponsibleQueries {
       take: limit,
       orderBy: { name: 'asc' }
     });
-  }
+  },
 
-  async getBySupplier(supplierId: string) {
+  async getBySupplier({ supplierId }: { supplierId: string }) {
     // Verificar se o supplier existe
-    const supplier = await this.prisma.supplier.findUnique({
+    const supplier = await db.supplier.findUnique({
       where: { id: supplierId }
     });
 
@@ -191,15 +188,15 @@ export class SupplierResponsibleQueries {
       throw new Error('Supplier not found');
     }
 
-    return await this.prisma.supplierResponsible.findMany({
+    return await db.supplierResponsible.findMany({
       where: { supplierId },
       orderBy: { name: 'asc' }
     });
-  }
+  },
 
-  async getRecent(supplierId: string, limit: number = 5) {
+  async getRecent({ supplierId, limit }: { supplierId: string, limit: number }) {
     // Verificar se o supplier existe
-    const supplier = await this.prisma.supplier.findUnique({
+    const supplier = await db.supplier.findUnique({
       where: { id: supplierId }
     });
 
@@ -207,10 +204,9 @@ export class SupplierResponsibleQueries {
       throw new Error('Supplier not found');
     }
 
-    return await this.prisma.supplierResponsible.findMany({
+    return await db.supplierResponsible.findMany({
       where: { supplierId },
       take: limit,
-      orderBy: { createdAt: 'desc' }
     });
   }
 }

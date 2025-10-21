@@ -1,13 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SupplierResponsibleCommands = void 0;
-class SupplierResponsibleCommands {
-    constructor(prisma) {
-        this.prisma = prisma;
-    }
-    async create(supplierId, data) {
+const prisma_1 = require("../../../plugins/prisma");
+exports.SupplierResponsibleCommands = {
+    async create({ supplierId, data }) {
         // Verificar se o supplier existe
-        const supplier = await this.prisma.supplier.findUnique({
+        const supplier = await prisma_1.db.supplier.findUnique({
             where: { id: supplierId }
         });
         if (!supplier) {
@@ -15,7 +13,7 @@ class SupplierResponsibleCommands {
         }
         // Verificar se email já existe para este supplier
         if (data.email) {
-            const existingEmail = await this.prisma.supplierResponsible.findFirst({
+            const existingEmail = await prisma_1.db.supplierResponsible.findFirst({
                 where: {
                     supplierId,
                     email: data.email
@@ -27,7 +25,7 @@ class SupplierResponsibleCommands {
         }
         // Verificar se CPF já existe para este supplier
         if (data.cpf) {
-            const existingCpf = await this.prisma.supplierResponsible.findFirst({
+            const existingCpf = await prisma_1.db.supplierResponsible.findFirst({
                 where: {
                     supplierId,
                     cpf: data.cpf
@@ -37,17 +35,17 @@ class SupplierResponsibleCommands {
                 throw new Error('CPF already exists for this supplier');
             }
         }
-        return await this.prisma.supplierResponsible.create({
+        return await prisma_1.db.supplierResponsible.create({
             data: {
                 ...data,
                 supplierId,
                 status: true
             }
         });
-    }
-    async update(supplierId, responsibleId, data) {
+    },
+    async update({ supplierId, responsibleId, data }) {
         // Verificar se o responsible existe e pertence ao supplier
-        const existingResponsible = await this.prisma.supplierResponsible.findFirst({
+        const existingResponsible = await prisma_1.db.supplierResponsible.findFirst({
             where: {
                 id: responsibleId,
                 supplierId
@@ -58,7 +56,7 @@ class SupplierResponsibleCommands {
         }
         // Verificar se email já existe para outro responsible do mesmo supplier
         if (data.email) {
-            const existingEmail = await this.prisma.supplierResponsible.findFirst({
+            const existingEmail = await prisma_1.db.supplierResponsible.findFirst({
                 where: {
                     supplierId,
                     email: data.email,
@@ -71,7 +69,7 @@ class SupplierResponsibleCommands {
         }
         // Verificar se CPF já existe para outro responsible do mesmo supplier
         if (data.cpf) {
-            const existingCpf = await this.prisma.supplierResponsible.findFirst({
+            const existingCpf = await prisma_1.db.supplierResponsible.findFirst({
                 where: {
                     supplierId,
                     cpf: data.cpf,
@@ -82,14 +80,14 @@ class SupplierResponsibleCommands {
                 throw new Error('CPF already exists for another responsible of this supplier');
             }
         }
-        return await this.prisma.supplierResponsible.update({
+        return await prisma_1.db.supplierResponsible.update({
             where: { id: responsibleId },
             data
         });
-    }
-    async delete(supplierId, responsibleId) {
+    },
+    async delete({ supplierId, responsibleId }) {
         // Verificar se o responsible existe e pertence ao supplier
-        const existingResponsible = await this.prisma.supplierResponsible.findFirst({
+        const existingResponsible = await prisma_1.db.supplierResponsible.findFirst({
             where: {
                 id: responsibleId,
                 supplierId
@@ -98,13 +96,13 @@ class SupplierResponsibleCommands {
         if (!existingResponsible) {
             throw new Error('Responsible not found for this supplier');
         }
-        await this.prisma.supplierResponsible.delete({
+        await prisma_1.db.supplierResponsible.delete({
             where: { id: responsibleId }
         });
-    }
-    async toggleStatus(supplierId, responsibleId) {
+    },
+    async toggleStatus({ supplierId, responsibleId }) {
         // Verificar se o responsible existe e pertence ao supplier
-        const existingResponsible = await this.prisma.supplierResponsible.findFirst({
+        const existingResponsible = await prisma_1.db.supplierResponsible.findFirst({
             where: {
                 id: responsibleId,
                 supplierId
@@ -113,16 +111,16 @@ class SupplierResponsibleCommands {
         if (!existingResponsible) {
             throw new Error('Responsible not found for this supplier');
         }
-        return await this.prisma.supplierResponsible.update({
+        return await prisma_1.db.supplierResponsible.update({
             where: { id: responsibleId },
             data: {
                 status: !existingResponsible.status
             }
         });
-    }
-    async bulkCreate(supplierId, responsibles) {
+    },
+    async bulkCreate({ supplierId, responsibles }) {
         // Verificar se o supplier existe
-        const supplier = await this.prisma.supplier.findUnique({
+        const supplier = await prisma_1.db.supplier.findUnique({
             where: { id: supplierId }
         });
         if (!supplier) {
@@ -139,7 +137,7 @@ class SupplierResponsibleCommands {
         }
         // Verificar se algum email já existe no banco
         if (emails.length > 0) {
-            const existingEmails = await this.prisma.supplierResponsible.findMany({
+            const existingEmails = await prisma_1.db.supplierResponsible.findMany({
                 where: {
                     supplierId,
                     email: { in: emails }
@@ -152,7 +150,7 @@ class SupplierResponsibleCommands {
         }
         // Verificar se algum CPF já existe no banco
         if (cpfs.length > 0) {
-            const existingCpfs = await this.prisma.supplierResponsible.findMany({
+            const existingCpfs = await prisma_1.db.supplierResponsible.findMany({
                 where: {
                     supplierId,
                     cpf: { in: cpfs }
@@ -164,13 +162,12 @@ class SupplierResponsibleCommands {
             }
         }
         // Criar todos os responsáveis
-        return await this.prisma.supplierResponsible.createMany({
+        return await prisma_1.db.supplierResponsible.createMany({
             data: responsibles.map(responsible => ({
                 ...responsible,
                 supplierId,
                 status: true
             }))
         });
-    }
-}
-exports.SupplierResponsibleCommands = SupplierResponsibleCommands;
+    },
+};

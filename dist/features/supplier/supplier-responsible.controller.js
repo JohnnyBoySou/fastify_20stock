@@ -9,14 +9,7 @@ exports.SupplierResponsibleController = {
         try {
             const { supplierId } = request.params;
             const { name, email, phone, cpf } = request.body;
-            const prisma = request.server.prisma;
-            const commands = new supplier_responsible_commands_1.SupplierResponsibleCommands(prisma);
-            const result = await commands.create(supplierId, {
-                name,
-                email,
-                phone,
-                cpf
-            });
+            const result = await supplier_responsible_commands_1.SupplierResponsibleCommands.create({ supplierId, data: { name, email, phone, cpf } });
             return reply.status(201).send(result);
         }
         catch (error) {
@@ -40,9 +33,7 @@ exports.SupplierResponsibleController = {
     async get(request, reply) {
         try {
             const { supplierId, responsibleId } = request.params;
-            const prisma = request.server.prisma;
-            const queries = new supplier_responsible_queries_1.SupplierResponsibleQueries(prisma);
-            const result = await queries.getById(supplierId, responsibleId);
+            const result = await supplier_responsible_queries_1.SupplierResponsibleQueries.getById({ supplierId, responsibleId });
             return reply.send(result);
         }
         catch (error) {
@@ -61,9 +52,7 @@ exports.SupplierResponsibleController = {
         try {
             const { supplierId, responsibleId } = request.params;
             const updateData = { ...request.body };
-            const prisma = request.server.prisma;
-            const commands = new supplier_responsible_commands_1.SupplierResponsibleCommands(prisma);
-            const result = await commands.update(supplierId, responsibleId, updateData);
+            const result = await supplier_responsible_commands_1.SupplierResponsibleCommands.update({ supplierId, responsibleId, data: updateData });
             return reply.send(result);
         }
         catch (error) {
@@ -87,9 +76,7 @@ exports.SupplierResponsibleController = {
     async delete(request, reply) {
         try {
             const { supplierId, responsibleId } = request.params;
-            const prisma = request.server.prisma;
-            const commands = new supplier_responsible_commands_1.SupplierResponsibleCommands(prisma);
-            await commands.delete(supplierId, responsibleId);
+            await supplier_responsible_commands_1.SupplierResponsibleCommands.delete({ supplierId, responsibleId });
             return reply.status(204).send();
         }
         catch (error) {
@@ -108,14 +95,7 @@ exports.SupplierResponsibleController = {
         try {
             const { supplierId } = request.params;
             const { page = 1, limit = 10, search, status } = request.query;
-            const prisma = request.server.prisma;
-            const queries = new supplier_responsible_queries_1.SupplierResponsibleQueries(prisma);
-            const result = await queries.list(supplierId, {
-                page,
-                limit,
-                search,
-                status
-            });
+            const result = await supplier_responsible_queries_1.SupplierResponsibleQueries.list({ supplierId, params: { page, limit, search, status } });
             return reply.send(result);
         }
         catch (error) {
@@ -134,9 +114,7 @@ exports.SupplierResponsibleController = {
     async getByEmail(request, reply) {
         try {
             const { supplierId, email } = request.params;
-            const prisma = request.server.prisma;
-            const queries = new supplier_responsible_queries_1.SupplierResponsibleQueries(prisma);
-            const result = await queries.getByEmail(supplierId, email);
+            const result = await supplier_responsible_queries_1.SupplierResponsibleQueries.getByEmail({ supplierId, email });
             return reply.send(result);
         }
         catch (error) {
@@ -154,9 +132,7 @@ exports.SupplierResponsibleController = {
     async getByCpf(request, reply) {
         try {
             const { supplierId, cpf } = request.params;
-            const prisma = request.server.prisma;
-            const queries = new supplier_responsible_queries_1.SupplierResponsibleQueries(prisma);
-            const result = await queries.getByCpf(supplierId, cpf);
+            const result = await supplier_responsible_queries_1.SupplierResponsibleQueries.getByCpf({ supplierId, cpf });
             return reply.send(result);
         }
         catch (error) {
@@ -174,9 +150,7 @@ exports.SupplierResponsibleController = {
     async getActive(request, reply) {
         try {
             const { supplierId } = request.params;
-            const prisma = request.server.prisma;
-            const queries = new supplier_responsible_queries_1.SupplierResponsibleQueries(prisma);
-            const result = await queries.getActive(supplierId);
+            const result = await supplier_responsible_queries_1.SupplierResponsibleQueries.getActive({ supplierId });
             return reply.send({ responsibles: result });
         }
         catch (error) {
@@ -194,9 +168,7 @@ exports.SupplierResponsibleController = {
     async getStats(request, reply) {
         try {
             const { supplierId } = request.params;
-            const prisma = request.server.prisma;
-            const queries = new supplier_responsible_queries_1.SupplierResponsibleQueries(prisma);
-            const result = await queries.getStats(supplierId);
+            const result = await supplier_responsible_queries_1.SupplierResponsibleQueries.getStats({ supplierId });
             return reply.send(result);
         }
         catch (error) {
@@ -215,9 +187,7 @@ exports.SupplierResponsibleController = {
         try {
             const { supplierId } = request.params;
             const { q, limit = 10 } = request.query;
-            const prisma = request.server.prisma;
-            const queries = new supplier_responsible_queries_1.SupplierResponsibleQueries(prisma);
-            const result = await queries.search(supplierId, q, limit);
+            const result = await supplier_responsible_queries_1.SupplierResponsibleQueries.search({ supplierId, searchTerm: q, limit });
             return reply.send({ responsibles: result });
         }
         catch (error) {
@@ -236,9 +206,7 @@ exports.SupplierResponsibleController = {
         try {
             const { supplierId } = request.params;
             const { limit = 5 } = request.query;
-            const prisma = request.server.prisma;
-            const queries = new supplier_responsible_queries_1.SupplierResponsibleQueries(prisma);
-            const result = await queries.getRecent(supplierId, limit);
+            const result = await supplier_responsible_queries_1.SupplierResponsibleQueries.getRecent({ supplierId, limit });
             return reply.send({ responsibles: result });
         }
         catch (error) {
@@ -257,9 +225,7 @@ exports.SupplierResponsibleController = {
     async toggleStatus(request, reply) {
         try {
             const { supplierId, responsibleId } = request.params;
-            const prisma = request.server.prisma;
-            const commands = new supplier_responsible_commands_1.SupplierResponsibleCommands(prisma);
-            const result = await commands.toggleStatus(supplierId, responsibleId);
+            const result = await supplier_responsible_commands_1.SupplierResponsibleCommands.toggleStatus({ supplierId, responsibleId });
             return reply.send(result);
         }
         catch (error) {
@@ -278,9 +244,7 @@ exports.SupplierResponsibleController = {
         try {
             const { supplierId } = request.params;
             const responsibles = request.body;
-            const prisma = request.server.prisma;
-            const commands = new supplier_responsible_commands_1.SupplierResponsibleCommands(prisma);
-            const result = await commands.bulkCreate(supplierId, responsibles);
+            const result = await supplier_responsible_commands_1.SupplierResponsibleCommands.bulkCreate({ supplierId, responsibles });
             return reply.status(201).send({
                 message: `${result.count} responsibles created successfully`,
                 count: result.count

@@ -17,16 +17,8 @@ export const SupplierResponsibleController = {
     try {
       const { supplierId } = request.params;
       const { name, email, phone, cpf } = request.body;
-      const prisma = (request.server as any).prisma;
-      const commands = new SupplierResponsibleCommands(prisma);
-
-      const result = await commands.create(supplierId, {
-        name,
-        email,
-        phone,
-        cpf
-      });
-
+      const result = await SupplierResponsibleCommands.create({ supplierId, data: { name, email, phone, cpf } });
+      
       return reply.status(201).send(result);
     } catch (error: any) {
       request.log.error(error);
@@ -53,10 +45,7 @@ export const SupplierResponsibleController = {
   async get(request: GetSupplierResponsibleRequest, reply: FastifyReply) {
     try {
       const { supplierId, responsibleId } = request.params;
-      const prisma = (request.server as any).prisma;
-      const queries = new SupplierResponsibleQueries(prisma);
-
-      const result = await queries.getById(supplierId, responsibleId);
+      const result = await SupplierResponsibleQueries.getById({ supplierId, responsibleId });
 
       return reply.send(result);
     } catch (error: any) {
@@ -78,10 +67,7 @@ export const SupplierResponsibleController = {
     try {
       const { supplierId, responsibleId } = request.params;
       const updateData = { ...request.body };
-      const prisma = (request.server as any).prisma;
-      const commands = new SupplierResponsibleCommands(prisma);
-
-      const result = await commands.update(supplierId, responsibleId, updateData);
+      const result = await SupplierResponsibleCommands.update({ supplierId, responsibleId, data: updateData });
 
       return reply.send(result);
     } catch (error: any) {
@@ -109,10 +95,7 @@ export const SupplierResponsibleController = {
   async delete(request: DeleteSupplierResponsibleRequest, reply: FastifyReply) {
     try {
       const { supplierId, responsibleId } = request.params;
-      const prisma = (request.server as any).prisma;
-      const commands = new SupplierResponsibleCommands(prisma);
-
-      await commands.delete(supplierId, responsibleId);
+      await SupplierResponsibleCommands.delete({ supplierId, responsibleId});
 
       return reply.status(204).send();
     } catch (error: any) {
@@ -134,15 +117,7 @@ export const SupplierResponsibleController = {
     try {
       const { supplierId } = request.params;
       const { page = 1, limit = 10, search, status } = request.query;
-      const prisma = (request.server as any).prisma;
-      const queries = new SupplierResponsibleQueries(prisma);
-
-      const result = await queries.list(supplierId, {
-        page,
-        limit,
-        search,
-        status
-      });
+      const result = await SupplierResponsibleQueries.list({ supplierId, params: { page, limit, search, status } });
 
       return reply.send(result);
     } catch (error: any) {
@@ -164,10 +139,7 @@ export const SupplierResponsibleController = {
   async getByEmail(request: GetSupplierResponsibleByEmailRequest, reply: FastifyReply) {
     try {
       const { supplierId, email } = request.params;
-      const prisma = (request.server as any).prisma;
-      const queries = new SupplierResponsibleQueries(prisma);
-
-      const result = await queries.getByEmail(supplierId, email);
+      const result = await SupplierResponsibleQueries.getByEmail({ supplierId, email });
 
       return reply.send(result);
     } catch (error: any) {
@@ -188,10 +160,7 @@ export const SupplierResponsibleController = {
   async getByCpf(request: GetSupplierResponsibleByCpfRequest, reply: FastifyReply) {
     try {
       const { supplierId, cpf } = request.params;
-      const prisma = (request.server as any).prisma;
-      const queries = new SupplierResponsibleQueries(prisma);
-
-      const result = await queries.getByCpf(supplierId, cpf);
+      const result = await SupplierResponsibleQueries.getByCpf({ supplierId, cpf });
 
       return reply.send(result);
     } catch (error: any) {
@@ -212,10 +181,7 @@ export const SupplierResponsibleController = {
   async getActive(request: FastifyRequest<{ Params: { supplierId: string } }>, reply: FastifyReply) {
     try {
       const { supplierId } = request.params;
-      const prisma = (request.server as any).prisma;
-      const queries = new SupplierResponsibleQueries(prisma);
-
-      const result = await queries.getActive(supplierId);
+      const result = await SupplierResponsibleQueries.getActive({ supplierId });
 
       return reply.send({ responsibles: result });
     } catch (error: any) {
@@ -236,10 +202,7 @@ export const SupplierResponsibleController = {
   async getStats(request: FastifyRequest<{ Params: { supplierId: string } }>, reply: FastifyReply) {
     try {
       const { supplierId } = request.params;
-      const prisma = (request.server as any).prisma;
-      const queries = new SupplierResponsibleQueries(prisma);
-
-      const result = await queries.getStats(supplierId);
+      const result = await SupplierResponsibleQueries.getStats({ supplierId });
 
       return reply.send(result);
     } catch (error: any) {
@@ -264,10 +227,7 @@ export const SupplierResponsibleController = {
     try {
       const { supplierId } = request.params;
       const { q, limit = 10 } = request.query;
-      const prisma = (request.server as any).prisma;
-      const queries = new SupplierResponsibleQueries(prisma);
-
-      const result = await queries.search(supplierId, q, limit);
+      const result = await SupplierResponsibleQueries.search({ supplierId, searchTerm: q, limit });
 
       return reply.send({ responsibles: result });
     } catch (error: any) {
@@ -292,10 +252,7 @@ export const SupplierResponsibleController = {
     try {
       const { supplierId } = request.params;
       const { limit = 5 } = request.query;
-      const prisma = (request.server as any).prisma;
-      const queries = new SupplierResponsibleQueries(prisma);
-
-      const result = await queries.getRecent(supplierId, limit);
+        const result = await SupplierResponsibleQueries.getRecent({ supplierId, limit });
 
       return reply.send({ responsibles: result });
     } catch (error: any) {
@@ -319,10 +276,7 @@ export const SupplierResponsibleController = {
   }>, reply: FastifyReply) {
     try {
       const { supplierId, responsibleId } = request.params;
-      const prisma = (request.server as any).prisma;
-      const commands = new SupplierResponsibleCommands(prisma);
-
-      const result = await commands.toggleStatus(supplierId, responsibleId);
+      const result = await SupplierResponsibleCommands.toggleStatus({ supplierId, responsibleId });
 
       return reply.send(result);
     } catch (error: any) {
@@ -352,10 +306,7 @@ export const SupplierResponsibleController = {
     try {
       const { supplierId } = request.params;
       const responsibles = request.body;
-      const prisma = (request.server as any).prisma;
-      const commands = new SupplierResponsibleCommands(prisma);
-
-      const result = await commands.bulkCreate(supplierId, responsibles);
+      const result = await SupplierResponsibleCommands.bulkCreate({ supplierId, responsibles });
 
       return reply.status(201).send({
         message: `${result.count} responsibles created successfully`,
