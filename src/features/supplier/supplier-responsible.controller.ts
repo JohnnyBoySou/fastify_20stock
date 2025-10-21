@@ -17,7 +17,11 @@ export const SupplierResponsibleController = {
     try {
       const { supplierId } = request.params;
       const { name, email, phone, cpf } = request.body;
-      const result = await SupplierResponsibleCommands.create({ supplierId, data: { name, email, phone, cpf } });
+      
+      // Remover campos que não existem no modelo SupplierResponsible
+      const createData = { name, email, phone, cpf };
+      
+      const result = await SupplierResponsibleCommands.create({ supplierId, data: createData });
       
       return reply.status(201).send(result);
     } catch (error: any) {
@@ -66,7 +70,23 @@ export const SupplierResponsibleController = {
   async update(request: UpdateSupplierResponsibleRequest, reply: FastifyReply) {
     try {
       const { supplierId, responsibleId } = request.params;
-      const updateData = { ...request.body };
+      const { name, email, phone, cpf, status } = request.body;
+      
+      // Criar objeto apenas com campos válidos do modelo SupplierResponsible
+      const updateData: {
+        name?: string
+        email?: string
+        phone?: string
+        cpf?: string
+        status?: boolean
+      } = {};
+      
+      if (name !== undefined) updateData.name = name;
+      if (email !== undefined) updateData.email = email;
+      if (phone !== undefined) updateData.phone = phone;
+      if (cpf !== undefined) updateData.cpf = cpf;
+      if (status !== undefined) updateData.status = status;
+      
       const result = await SupplierResponsibleCommands.update({ supplierId, responsibleId, data: updateData });
 
       return reply.send(result);
@@ -306,7 +326,16 @@ export const SupplierResponsibleController = {
     try {
       const { supplierId } = request.params;
       const responsibles = request.body;
-      const result = await SupplierResponsibleCommands.bulkCreate({ supplierId, responsibles });
+      
+      // Filtrar campos válidos para cada responsável
+      const filteredResponsibles = responsibles.map(responsible => ({
+        name: responsible.name,
+        email: responsible.email,
+        phone: responsible.phone,
+        cpf: responsible.cpf
+      }));
+      
+      const result = await SupplierResponsibleCommands.bulkCreate({ supplierId, responsibles: filteredResponsibles });
 
       return reply.status(201).send({
         message: `${result.count} responsibles created successfully`,
