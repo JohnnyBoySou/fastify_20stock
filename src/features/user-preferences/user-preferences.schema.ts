@@ -374,10 +374,98 @@ export const getUserPreferencesByUserIdSchema: FastifySchema = {
         id: { type: 'string' },
         userId: { type: 'string' },
         theme: { type: 'string' },
+        primaryColor: { type: 'string' },
+        sidebarCollapsed: { type: 'boolean' },
+        compactMode: { type: 'boolean' },
         language: { type: 'string' },
         currency: { type: 'string' },
+        timezone: { type: 'string' },
+        dateFormat: { type: 'string' },
+        timeFormat: { type: 'string' },
+        numberFormat: { type: 'string' },
+        emailNotifications: { type: 'boolean' },
+        pushNotifications: { type: 'boolean' },
+        smsNotifications: { type: 'boolean' },
+        notificationTypes: { type: 'object' },
+        dashboardLayout: { type: 'object' },
+        defaultPage: { type: 'string' },
+        itemsPerPage: { type: 'number' },
+        defaultStoreId: { type: 'string' },
+        autoRefresh: { type: 'boolean' },
+        refreshInterval: { type: 'number' },
+        customSettings: { type: 'object' },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
+        updatedAt: { type: 'string', format: 'date-time' },
+        user: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+            email: { type: 'string' }
+          }
+        }
+      }
+    },
+    404: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
+  }
+}
+
+// Schema para rotas /me (sem parâmetros)
+export const getUserPreferencesMeSchema: FastifySchema = {
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        userId: { type: 'string' },
+        theme: { type: 'string' },
+        primaryColor: { type: 'string' },
+        sidebarCollapsed: { type: 'boolean' },
+        compactMode: { type: 'boolean' },
+        language: { type: 'string' },
+        currency: { type: 'string' },
+        timezone: { type: 'string' },
+        dateFormat: { type: 'string' },
+        timeFormat: { type: 'string' },
+        numberFormat: { type: 'string' },
+        emailNotifications: { type: 'boolean' },
+        pushNotifications: { type: 'boolean' },
+        smsNotifications: { type: 'boolean' },
+        notificationTypes: { type: 'object' },
+        dashboardLayout: { type: 'object' },
+        defaultPage: { type: 'string' },
+        itemsPerPage: { type: 'number' },
+        defaultStoreId: { type: 'string' },
+        autoRefresh: { type: 'boolean' },
+        refreshInterval: { type: 'number' },
+        customSettings: { type: 'object' },
+        createdAt: { type: 'string', format: 'date-time' },
+        updatedAt: { type: 'string', format: 'date-time' },
+        user: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+            email: { type: 'string' }
+          }
+        }
+      }
+    },
+    401: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
       }
     },
     404: {

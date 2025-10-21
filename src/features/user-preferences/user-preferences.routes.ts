@@ -5,6 +5,7 @@ import {
   updateUserPreferencesSchema,
   getUserPreferencesSchema,
   getUserPreferencesByUserIdSchema,
+  getUserPreferencesMeSchema,
   deleteUserPreferencesSchema,
   listUserPreferencesSchema,
   getUserPreferencesStatsSchema,
@@ -48,12 +49,12 @@ export async function UserPreferencesRoutes(fastify: FastifyInstance) {
 
   // Funções específicas por usuário (usando ID do usuário autenticado)
   fastify.get('/me', {
-    schema: getUserPreferencesByUserIdSchema,
+    schema: getUserPreferencesMeSchema,
     handler: UserPreferencesController.getByUserId
   })
 
   fastify.get('/me/or-create', {
-    schema: getUserPreferencesByUserIdSchema,
+    schema: getUserPreferencesMeSchema,
     handler: UserPreferencesController.getByUserIdOrCreate
   })
 
@@ -63,7 +64,7 @@ export async function UserPreferencesRoutes(fastify: FastifyInstance) {
   })
 
   fastify.delete('/me', {
-    schema: deleteUserPreferencesSchema,
+    schema: getUserPreferencesMeSchema,
     handler: UserPreferencesController.deleteByUserId
   })
 
@@ -102,7 +103,7 @@ export async function UserPreferencesRoutes(fastify: FastifyInstance) {
   })
 
   fastify.patch('/me/reset', {
-    schema: getUserPreferencesByUserIdSchema,
+    schema: getUserPreferencesMeSchema,
     handler: UserPreferencesController.resetToDefaultsByUserId
   })
 
