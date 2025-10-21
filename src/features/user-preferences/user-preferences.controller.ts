@@ -20,15 +20,13 @@ export const UserPreferencesController = {
   async create(request: CreateUserPreferencesRequest, reply: FastifyReply) {
     try {
       const preferencesData = request.body
-      const prisma = (request.server as any).prisma
-      const userPreferencesCommands = new UserPreferencesCommands(prisma)
 
-      const result = await userPreferencesCommands.create(preferencesData)
+      const result = await UserPreferencesCommands.create(preferencesData)
 
       return reply.status(201).send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'User not found') {
         return reply.status(404).send({
           error: error.message
@@ -50,15 +48,13 @@ export const UserPreferencesController = {
   async get(request: GetUserPreferencesRequest, reply: FastifyReply) {
     try {
       const { id } = request.params
-      const prisma = (request.server as any).prisma
-      const userPreferencesQueries = new UserPreferencesQueries(prisma)
 
-      const result = await userPreferencesQueries.getById(id)
+      const result = await UserPreferencesQueries.getById(id)
 
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'User preferences not found') {
         return reply.status(404).send({
           error: error.message
@@ -75,15 +71,13 @@ export const UserPreferencesController = {
     try {
       const { id } = request.params
       const updateData = { ...request.body }
-      const prisma = (request.server as any).prisma
-      const userPreferencesCommands = new UserPreferencesCommands(prisma)
 
-      const result = await userPreferencesCommands.update(id, updateData)
+      const result = await UserPreferencesCommands.update(id, updateData)
 
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'User preferences not found') {
         return reply.status(404).send({
           error: error.message
@@ -99,15 +93,13 @@ export const UserPreferencesController = {
   async delete(request: DeleteUserPreferencesRequest, reply: FastifyReply) {
     try {
       const { id } = request.params
-      const prisma = (request.server as any).prisma
-      const userPreferencesCommands = new UserPreferencesCommands(prisma)
 
-      await userPreferencesCommands.delete(id)
+      await UserPreferencesCommands.delete(id)
 
       return reply.status(204).send()
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'User preferences not found') {
         return reply.status(404).send({
           error: error.message
@@ -123,10 +115,8 @@ export const UserPreferencesController = {
   async list(request: ListUserPreferencesRequest, reply: FastifyReply) {
     try {
       const { page = 1, limit = 10, search, theme, language, currency } = request.query
-      const prisma = (request.server as any).prisma
-      const userPreferencesQueries = new UserPreferencesQueries(prisma)
 
-      const result = await userPreferencesQueries.list({
+      const result = await UserPreferencesQueries.list({
         page,
         limit,
         search,
@@ -148,15 +138,13 @@ export const UserPreferencesController = {
   async getByUserId(request: GetUserPreferencesByUserIdRequest, reply: FastifyReply) {
     try {
       const { userId } = request.params
-      const prisma = (request.server as any).prisma
-      const userPreferencesQueries = new UserPreferencesQueries(prisma)
 
-      const result = await userPreferencesQueries.getByUserId(userId)
+      const result = await UserPreferencesQueries.getByUserId(userId)
 
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'User preferences not found') {
         return reply.status(404).send({
           error: error.message
@@ -172,15 +160,13 @@ export const UserPreferencesController = {
   async getByUserIdOrCreate(request: GetUserPreferencesByUserIdRequest, reply: FastifyReply) {
     try {
       const { userId } = request.params
-      const prisma = (request.server as any).prisma
-      const userPreferencesQueries = new UserPreferencesQueries(prisma)
 
-      const result = await userPreferencesQueries.getByUserIdOrCreate(userId)
+      const result = await UserPreferencesQueries.getByUserIdOrCreate(userId)
 
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'User not found') {
         return reply.status(404).send({
           error: error.message
@@ -197,15 +183,13 @@ export const UserPreferencesController = {
     try {
       const { userId } = request.params
       const updateData = request.body as UserPreferencesData
-      const prisma = (request.server as any).prisma
-      const userPreferencesCommands = new UserPreferencesCommands(prisma)
 
-      const result = await userPreferencesCommands.updateByUserId(userId, updateData)
+      const result = await UserPreferencesCommands.updateByUserId(userId, updateData)
 
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'User not found') {
         return reply.status(404).send({
           error: error.message
@@ -221,15 +205,13 @@ export const UserPreferencesController = {
   async deleteByUserId(request: FastifyRequest<{ Params: { userId: string } }>, reply: FastifyReply) {
     try {
       const { userId } = request.params
-      const prisma = (request.server as any).prisma
-      const userPreferencesCommands = new UserPreferencesCommands(prisma)
 
-      await userPreferencesCommands.deleteByUserId(userId)
+      await UserPreferencesCommands.deleteByUserId(userId)
 
       return reply.status(204).send()
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'User not found' || error.message === 'User preferences not found') {
         return reply.status(404).send({
           error: error.message
@@ -245,10 +227,8 @@ export const UserPreferencesController = {
   async getByTheme(request: FastifyRequest<{ Querystring: { theme: string } }>, reply: FastifyReply) {
     try {
       const { theme } = request.query
-      const prisma = (request.server as any).prisma
-      const userPreferencesQueries = new UserPreferencesQueries(prisma)
 
-      const result = await userPreferencesQueries.getByTheme(theme)
+      const result = await UserPreferencesQueries.getByTheme(theme)
 
       return reply.send({ preferences: result })
     } catch (error) {
@@ -262,10 +242,8 @@ export const UserPreferencesController = {
   async getByLanguage(request: FastifyRequest<{ Querystring: { language: string } }>, reply: FastifyReply) {
     try {
       const { language } = request.query
-      const prisma = (request.server as any).prisma
-      const userPreferencesQueries = new UserPreferencesQueries(prisma)
 
-      const result = await userPreferencesQueries.getByLanguage(language)
+      const result = await UserPreferencesQueries.getByLanguage(language)
 
       return reply.send({ preferences: result })
     } catch (error) {
@@ -279,10 +257,8 @@ export const UserPreferencesController = {
   async getByCurrency(request: FastifyRequest<{ Querystring: { currency: string } }>, reply: FastifyReply) {
     try {
       const { currency } = request.query
-      const prisma = (request.server as any).prisma
-      const userPreferencesQueries = new UserPreferencesQueries(prisma)
 
-      const result = await userPreferencesQueries.getByCurrency(currency)
+      const result = await UserPreferencesQueries.getByCurrency(currency)
 
       return reply.send({ preferences: result })
     } catch (error) {
@@ -295,10 +271,8 @@ export const UserPreferencesController = {
 
   async getWithCustomSettings(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const prisma = (request.server as any).prisma
-      const userPreferencesQueries = new UserPreferencesQueries(prisma)
 
-      const result = await userPreferencesQueries.getWithCustomSettings()
+      const result = await UserPreferencesQueries.getWithCustomSettings()
 
       return reply.send({ preferences: result })
     } catch (error) {
@@ -311,10 +285,8 @@ export const UserPreferencesController = {
 
   async getStats(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const prisma = (request.server as any).prisma
-      const userPreferencesQueries = new UserPreferencesQueries(prisma)
 
-      const result = await userPreferencesQueries.getStats()
+      const result = await UserPreferencesQueries.getStats()
 
       return reply.send(result)
     } catch (error) {
@@ -328,10 +300,8 @@ export const UserPreferencesController = {
   async search(request: FastifyRequest<{ Querystring: { q: string; limit?: number } }>, reply: FastifyReply) {
     try {
       const { q, limit = 10 } = request.query
-      const prisma = (request.server as any).prisma
-      const userPreferencesQueries = new UserPreferencesQueries(prisma)
 
-      const result = await userPreferencesQueries.search(q, limit)
+      const result = await UserPreferencesQueries.search(q, limit)
 
       return reply.send({ preferences: result })
     } catch (error) {
@@ -346,15 +316,13 @@ export const UserPreferencesController = {
   async resetToDefaults(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     try {
       const { id } = request.params
-      const prisma = (request.server as any).prisma
-      const userPreferencesCommands = new UserPreferencesCommands(prisma)
 
-      const result = await userPreferencesCommands.resetToDefaults(id)
+      const result = await UserPreferencesCommands.resetToDefaults(id)
 
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'User preferences not found') {
         return reply.status(404).send({
           error: error.message
@@ -370,15 +338,13 @@ export const UserPreferencesController = {
   async resetToDefaultsByUserId(request: FastifyRequest<{ Params: { userId: string } }>, reply: FastifyReply) {
     try {
       const { userId } = request.params
-      const prisma = (request.server as any).prisma
-      const userPreferencesCommands = new UserPreferencesCommands(prisma)
 
-      const result = await userPreferencesCommands.resetToDefaultsByUserId(userId)
+      const result = await UserPreferencesCommands.resetToDefaultsByUserId(userId)
 
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'User not found' || error.message === 'User preferences not found') {
         return reply.status(404).send({
           error: error.message
@@ -394,10 +360,8 @@ export const UserPreferencesController = {
   async validatePreferences(request: FastifyRequest<{ Body: any }>, reply: FastifyReply) {
     try {
       const preferencesData = request.body
-      const prisma = (request.server as any).prisma
-      const userPreferencesQueries = new UserPreferencesQueries(prisma)
 
-      const result = await userPreferencesQueries.validatePreferences(preferencesData)
+      const result = await UserPreferencesQueries.validatePreferences(preferencesData)
 
       return reply.send(result)
     } catch (error) {

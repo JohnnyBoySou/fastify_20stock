@@ -1,19 +1,17 @@
 import { UserPreferencesFilters, UserPreferencesStats } from '../user-preferences.interfaces'
-
+import { db } from '@/plugins/prisma'
 // ================================
 // USER PREFERENCES QUERIES
 // ================================
 
-export class UserPreferencesQueries {
-  constructor(private prisma: any) {}
-
+export const UserPreferencesQueries = {
   // ================================
   // GET OPERATIONS
   // ================================
 
   async getById(id: string) {
     try {
-      const preferences = await this.prisma.userPreferences.findUnique({
+      const preferences = await db.userPreferences.findUnique({
         where: { id },
         include: {
           user: {
@@ -34,11 +32,11 @@ export class UserPreferencesQueries {
     } catch (error: any) {
       throw new Error(`Failed to get user preferences: ${error.message}`)
     }
-  }
+  },
 
   async getByUserId(userId: string) {
     try {
-      const preferences = await this.prisma.userPreferences.findUnique({
+      const preferences = await db.userPreferences.findUnique({
         where: { userId },
         include: {
           user: {
@@ -59,11 +57,11 @@ export class UserPreferencesQueries {
     } catch (error: any) {
       throw new Error(`Failed to get user preferences: ${error.message}`)
     }
-  }
+  },
 
   async getByUserIdOrCreate(userId: string) {
     try {
-      let preferences = await this.prisma.userPreferences.findUnique({
+      let preferences = await db.userPreferences.findUnique({
         where: { userId },
         include: {
           user: {
@@ -78,7 +76,7 @@ export class UserPreferencesQueries {
 
       // Se não existir, criar com valores padrão
       if (!preferences) {
-        preferences = await this.prisma.userPreferences.create({
+        preferences = await db.userPreferences.create({
           data: {
             userId,
             theme: 'light',
@@ -111,7 +109,7 @@ export class UserPreferencesQueries {
     } catch (error: any) {
       throw new Error(`Failed to get or create user preferences: ${error.message}`)
     }
-  }
+  },
 
   // ================================
   // LIST OPERATIONS
@@ -189,7 +187,7 @@ export class UserPreferencesQueries {
 
       // Buscar preferências
       const [preferences, total] = await Promise.all([
-        this.prisma.userPreferences.findMany({
+        db.userPreferences.findMany({
           where,
           skip,
           take: limit,
@@ -206,7 +204,7 @@ export class UserPreferencesQueries {
             }
           }
         }),
-        this.prisma.userPreferences.count({ where })
+        db.userPreferences.count({ where })
       ])
 
       return {
@@ -221,7 +219,7 @@ export class UserPreferencesQueries {
     } catch (error: any) {
       throw new Error(`Failed to list user preferences: ${error.message}`)
     }
-  }
+  },
 
   // ================================
   // SEARCH OPERATIONS
@@ -229,7 +227,7 @@ export class UserPreferencesQueries {
 
   async search(searchTerm: string, limit: number = 10) {
     try {
-      const preferences = await this.prisma.userPreferences.findMany({
+      const preferences = await db.userPreferences.findMany({
         where: {
           OR: [
             {
@@ -281,7 +279,7 @@ export class UserPreferencesQueries {
     } catch (error: any) {
       throw new Error(`Failed to search user preferences: ${error.message}`)
     }
-  }
+  },
 
   // ================================
   // STATS OPERATIONS
@@ -297,31 +295,31 @@ export class UserPreferencesQueries {
         itemsPerPageStats,
         notificationsStats
       ] = await Promise.all([
-        this.prisma.userPreferences.count(),
-        this.prisma.userPreferences.groupBy({
+        db.userPreferences.count(),
+        db.userPreferences.groupBy({
           by: ['theme'],
           _count: {
             theme: true
           }
         }),
-        this.prisma.userPreferences.groupBy({
+        db.userPreferences.groupBy({
           by: ['language'],
           _count: {
             language: true
           }
         }),
-        this.prisma.userPreferences.groupBy({
+        db.userPreferences.groupBy({
           by: ['currency'],
           _count: {
             currency: true
           }
         }),
-        this.prisma.userPreferences.aggregate({
+        db.userPreferences.aggregate({
           _avg: {
             itemsPerPage: true
           }
         }),
-        this.prisma.userPreferences.groupBy({
+        db.userPreferences.groupBy({
           by: ['emailNotifications'],
           _count: {
             emailNotifications: true
@@ -378,7 +376,7 @@ export class UserPreferencesQueries {
     } catch (error: any) {
       throw new Error(`Failed to get user preferences stats: ${error.message}`)
     }
-  }
+  },
 
   // ================================
   // FILTER OPERATIONS
@@ -386,7 +384,7 @@ export class UserPreferencesQueries {
 
   async getByTheme(theme: string) {
     try {
-      const preferences = await this.prisma.userPreferences.findMany({
+      const preferences = await db.userPreferences.findMany({
         where: { theme },
         include: {
           user: {
@@ -406,11 +404,11 @@ export class UserPreferencesQueries {
     } catch (error: any) {
       throw new Error(`Failed to get user preferences by theme: ${error.message}`)
     }
-  }
+  },
 
   async getByLanguage(language: string) {
     try {
-      const preferences = await this.prisma.userPreferences.findMany({
+      const preferences = await db.userPreferences.findMany({
         where: { language },
         include: {
           user: {
@@ -430,11 +428,11 @@ export class UserPreferencesQueries {
     } catch (error: any) {
       throw new Error(`Failed to get user preferences by language: ${error.message}`)
     }
-  }
+  },    
 
   async getByCurrency(currency: string) {
     try {
-      const preferences = await this.prisma.userPreferences.findMany({
+      const preferences = await db.userPreferences.findMany({
         where: { currency },
         include: {
           user: {
@@ -454,11 +452,11 @@ export class UserPreferencesQueries {
     } catch (error: any) {
       throw new Error(`Failed to get user preferences by currency: ${error.message}`)
     }
-  }
+  },
 
   async getWithCustomSettings() {
     try {
-      const preferences = await this.prisma.userPreferences.findMany({
+      const preferences = await db.userPreferences.findMany({
         where: {
           customSettings: {
             not: null
@@ -482,7 +480,7 @@ export class UserPreferencesQueries {
     } catch (error: any) {
       throw new Error(`Failed to get user preferences with custom settings: ${error.message}`)
     }
-  }
+  },
 
   // ================================
   // VALIDATION OPERATIONS
@@ -526,5 +524,5 @@ export class UserPreferencesQueries {
     } catch (error: any) {
       throw new Error(`Failed to validate user preferences: ${error.message}`)
     }
-  }
+  },
 }

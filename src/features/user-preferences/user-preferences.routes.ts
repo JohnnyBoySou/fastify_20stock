@@ -11,12 +11,15 @@ import {
   searchUserPreferencesSchema,
   validateUserPreferencesSchema
 } from './user-preferences.schema'
+import { authMiddleware, storeContextMiddleware } from '@/middlewares'
 
 // ================================
 // USER PREFERENCES ROUTES
 // ================================
 
 export async function UserPreferencesRoutes(fastify: FastifyInstance) {
+  fastify.addHook('preHandler', authMiddleware)
+  fastify.addHook('preHandler', storeContextMiddleware)
   // CRUD básico
   fastify.post('/', {
     schema: createUserPreferencesSchema,

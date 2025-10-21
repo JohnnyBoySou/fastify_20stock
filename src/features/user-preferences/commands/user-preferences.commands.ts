@@ -1,20 +1,14 @@
 import { UserPreferencesData } from '../user-preferences.interfaces'
-
+import {db} from '@/plugins/prisma'
 // ================================
 // USER PREFERENCES COMMANDS
 // ================================
 
-export class UserPreferencesCommands {
-  constructor(private prisma: any) {}
-
-  // ================================
-  // CREATE OPERATIONS
-  // ================================
-
+export const UserPreferencesCommands = {
   async create(data: UserPreferencesData & { userId: string }) {
     try {
       // Verificar se o usuário existe
-      const user = await this.prisma.user.findUnique({
+      const user = await db.user.findUnique({
         where: { id: data.userId }
       })
 
@@ -23,7 +17,7 @@ export class UserPreferencesCommands {
       }
 
       // Verificar se já existe preferências para este usuário
-      const existingPreferences = await this.prisma.userPreferences.findUnique({
+      const existingPreferences = await db.userPreferences.findUnique({
         where: { userId: data.userId }
       })
 
@@ -32,7 +26,7 @@ export class UserPreferencesCommands {
       }
 
       // Criar as preferências
-      const preferences = await this.prisma.userPreferences.create({
+      const preferences = await db.userPreferences.create({
         data: {
           userId: data.userId,
           theme: data.theme || 'light',
@@ -72,7 +66,7 @@ export class UserPreferencesCommands {
     } catch (error: any) {
       throw new Error(`Failed to create user preferences: ${error.message}`)
     }
-  }
+  },
 
   // ================================
   // UPDATE OPERATIONS
@@ -81,7 +75,7 @@ export class UserPreferencesCommands {
   async update(id: string, data: Partial<UserPreferencesData>) {
     try {
       // Verificar se as preferências existem
-      const existingPreferences = await this.prisma.userPreferences.findUnique({
+      const existingPreferences = await db.userPreferences.findUnique({
         where: { id }
       })
 
@@ -90,7 +84,7 @@ export class UserPreferencesCommands {
       }
 
       // Atualizar as preferências
-      const updatedPreferences = await this.prisma.userPreferences.update({
+      const updatedPreferences = await db.userPreferences.update({
         where: { id },
         data: {
           ...data,
@@ -111,12 +105,12 @@ export class UserPreferencesCommands {
     } catch (error: any) {
       throw new Error(`Failed to update user preferences: ${error.message}`)
     }
-  }
+  },        
 
   async updateByUserId(userId: string, data: Partial<UserPreferencesData>) {
     try {
       // Verificar se o usuário existe
-      const user = await this.prisma.user.findUnique({
+      const user = await db.user.findUnique({
         where: { id: userId }
       })
 
@@ -125,17 +119,17 @@ export class UserPreferencesCommands {
       }
 
       // Verificar se as preferências existem
-      const existingPreferences = await this.prisma.userPreferences.findUnique({
+      const existingPreferences = await db.userPreferences.findUnique({
         where: { userId }
       })
 
       if (!existingPreferences) {
         // Se não existir, criar com os dados fornecidos
-        return await this.create({ ...data, userId })
+        return await UserPreferencesCommands.create({ ...data, userId })
       }
 
       // Atualizar as preferências existentes
-      const updatedPreferences = await this.prisma.userPreferences.update({
+      const updatedPreferences = await db.userPreferences.update({
         where: { userId },
         data: {
           ...data,
@@ -156,7 +150,7 @@ export class UserPreferencesCommands {
     } catch (error: any) {
       throw new Error(`Failed to update user preferences: ${error.message}`)
     }
-  }
+  },
 
   // ================================
   // DELETE OPERATIONS
@@ -165,7 +159,7 @@ export class UserPreferencesCommands {
   async delete(id: string) {
     try {
       // Verificar se as preferências existem
-      const existingPreferences = await this.prisma.userPreferences.findUnique({
+      const existingPreferences = await db.userPreferences.findUnique({
         where: { id }
       })
 
@@ -174,7 +168,7 @@ export class UserPreferencesCommands {
       }
 
       // Deletar as preferências
-      await this.prisma.userPreferences.delete({
+      await db.userPreferences.delete({
         where: { id }
       })
 
@@ -182,12 +176,12 @@ export class UserPreferencesCommands {
     } catch (error: any) {
       throw new Error(`Failed to delete user preferences: ${error.message}`)
     }
-  }
+  },
 
   async deleteByUserId(userId: string) {
     try {
       // Verificar se o usuário existe
-      const user = await this.prisma.user.findUnique({
+      const user = await db.user.findUnique({
         where: { id: userId }
       })
 
@@ -196,7 +190,7 @@ export class UserPreferencesCommands {
       }
 
       // Verificar se as preferências existem
-      const existingPreferences = await this.prisma.userPreferences.findUnique({
+      const existingPreferences = await db.userPreferences.findUnique({
         where: { userId }
       })
 
@@ -205,7 +199,7 @@ export class UserPreferencesCommands {
       }
 
       // Deletar as preferências
-      await this.prisma.userPreferences.delete({
+      await db.userPreferences.delete({
         where: { userId }
       })
 
@@ -213,7 +207,7 @@ export class UserPreferencesCommands {
     } catch (error: any) {
       throw new Error(`Failed to delete user preferences: ${error.message}`)
     }
-  }
+  },
 
   // ================================
   // RESET OPERATIONS
@@ -222,7 +216,7 @@ export class UserPreferencesCommands {
   async resetToDefaults(id: string) {
     try {
       // Verificar se as preferências existem
-      const existingPreferences = await this.prisma.userPreferences.findUnique({
+      const existingPreferences = await db.userPreferences.findUnique({
         where: { id }
       })
 
@@ -231,7 +225,7 @@ export class UserPreferencesCommands {
       }
 
       // Resetar para valores padrão
-      const resetPreferences = await this.prisma.userPreferences.update({
+      const resetPreferences = await db.userPreferences.update({
         where: { id },
         data: {
           theme: 'light',
@@ -272,12 +266,12 @@ export class UserPreferencesCommands {
     } catch (error: any) {
       throw new Error(`Failed to reset user preferences: ${error.message}`)
     }
-  }
+  },
 
   async resetToDefaultsByUserId(userId: string) {
     try {
       // Verificar se o usuário existe
-      const user = await this.prisma.user.findUnique({
+      const user = await db.user.findUnique({
         where: { id: userId }
       })
 
@@ -286,7 +280,7 @@ export class UserPreferencesCommands {
       }
 
       // Verificar se as preferências existem
-      const existingPreferences = await this.prisma.userPreferences.findUnique({
+      const existingPreferences = await db.userPreferences.findUnique({
         where: { userId }
       })
 
@@ -295,7 +289,7 @@ export class UserPreferencesCommands {
       }
 
       // Resetar para valores padrão
-      const resetPreferences = await this.prisma.userPreferences.update({
+      const resetPreferences = await db.userPreferences.update({
         where: { userId },
         data: {
           theme: 'light',
@@ -336,7 +330,7 @@ export class UserPreferencesCommands {
     } catch (error: any) {
       throw new Error(`Failed to reset user preferences: ${error.message}`)
     }
-  }
+  },
 
   // ================================
   // BULK OPERATIONS
@@ -344,7 +338,7 @@ export class UserPreferencesCommands {
 
   async bulkUpdate(filters: any, data: Partial<UserPreferencesData>) {
     try {
-      const result = await this.prisma.userPreferences.updateMany({
+      const result = await db.userPreferences.updateMany({
         where: filters,
         data: {
           ...data,
@@ -360,11 +354,11 @@ export class UserPreferencesCommands {
     } catch (error: any) {
       throw new Error(`Failed to bulk update user preferences: ${error.message}`)
     }
-  }
+  },
 
   async bulkDelete(filters: any) {
     try {
-      const result = await this.prisma.userPreferences.deleteMany({
+      const result = await db.userPreferences.deleteMany({
         where: filters
       })
 
@@ -376,5 +370,5 @@ export class UserPreferencesCommands {
     } catch (error: any) {
       throw new Error(`Failed to bulk delete user preferences: ${error.message}`)
     }
-  }
+  },
 }

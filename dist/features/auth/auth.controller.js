@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const auth_commands_1 = require("./commands/auth.commands");
 const auth_queries_1 = require("./queries/auth.queries");
+const user_preferences_query_1 = require("../user-preferences/queries/user-preferences.query");
 exports.AuthController = {
     // === AUTH CRUD ===
     async register(request, reply) {
@@ -42,7 +43,8 @@ exports.AuthController = {
                 user: result.user,
                 store: result.store,
                 token: result.token,
-                message: 'Login successful'
+                message: 'Login successful',
+                preferences: await user_preferences_query_1.UserPreferencesQueries.getByUserId(result.user.id)
             });
         }
         catch (error) {
@@ -443,7 +445,8 @@ exports.AuthController = {
                 user: result.user,
                 store: result.store,
                 token: result.token,
-                message: 'Google login successful'
+                message: 'Google login successful',
+                preferences: await user_preferences_query_1.UserPreferencesQueries.getByUserId(result.user.id)
             });
         }
         catch (error) {

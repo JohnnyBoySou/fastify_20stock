@@ -25,6 +25,7 @@ import {
   GoogleLoginRequest,
   GoogleLoginResponse
 } from './auth.interfaces';
+import { UserPreferencesQueries } from '../user-preferences/queries/user-preferences.query';
 
 export const AuthController = {
   // === AUTH CRUD ===
@@ -71,7 +72,8 @@ export const AuthController = {
         user: result.user,
         store: result.store,
         token: result.token,
-        message: 'Login successful'
+        message: 'Login successful',
+        preferences: await UserPreferencesQueries.getByUserId(result.user.id)
       });
     } catch (error: any) {
       request.log.error(error);
@@ -542,7 +544,8 @@ export const AuthController = {
         user: result.user,
         store: result.store,
         token: result.token,
-        message: 'Google login successful'
+        message: 'Google login successful',
+        preferences: await UserPreferencesQueries.getByUserId(result.user.id)
       });
     } catch (error: any) {
       request.log.error(error);
