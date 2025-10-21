@@ -61,6 +61,16 @@ export const UserPreferencesQueries = {
 
   async getByUserIdOrCreate(userId: string) {
     try {
+      // Primeiro verificar se o usuário existe
+      const user = await db.user.findUnique({
+        where: { id: userId },
+        select: { id: true, name: true, email: true }
+      })
+
+      if (!user) {
+        throw new Error('User not found')
+      }
+
       let preferences = await db.userPreferences.findUnique({
         where: { userId },
         include: {

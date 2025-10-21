@@ -137,7 +137,14 @@ export const UserPreferencesController = {
   // === FUNÇÕES ADICIONAIS (QUERIES) ===
   async getByUserId(request: GetUserPreferencesByUserIdRequest, reply: FastifyReply) {
     try {
-      const { userId } = request.params
+      // Usar o ID do usuário autenticado em vez do parâmetro da URL
+      const userId = request.user?.id
+
+      if (!userId) {
+        return reply.status(401).send({
+          error: 'User not authenticated'
+        })
+      }
 
       const result = await UserPreferencesQueries.getByUserId(userId)
 
@@ -159,7 +166,14 @@ export const UserPreferencesController = {
 
   async getByUserIdOrCreate(request: GetUserPreferencesByUserIdRequest, reply: FastifyReply) {
     try {
-      const { userId } = request.params
+      // Usar o ID do usuário autenticado em vez do parâmetro da URL
+      const userId = request.user?.id
+
+      if (!userId) {
+        return reply.status(401).send({
+          error: 'User not authenticated'
+        })
+      }
 
       const result = await UserPreferencesQueries.getByUserIdOrCreate(userId)
 
@@ -181,7 +195,15 @@ export const UserPreferencesController = {
 
   async updateByUserId(request: FastifyRequest<{ Params: { userId: string }; Body: any }>, reply: FastifyReply) {
     try {
-      const { userId } = request.params
+      // Usar o ID do usuário autenticado em vez do parâmetro da URL
+      const userId = request.user?.id
+
+      if (!userId) {
+        return reply.status(401).send({
+          error: 'User not authenticated'
+        })
+      }
+
       const updateData = request.body as UserPreferencesData
 
       const result = await UserPreferencesCommands.updateByUserId(userId, updateData)
@@ -204,7 +226,14 @@ export const UserPreferencesController = {
 
   async deleteByUserId(request: FastifyRequest<{ Params: { userId: string } }>, reply: FastifyReply) {
     try {
-      const { userId } = request.params
+      // Usar o ID do usuário autenticado em vez do parâmetro da URL
+      const userId = request.user?.id
+
+      if (!userId) {
+        return reply.status(401).send({
+          error: 'User not authenticated'
+        })
+      }
 
       await UserPreferencesCommands.deleteByUserId(userId)
 
@@ -337,7 +366,14 @@ export const UserPreferencesController = {
 
   async resetToDefaultsByUserId(request: FastifyRequest<{ Params: { userId: string } }>, reply: FastifyReply) {
     try {
-      const { userId } = request.params
+      // Usar o ID do usuário autenticado em vez do parâmetro da URL
+      const userId = request.user?.id
+
+      if (!userId) {
+        return reply.status(401).send({
+          error: 'User not authenticated'
+        })
+      }
 
       const result = await UserPreferencesCommands.resetToDefaultsByUserId(userId)
 

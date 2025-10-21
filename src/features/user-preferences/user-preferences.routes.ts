@@ -46,23 +46,23 @@ export async function UserPreferencesRoutes(fastify: FastifyInstance) {
     handler: UserPreferencesController.delete
   })
 
-  // Funções específicas por usuário
-  fastify.get('/user/:userId', {
+  // Funções específicas por usuário (usando ID do usuário autenticado)
+  fastify.get('/me', {
     schema: getUserPreferencesByUserIdSchema,
     handler: UserPreferencesController.getByUserId
   })
 
-  fastify.get('/user/:userId/or-create', {
+  fastify.get('/me/or-create', {
     schema: getUserPreferencesByUserIdSchema,
     handler: UserPreferencesController.getByUserIdOrCreate
   })
 
-  fastify.put('/user/:userId', {
+  fastify.put('/me', {
     schema: updateUserPreferencesSchema,
     handler: UserPreferencesController.updateByUserId
   })
 
-  fastify.delete('/user/:userId', {
+  fastify.delete('/me', {
     schema: deleteUserPreferencesSchema,
     handler: UserPreferencesController.deleteByUserId
   })
@@ -101,7 +101,7 @@ export async function UserPreferencesRoutes(fastify: FastifyInstance) {
     handler: UserPreferencesController.resetToDefaults
   })
 
-  fastify.patch('/user/:userId/reset', {
+  fastify.patch('/me/reset', {
     schema: getUserPreferencesByUserIdSchema,
     handler: UserPreferencesController.resetToDefaultsByUserId
   })
