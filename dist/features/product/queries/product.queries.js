@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductQueries = void 0;
-const prisma_1 = require("@/plugins/prisma");
+const prisma_1 = require("../../../plugins/prisma");
 // Função auxiliar para calcular o estoque atual de um produto
 async function calculateCurrentStock(productId) {
     const movements = await prisma_1.db.movement.findMany({
