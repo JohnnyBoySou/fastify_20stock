@@ -21,6 +21,12 @@ export const UserPreferencesController = {
     try {
       const preferencesData = request.body
 
+      // Mapear storeId (do middleware) para defaultStoreId (do schema)
+      if ('storeId' in preferencesData) {
+        preferencesData.defaultStoreId = preferencesData.storeId as string
+        delete preferencesData.storeId
+      }
+
       const result = await UserPreferencesCommands.create(preferencesData)
 
       return reply.status(201).send(result)
@@ -71,6 +77,12 @@ export const UserPreferencesController = {
     try {
       const { id } = request.params
       const updateData = { ...request.body }
+
+      // Mapear storeId (do middleware) para defaultStoreId (do schema)
+      if ('storeId' in updateData) {
+        updateData.defaultStoreId = updateData.storeId as string
+        delete updateData.storeId
+      }
 
       const result = await UserPreferencesCommands.update(id, updateData)
 
@@ -205,6 +217,12 @@ export const UserPreferencesController = {
       }
 
       const updateData = request.body as UserPreferencesData
+
+      // Mapear storeId (do middleware) para defaultStoreId (do schema)
+      if ('storeId' in updateData) {
+        updateData.defaultStoreId = updateData.storeId as string
+        delete updateData.storeId
+      }
 
       const result = await UserPreferencesCommands.updateByUserId(userId, updateData)
 
