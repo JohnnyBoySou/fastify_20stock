@@ -12,7 +12,20 @@ export const createSupplierSchema: FastifySchema = {
       city: { type: 'string' },
       state: { type: 'string' },
       address: { type: 'string' },
-      storeId: { type: 'string' }
+      storeId: { type: 'string' },
+      responsibles: {
+        type: 'array',
+        items: {
+          type: 'object',
+          required: ['name'],
+          properties: {
+            name: { type: 'string', minLength: 1 },
+            phone: { type: 'string' },
+            email: { type: 'string', format: 'email' },
+            cpf: { type: 'string' }
+          }
+        }
+      }
     }
   },
   response: {
@@ -29,7 +42,21 @@ export const createSupplierSchema: FastifySchema = {
         address: { type: 'string', nullable: true },
         status: { type: 'boolean' },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
+        updatedAt: { type: 'string', format: 'date-time' },
+        responsibles: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              phone: { type: 'string', nullable: true },
+              email: { type: 'string', nullable: true },
+              cpf: { type: 'string', nullable: true },
+              status: { type: 'boolean' }
+            }
+          }
+        }
       }
     }
   }

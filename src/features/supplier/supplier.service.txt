@@ -2,6 +2,30 @@ import { fetchAuth } from "@/hooks/api";
 
 // === INTERFACES PARA SUPPLIER ===
 
+export interface SupplierResponsible {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  cpf?: string;
+  status: boolean;
+}
+
+export interface CreateSupplierResponsibleRequest {
+  name: string;
+  phone?: string;
+  email?: string;
+  cpf?: string;
+}
+
+export interface UpdateSupplierResponsibleRequest {
+  name?: string;
+  phone?: string;
+  email?: string;
+  cpf?: string;
+  status?: boolean;
+}
+
 export interface Supplier {
   id: string;
   corporateName: string;
@@ -14,6 +38,7 @@ export interface Supplier {
   address?: string;
   createdAt: string;
   updatedAt: string;
+  responsibles?: SupplierResponsible[];
   _count?: {
     products: number;
     movements: number;
@@ -40,6 +65,12 @@ export interface CreateSupplierRequest {
   city?: string;
   state?: string;
   address?: string;
+  responsibles?: {
+    name: string;
+    phone?: string;
+    email?: string;
+    cpf?: string;
+  }[];
 }
 
 export interface UpdateSupplierRequest {
@@ -458,4 +489,60 @@ export const SupplierService = {
     count: number;
   }>> => 
     fetchAuth(`${URI}/cities`, { method: "GET", params: { state } }),
+
+  // === GERENCIAMENTO DE RESPONSÁVEIS ===
+  createResponsible: (supplierId: string, params: CreateSupplierResponsibleRequest): Promise<SupplierResponsible> => 
+    fetchAuth(`${URI}/${supplierId}/responsibles`, { method: "POST", data: params }),
+  
+  listResponsibles: (supplierId: string, filters?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: boolean;
+  }): Promise<{
+    responsibles: SupplierResponsible[];
+    pagination: Pagination;
+  }> => 
+    fetchAuth(`${URI}/${supplierId}/responsibles`, { method: "GET", params: filters }),
+  
+  getResponsible: (supplierId: string, responsibleId: string): Promise<SupplierResponsible> => 
+    fetchAuth(`${URI}/${supplierId}/responsibles/${responsibleId}`, { method: "GET" }),
+  
+  updateResponsible: (supplierId: string, responsibleId: string, params: UpdateSupplierResponsibleRequest): Promise<SupplierResponsible> => 
+    fetchAuth(`${URI}/${supplierId}/responsibles/${responsibleId}`, { method: "PUT", data: params }),
+  
+  deleteResponsible: (supplierId: string, responsibleId: string): Promise<void> => 
+    fetchAuth(`${URI}/${supplierId}/responsibles/${responsibleId}`, { method: "DELETE" }),
+  
+  getResponsibleByEmail: (supplierId: string, email: string): Promise<SupplierResponsible> => 
+    fetchAuth(`${URI}/${supplierId}/responsibles/email/${email}`, { method: "GET" }),
+  
+  getResponsibleByCpf: (supplierId: string, cpf: string): Promise<SupplierResponsible> => 
+    fetchAuth(`${URI}/${supplierId}/responsibles/cpf/${cpf}`, { method: "GET" }),
+  
+  getActiveResponsibles: (supplierId: string): Promise<{ responsibles: SupplierResponsible[] }> => 
+    fetchAuth(`${URI}/${supplierId}/responsibles/active`, { method: "GET" }),
+  
+  getResponsiblesStats: (supplierId: string): Promise<{
+    total: number;
+    active: number;
+    inactive: number;
+  }> => 
+    fetchAuth(`${URI}/${supplierId}/responsibles/stats`, { method: "GET" }),
+  
+  searchResponsibles: (supplierId: string, q: string, limit?: number): Promise<{ responsibles: SupplierResponsible[] }> => 
+    fetchAuth(`${URI}/${supplierId}/responsibles/search`, { method: "GET", params: { q, limit } }),
+  
+  getRecentResponsibles: (supplierId: string, limit?: number): Promise<{ responsibles: SupplierResponsible[] }> => 
+    fetchAuth(`${URI}/${supplierId}/responsibles/recent`, { method: "GET", params: { limit } }),
+  
+  toggleResponsibleStatus: (supplierId: string, responsibleId: string): Promise<SupplierResponsible> => 
+    fetchAuth(`${URI}/${supplierId}/responsibles/${responsibleId}/toggle-status`, { method: "PATCH" }),
+  
+  bulkCreateResponsibles: (supplierId: string, responsibles: CreateSupplierResponsibleRequest[]): Promise<{
+    created: number;
+    errors: string[];
+    responsibles: SupplierResponsible[];
+  }> => 
+    fetchAuth(`${URI}/${supplierId}/responsibles/bulk`, { method: "POST", data: { responsibles } }),
 };

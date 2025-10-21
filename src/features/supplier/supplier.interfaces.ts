@@ -10,6 +10,12 @@ export interface CreateSupplierRequest extends FastifyRequest {
     state?: string
     address?: string
     storeId?: string
+    responsibles?: {
+      name: string
+      phone?: string
+      email?: string
+      cpf?: string
+    }[]
   }
 }
 

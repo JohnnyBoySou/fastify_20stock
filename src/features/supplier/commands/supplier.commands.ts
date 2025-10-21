@@ -9,6 +9,12 @@ export const SupplierCommands = {
     state?: string
     address?: string
     storeId?: string
+    responsibles?: {
+      name: string
+      phone?: string
+      email?: string
+      cpf?: string
+    }[]
   }) {
     // Verificar se CNPJ já existe para esta store
     const existingSupplier = await db.supplier.findUnique({
@@ -24,10 +30,29 @@ export const SupplierCommands = {
       throw new Error('CNPJ already exists');
     }
 
+    // Preparar dados dos responsáveis se fornecidos
+    const responsiblesData = data.responsibles?.map(responsible => ({
+      name: responsible.name,
+      phone: responsible.phone,
+      email: responsible.email,
+      cpf: responsible.cpf,
+      status: true
+    })) || [];
+
     return await db.supplier.create({
       data: {
-        ...data,
-        status: true
+        corporateName: data.corporateName,
+        cnpj: data.cnpj,
+        tradeName: data.tradeName,
+        cep: data.cep,
+        city: data.city,
+        state: data.state,
+        address: data.address,
+        storeId: data.storeId,
+        status: true,
+        responsibles: {
+          create: responsiblesData
+        }
       },
       include: {
         responsibles: true,

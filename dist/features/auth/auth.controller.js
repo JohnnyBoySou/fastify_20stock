@@ -44,7 +44,7 @@ exports.AuthController = {
                 store: result.store,
                 token: result.token,
                 message: 'Login successful',
-                preferences: await user_preferences_query_1.UserPreferencesQueries.getByUserId(result.user.id)
+                preferences: await user_preferences_query_1.UserPreferencesQueries.getByUserIdOrCreate(result.user.id)
             });
         }
         catch (error) {
@@ -446,7 +446,7 @@ exports.AuthController = {
                 store: result.store,
                 token: result.token,
                 message: 'Google login successful',
-                preferences: await user_preferences_query_1.UserPreferencesQueries.getByUserId(result.user.id)
+                preferences: await user_preferences_query_1.UserPreferencesQueries.getByUserIdOrCreate(result.user.id)
             });
         }
         catch (error) {

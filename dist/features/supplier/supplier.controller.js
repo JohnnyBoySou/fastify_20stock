@@ -7,7 +7,7 @@ exports.SupplierController = {
     // === CRUD BÁSICO ===
     async create(request, reply) {
         try {
-            const { corporateName, cnpj, tradeName, cep, city, state, address, storeId } = request.body;
+            const { corporateName, cnpj, tradeName, cep, city, state, address, storeId, responsibles } = request.body;
             const contextStoreId = request.store?.id;
             const result = await supplier_commands_1.SupplierCommands.create({
                 corporateName,
@@ -17,7 +17,8 @@ exports.SupplierController = {
                 city,
                 state,
                 address,
-                storeId: storeId || contextStoreId
+                storeId: storeId || contextStoreId,
+                responsibles
             });
             return reply.status(201).send(result);
         }

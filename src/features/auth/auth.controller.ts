@@ -73,7 +73,7 @@ export const AuthController = {
         store: result.store,
         token: result.token,
         message: 'Login successful',
-        preferences: await UserPreferencesQueries.getByUserId(result.user.id)
+        preferences: await UserPreferencesQueries.getByUserIdOrCreate(result.user.id)
       });
     } catch (error: any) {
       request.log.error(error);
@@ -545,7 +545,7 @@ export const AuthController = {
         store: result.store,
         token: result.token,
         message: 'Google login successful',
-        preferences: await UserPreferencesQueries.getByUserId(result.user.id)
+        preferences: await UserPreferencesQueries.getByUserIdOrCreate(result.user.id)
       });
     } catch (error: any) {
       request.log.error(error);

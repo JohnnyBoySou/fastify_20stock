@@ -17,7 +17,7 @@ export const SupplierController = {
   // === CRUD BÁSICO ===
   async create(request: CreateSupplierRequest, reply: FastifyReply) {
     try {
-      const { corporateName, cnpj, tradeName, cep, city, state, address, storeId } = request.body;
+      const { corporateName, cnpj, tradeName, cep, city, state, address, storeId, responsibles } = request.body;
       const contextStoreId = request.store?.id;
 
       const result = await SupplierCommands.create({
@@ -28,7 +28,8 @@ export const SupplierController = {
         city,
         state,
         address,
-        storeId: storeId || contextStoreId
+        storeId: storeId || contextStoreId,
+        responsibles
       });
 
       return reply.status(201).send(result);
