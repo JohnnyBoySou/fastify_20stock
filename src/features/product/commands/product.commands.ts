@@ -666,5 +666,54 @@ export const ProductCommands = {
       message: 'Categories updated successfully',
       categories: updatedCategories.map(pc => pc.category)
     };
+  },
+
+  async bulkDelete(ids: string[]) {
+    if (!ids || ids.length === 0) {
+      throw new Error('No product IDs provided');
+    }
+
+    const errors: string[] = [];
+    let deletedCount = 0;
+
+    // Processar cada ID individualmente
+    for (const id of ids) {
+      try {
+        // Verificar se o produto existe e tem movimentações
+        const product = await db.product.findUnique({
+          where: { id },
+          include: {
+            movements: {
+              select: { id: true }
+            }
+          }
+        });
+
+        if (!product) {
+          errors.push(`Product ${id} not found`);
+          continue;
+        }
+
+        // Se tiver movimentações, deletar em cascata
+        if (product.movements.length > 0) {
+          await db.movement.deleteMany({
+            where: { productId: id }
+          });
+        }
+
+        await db.product.delete({
+          where: { id }
+        });
+
+        deletedCount++;
+      } catch (error: any) {
+        errors.push(`Failed to delete product ${id}: ${error.message}`);
+      }
+    }
+
+    return {
+      deleted: deletedCount,
+      errors
+    };
   }
 };

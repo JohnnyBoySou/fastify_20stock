@@ -73,6 +73,13 @@ export async function ProductRoutes(fastify: FastifyInstance) {
     handler: ProductController.search
   });
 
+  // Bulk operations (must be before /:id routes)
+  fastify.post('/bulk-delete', {
+    schema: ProductSchemas.bulkDelete,
+    
+    handler: ProductController.bulkDelete
+  });
+
   fastify.get('/category/:categoryId', {
     schema: {
       params: {

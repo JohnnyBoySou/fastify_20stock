@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProductSchemas = exports.getProductsByCategorySchema = exports.getProductCategoriesSchema = exports.setProductCategoriesSchema = exports.removeProductCategoriesSchema = exports.addProductCategoriesSchema = exports.getProductAnalyticsSchema = exports.getLowStockProductsSchema = exports.getProductStockHistorySchema = exports.getProductStockSchema = exports.createProductMovementSchema = exports.getProductMovementsSchema = exports.updateStockSchema = exports.verifySkuSchema = exports.updateStatusSchema = exports.deleteProductSchema = exports.listProductsSchema = exports.getProductSchema = exports.updateProductSchema = exports.createProductSchema = void 0;
+exports.ProductSchemas = exports.bulkDeleteProductsSchema = exports.getProductsByCategorySchema = exports.getProductCategoriesSchema = exports.setProductCategoriesSchema = exports.removeProductCategoriesSchema = exports.addProductCategoriesSchema = exports.getProductAnalyticsSchema = exports.getLowStockProductsSchema = exports.getProductStockHistorySchema = exports.getProductStockSchema = exports.createProductMovementSchema = exports.getProductMovementsSchema = exports.updateStockSchema = exports.verifySkuSchema = exports.updateStatusSchema = exports.deleteProductSchema = exports.listProductsSchema = exports.getProductSchema = exports.updateProductSchema = exports.createProductSchema = void 0;
 exports.createProductSchema = {
     body: {
         type: 'object',
@@ -841,6 +841,31 @@ exports.getProductsByCategorySchema = {
         }
     }
 };
+exports.bulkDeleteProductsSchema = {
+    body: {
+        type: 'object',
+        required: ['ids'],
+        properties: {
+            ids: {
+                type: 'array',
+                items: { type: 'string', minLength: 1 },
+                minItems: 1
+            }
+        }
+    },
+    response: {
+        200: {
+            type: 'object',
+            properties: {
+                deleted: { type: 'number' },
+                errors: {
+                    type: 'array',
+                    items: { type: 'string' }
+                }
+            }
+        }
+    }
+};
 exports.ProductSchemas = {
     create: exports.createProductSchema,
     update: exports.updateProductSchema,
@@ -848,6 +873,7 @@ exports.ProductSchemas = {
     delete: exports.deleteProductSchema,
     list: exports.listProductsSchema,
     updateStatus: exports.updateStatusSchema,
+    bulkDelete: exports.bulkDeleteProductsSchema,
     // Funções adicionais
     verifySku: exports.verifySkuSchema,
     updateStock: exports.updateStockSchema,

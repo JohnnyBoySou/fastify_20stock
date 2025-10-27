@@ -861,6 +861,32 @@ export const getProductsByCategorySchema: FastifySchema = {
   }
 };
 
+export const bulkDeleteProductsSchema: FastifySchema = {
+  body: {
+    type: 'object',
+    required: ['ids'],
+    properties: {
+      ids: { 
+        type: 'array', 
+        items: { type: 'string', minLength: 1 },
+        minItems: 1
+      }
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        deleted: { type: 'number' },
+        errors: {
+          type: 'array',
+          items: { type: 'string' }
+        }
+      }
+    }
+  }
+};
+
 export const ProductSchemas = {
   create: createProductSchema,
   update: updateProductSchema,
@@ -868,6 +894,7 @@ export const ProductSchemas = {
   delete: deleteProductSchema,
   list: listProductsSchema,
   updateStatus: updateStatusSchema,
+  bulkDelete: bulkDeleteProductsSchema,
   // Funções adicionais
   verifySku: verifySkuSchema,
   updateStock: updateStockSchema,

@@ -573,5 +573,47 @@ exports.ProductCommands = {
             message: 'Categories updated successfully',
             categories: updatedCategories.map(pc => pc.category)
         };
+    },
+    async bulkDelete(ids) {
+        if (!ids || ids.length === 0) {
+            throw new Error('No product IDs provided');
+        }
+        const errors = [];
+        let deletedCount = 0;
+        // Processar cada ID individualmente
+        for (const id of ids) {
+            try {
+                // Verificar se o produto existe e tem movimentações
+                const product = await prisma_1.db.product.findUnique({
+                    where: { id },
+                    include: {
+                        movements: {
+                            select: { id: true }
+                        }
+                    }
+                });
+                if (!product) {
+                    errors.push(`Product ${id} not found`);
+                    continue;
+                }
+                // Se tiver movimentações, deletar em cascata
+                if (product.movements.length > 0) {
+                    await prisma_1.db.movement.deleteMany({
+                        where: { productId: id }
+                    });
+                }
+                await prisma_1.db.product.delete({
+                    where: { id }
+                });
+                deletedCount++;
+            }
+            catch (error) {
+                errors.push(`Failed to delete product ${id}: ${error.message}`);
+            }
+        }
+        return {
+            deleted: deletedCount,
+            errors
+        };
     }
 };

@@ -688,6 +688,32 @@ export const ProductController = {
         error: 'Internal server error'
       });
     }
+  },
+
+  async bulkDelete(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { ids } = request.body as any;
+
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return reply.status(400).send({
+          error: 'Product IDs are required and must be a non-empty array'
+        });
+      }
+
+      const result = await ProductCommands.bulkDelete(ids);
+
+      return reply.send({
+        deleted: result.deleted,
+        errors: result.errors,
+        message: `Successfully deleted ${result.deleted} products${result.errors.length > 0 ? ` with ${result.errors.length} errors` : ''}`
+      });
+    } catch (error: any) {
+      request.log.error(error);
+
+      return reply.status(500).send({
+        error: error.message || 'Internal server error'
+      });
+    }
   }
 
 };
