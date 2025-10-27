@@ -351,10 +351,8 @@ export class GranularPermissionService {
     // Verificar condição customizada
     if (conditions.custom) {
       try {
-        const expression = conditions.custom.replace(/requestData\.(\w+)/g, (match, key) => {
-          return requestData[key] || 'undefined';
-        });
-        return eval(expression);
+        const result = this.evaluateCustomCondition(conditions.custom, requestData);
+        return result;
       } catch (error) {
         console.error('Error evaluating custom condition:', error);
         return false;
@@ -362,6 +360,65 @@ export class GranularPermissionService {
     }
 
     return true;
+  }
+
+  // Avalia condição customizada de forma segura (substitui eval)
+  private static evaluateCustomCondition(expression: string, requestData: any): boolean {
+    try {
+      // Suporta expressões simples como: requestData.amount < 1000
+      // Regex para capturar comparações: < > <= >= == !=
+      const comparisonRegex = /(\w+(?:\.\w+)*)\s*(<|>|<=|>=|==|!=)\s*([\w\d.-]+)/;
+      const match = expression.match(comparisonRegex);
+      
+      if (!match) {
+        console.warn('Invalid custom condition expression:', expression);
+        return false;
+      }
+
+      const [, leftSide, operator, rightSide] = match;
+      
+      // Resolver o valor da esquerda (ex: requestData.amount)
+      const leftValue = this.resolveValue(leftSide, requestData);
+      
+      // Resolver o valor da direita (pode ser número ou string)
+      let rightValue: any;
+      if (!isNaN(Number(rightSide))) {
+        rightValue = Number(rightSide);
+      } else {
+        rightValue = this.resolveValue(rightSide, requestData);
+      }
+
+      // Avaliar a comparação
+      switch (operator) {
+        case '<': return leftValue < rightValue;
+        case '>': return leftValue > rightValue;
+        case '<=': return leftValue <= rightValue;
+        case '>=': return leftValue >= rightValue;
+        case '==': return leftValue == rightValue;
+        case '!=': return leftValue != rightValue;
+        default:
+          console.warn('Unsupported operator:', operator);
+          return false;
+      }
+    } catch (error) {
+      console.error('Error in evaluateCustomCondition:', error);
+      return false;
+    }
+  }
+
+  // Resolve valor de propriedades aninhadas (ex: requestData.body.amount)
+  private static resolveValue(path: string, requestData: any): any {
+    const parts = path.split('.');
+    let value = requestData;
+    
+    for (const part of parts) {
+      if (value === undefined || value === null) {
+        return undefined;
+      }
+      value = value[part];
+    }
+    
+    return value;
   }
 
   // Verifica se usuário tem qualquer uma das permissões

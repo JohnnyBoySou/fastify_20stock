@@ -64,12 +64,13 @@
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.16",
+    "tsup": "^8.5.0",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc && tsc-alias",
+    "build": "tsup src/server.ts --dts --format cjs --clean",
     "start": "tsx src/server.ts",
     "start:prod": "node dist/server.js",
     "typecheck": "tsc --noEmit",

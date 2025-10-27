@@ -61,24 +61,33 @@ export const ProductCommands = {
       }
     }
 
-    return await db.product.create({
+    // Criar o produto primeiro
+    const product = await db.product.create({
       data: {
         ...createData,
         unitOfMeasure: createData.unitOfMeasure as UnitOfMeasure,
         status: data.status ?? true,
         ...(supplierId && { supplier: { connect: { id: supplierId } } }),
-        store: { connect: { id: storeId } },
-        ...(categoryIds && categoryIds.length > 0 && {
-          categories: {
-            create: categoryIds.map(categoryId => ({
-              category: { connect: { id: categoryId } }
-            }))
-          }
-        })
-      },
+        store: { connect: { id: storeId } }
+      }
+    });
+
+    // Se houver categorias, criar as relações
+    if (categoryIds && categoryIds.length > 0) {
+      await db.productCategory.createMany({
+        data: categoryIds.map(categoryId => ({
+          productId: product.id,
+          categoryId
+        }))
+      });
+    }
+
+    // Retornar o produto com todas as relações
+    return await db.product.findUnique({
+      where: { id: product.id },
       include: {
         categories: {
-          select: {
+          include: {
             category: {
               select: {
                 id: true,
