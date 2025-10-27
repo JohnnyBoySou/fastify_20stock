@@ -14,7 +14,7 @@ export const createMovementSchema: FastifySchema = {
       productId: { type: 'string', minLength: 1 },
       supplierId: { type: 'string' },
       batch: { type: 'string' },
-      expiration: { type: 'string', format: 'date-time' },
+      expiration: { type: 'string', format: 'date' }, // Formato de data simples YYYY-MM-DD
       price: { type: 'number', minimum: 0.01 },
       note: { type: 'string', maxLength: 500 },
       userId: { type: 'string' }
@@ -64,7 +64,7 @@ export const updateMovementSchema: FastifySchema = {
       quantity: { type: 'number', minimum: 1 },
       supplierId: { type: 'string' },
       batch: { type: 'string' },
-      expiration: { type: 'string', format: 'date-time' },
+      expiration: { type: 'string', format: 'date' }, // Formato de data simples YYYY-MM-DD
       price: { type: 'number', minimum: 0.01 },
       note: { type: 'string', maxLength: 500 }
     }

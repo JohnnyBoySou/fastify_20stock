@@ -94,6 +94,12 @@ export const MovementCommands = {
 
     console.log('Balance after movement:', balanceAfter);
 
+    // Converter data de expiração no formato YYYY-MM-DD para DateTime
+    let expirationDate = null;
+    if (data.expiration) {
+      expirationDate = new Date(data.expiration + 'T00:00:00.000Z'); // Adiciona horário para converter corretamente
+    }
+
     // Criar a movimentação
     console.log('Creating movement in database...');
     const movement = await db.movement.create({
@@ -104,7 +110,7 @@ export const MovementCommands = {
         productId: data.productId,
         supplierId: data.supplierId,
         batch: data.batch,
-        expiration: data.expiration ? new Date(data.expiration) : null,
+        expiration: expirationDate,
         price: data.price,
         note: data.note,
         userId: data.userId,
@@ -195,9 +201,15 @@ export const MovementCommands = {
       (data as any).balanceAfter = newBalanceAfter;
     }
 
+    // Converter data de expiração no formato YYYY-MM-DD para DateTime
+    let expirationDate = undefined;
+    if (data.expiration) {
+      expirationDate = new Date(data.expiration + 'T00:00:00.000Z'); // Adiciona horário para converter corretamente
+    }
+
     const updateData = {
       ...data,
-      expiration: data.expiration ? new Date(data.expiration) : undefined,
+      expiration: expirationDate,
       updatedAt: new Date()
     };
 

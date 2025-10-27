@@ -11947,6 +11947,50 @@ var CategoryCommands = {
         }
       }
     });
+  },
+  async bulkDelete(ids) {
+    if (!ids || ids.length === 0) {
+      throw new Error("No category IDs provided");
+    }
+    const errors = [];
+    let deletedCount = 0;
+    for (const id of ids) {
+      try {
+        const category = await db.category.findUnique({
+          where: { id },
+          include: {
+            _count: {
+              select: {
+                children: true,
+                products: true
+              }
+            }
+          }
+        });
+        if (!category) {
+          errors.push(`Category ${id} not found`);
+          continue;
+        }
+        if (category._count.children > 0) {
+          errors.push(`Category ${id} has children and cannot be deleted`);
+          continue;
+        }
+        if (category._count.products > 0) {
+          errors.push(`Category ${id} has products and cannot be deleted`);
+          continue;
+        }
+        await db.category.delete({
+          where: { id }
+        });
+        deletedCount++;
+      } catch (error) {
+        errors.push(`Failed to delete category ${id}: ${error.message}`);
+      }
+    }
+    return {
+      deleted: deletedCount,
+      errors
+    };
   }
 };
 
@@ -12944,6 +12988,27 @@ var CategoryController = {
       });
     }
   },
+  async bulkDelete(request, reply) {
+    try {
+      const { ids } = request.body;
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return reply.status(400).send({
+          error: "Category IDs are required and must be a non-empty array"
+        });
+      }
+      const result = await CategoryCommands.bulkDelete(ids);
+      return reply.send({
+        deleted: result.deleted,
+        errors: result.errors,
+        message: `Successfully deleted ${result.deleted} categories${result.errors.length > 0 ? ` with ${result.errors.length} errors` : ""}`
+      });
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(500).send({
+        error: error.message || "Internal server error"
+      });
+    }
+  },
   async list(request, reply) {
     try {
       const { page = 1, limit = 10, search, status, parentId } = request.query;
@@ -13929,6 +13994,44 @@ var getActiveInactiveTrendSchema = {
     }
   }
 };
+var bulkDeleteCategoriesSchema = {
+  body: {
+    type: "object",
+    required: ["ids"],
+    properties: {
+      ids: {
+        type: "array",
+        items: { type: "string", minLength: 1 },
+        minItems: 1
+      }
+    }
+  },
+  response: {
+    200: {
+      type: "object",
+      properties: {
+        deleted: { type: "number" },
+        errors: {
+          type: "array",
+          items: { type: "string" }
+        },
+        message: { type: "string" }
+      }
+    },
+    400: {
+      type: "object",
+      properties: {
+        error: { type: "string" }
+      }
+    },
+    500: {
+      type: "object",
+      properties: {
+        error: { type: "string" }
+      }
+    }
+  }
+};
 var CategorySchemas = {
   create: createCategorySchema,
   update: updateCategorySchema,
@@ -13941,7 +14044,8 @@ var CategorySchemas = {
   getTopCategoriesByProducts: getTopCategoriesByProductsSchema,
   getCategoryCreationEvolution: getCategoryCreationEvolutionSchema,
   getActiveInactiveRatio: getActiveInactiveRatioSchema,
-  getActiveInactiveTrend: getActiveInactiveTrendSchema
+  getActiveInactiveTrend: getActiveInactiveTrendSchema,
+  bulkDelete: bulkDeleteCategoriesSchema
 };
 
 // src/features/category/category.routes.ts
@@ -13956,6 +14060,10 @@ async function CategoryRoutes(fastify2) {
   fastify2.get("/", {
     schema: CategorySchemas.list,
     handler: CategoryController.list
+  });
+  fastify2.post("/bulk-delete", {
+    schema: CategorySchemas.bulkDelete,
+    handler: CategoryController.bulkDelete
   });
   fastify2.get("/:id", {
     schema: CategorySchemas.get,
@@ -14093,6 +14201,10 @@ var MovementCommands = {
       balanceAfter = currentStock - data.quantity;
     }
     console.log("Balance after movement:", balanceAfter);
+    let expirationDate = null;
+    if (data.expiration) {
+      expirationDate = /* @__PURE__ */ new Date(data.expiration + "T00:00:00.000Z");
+    }
     console.log("Creating movement in database...");
     const movement = await db.movement.create({
       data: {
@@ -14102,7 +14214,7 @@ var MovementCommands = {
         productId: data.productId,
         supplierId: data.supplierId,
         batch: data.batch,
-        expiration: data.expiration ? new Date(data.expiration) : null,
+        expiration: expirationDate,
         price: data.price,
         note: data.note,
         userId: data.userId,
@@ -14173,9 +14285,13 @@ var MovementCommands = {
       }
       data.balanceAfter = newBalanceAfter;
     }
+    let expirationDate = void 0;
+    if (data.expiration) {
+      expirationDate = /* @__PURE__ */ new Date(data.expiration + "T00:00:00.000Z");
+    }
     const updateData = {
       ...data,
-      expiration: data.expiration ? new Date(data.expiration) : void 0,
+      expiration: expirationDate,
       updatedAt: /* @__PURE__ */ new Date()
     };
     return await db.movement.update({
@@ -14855,66 +14971,90 @@ var MovementQueries = {
       }
     };
   },
-  async search(term, limit = 10) {
-    return await db.movement.findMany({
-      where: {
-        OR: [
-          {
-            product: {
-              name: {
-                contains: term,
-                mode: "insensitive"
-              }
-            }
-          },
-          {
-            store: {
-              name: {
-                contains: term,
-                mode: "insensitive"
-              }
-            }
-          },
-          {
-            supplier: {
-              corporateName: {
-                contains: term,
-                mode: "insensitive"
-              }
-            }
-          },
-          {
-            batch: {
+  async search(term, storeId, params = {}) {
+    const { page = 1, limit = 10 } = params;
+    const skip = (page - 1) * limit;
+    const where = {
+      storeId,
+      OR: [
+        {
+          product: {
+            name: {
               contains: term,
               mode: "insensitive"
             }
           }
-        ]
-      },
-      take: limit,
-      orderBy: { createdAt: "desc" },
-      include: {
-        store: {
-          select: {
-            id: true,
-            name: true
+        },
+        {
+          store: {
+            name: {
+              contains: term,
+              mode: "insensitive"
+            }
           }
         },
-        product: {
-          select: {
-            id: true,
-            name: true,
-            unitOfMeasure: true
+        {
+          supplier: {
+            corporateName: {
+              contains: term,
+              mode: "insensitive"
+            }
           }
         },
-        supplier: {
-          select: {
-            id: true,
-            corporateName: true
+        {
+          batch: {
+            contains: term,
+            mode: "insensitive"
           }
         }
+      ]
+    };
+    const [items, total] = await Promise.all([
+      db.movement.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: {
+          store: {
+            select: {
+              id: true,
+              name: true
+            }
+          },
+          product: {
+            select: {
+              id: true,
+              name: true,
+              unitOfMeasure: true
+            }
+          },
+          supplier: {
+            select: {
+              id: true,
+              corporateName: true
+            }
+          },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        }
+      }),
+      db.movement.count({ where })
+    ]);
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
       }
-    });
+    };
   },
   async getByStore(storeId, params) {
     const { page = 1, limit = 10, type, startDate, endDate } = params;
@@ -16678,9 +16818,15 @@ var MovementController = {
   },
   async search(request, reply) {
     try {
-      const { q, limit = 10 } = request.query;
-      const result = await MovementQueries.search(q, limit);
-      return reply.send({ movements: result });
+      const { q, page = 1, limit = 10 } = request.query;
+      const storeId = request.store?.id;
+      if (!storeId) {
+        return reply.status(400).send({
+          error: "Store context required"
+        });
+      }
+      const result = await MovementQueries.search(q, storeId, { page, limit });
+      return reply.send(result);
     } catch (error) {
       request.log.error(error);
       return reply.status(500).send({
@@ -16995,7 +17141,8 @@ var createMovementSchema = {
       productId: { type: "string", minLength: 1 },
       supplierId: { type: "string" },
       batch: { type: "string" },
-      expiration: { type: "string", format: "date-time" },
+      expiration: { type: "string", format: "date" },
+      // Formato de data simples YYYY-MM-DD
       price: { type: "number", minimum: 0.01 },
       note: { type: "string", maxLength: 500 },
       userId: { type: "string" }
@@ -17044,7 +17191,8 @@ var updateMovementSchema = {
       quantity: { type: "number", minimum: 1 },
       supplierId: { type: "string" },
       batch: { type: "string" },
-      expiration: { type: "string", format: "date-time" },
+      expiration: { type: "string", format: "date" },
+      // Formato de data simples YYYY-MM-DD
       price: { type: "number", minimum: 0.01 },
       note: { type: "string", maxLength: 500 }
     }
