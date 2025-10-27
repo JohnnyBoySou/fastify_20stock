@@ -21,6 +21,12 @@ export async function CategoryRoutes(fastify: FastifyInstance) {
     handler: CategoryController.list
   });
 
+  // Bulk operations
+  fastify.post('/bulk-delete', {
+    schema: CategorySchemas.bulkDelete,
+    handler: CategoryController.bulkDelete
+  });
+
   fastify.get('/:id', {
     schema: CategorySchemas.get,
     handler: CategoryController.get

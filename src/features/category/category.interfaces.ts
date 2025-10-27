@@ -81,3 +81,9 @@ export interface CategoryResponse {
     products: number
   }
 }
+
+export interface BulkDeleteCategoriesRequest extends FastifyRequest {
+  body: {
+    ids: string[]
+  }
+}

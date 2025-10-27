@@ -702,6 +702,45 @@ export const getActiveInactiveTrendSchema: FastifySchema = {
   }
 };
 
+export const bulkDeleteCategoriesSchema: FastifySchema = {
+  body: {
+    type: 'object',
+    required: ['ids'],
+    properties: {
+      ids: { 
+        type: 'array', 
+        items: { type: 'string', minLength: 1 },
+        minItems: 1
+      }
+    }
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        deleted: { type: 'number' },
+        errors: {
+          type: 'array',
+          items: { type: 'string' }
+        },
+        message: { type: 'string' }
+      }
+    },
+    400: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
+  }
+};
+
 export const CategorySchemas = {
   create: createCategorySchema,
   update: updateCategorySchema,
@@ -714,5 +753,6 @@ export const CategorySchemas = {
   getTopCategoriesByProducts: getTopCategoriesByProductsSchema,
   getCategoryCreationEvolution: getCategoryCreationEvolutionSchema,
   getActiveInactiveRatio: getActiveInactiveRatioSchema,
-  getActiveInactiveTrend: getActiveInactiveTrendSchema
+  getActiveInactiveTrend: getActiveInactiveTrendSchema,
+  bulkDelete: bulkDeleteCategoriesSchema
 };

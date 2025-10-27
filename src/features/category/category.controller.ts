@@ -132,6 +132,32 @@ export const CategoryController = {
     }
   },
 
+  async bulkDelete(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      const { ids } = request.body as any;
+
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return reply.status(400).send({
+          error: 'Category IDs are required and must be a non-empty array'
+        });
+      }
+
+      const result = await CategoryCommands.bulkDelete(ids);
+
+      return reply.send({
+        deleted: result.deleted,
+        errors: result.errors,
+        message: `Successfully deleted ${result.deleted} categories${result.errors.length > 0 ? ` with ${result.errors.length} errors` : ''}`
+      });
+    } catch (error: any) {
+      request.log.error(error);
+
+      return reply.status(500).send({
+        error: error.message || 'Internal server error'
+      });
+    }
+  },
+
   async list(request: FastifyRequest, reply: FastifyReply) {
     try {
       const { page = 1, limit = 10, search, status, parentId } = request.query as any;
