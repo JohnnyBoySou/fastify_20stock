@@ -66,10 +66,14 @@ export const ProductQueries = {
     // Calcular estoque atual
     const currentStock = await calculateCurrentStock(product.id);
 
-    return {
+    // Transformar o formato das categorias
+    const transformedProduct = {
       ...product,
+      categories: product.categories.map(pc => pc.category),
       currentStock
     };
+
+    return transformedProduct;
   },
 
   async list(params: {
@@ -160,6 +164,7 @@ export const ProductQueries = {
         const currentStock = await calculateCurrentStock(product.id);
         return {
           ...product,
+          categories: product.categories.map(pc => pc.category),
           currentStock
         };
       })
@@ -245,6 +250,7 @@ export const ProductQueries = {
         const currentStock = await calculateCurrentStock(product.id);
         return {
           ...product,
+          categories: product.categories.map(pc => pc.category),
           currentStock
         };
       })
@@ -307,6 +313,7 @@ export const ProductQueries = {
         const currentStock = await calculateCurrentStock(product.id);
         return {
           ...product,
+          categories: product.categories.map(pc => pc.category),
           currentStock
         };
       })
@@ -378,6 +385,7 @@ export const ProductQueries = {
         const currentStock = await calculateCurrentStock(product.id);
         return {
           ...product,
+          categories: product.categories.map(pc => pc.category),
           currentStock
         };
       })
@@ -480,6 +488,7 @@ export const ProductQueries = {
         const currentStock = await calculateCurrentStock(product.id);
         return {
           ...product,
+          categories: product.categories.map(pc => pc.category),
           currentStock
         };
       })
@@ -706,6 +715,7 @@ export const ProductQueries = {
 
       return {
         ...product,
+        categories: product.categories.map(pc => pc.category),
         currentStock,
         stockStatus: currentStock <= 0 ? 'CRITICAL' : 'LOW'
       };
@@ -898,8 +908,14 @@ export const ProductQueries = {
 
     const totalPages = Math.ceil(total / limit);
 
+    // Transformar categorias para todos os produtos
+    const transformedProducts = products.map(product => ({
+      ...product,
+      categories: product.categories.map(pc => pc.category)
+    }));
+
     return {
-      products,
+      products: transformedProducts,
       pagination: {
         page,
         limit,

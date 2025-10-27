@@ -77,7 +77,14 @@ export const ProductController = {
 
   async get(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const { id, storeId } = request.params as any;
+      const { id } = request.params as any;
+      const storeId = request.store?.id;
+
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
 
       const result = await ProductQueries.getById(id, storeId);
 

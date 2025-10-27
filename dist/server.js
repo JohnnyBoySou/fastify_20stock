@@ -7,9 +7,6 @@ var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __esm = (fn, res) => function __init() {
   return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
 };
-var __commonJS = (cb, mod) => function __require() {
-  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
-};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -31,62 +28,6 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// node_modules/.prisma/client/index.js
-var require_client = __commonJS({
-  "node_modules/.prisma/client/index.js"(exports2, module2) {
-    "use strict";
-    var __defProp2 = Object.defineProperty;
-    var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
-    var __getOwnPropNames2 = Object.getOwnPropertyNames;
-    var __hasOwnProp2 = Object.prototype.hasOwnProperty;
-    var __export2 = (target, all) => {
-      for (var name in all)
-        __defProp2(target, name, { get: all[name], enumerable: true });
-    };
-    var __copyProps2 = (to, from, except, desc) => {
-      if (from && typeof from === "object" || typeof from === "function") {
-        for (let key of __getOwnPropNames2(from))
-          if (!__hasOwnProp2.call(to, key) && key !== except)
-            __defProp2(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc2(from, key)) || desc.enumerable });
-      }
-      return to;
-    };
-    var __toCommonJS2 = (mod) => __copyProps2(__defProp2({}, "__esModule", { value: true }), mod);
-    var default_index_exports = {};
-    __export2(default_index_exports, {
-      Prisma: () => Prisma,
-      PrismaClient: () => PrismaClient2,
-      default: () => default_index_default
-    });
-    module2.exports = __toCommonJS2(default_index_exports);
-    var prisma2 = {
-      enginesVersion: "1c57fdcd7e44b29b9313256c76699e91c3ac3c43"
-    };
-    var version = "6.16.2";
-    var clientVersion = version;
-    var PrismaClient2 = class {
-      constructor() {
-        throw new Error('@prisma/client did not initialize yet. Please run "prisma generate" and try to import it again.');
-      }
-    };
-    function defineExtension(ext) {
-      if (typeof ext === "function") {
-        return ext;
-      }
-      return (client) => client.$extends(ext);
-    }
-    function getExtensionContext(that) {
-      return that;
-    }
-    var Prisma = {
-      defineExtension,
-      getExtensionContext,
-      prismaVersion: { client: clientVersion, engine: prisma2.enginesVersion }
-    };
-    var default_index_default = { Prisma };
-  }
-});
 
 // src/plugins/prisma.ts
 async function prismaPlugin(app) {
@@ -110,7 +51,7 @@ async function connectPrisma(app) {
 var import_client, prisma, db;
 var init_prisma = __esm({
   "src/plugins/prisma.ts"() {
-    import_client = __toESM(require_client());
+    import_client = require("@prisma/client");
     prisma = new import_client.PrismaClient();
     db = prisma;
   }
@@ -4782,10 +4723,12 @@ var ProductQueries = {
       return null;
     }
     const currentStock = await calculateCurrentStock(product.id);
-    return {
+    const transformedProduct = {
       ...product,
+      categories: product.categories.map((pc) => pc.category),
       currentStock
     };
+    return transformedProduct;
   },
   async list(params) {
     const { page = 1, limit = 10, search, status, categoryIds, supplierId, storeId } = params;
@@ -4858,6 +4801,7 @@ var ProductQueries = {
         const currentStock = await calculateCurrentStock(product.id);
         return {
           ...product,
+          categories: product.categories.map((pc) => pc.category),
           currentStock
         };
       })
@@ -4932,6 +4876,7 @@ var ProductQueries = {
         const currentStock = await calculateCurrentStock(product.id);
         return {
           ...product,
+          categories: product.categories.map((pc) => pc.category),
           currentStock
         };
       })
@@ -4990,6 +4935,7 @@ var ProductQueries = {
         const currentStock = await calculateCurrentStock(product.id);
         return {
           ...product,
+          categories: product.categories.map((pc) => pc.category),
           currentStock
         };
       })
@@ -5055,6 +5001,7 @@ var ProductQueries = {
         const currentStock = await calculateCurrentStock(product.id);
         return {
           ...product,
+          categories: product.categories.map((pc) => pc.category),
           currentStock
         };
       })
@@ -5149,6 +5096,7 @@ var ProductQueries = {
         const currentStock = await calculateCurrentStock(product.id);
         return {
           ...product,
+          categories: product.categories.map((pc) => pc.category),
           currentStock
         };
       })
@@ -5342,6 +5290,7 @@ var ProductQueries = {
       });
       return {
         ...product,
+        categories: product.categories.map((pc) => pc.category),
         currentStock,
         stockStatus: currentStock <= 0 ? "CRITICAL" : "LOW"
       };
@@ -5501,8 +5450,12 @@ var ProductQueries = {
       db.product.count({ where })
     ]);
     const totalPages = Math.ceil(total / limit);
+    const transformedProducts = products.map((product) => ({
+      ...product,
+      categories: product.categories.map((pc) => pc.category)
+    }));
     return {
-      products,
+      products: transformedProducts,
       pagination: {
         page,
         limit,
@@ -5572,7 +5525,13 @@ var ProductController = {
   },
   async get(request, reply) {
     try {
-      const { id, storeId } = request.params;
+      const { id } = request.params;
+      const storeId = request.store?.id;
+      if (!storeId) {
+        return reply.status(400).send({
+          error: "Store context required"
+        });
+      }
       const result = await ProductQueries.getById(id, storeId);
       if (!result) {
         return reply.status(404).send({
