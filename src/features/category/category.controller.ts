@@ -205,8 +205,15 @@ export const CategoryController = {
   async search(request: FastifyRequest, reply: FastifyReply) {
     try {
       const { q, limit = 10 } = request.query as any;
+      const storeId = request.store?.id;
 
-      const result = await CategoryQueries.search(q, limit);
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
+
+      const result = await CategoryQueries.search(q, storeId, limit);
 
       return reply.send({ categories: result });
     } catch (error) {

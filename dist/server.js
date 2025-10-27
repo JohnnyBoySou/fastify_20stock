@@ -12966,7 +12966,13 @@ var CategoryController = {
   async search(request, reply) {
     try {
       const { q, limit = 10 } = request.query;
-      const result = await CategoryQueries.search(q, limit);
+      const storeId = request.store?.id;
+      if (!storeId) {
+        return reply.status(400).send({
+          error: "Store context required"
+        });
+      }
+      const result = await CategoryQueries.search(q, storeId, limit);
       return reply.send({ categories: result });
     } catch (error) {
       request.log.error(error);
