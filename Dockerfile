@@ -32,8 +32,8 @@ RUN pnpm install --no-frozen-lockfile
 # Copiar código fonte
 COPY . .
 
-# Gerar cliente Prisma
-RUN npx prisma generate
+# Gerar cliente Prisma com o engine correto para Alpine Linux
+RUN npx prisma generate --generator client
 
 # Compilar TypeScript
 RUN pnpm run build
@@ -44,7 +44,7 @@ RUN pnpm run build
 FROM node:22-alpine AS runner
 
 # Instalar dependências necessárias para o Alpine
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl openssl-dev
 
 # Criar usuário não-root para segurança
 RUN addgroup --system --gid 1001 nodejs
@@ -58,15 +58,31 @@ COPY --from=deps /app/node_modules ./node_modules
 
 # Copiar código compilado
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/src/generated ./dist/generated
+
+# IMPORTANTE: Copiar o Prisma Client gerado e os binários
+COPY --from=builder /app/src/generated ./src/generated
+
+# Copiar binários do Prisma (engine do query)
+COPY --from=builder /app/node_modules/.prisma/client ./node_modules/.prisma/client
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
+# Copiar schema do Prisma (necessário para migrations em runtime)
 COPY --from=builder /app/prisma ./prisma
 
 # Copiar arquivos necessários
 COPY package.json ./
-COPY tsconfig.json ./
+
+# Configurar variáveis de ambiente para o Prisma encontrar o engine
+ENV PRISMA_QUERY_ENGINE_LIBRARY="/app/node_modules/.prisma/client/libquery_engine-linux-musl-openssl-3.0.x.so.node"
+ENV PRISMA_QUERY_ENGINE_BINARY="/app/node_modules/.prisma/client/query-engine-linux-musl-openssl-3.0.x"
 
 # Configurar permissões
 RUN chown -R fastify:nodejs /app
+
+# Verificar se os arquivos do Prisma foram copiados (antes de mudar para usuário não-root)
+RUN ls -la /app/src/generated/prisma/ || echo "Prisma generated files not found"
+RUN ls -la /app/node_modules/.prisma/client/ || echo "Prisma client not found"
+
 USER fastify
 
 # Expor porta
