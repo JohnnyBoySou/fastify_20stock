@@ -65,6 +65,14 @@ COPY --from=builder /app/prisma ./prisma
 # Copiar arquivos necessários
 COPY package.json ./
 
+# Copiar o diretório .prisma gerado no builder para node_modules
+# PRECISA ser após copiar node_modules mas antes de mudar as permissões
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+# Verificar se o .prisma foi copiado corretamente
+RUN ls -la /app/node_modules/ | grep "\.prisma" || echo "WARNING: .prisma directory not found"
+RUN ls -la /app/node_modules/.prisma/ 2>/dev/null || echo "WARNING: Cannot list .prisma contents"
+
 # Configurar variáveis de ambiente para o Prisma encontrar o engine
 ENV PRISMA_QUERY_ENGINE_LIBRARY="/app/node_modules/.prisma/client/libquery_engine-linux-musl-openssl-3.0.x.so.node"
 ENV PRISMA_QUERY_ENGINE_BINARY="/app/node_modules/.prisma/client/query-engine-linux-musl-openssl-3.0.x"
