@@ -7369,27 +7369,44 @@ var SupplierQueries = {
       }
     });
   },
-  async search(term, limit = 10) {
-    return await db.supplier.findMany({
-      where: {
-        status: true,
-        OR: [
-          { corporateName: { contains: term, mode: "insensitive" } },
-          { tradeName: { contains: term, mode: "insensitive" } },
-          { cnpj: { contains: term } }
-        ]
-      },
-      take: limit,
-      orderBy: { corporateName: "asc" },
-      select: {
-        id: true,
-        corporateName: true,
-        tradeName: true,
-        cnpj: true,
-        city: true,
-        state: true
+  async search(term, storeId, params = {}) {
+    const { page = 1, limit = 10 } = params;
+    const skip = (page - 1) * limit;
+    const where = {
+      status: true,
+      storeId,
+      OR: [
+        { corporateName: { contains: term, mode: "insensitive" } },
+        { tradeName: { contains: term, mode: "insensitive" } },
+        { cnpj: { contains: term } }
+      ]
+    };
+    const [items, total] = await Promise.all([
+      db.supplier.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { corporateName: "asc" },
+        select: {
+          id: true,
+          corporateName: true,
+          tradeName: true,
+          cnpj: true,
+          city: true,
+          state: true
+        }
+      }),
+      db.supplier.count({ where })
+    ]);
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
       }
-    });
+    };
   },
   async getStats() {
     const [total, active, inactive, withProducts] = await Promise.all([
@@ -7618,9 +7635,15 @@ var SupplierController = {
   },
   async search(request, reply) {
     try {
-      const { q, limit = 10 } = request.query;
-      const result = await SupplierQueries.search(q, limit);
-      return reply.send({ suppliers: result });
+      const { q, page = 1, limit = 10 } = request.query;
+      const storeId = request.store?.id;
+      if (!storeId) {
+        return reply.status(400).send({
+          error: "Store context required"
+        });
+      }
+      const result = await SupplierQueries.search(q, storeId, { page, limit });
+      return reply.send(result);
     } catch (error) {
       request.log.error(error);
       return reply.status(500).send({
@@ -12059,46 +12082,62 @@ var CategoryQueries = {
       }
     };
   },
-  async search(term, storeId, limit = 10) {
-    return await db.category.findMany({
-      where: {
-        storeId,
-        OR: [
-          { name: { contains: term, mode: "insensitive" } },
-          { description: { contains: term, mode: "insensitive" } },
-          { code: { contains: term, mode: "insensitive" } }
-        ]
-      },
-      take: limit,
-      orderBy: { createdAt: "desc" },
-      include: {
-        parent: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            code: true
-          }
-        },
-        children: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            code: true,
-            status: true,
-            color: true,
-            icon: true
-          }
-        },
-        _count: {
-          select: {
-            children: true,
-            products: true
+  async search(term, storeId, params = {}) {
+    const { page = 1, limit = 10 } = params;
+    const skip = (page - 1) * limit;
+    const where = {
+      storeId,
+      OR: [
+        { name: { contains: term, mode: "insensitive" } },
+        { description: { contains: term, mode: "insensitive" } },
+        { code: { contains: term, mode: "insensitive" } }
+      ]
+    };
+    const [items, total] = await Promise.all([
+      db.category.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: {
+          parent: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              code: true
+            }
+          },
+          children: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              code: true,
+              status: true,
+              color: true,
+              icon: true
+            }
+          },
+          _count: {
+            select: {
+              children: true,
+              products: true
+            }
           }
         }
+      }),
+      db.category.count({ where })
+    ]);
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
       }
-    });
+    };
   },
   async getActive(storeId) {
     return await db.category.findMany({
@@ -12965,15 +13004,15 @@ var CategoryController = {
   },
   async search(request, reply) {
     try {
-      const { q, limit = 10 } = request.query;
+      const { q, page = 1, limit = 10 } = request.query;
       const storeId = request.store?.id;
       if (!storeId) {
         return reply.status(400).send({
           error: "Store context required"
         });
       }
-      const result = await CategoryQueries.search(q, storeId, limit);
-      return reply.send({ categories: result });
+      const result = await CategoryQueries.search(q, storeId, { page, limit });
+      return reply.send(result);
     } catch (error) {
       request.log.error(error);
       return reply.status(500).send({

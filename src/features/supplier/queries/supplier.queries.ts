@@ -157,27 +157,50 @@ export const SupplierQueries = {
     });
   },
 
-  async search(term: string, limit: number = 10) {
-    return await db.supplier.findMany({
-      where: {
-        status: true,
-        OR: [
-          { corporateName: { contains: term, mode: 'insensitive' } },
-          { tradeName: { contains: term, mode: 'insensitive' } },
-          { cnpj: { contains: term } }
-        ]
-      },
-      take: limit,
-      orderBy: { corporateName: 'asc' },
-      select: {
-        id: true,
-        corporateName: true,
-        tradeName: true,
-        cnpj: true,
-        city: true,
-        state: true
+  async search(term: string, storeId: string, params: {
+    page?: number
+    limit?: number
+  } = {}) {
+    const { page = 1, limit = 10 } = params;
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      status: true,
+      storeId,
+      OR: [
+        { corporateName: { contains: term, mode: 'insensitive' } },
+        { tradeName: { contains: term, mode: 'insensitive' } },
+        { cnpj: { contains: term } }
+      ]
+    };
+
+    const [items, total] = await Promise.all([
+      db.supplier.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { corporateName: 'asc' },
+        select: {
+          id: true,
+          corporateName: true,
+          tradeName: true,
+          cnpj: true,
+          city: true,
+          state: true
+        }
+      }),
+      db.supplier.count({ where })
+    ]);
+
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
       }
-    });
+    };
   },
 
   async getStats() {

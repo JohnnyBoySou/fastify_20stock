@@ -506,13 +506,20 @@ export const MovementController = {
     }
   },
 
-  async search(request: FastifyRequest<{ Querystring: { q: string; limit?: number } }>, reply: FastifyReply) {
+  async search(request: FastifyRequest<{ Querystring: { q: string; page?: number; limit?: number } }>, reply: FastifyReply) {
     try {
-      const { q, limit = 10 } = request.query;
+      const { q, page = 1, limit = 10 } = request.query;
+      const storeId = request.store?.id;
 
-      const result = await MovementQueries.search(q, limit);
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store context required'
+        });
+      }
 
-      return reply.send({ movements: result });
+      const result = await MovementQueries.search(q, storeId, { page, limit });
+
+      return reply.send(result);
     } catch (error) {
       request.log.error(error);
       return reply.status(500).send({

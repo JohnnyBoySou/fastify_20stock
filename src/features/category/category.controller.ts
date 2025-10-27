@@ -204,7 +204,7 @@ export const CategoryController = {
 
   async search(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const { q, limit = 10 } = request.query as any;
+      const { q, page = 1, limit = 10 } = request.query as any;
       const storeId = request.store?.id;
 
       if (!storeId) {
@@ -213,9 +213,9 @@ export const CategoryController = {
         });
       }
 
-      const result = await CategoryQueries.search(q, storeId, limit);
+      const result = await CategoryQueries.search(q, storeId, { page, limit });
 
-      return reply.send({ categories: result });
+      return reply.send(result);
     } catch (error) {
       request.log.error(error);
       return reply.status(500).send({

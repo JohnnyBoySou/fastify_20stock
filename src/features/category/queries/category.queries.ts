@@ -147,46 +147,68 @@ export const CategoryQueries = {
     };
   },
 
-  async search(term: string, storeId: string, limit: number = 10) {
-    return await db.category.findMany({
-      where: {
-        storeId,
-        OR: [
-          { name: { contains: term, mode: 'insensitive' } },
-          { description: { contains: term, mode: 'insensitive' } },
-          { code: { contains: term, mode: 'insensitive' } }
-        ]
-      },
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        parent: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            code: true
-          }
-        },
-        children: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            code: true,
-            status: true,
-            color: true,
-            icon: true
-          }
-        },
-        _count: {
-          select: {
-            children: true,
-            products: true
+  async search(term: string, storeId: string, params: {
+    page?: number
+    limit?: number
+  } = {}) {
+    const { page = 1, limit = 10 } = params;
+    const skip = (page - 1) * limit;
+
+    const where = {
+      storeId,
+      OR: [
+        { name: { contains: term, mode: 'insensitive' } },
+        { description: { contains: term, mode: 'insensitive' } },
+        { code: { contains: term, mode: 'insensitive' } }
+      ]
+    };
+
+    const [items, total] = await Promise.all([
+      db.category.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          parent: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              code: true
+            }
+          },
+          children: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              code: true,
+              status: true,
+              color: true,
+              icon: true
+            }
+          },
+          _count: {
+            select: {
+              children: true,
+              products: true
+            }
           }
         }
+      }),
+      db.category.count({ where })
+    ]);
+
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
       }
-    });
+    };
   },
 
   async getActive(storeId: string) {

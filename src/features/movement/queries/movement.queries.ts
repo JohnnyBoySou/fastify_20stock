@@ -210,66 +210,96 @@ export const MovementQueries = {
     };
   },
 
-  async search(term: string, limit: number = 10) {
-    return await db.movement.findMany({
-      where: {
-        OR: [
-          {
-            product: {
-              name: {
-                contains: term,
-                mode: 'insensitive'
-              }
-            }
-          },
-          {
-            store: {
-              name: {
-                contains: term,
-                mode: 'insensitive'
-              }
-            }
-          },
-          {
-            supplier: {
-              corporateName: {
-                contains: term,
-                mode: 'insensitive'
-              }
-            }
-          },
-          {
-            batch: {
+  async search(term: string, storeId: string, params: {
+    page?: number
+    limit?: number
+  } = {}) {
+    const { page = 1, limit = 10 } = params;
+    const skip = (page - 1) * limit;
+
+    const where = {
+      storeId,
+      OR: [
+        {
+          product: {
+            name: {
               contains: term,
               mode: 'insensitive'
             }
           }
-        ]
-      },
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        store: {
-          select: {
-            id: true,
-            name: true
+        },
+        {
+          store: {
+            name: {
+              contains: term,
+              mode: 'insensitive'
+            }
           }
         },
-        product: {
-          select: {
-            id: true,
-            name: true,
-            unitOfMeasure: true
+        {
+          supplier: {
+            corporateName: {
+              contains: term,
+              mode: 'insensitive'
+            }
           }
         },
-        supplier: {
-          select: {
-            id: true,
-            corporateName: true
+        {
+          batch: {
+            contains: term,
+            mode: 'insensitive'
           }
         }
+      ]
+    };
+
+    const [items, total] = await Promise.all([
+      db.movement.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          store: {
+            select: {
+              id: true,
+              name: true
+            }
+          },
+          product: {
+            select: {
+              id: true,
+              name: true,
+              unitOfMeasure: true
+            }
+          },
+          supplier: {
+            select: {
+              id: true,
+              corporateName: true
+            }
+          },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        }
+      }),
+      db.movement.count({ where })
+    ]);
+
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
       }
-    });
+    };
   },
 
   async getByStore(storeId: string, params: {
