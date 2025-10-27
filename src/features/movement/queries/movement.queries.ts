@@ -199,8 +199,45 @@ export const MovementQueries = {
       db.movement.count({ where })
     ]);
 
+    // Log para debug do primeiro item
+    if (items.length > 0) {
+      console.log('MovementQueries.list - Sample item:', {
+        movementId: items[0].id,
+        storeId: items[0].storeId,
+        store: items[0].store,
+        productId: items[0].productId,
+        product: items[0].product,
+        supplierId: items[0].supplierId,
+        supplier: items[0].supplier,
+        userId: items[0].userId,
+        user: items[0].user
+      });
+    }
+
+    // Serializar os dados relacionados para garantir que não venham vazios
+    const serializedItems = items.map(item => {
+      // Verificar se os objetos não estão vazios antes de incluir
+      const serialized = {
+        ...item,
+        store: (item.store && Object.keys(item.store).length > 0) ? item.store : null,
+        product: (item.product && Object.keys(item.product).length > 0) ? item.product : null,
+        supplier: (item.supplier && Object.keys(item.supplier).length > 0) ? item.supplier : null,
+        user: (item.user && Object.keys(item.user).length > 0) ? item.user : null
+      };
+      
+      // Log se algum objeto relacionado estiver vazio mas com ID
+      if (item.storeId && !serialized.store) {
+        console.log(`Warning: Movement ${item.id} has storeId ${item.storeId} but store is empty`);
+      }
+      if (item.productId && !serialized.product) {
+        console.log(`Warning: Movement ${item.id} has productId ${item.productId} but product is empty`);
+      }
+      
+      return serialized;
+    });
+
     return {
-      items,
+      items: serializedItems,
       pagination: {
         page,
         limit,
@@ -1228,7 +1265,7 @@ estoque hoje!
     const stores = [...new Set(movements.map(m => m.storeId))];
     const currentStockByStore = await Promise.all(
       stores.map(async (storeId) => {
-        const currentStock = await MovementQueries.getCurrentStock(productId, storeId);
+        const currentStock = await MovementQueries.getCurrentStock(productId, storeId as string);
         const store = movements.find(m => m.storeId === storeId)?.store;
         return {
           storeId,
