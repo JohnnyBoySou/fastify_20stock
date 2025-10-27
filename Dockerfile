@@ -33,7 +33,7 @@ RUN pnpm install --no-frozen-lockfile
 COPY . .
 
 # Gerar cliente Prisma com o engine correto para Alpine Linux
-RUN npx prisma generate --generator client
+RUN npx prisma generate
 
 # Compilar TypeScript
 RUN pnpm run build
@@ -59,13 +59,6 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copiar código compilado
 COPY --from=builder /app/dist ./dist
 
-# IMPORTANTE: Copiar o Prisma Client gerado e os binários
-COPY --from=builder /app/src/generated ./src/generated
-
-# Copiar binários do Prisma (engine do query)
-COPY --from=builder /app/node_modules/.prisma/client ./node_modules/.prisma/client
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-
 # Copiar schema do Prisma (necessário para migrations em runtime)
 COPY --from=builder /app/prisma ./prisma
 
@@ -80,7 +73,6 @@ ENV PRISMA_QUERY_ENGINE_BINARY="/app/node_modules/.prisma/client/query-engine-li
 RUN chown -R fastify:nodejs /app
 
 # Verificar se os arquivos do Prisma foram copiados (antes de mudar para usuário não-root)
-RUN ls -la /app/src/generated/prisma/ || echo "Prisma generated files not found"
 RUN ls -la /app/node_modules/.prisma/client/ || echo "Prisma client not found"
 
 USER fastify
