@@ -22,7 +22,8 @@ export const createFlowSchema: FastifySchema = {
               properties: {
                 x: { type: 'number' },
                 y: { type: 'number' }
-              }
+              },
+              additionalProperties: true
             },
             data: {
               type: 'object',
@@ -32,9 +33,23 @@ export const createFlowSchema: FastifySchema = {
                 description: { type: 'string' },
                 color: { type: 'string' },
                 config: {}
-              }
-            }
-          }
+              },
+              additionalProperties: true
+            },
+            width: { type: 'number' },
+            height: { type: 'number' },
+            selected: { type: 'boolean' },
+            positionAbsolute: {
+              type: 'object',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' }
+              },
+              additionalProperties: true
+            },
+            dragging: { type: 'boolean' }
+          },
+          additionalProperties: true
         }
       },
       edges: {
@@ -46,11 +61,18 @@ export const createFlowSchema: FastifySchema = {
             id: { type: 'string' },
             source: { type: 'string' },
             target: { type: 'string' },
+            type: { type: 'string' },
             animated: { type: 'boolean' },
-            style: {},
-            markerEnd: {},
+            style: {
+              type: 'object',
+              additionalProperties: true
+            },
+            markerEnd: {
+              oneOf: [{ type: 'string' }, { type: 'object', additionalProperties: true }]
+            },
             label: { type: 'string' }
-          }
+          },
+          additionalProperties: true
         }
       },
       status: {
@@ -119,7 +141,8 @@ export const updateFlowSchema: FastifySchema = {
               properties: {
                 x: { type: 'number' },
                 y: { type: 'number' }
-              }
+              },
+              additionalProperties: true
             },
             data: {
               type: 'object',
@@ -129,9 +152,23 @@ export const updateFlowSchema: FastifySchema = {
                 description: { type: 'string' },
                 color: { type: 'string' },
                 config: {}
-              }
-            }
-          }
+              },
+              additionalProperties: true
+            },
+            width: { type: 'number' },
+            height: { type: 'number' },
+            selected: { type: 'boolean' },
+            positionAbsolute: {
+              type: 'object',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' }
+              },
+              additionalProperties: true
+            },
+            dragging: { type: 'boolean' }
+          },
+          additionalProperties: true
         }
       },
       edges: {
@@ -143,11 +180,18 @@ export const updateFlowSchema: FastifySchema = {
             id: { type: 'string' },
             source: { type: 'string' },
             target: { type: 'string' },
+            type: { type: 'string' },
             animated: { type: 'boolean' },
-            style: {},
-            markerEnd: {},
+            style: {
+              type: 'object',
+              additionalProperties: true
+            },
+            markerEnd: {
+              oneOf: [{ type: 'string' }, { type: 'object', additionalProperties: true }]
+            },
             label: { type: 'string' }
-          }
+          },
+          additionalProperties: true
         }
       },
       status: {
