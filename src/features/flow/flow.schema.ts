@@ -315,7 +315,7 @@ export const listFlowsSchema: FastifySchema = {
     200: {
       type: 'object',
       properties: {
-        flows: { type: 'array' },
+        items: { type: 'array' },
         pagination: {
           type: 'object',
           properties: {
