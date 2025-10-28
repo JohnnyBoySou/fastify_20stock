@@ -95,7 +95,7 @@ export const FlowQueries = {
       ]);
 
       return {
-        flows,
+        items: flows,
         pagination: {
           page,
           limit,
@@ -197,7 +197,13 @@ export const FlowQueries = {
     }
   },
 
-  async search(searchTerm: string, storeId?: string, limit: number = 10) {
+  async search(params: {
+    searchTerm: string;
+    storeId?: string;
+    limit?: number;
+    page?: number;
+  }) {
+    const { searchTerm, storeId, limit = 10, page = 1 } = params;
     try {
       const where: any = {
         OR: [
@@ -224,7 +230,17 @@ export const FlowQueries = {
         }
       });
 
-      return flows;
+      const total = await db.flow.count({ where });
+
+      return {
+        items: flows,
+        pagination: {
+          page,
+          limit,
+          total: flows.length,
+          totalPages: Math.ceil(total / Number(limit))
+        }
+      };
     } catch (error: any) {
       console.error('Error searching flows:', error);
       throw error;

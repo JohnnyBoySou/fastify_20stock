@@ -281,14 +281,14 @@ export const FlowController = {
     }
   },
 
-  async search(request: FastifyRequest<{ Querystring: { q: string; limit?: number; storeId?: string } }>, reply: FastifyReply) {
+  async search(request: FastifyRequest<{ Querystring: { searchTerm: string; limit?: number; page?: number; storeId?: string } }>, reply: FastifyReply) {
     try {
-      const { q, limit = 10 } = request.query;
-      const storeId = request.store?.id || request.query.storeId;
+      const { searchTerm, limit = 10, page = 1 } = request.query;
+      const storeId = request.store?.id;
 
-      const result = await FlowQueries.search(q, storeId, limit);
+      const result = await FlowQueries.search({ searchTerm, storeId, limit, page });
 
-      return reply.send({ flows: result });
+      return reply.send(result);
     } catch (error) {
       request.log.error(error);
       return reply.status(500).send({
