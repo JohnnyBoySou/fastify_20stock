@@ -1,249 +1,429 @@
-import { Type } from '@sinclair/typebox';
-
-// Schemas básicos
-const FlowStatusSchema = Type.Union([
-  Type.Literal('ACTIVE'),
-  Type.Literal('INACTIVE'),
-  Type.Literal('DRAFT')
-]);
-
-const FlowNodeSchema = Type.Object({
-  id: Type.String(),
-  type: Type.String(),
-  position: Type.Object({
-    x: Type.Number(),
-    y: Type.Number()
-  }),
-  data: Type.Object({
-    label: Type.String(),
-    description: Type.Optional(Type.String()),
-    color: Type.Optional(Type.String()),
-    config: Type.Optional(Type.Any())
-  })
-});
-
-const FlowEdgeSchema = Type.Object({
-  id: Type.String(),
-  source: Type.String(),
-  target: Type.String(),
-  animated: Type.Optional(Type.Boolean()),
-  style: Type.Optional(Type.Any()),
-  markerEnd: Type.Optional(Type.Any()),
-  label: Type.Optional(Type.String())
-});
+import { FastifySchema } from 'fastify';
 
 // Create Flow Schema
-export const createFlowSchema = {
-  body: Type.Object({
-    name: Type.String({ minLength: 1 }),
-    description: Type.Optional(Type.String()),
-    nodes: Type.Array(FlowNodeSchema),
-    edges: Type.Array(FlowEdgeSchema),
-    status: Type.Optional(FlowStatusSchema)
-  }),
+export const createFlowSchema: FastifySchema = {
+  body: {
+    type: 'object',
+    required: ['name', 'nodes', 'edges'],
+    properties: {
+      name: { type: 'string', minLength: 1 },
+      description: { type: 'string' },
+      nodes: {
+        type: 'array',
+        items: {
+          type: 'object',
+          required: ['id', 'type', 'position', 'data'],
+          properties: {
+            id: { type: 'string' },
+            type: { type: 'string' },
+            position: {
+              type: 'object',
+              required: ['x', 'y'],
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' }
+              }
+            },
+            data: {
+              type: 'object',
+              required: ['label'],
+              properties: {
+                label: { type: 'string' },
+                description: { type: 'string' },
+                color: { type: 'string' },
+                config: {}
+              }
+            }
+          }
+        }
+      },
+      edges: {
+        type: 'array',
+        items: {
+          type: 'object',
+          required: ['id', 'source', 'target'],
+          properties: {
+            id: { type: 'string' },
+            source: { type: 'string' },
+            target: { type: 'string' },
+            animated: { type: 'boolean' },
+            style: {},
+            markerEnd: {},
+            label: { type: 'string' }
+          }
+        }
+      },
+      status: {
+        type: 'string',
+        enum: ['ACTIVE', 'INACTIVE', 'DRAFT'],
+        default: 'DRAFT'
+      }
+    }
+  },
   response: {
-    201: Type.Object({
-      id: Type.String(),
-      name: Type.String(),
-      description: Type.Optional(Type.String()),
-      nodes: Type.Array(FlowNodeSchema),
-      edges: Type.Array(FlowEdgeSchema),
-      status: FlowStatusSchema,
-      storeId: Type.String(),
-      createdBy: Type.String(),
-      createdAt: Type.String(),
-      updatedAt: Type.String()
-    }),
-    400: Type.Object({
-      error: Type.String()
-    }),
-    500: Type.Object({
-      error: Type.String()
-    })
+    201: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        description: { type: 'string', nullable: true },
+        nodes: { type: 'array' },
+        edges: { type: 'array' },
+        status: { type: 'string' },
+        storeId: { type: 'string' },
+        createdBy: { type: 'string' },
+        createdAt: { type: 'string' },
+        updatedAt: { type: 'string' }
+      }
+    },
+    400: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
   }
 };
 
 // Update Flow Schema
-export const updateFlowSchema = {
-  params: Type.Object({
-    id: Type.String()
-  }),
-  body: Type.Object({
-    name: Type.Optional(Type.String()),
-    description: Type.Optional(Type.String()),
-    nodes: Type.Optional(Type.Array(FlowNodeSchema)),
-    edges: Type.Optional(Type.Array(FlowEdgeSchema)),
-    status: Type.Optional(FlowStatusSchema)
-  }),
+export const updateFlowSchema: FastifySchema = {
+  params: {
+    type: 'object',
+    required: ['id'],
+    properties: {
+      id: { type: 'string' }
+    }
+  },
+  body: {
+    type: 'object',
+    properties: {
+      name: { type: 'string', minLength: 1 },
+      description: { type: 'string' },
+      nodes: {
+        type: 'array',
+        items: {
+          type: 'object',
+          required: ['id', 'type', 'position', 'data'],
+          properties: {
+            id: { type: 'string' },
+            type: { type: 'string' },
+            position: {
+              type: 'object',
+              required: ['x', 'y'],
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' }
+              }
+            },
+            data: {
+              type: 'object',
+              required: ['label'],
+              properties: {
+                label: { type: 'string' },
+                description: { type: 'string' },
+                color: { type: 'string' },
+                config: {}
+              }
+            }
+          }
+        }
+      },
+      edges: {
+        type: 'array',
+        items: {
+          type: 'object',
+          required: ['id', 'source', 'target'],
+          properties: {
+            id: { type: 'string' },
+            source: { type: 'string' },
+            target: { type: 'string' },
+            animated: { type: 'boolean' },
+            style: {},
+            markerEnd: {},
+            label: { type: 'string' }
+          }
+        }
+      },
+      status: {
+        type: 'string',
+        enum: ['ACTIVE', 'INACTIVE', 'DRAFT']
+      }
+    }
+  },
   response: {
-    200: Type.Object({
-      id: Type.String(),
-      name: Type.String(),
-      description: Type.Optional(Type.String()),
-      nodes: Type.Array(FlowNodeSchema),
-      edges: Type.Array(FlowEdgeSchema),
-      status: FlowStatusSchema,
-      storeId: Type.String(),
-      createdBy: Type.String(),
-      createdAt: Type.String(),
-      updatedAt: Type.String()
-    }),
-    404: Type.Object({
-      error: Type.String()
-    }),
-    500: Type.Object({
-      error: Type.String()
-    })
+    200: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        description: { type: 'string', nullable: true },
+        nodes: { type: 'array' },
+        edges: { type: 'array' },
+        status: { type: 'string' },
+        storeId: { type: 'string' },
+        createdBy: { type: 'string' },
+        createdAt: { type: 'string' },
+        updatedAt: { type: 'string' }
+      }
+    },
+    404: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
   }
 };
 
 // Get Flow Schema
-export const getFlowSchema = {
-  params: Type.Object({
-    id: Type.String()
-  }),
+export const getFlowSchema: FastifySchema = {
+  params: {
+    type: 'object',
+    required: ['id'],
+    properties: {
+      id: { type: 'string' }
+    }
+  },
   response: {
-    200: Type.Object({
-      id: Type.String(),
-      name: Type.String(),
-      description: Type.Optional(Type.String()),
-      nodes: Type.Array(FlowNodeSchema),
-      edges: Type.Array(FlowEdgeSchema),
-      status: FlowStatusSchema,
-      storeId: Type.String(),
-      createdBy: Type.String(),
-      createdAt: Type.String(),
-      updatedAt: Type.String()
-    }),
-    404: Type.Object({
-      error: Type.String()
-    }),
-    500: Type.Object({
-      error: Type.String()
-    })
+    200: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        description: { type: 'string', nullable: true },
+        nodes: { type: 'array' },
+        edges: { type: 'array' },
+        status: { type: 'string' },
+        storeId: { type: 'string' },
+        createdBy: { type: 'string' },
+        createdAt: { type: 'string' },
+        updatedAt: { type: 'string' }
+      }
+    },
+    404: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
   }
 };
 
 // Delete Flow Schema
-export const deleteFlowSchema = {
-  params: Type.Object({
-    id: Type.String()
-  }),
+export const deleteFlowSchema: FastifySchema = {
+  params: {
+    type: 'object',
+    required: ['id'],
+    properties: {
+      id: { type: 'string' }
+    }
+  },
   response: {
-    204: Type.Object({}),
-    404: Type.Object({
-      error: Type.String()
-    }),
-    500: Type.Object({
-      error: Type.String()
-    })
+    204: { type: 'null' },
+    404: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
   }
 };
 
 // List Flows Schema
-export const listFlowsSchema = {
-  querystring: Type.Object({
-    page: Type.Optional(Type.Number({ minimum: 1 })),
-    limit: Type.Optional(Type.Number({ minimum: 1, maximum: 100 })),
-    search: Type.Optional(Type.String()),
-    status: Type.Optional(FlowStatusSchema)
-  }),
+export const listFlowsSchema: FastifySchema = {
+  querystring: {
+    type: 'object',
+    properties: {
+      page: { type: 'number', minimum: 1 },
+      limit: { type: 'number', minimum: 1, maximum: 100 },
+      search: { type: 'string' },
+      status: {
+        type: 'string',
+        enum: ['ACTIVE', 'INACTIVE', 'DRAFT']
+      }
+    }
+  },
   response: {
-    200: Type.Object({
-      flows: Type.Array(Type.Any()),
-      pagination: Type.Object({
-        page: Type.Number(),
-        limit: Type.Number(),
-        total: Type.Number(),
-        totalPages: Type.Number()
-      })
-    }),
-    500: Type.Object({
-      error: Type.String()
-    })
+    200: {
+      type: 'object',
+      properties: {
+        flows: { type: 'array' },
+        pagination: {
+          type: 'object',
+          properties: {
+            page: { type: 'number' },
+            limit: { type: 'number' },
+            total: { type: 'number' },
+            totalPages: { type: 'number' }
+          }
+        }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
   }
 };
 
 // Update Flow Status Schema
-export const updateFlowStatusSchema = {
-  params: Type.Object({
-    id: Type.String()
-  }),
-  body: Type.Object({
-    status: FlowStatusSchema
-  }),
+export const updateFlowStatusSchema: FastifySchema = {
+  params: {
+    type: 'object',
+    required: ['id'],
+    properties: {
+      id: { type: 'string' }
+    }
+  },
+  body: {
+    type: 'object',
+    required: ['status'],
+    properties: {
+      status: {
+        type: 'string',
+        enum: ['ACTIVE', 'INACTIVE', 'DRAFT']
+      }
+    }
+  },
   response: {
-    200: Type.Object({
-      id: Type.String(),
-      name: Type.String(),
-      description: Type.Optional(Type.String()),
-      nodes: Type.Array(FlowNodeSchema),
-      edges: Type.Array(FlowEdgeSchema),
-      status: FlowStatusSchema,
-      storeId: Type.String(),
-      createdBy: Type.String(),
-      createdAt: Type.String(),
-      updatedAt: Type.String()
-    }),
-    404: Type.Object({
-      error: Type.String()
-    }),
-    500: Type.Object({
-      error: Type.String()
-    })
+    200: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        description: { type: 'string', nullable: true },
+        nodes: { type: 'array' },
+        edges: { type: 'array' },
+        status: { type: 'string' },
+        storeId: { type: 'string' },
+        createdBy: { type: 'string' },
+        createdAt: { type: 'string' },
+        updatedAt: { type: 'string' }
+      }
+    },
+    404: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
   }
 };
 
 // Duplicate Flow Schema
-export const duplicateFlowSchema = {
-  params: Type.Object({
-    id: Type.String()
-  }),
-  body: Type.Optional(Type.Object({
-    name: Type.Optional(Type.String())
-  })),
+export const duplicateFlowSchema: FastifySchema = {
+  params: {
+    type: 'object',
+    required: ['id'],
+    properties: {
+      id: { type: 'string' }
+    }
+  },
+  body: {
+    type: 'object',
+    properties: {
+      name: { type: 'string', minLength: 1 }
+    }
+  },
   response: {
-    201: Type.Object({
-      id: Type.String(),
-      name: Type.String(),
-      description: Type.Optional(Type.String()),
-      nodes: Type.Array(FlowNodeSchema),
-      edges: Type.Array(FlowEdgeSchema),
-      status: FlowStatusSchema,
-      storeId: Type.String(),
-      createdBy: Type.String(),
-      createdAt: Type.String(),
-      updatedAt: Type.String()
-    }),
-    404: Type.Object({
-      error: Type.String()
-    }),
-    500: Type.Object({
-      error: Type.String()
-    })
+    201: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        description: { type: 'string', nullable: true },
+        nodes: { type: 'array' },
+        edges: { type: 'array' },
+        status: { type: 'string' },
+        storeId: { type: 'string' },
+        createdBy: { type: 'string' },
+        createdAt: { type: 'string' },
+        updatedAt: { type: 'string' }
+      }
+    },
+    404: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
   }
 };
 
 // Test Flow Schema
-export const testFlowSchema = {
-  params: Type.Object({
-    id: Type.String()
-  }),
-  body: Type.Object({
-    triggerData: Type.Any()
-  }),
+export const testFlowSchema: FastifySchema = {
+  params: {
+    type: 'object',
+    required: ['id'],
+    properties: {
+      id: { type: 'string' }
+    }
+  },
+  body: {
+    type: 'object',
+    properties: {
+      triggerData: {}
+    }
+  },
   response: {
-    200: Type.Object({
-      executionId: Type.String(),
-      status: Type.String(),
-      executionLog: Type.Array(Type.Any())
-    }),
-    404: Type.Object({
-      error: Type.String()
-    }),
-    500: Type.Object({
-      error: Type.String()
-    })
+    200: {
+      type: 'object',
+      properties: {
+        executionId: { type: 'string' },
+        status: { type: 'string' },
+        executionLog: { type: 'array' }
+      }
+    },
+    404: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
   }
 };
 

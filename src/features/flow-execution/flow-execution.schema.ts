@@ -1,134 +1,205 @@
-import { Type } from '@sinclair/typebox';
-
-// Schemas básicos
-const FlowExecutionStatusSchema = Type.Union([
-  Type.Literal('SUCCESS'),
-  Type.Literal('FAILED'),
-  Type.Literal('RUNNING'),
-  Type.Literal('CANCELLED')
-]);
+import { FastifySchema } from 'fastify';
 
 // Get Flow Execution Schema
-export const getFlowExecutionSchema = {
-  params: Type.Object({
-    id: Type.String()
-  }),
+export const getFlowExecutionSchema: FastifySchema = {
+  params: {
+    type: 'object',
+    required: ['id'],
+    properties: {
+      id: { type: 'string' }
+    }
+  },
   response: {
-    200: Type.Object({
-      id: Type.String(),
-      flowId: Type.String(),
-      status: FlowExecutionStatusSchema,
-      triggerType: Type.String(),
-      triggerData: Type.Any(),
-      executionLog: Type.Array(Type.Any()),
-      error: Type.Optional(Type.String()),
-      startedAt: Type.String(),
-      completedAt: Type.Optional(Type.String()),
-      duration: Type.Optional(Type.Number())
-    }),
-    404: Type.Object({
-      error: Type.String()
-    }),
-    500: Type.Object({
-      error: Type.String()
-    })
+    200: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        flowId: { type: 'string' },
+        status: {
+          type: 'string',
+          enum: ['SUCCESS', 'FAILED', 'RUNNING', 'CANCELLED']
+        },
+        triggerType: { type: 'string' },
+        triggerData: {},
+        executionLog: { type: 'array' },
+        error: { type: 'string', nullable: true },
+        startedAt: { type: 'string' },
+        completedAt: { type: 'string', nullable: true },
+        duration: { type: 'number', nullable: true }
+      }
+    },
+    404: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
   }
 };
 
 // List Flow Executions Schema
-export const listFlowExecutionsSchema = {
-  querystring: Type.Object({
-    page: Type.Optional(Type.Number({ minimum: 1 })),
-    limit: Type.Optional(Type.Number({ minimum: 1, maximum: 100 })),
-    flowId: Type.Optional(Type.String()),
-    status: Type.Optional(FlowExecutionStatusSchema),
-    triggerType: Type.Optional(Type.String()),
-    startDate: Type.Optional(Type.String()),
-    endDate: Type.Optional(Type.String())
-  }),
+export const listFlowExecutionsSchema: FastifySchema = {
+  querystring: {
+    type: 'object',
+    properties: {
+      page: { type: 'number', minimum: 1 },
+      limit: { type: 'number', minimum: 1, maximum: 100 },
+      flowId: { type: 'string' },
+      status: {
+        type: 'string',
+        enum: ['SUCCESS', 'FAILED', 'RUNNING', 'CANCELLED']
+      },
+      triggerType: { type: 'string' },
+      startDate: { type: 'string' },
+      endDate: { type: 'string' }
+    }
+  },
   response: {
-    200: Type.Object({
-      executions: Type.Array(Type.Any()),
-      pagination: Type.Object({
-        page: Type.Number(),
-        limit: Type.Number(),
-        total: Type.Number(),
-        totalPages: Type.Number()
-      })
-    }),
-    500: Type.Object({
-      error: Type.String()
-    })
+    200: {
+      type: 'object',
+      properties: {
+        executions: { type: 'array' },
+        pagination: {
+          type: 'object',
+          properties: {
+            page: { type: 'number' },
+            limit: { type: 'number' },
+            total: { type: 'number' },
+            totalPages: { type: 'number' }
+          }
+        }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
   }
 };
 
 // Get By Flow Schema
-export const getByFlowSchema = {
-  params: Type.Object({
-    flowId: Type.String()
-  }),
-  querystring: Type.Object({
-    page: Type.Optional(Type.Number({ minimum: 1 })),
-    limit: Type.Optional(Type.Number({ minimum: 1, maximum: 100 })),
-    status: Type.Optional(FlowExecutionStatusSchema)
-  }),
+export const getByFlowSchema: FastifySchema = {
+  params: {
+    type: 'object',
+    required: ['flowId'],
+    properties: {
+      flowId: { type: 'string' }
+    }
+  },
+  querystring: {
+    type: 'object',
+    properties: {
+      page: { type: 'number', minimum: 1 },
+      limit: { type: 'number', minimum: 1, maximum: 100 },
+      status: {
+        type: 'string',
+        enum: ['SUCCESS', 'FAILED', 'RUNNING', 'CANCELLED']
+      }
+    }
+  },
   response: {
-    200: Type.Object({
-      executions: Type.Array(Type.Any()),
-      pagination: Type.Object({
-        page: Type.Number(),
-        limit: Type.Number(),
-        total: Type.Number(),
-        totalPages: Type.Number()
-      })
-    }),
-    500: Type.Object({
-      error: Type.String()
-    })
+    200: {
+      type: 'object',
+      properties: {
+        executions: { type: 'array' },
+        pagination: {
+          type: 'object',
+          properties: {
+            page: { type: 'number' },
+            limit: { type: 'number' },
+            total: { type: 'number' },
+            totalPages: { type: 'number' }
+          }
+        }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
   }
 };
 
 // Get Stats Schema
-export const getStatsSchema = {
-  params: Type.Object({
-    flowId: Type.String()
-  }),
+export const getStatsSchema: FastifySchema = {
+  params: {
+    type: 'object',
+    required: ['flowId'],
+    properties: {
+      flowId: { type: 'string' }
+    }
+  },
   response: {
-    200: Type.Object({
-      total: Type.Number(),
-      byStatus: Type.Object({
-        success: Type.Number(),
-        failed: Type.Number(),
-        running: Type.Number(),
-        cancelled: Type.Number()
-      }),
-      byTrigger: Type.Record(Type.String(), Type.Number()),
-      averageDuration: Type.Number(),
-      lastExecution: Type.Optional(Type.Any())
-    }),
-    500: Type.Object({
-      error: Type.String()
-    })
+    200: {
+      type: 'object',
+      properties: {
+        total: { type: 'number' },
+        byStatus: {
+          type: 'object',
+          properties: {
+            success: { type: 'number' },
+            failed: { type: 'number' },
+            running: { type: 'number' },
+            cancelled: { type: 'number' }
+          }
+        },
+        byTrigger: { type: 'object' },
+        averageDuration: { type: 'number' },
+        lastExecution: {}
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
   }
 };
 
 // Cancel Execution Schema
-export const cancelExecutionSchema = {
-  params: Type.Object({
-    id: Type.String()
-  }),
+export const cancelExecutionSchema: FastifySchema = {
+  params: {
+    type: 'object',
+    required: ['id'],
+    properties: {
+      id: { type: 'string' }
+    }
+  },
   response: {
-    200: Type.Object({
-      id: Type.String(),
-      status: FlowExecutionStatusSchema,
-      cancelledAt: Type.String()
-    }),
-    404: Type.Object({
-      error: Type.String()
-    }),
-    500: Type.Object({
-      error: Type.String()
-    })
+    200: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        status: {
+          type: 'string',
+          enum: ['SUCCESS', 'FAILED', 'RUNNING', 'CANCELLED']
+        },
+        cancelledAt: { type: 'string' }
+      }
+    },
+    404: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
   }
 };
 
