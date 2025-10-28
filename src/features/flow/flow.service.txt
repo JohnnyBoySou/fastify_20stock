@@ -1,0 +1,230 @@
+import { fetchAuth } from "@/services/http/fetch"; //IGONRE
+
+export type NodeType = "trigger" | "condition" | "action" | "notification";
+export type TriggerEvent =
+	| "stock_change"
+	| "movement_created"
+	| "stock_below_min"
+	| "stock_above_max";
+export type ConditionOperator = "<" | ">" | "==" | "<=" | ">=" | "!=";
+export type LogicalOperator = "AND" | "OR";
+export type ActionType = "email" | "webhook" | "internal_notification" | "sms";
+
+export interface ConditionConfig {
+	field:
+		| "stock_quantity"
+		| "movement_value"
+		| "movement_type"
+		| "stock_percentage";
+	operator: ConditionOperator;
+	value: number | string;
+	logicalOperator?: LogicalOperator;
+	nextCondition?: ConditionConfig;
+}
+
+export interface TriggerConfig {
+	event: TriggerEvent;
+	productIds?: string[];
+	storeIds?: string[];
+}
+
+export interface ActionConfig {
+	type: ActionType;
+	config: {
+		email?: string[];
+		webhookUrl?: string;
+		message?: string;
+		template?: string;
+	};
+}
+
+export interface FlowNodeData {
+	label: string;
+	description?: string;
+	color?: string;
+	config?: TriggerConfig | ConditionConfig | ActionConfig;
+}
+
+export interface FlowNode {
+	id: string;
+	type: NodeType;
+	data: FlowNodeData;
+	position: { x: number; y: number };
+}
+
+export interface FlowEdge {
+	id: string;
+	source: string;
+	target: string;
+	sourceHandle?: string | null;
+	targetHandle?: string | null;
+	animated?: boolean;
+	style?: Record<string, unknown>;
+	markerEnd?: string | { type: string; color?: string; width?: number; height?: number };
+	label?: string;
+	type?: string;
+}
+
+export interface Flow {
+	id: string;
+	name: string;
+	description?: string;
+	nodes: FlowNode[];
+	edges: FlowEdge[];
+	status: "active" | "inactive" | "draft";
+	storeId: string;
+	createdBy: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface FlowListResponse {
+	items: Flow[];
+	pagination: {
+		page: number;
+		limit: number;
+		total: number;
+		totalPages: number;
+	};
+}
+
+export interface FlowFilters {
+	page?: number;
+	limit?: number;
+	search?: string;
+	status?: "active" | "inactive" | "draft";
+}
+
+export interface CreateFlowRequest {
+	name: string;
+	description?: string;
+	nodes: FlowNode[];
+	edges: FlowEdge[];
+	status?: "active" | "inactive" | "draft";
+}
+
+export interface UpdateFlowRequest {
+	name?: string;
+	description?: string;
+	nodes?: FlowNode[];
+	edges?: FlowEdge[];
+	status?: "active" | "inactive" | "draft";
+}
+
+export interface TestExecutionResponse {
+	success: boolean;
+	executed: {
+		nodeId: string;
+		result: "passed" | "failed";
+		message?: string;
+	}[];
+	actionsExecuted: string[];
+	logs: Array<{
+		timestamp: string;
+		level: "info" | "warning" | "error";
+		message: string;
+	}>;
+}
+
+export interface FlowExecution {
+	id: string;
+	flowId: string;
+	triggeredBy: string;
+	triggeredAt: string;
+	status: "success" | "failed" | "partial";
+	nodesExecuted: string[];
+	actionsExecuted: string[];
+	logs: Array<{
+		timestamp: string;
+		level: "info" | "warning" | "error";
+		message: string;
+	}>;
+}
+
+export interface ExecutionListResponse {
+	executions: FlowExecution[];
+	pagination: {
+		page: number;
+		limit: number;
+		total: number;
+		totalPages: number;
+	};
+}
+
+export interface ExecutionFilters {
+	page?: number;
+	limit?: number;
+	status?: "success" | "failed" | "partial";
+	startDate?: string;
+	endDate?: string;
+}
+
+
+const URI = "/flows";
+
+export const FlowService = {
+	// === CRUD BÁSICO ===
+	create: (params: CreateFlowRequest): Promise<Flow> =>
+		fetchAuth(URI, {
+			method: "POST",
+			data: params as unknown as Record<string, unknown>,
+		}) as Promise<Flow>,
+
+	list: (filters?: FlowFilters): Promise<FlowListResponse> =>
+		fetchAuth(URI, {
+			method: "GET",
+			params: filters as unknown as Record<string, unknown>,
+		}) as Promise<FlowListResponse>,
+
+	single: (id: string): Promise<Flow> =>
+		fetchAuth(`${URI}/${id}`, { method: "GET" }) as Promise<Flow>,
+
+	update: (id: string, params: UpdateFlowRequest): Promise<Flow> =>
+		fetchAuth(`${URI}/${id}`, {
+			method: "PUT",
+			data: params as unknown as Record<string, unknown>,
+		}) as Promise<Flow>,
+
+	delete: (id: string): Promise<void> =>
+		fetchAuth(`${URI}/${id}`, { method: "DELETE" }) as Promise<void>,
+
+	// === GERENCIAMENTO DE STATUS ===
+	updateStatus: (id: string, status: "active" | "inactive"): Promise<Flow> =>
+		fetchAuth(`${URI}/${id}/status`, {
+			method: "PATCH",
+			data: { status },
+		}) as Promise<Flow>,
+
+	// === TESTES E EXECUÇÃO ===
+	test: (id: string, triggerData?: any): Promise<TestExecutionResponse> =>
+		fetchAuth(`${URI}/${id}/test`, {
+			method: "POST",
+			data: { triggerData },
+		}) as Promise<TestExecutionResponse>,
+
+	// === HISTÓRICO DE EXECUÇÕES ===
+	getExecutions: (
+		id: string,
+		filters?: ExecutionFilters,
+	): Promise<ExecutionListResponse> =>
+		fetchAuth(`/flow-executions/flow/${id}`, {
+			method: "GET",
+			params: filters as unknown as Record<string, unknown>,
+		}) as Promise<ExecutionListResponse>,
+
+	// === DUPLICAÇÃO ===
+	duplicate: (id: string, newName: string): Promise<Flow> =>
+		fetchAuth(`${URI}/${id}/duplicate`, {
+			method: "POST",
+			data: { name: newName },
+		}) as Promise<Flow>,
+
+	// === KEYS PARA REACT QUERY ===
+	keys: {
+		list: (filters?: FlowFilters) => ["flows", "list", filters] as const,
+		single: (id: string) => ["flows", "single", id] as const,
+		executions: (id: string, filters?: ExecutionFilters) =>
+			["flows", "executions", id, filters] as const,
+	},
+};
+

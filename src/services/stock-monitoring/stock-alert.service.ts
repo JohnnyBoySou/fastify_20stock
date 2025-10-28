@@ -1,5 +1,6 @@
 import { db } from '@/plugins/prisma';
 import { NotificationCommands } from '@/features/notification/commands/notification.commands';
+import { TriggerHandler } from '@/services/workflow-engine/trigger-handler.service';
 
 export interface StockAlertData {
   productId: string;
@@ -129,6 +130,18 @@ export class StockAlertService {
 
       // Criar notificações para usuários da loja
       const notifications = await this.createStockAlertNotifications(alertData, alertType, product.store);
+
+      // Disparar workflows baseados em alertas de estoque
+      try {
+        if (alertType === 'LOW_STOCK' || alertType === 'CRITICAL_STOCK') {
+          await TriggerHandler.handleStockBelowMin(product);
+        } else if (alertType === 'OVERSTOCK') {
+          await TriggerHandler.handleStockAboveMax(product);
+        }
+      } catch (error) {
+        console.error('Error triggering workflows for stock alert:', error);
+        // Não falhar o alerta se houver erro nos workflows
+      }
 
       return {
         alertTriggered: true,

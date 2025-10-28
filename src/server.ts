@@ -25,6 +25,8 @@ import { InvoiceRoutes } from '@/features/invoice/invoice.routes'
 import { WebhookRoutes } from '@/features/webhook/webhook.routes'
 import { CrmRoutes } from '@/features/crm/crm.routes'
 import { UserPreferencesRoutes } from '@/features/user-preferences/user-preferences.routes'
+import { FlowRoutes } from '@/features/flow/flow.routes'
+import { FlowExecutionRoutes } from '@/features/flow-execution/flow-execution.routes'
 
 const fastify = Fastify({
   logger: true,
@@ -115,6 +117,8 @@ fastify.register(InvoiceRoutes, { prefix: '/invoices' })
 fastify.register(WebhookRoutes, { prefix: '/webhooks' })
 fastify.register(CrmRoutes, { prefix: '/crm' })
 fastify.register(UserPreferencesRoutes, { prefix: '/preferences' })
+fastify.register(FlowRoutes, { prefix: '' })
+fastify.register(FlowExecutionRoutes, { prefix: '' })
 
 const PORT = Number(process.env.PORT) || 3000
 const HOST = '0.0.0.0'

@@ -1,4 +1,5 @@
 import { db } from '@/plugins/prisma';
+import { TriggerHandler } from '@/services/workflow-engine/trigger-handler.service';
 
 // Função auxiliar para obter a loja do usuário autenticado
 export const getUserStore = async (userId: string) => {
@@ -149,6 +150,15 @@ export const MovementCommands = {
     });
 
     console.log('Movement created successfully:', movement);
+
+    // Disparar workflows que respondem a movimentações
+    try {
+      await TriggerHandler.handleMovementCreated(movement);
+    } catch (error) {
+      console.error('Error triggering workflows for movement:', error);
+      // Não falhar a criação da movimentação se houver erro nos workflows
+    }
+
     return movement;
   },
 

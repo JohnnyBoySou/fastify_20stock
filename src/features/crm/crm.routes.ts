@@ -1,12 +1,12 @@
 import { FastifyInstance } from 'fastify'
 import { CrmController } from './crm.controller'
 import { CrmSchemas } from './crm.schema'
-import { authMiddleware, storeContextMiddleware } from '@/middlewares'
+import { Middlewares } from '@/middlewares'
 
 export async function CrmRoutes(fastify: FastifyInstance) {
   // Middlewares para todas as rotas
-  fastify.addHook('preHandler', authMiddleware)
-  fastify.addHook('preHandler', storeContextMiddleware)
+  fastify.addHook('preHandler', Middlewares.auth)
+  fastify.addHook('preHandler', Middlewares.store)
 
   // === ROTAS DE CLIENTES ===
   

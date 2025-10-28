@@ -1,3 +1,8 @@
+import { authMiddleware } from './auth.middleware';
+import { requireGranularPermission } from './granular-permissions.middleware';
+import { requireStoreAccess } from './store-access.middleware';
+import { storeContextMiddleware } from './store-context.middleware';
+
 // Auth middlewares
 export { authMiddleware, optionalAuthMiddleware } from './auth.middleware';
 
@@ -41,3 +46,11 @@ export {
   requireResourcePermission,
   requireTimeBasedPermission
 } from './granular-permissions.middleware';
+
+
+export const Middlewares = {
+  auth: authMiddleware,
+  store: storeContextMiddleware,
+  storeAccess: requireStoreAccess,
+  granularPermissions: requireGranularPermission
+}
