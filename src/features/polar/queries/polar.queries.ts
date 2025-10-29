@@ -6,7 +6,7 @@ export const PolarQueries = {
         const baseUrl = process.env.POLAR_BASE_URL || 'https://api.polar.sh';
 
         try {
-            const response = await fetch(`${baseUrl}/v1/products?page=${page}&limit=${limit}`, {
+            const response = await fetch(`https://api.polar.sh/v1/products?page=${page}&limit=${limit}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
@@ -15,17 +15,13 @@ export const PolarQueries = {
                 }
             });
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}. ${errorText}`);
-            }
-
             const data = await response.json();
             // Log para debug - remover depois
             console.log('📦 Polar API Response:', JSON.stringify(data, null, 2));
 
             return data;
         } catch (error) {
+            console.error('📦 Polar API Error:', error);
             throw new Error(`Failed to fetch products: ${error}`);
         }
     },
