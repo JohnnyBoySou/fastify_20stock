@@ -71,10 +71,8 @@ export const ListPolarSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
           },
-          required: ['page', 'limit']
         }
       },
-      required: ['items', 'pagination']
     },
     500: {
       type: 'object',
