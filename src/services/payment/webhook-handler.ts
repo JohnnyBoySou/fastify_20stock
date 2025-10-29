@@ -1,5 +1,7 @@
 import { PaymentService } from './payment.service';
 import { WebhookEventType, WebhookEvent } from './payment-gateway.interface';
+import { InvoiceCommands } from '@/features/invoice/commands/invoice.commands';
+import { CustomerCommands } from '@/features/customer/commands/customer.commands';
 
 export const WebhookHandler = {
 
@@ -117,16 +119,17 @@ export const WebhookHandler = {
   async handlePaymentCompleted(event: WebhookEvent): Promise<void> {
     // Atualizar status da fatura para paga
     if (event.data.invoiceId) {
-      // Aqui seria feita a atualização no banco de dados
       console.log(`Updating invoice ${event.data.invoiceId} to PAID`);
-      
-      // Em uma implementação real, aqui seria usado o InvoiceCommands
-      // await invoiceCommands.markAsPaid(event.data.invoiceId, event.data.paymentId);
+      try {
+        await InvoiceCommands.markAsPaid(event.data.invoiceId, event.data.paymentId);
+      } catch (error) {
+        console.error(`Error updating invoice ${event.data.invoiceId}:`, error);
+      }
     }
 
-    // Enviar email de confirmação
+    // Enviar email de confirmação (implementar quando serviço de email estiver pronto)
     if (event.data.customerId) {
-      console.log(`Sending payment confirmation email to customer ${event.data.customerId}`);
+      console.log(`Payment confirmation for customer ${event.data.customerId}`);
       // await emailService.sendPaymentConfirmation(event.data.customerId, event.data);
     }
   },
@@ -135,16 +138,20 @@ export const WebhookHandler = {
     // Atualizar status da fatura para falhada
     if (event.data.invoiceId) {
       console.log(`Updating invoice ${event.data.invoiceId} to FAILED`);
-      // await invoiceCommands.markAsFailed(event.data.invoiceId);
+      try {
+        await InvoiceCommands.markAsFailed(event.data.invoiceId);
+      } catch (error) {
+        console.error(`Error updating invoice ${event.data.invoiceId}:`, error);
+      }
     }
 
-    // Enviar email de falha no pagamento
+    // Enviar email de falha no pagamento (implementar quando serviço de email estiver pronto)
     if (event.data.customerId) {
-      console.log(`Sending payment failed email to customer ${event.data.customerId}`);
+      console.log(`Payment failed for customer ${event.data.customerId}`);
       // await emailService.sendPaymentFailed(event.data.customerId, event.data);
     }
 
-    // Tentar processar novamente após um delay (opcional)
+    // Tentar processar novamente após um delay (opcional - implementar job scheduler)
     // await scheduleRetry(event.data.invoiceId);
   },
 
@@ -165,15 +172,24 @@ export const WebhookHandler = {
   },
 
   async handleInvoicePaid(event: WebhookEvent): Promise<void> {
-    // Atualizar status da fatura e customer
+    // Atualizar status da fatura
     if (event.data.invoiceId) {
       console.log(`Invoice ${event.data.invoiceId} marked as paid`);
-      // await invoiceCommands.markAsPaid(event.data.invoiceId);
+      try {
+        await InvoiceCommands.markAsPaid(event.data.invoiceId, event.data.paymentId);
+      } catch (error) {
+        console.error(`Error updating invoice ${event.data.invoiceId}:`, error);
+      }
     }
 
+    // Atualizar status da assinatura do customer
     if (event.data.customerId) {
       console.log(`Updating customer ${event.data.customerId} subscription status`);
-      // await customerCommands.renewSubscription(event.data.customerId);
+      try {
+        await CustomerCommands.renewSubscription(event.data.customerId);
+      } catch (error) {
+        console.error(`Error updating customer ${event.data.customerId}:`, error);
+      }
     }
   },
 
@@ -181,7 +197,11 @@ export const WebhookHandler = {
     // Processar falha na fatura
     if (event.data.invoiceId) {
       console.log(`Invoice ${event.data.invoiceId} failed`);
-      // await invoiceCommands.markAsFailed(event.data.invoiceId);
+      try {
+        await InvoiceCommands.markAsFailed(event.data.invoiceId);
+      } catch (error) {
+        console.error(`Error updating invoice ${event.data.invoiceId}:`, error);
+      }
     }
   },    
 
@@ -189,7 +209,11 @@ export const WebhookHandler = {
     // Processar criação de assinatura
     if (event.data.customerId) {
       console.log(`Subscription created for customer ${event.data.customerId}`);
-      // await customerCommands.updateSubscriptionStatus(event.data.customerId, 'ACTIVE');
+      try {
+        await CustomerCommands.updateStatus(event.data.customerId, 'ACTIVE' as any);
+      } catch (error) {
+        console.error(`Error updating customer ${event.data.customerId}:`, error);
+      }
     }
   },
 
@@ -197,7 +221,19 @@ export const WebhookHandler = {
     // Processar atualização de assinatura
     if (event.data.customerId) {
       console.log(`Subscription updated for customer ${event.data.customerId}`);
-      // await customerCommands.updateSubscriptionStatus(event.data.customerId, event.data.status);
+      try {
+        // Mapear status do gateway para CustomerStatus
+        const statusMap: Record<string, any> = {
+          'active': 'ACTIVE',
+          'inactive': 'INACTIVE',
+          'canceled': 'CANCELLED',
+          'trialing': 'TRIAL'
+        };
+        const status = statusMap[event.data.status?.toLowerCase() || 'active'] || 'ACTIVE';
+        await CustomerCommands.updateStatus(event.data.customerId, status);
+      } catch (error) {
+        console.error(`Error updating customer ${event.data.customerId}:`, error);
+      }
     }
   },  
 
@@ -205,7 +241,11 @@ export const WebhookHandler = {
     // Processar cancelamento de assinatura
     if (event.data.customerId) {
       console.log(`Subscription cancelled for customer ${event.data.customerId}`);
-      // await customerCommands.cancelSubscription(event.data.customerId);
+      try {
+        await CustomerCommands.cancelSubscription(event.data.customerId);
+      } catch (error) {
+        console.error(`Error cancelling subscription for customer ${event.data.customerId}:`, error);
+      }
     }
   },
 
@@ -213,7 +253,11 @@ export const WebhookHandler = {
     // Processar renovação de assinatura
     if (event.data.customerId) {
       console.log(`Subscription renewed for customer ${event.data.customerId}`);
-      // await customerCommands.renewSubscription(event.data.customerId);
+      try {
+        await CustomerCommands.renewSubscription(event.data.customerId);
+      } catch (error) {
+        console.error(`Error renewing subscription for customer ${event.data.customerId}:`, error);
+      }
     }
   },
 

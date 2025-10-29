@@ -11,11 +11,15 @@ import {
 import { AbacatePayService } from './abacate-pay.service';
 import { StripeService } from './stripe.service';
 
+// Instâncias dos gateways
+const abacatePayInstance = new AbacatePayService();
+const stripeInstance = new StripeService();
+
 export const PaymentService = {
   gateways: {
-    'abacate-pay': AbacatePayService,
-    stripe: StripeService
-  },
+    'abacate-pay': abacatePayInstance,
+    stripe: stripeInstance,
+  } as Record<string, PaymentGateway>,
 
   async processPayment(
     gatewayName: string, 
@@ -137,11 +141,11 @@ export const PaymentService = {
   },
 
   getGateway(gatewayName: string): PaymentGateway | undefined {
-    return this.gateways.get(gatewayName);
+    return this.gateways[gatewayName];
   },
 
   getAvailableGateways(): Array<{ name: string; config: any }> {
-    return Array.from(this.gateways.entries()).map(([name, gateway]) => ({
+    return Object.entries(this.gateways).map(([name, gateway]) => ({
       name,
       config: gateway.getConfig()
     }));
@@ -149,7 +153,7 @@ export const PaymentService = {
 
   async getGatewayHealth(): Promise<Array<{ name: string; available: boolean; error?: string }>> {
     const healthChecks = await Promise.allSettled(
-      Array.from(this.gateways.entries()).map(async ([name, gateway]) => {
+      Object.entries(this.gateways).map(async ([name, gateway]) => {
         try {
           const available = await gateway.isAvailable();
           return { name, available };
@@ -196,6 +200,11 @@ export const PaymentService = {
     const stripe = workingGateways.find(g => g.name === 'stripe');
     if (stripe) {
       return 'stripe';
+    }
+
+    // Como último recurso, usar Polar se disponível
+    if (polar) {
+      return 'polar';
     }
 
     // Se nenhum específico estiver disponível, usar o primeiro disponível

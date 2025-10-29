@@ -1647,6 +1647,91 @@ var import_fastify = __toESM(require("fastify"));
 var import_cors = __toESM(require("@fastify/cors"));
 init_prisma();
 
+// src/plugins/push.ts
+var import_web_push = __toESM(require("web-push"));
+var vapidKeys = {
+  publicKey: process.env.VAPID_PUBLIC_KEY || "",
+  privateKey: process.env.VAPID_PRIVATE_KEY || ""
+};
+if (vapidKeys.publicKey && vapidKeys.privateKey) {
+  import_web_push.default.setVapidDetails(
+    process.env.VAPID_SUBJECT || "mailto:admin@example.com",
+    vapidKeys.publicKey,
+    vapidKeys.privateKey
+  );
+  console.log("\u2705 Web Push VAPID keys configuradas");
+} else {
+  console.warn("\u26A0\uFE0F VAPID keys n\xE3o configuradas. Configure VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY");
+}
+async function sendPushNotification(subscription, payload) {
+  try {
+    const notificationPayload = JSON.stringify({
+      title: payload.title,
+      body: payload.body,
+      icon: payload.icon,
+      badge: payload.badge,
+      data: payload.data,
+      actions: payload.actions
+    });
+    const result = await import_web_push.default.sendNotification(subscription, notificationPayload);
+    return result;
+  } catch (error) {
+    if (error.statusCode === 410) {
+      throw new Error("Push subscription expired or invalid");
+    }
+    throw error;
+  }
+}
+var pushPlugin = async (fastify2) => {
+  fastify2.decorate("sendPushNotification", async function(subscription, payload) {
+    try {
+      const notificationPayload = JSON.stringify({
+        title: payload.title,
+        body: payload.body,
+        icon: payload.icon,
+        badge: payload.badge,
+        data: payload.data,
+        actions: payload.actions
+      });
+      const result = await import_web_push.default.sendNotification(subscription, notificationPayload);
+      fastify2.log.info(`Push notification sent successfully`);
+      return result;
+    } catch (error) {
+      fastify2.log.error(`Error sending push notification: ${error.message}`);
+      if (error.statusCode === 410) {
+        fastify2.log.warn("Push subscription expired or invalid");
+      }
+      throw error;
+    }
+  });
+  fastify2.decorate("sendPushToSubscriptions", async function(subscriptions, payload) {
+    let success = 0;
+    let failed = 0;
+    await Promise.allSettled(
+      subscriptions.map(async (subscription) => {
+        try {
+          await fastify2.sendPushNotification(subscription, payload);
+          success++;
+        } catch (error) {
+          failed++;
+          fastify2.log.error(`Failed to send push notification: ${error.message}`);
+        }
+      })
+    );
+    return { success, failed };
+  });
+  fastify2.decorate("validatePushSubscription", function(subscription) {
+    try {
+      return !!(subscription.endpoint && subscription.keys && subscription.keys.p256dh && subscription.keys.auth);
+    } catch {
+      return false;
+    }
+  });
+  fastify2.decorate("getVapidPublicKey", () => {
+    return vapidKeys.publicKey;
+  });
+};
+
 // src/features/user/commands/user.commands.ts
 var import_bcryptjs = __toESM(require("bcryptjs"));
 init_prisma();
@@ -14370,7 +14455,7 @@ var FlowQueries = {
         db.flow.count({ where })
       ]);
       return {
-        flows,
+        items: flows,
         pagination: {
           page,
           limit,
@@ -14463,7 +14548,8 @@ var FlowQueries = {
       throw error;
     }
   },
-  async search(searchTerm, storeId, limit = 10) {
+  async search(params) {
+    const { searchTerm, storeId, limit = 10, page = 1 } = params;
     try {
       const where = {
         OR: [
@@ -14487,7 +14573,16 @@ var FlowQueries = {
           }
         }
       });
-      return flows;
+      const total = await db.flow.count({ where });
+      return {
+        items: flows,
+        pagination: {
+          page,
+          limit,
+          total: flows.length,
+          totalPages: Math.ceil(total / Number(limit))
+        }
+      };
     } catch (error) {
       console.error("Error searching flows:", error);
       throw error;
@@ -14647,6 +14742,8 @@ var ActionExecutor = {
           return await this.sendInternalNotification(actionConfig.config, context);
         case "sms":
           return await this.sendSMS(actionConfig.config, context);
+        case "push_notification":
+          return await this.sendPushNotification(actionConfig.config, context);
         default:
           throw new Error(`Unknown action type: ${actionConfig.type}`);
       }
@@ -14743,6 +14840,81 @@ var ActionExecutor = {
       type: "sms",
       to,
       message: "SMS sent successfully (simulated)"
+    };
+  },
+  async sendPushNotification(config, context) {
+    if (!config.userIds || !Array.isArray(config.userIds) || config.userIds.length === 0) {
+      throw new Error("User IDs are required for push notification");
+    }
+    const title = this.replaceVariables(config.title || "Notification", context);
+    const message = this.replaceVariables(config.message || "", context);
+    const icon = config.icon;
+    const badge = config.badge;
+    const actions = config.actions || [];
+    const subscriptionsResults = await Promise.all(
+      config.userIds.map(async (userId) => {
+        const subscriptions = await db.pushSubscription.findMany({
+          where: { userId }
+        });
+        return subscriptions;
+      })
+    );
+    const allSubscriptions = subscriptionsResults.flat();
+    if (allSubscriptions.length === 0) {
+      console.log("No push subscriptions found for users");
+      return {
+        success: true,
+        type: "push_notification",
+        subscriptionsSent: 0,
+        message: "No push subscriptions found for users"
+      };
+    }
+    const payload = {
+      title,
+      body: message,
+      icon,
+      badge,
+      data: {
+        workflowContext: context,
+        actions,
+        createdAt: /* @__PURE__ */ new Date()
+      },
+      actions
+    };
+    let success = 0;
+    let failed = 0;
+    const sendPromises = allSubscriptions.map(async (subscription) => {
+      try {
+        await sendPushNotification(
+          {
+            endpoint: subscription.endpoint,
+            keys: {
+              p256dh: subscription.p256dh,
+              auth: subscription.auth
+            }
+          },
+          payload
+        );
+        success++;
+      } catch (error) {
+        failed++;
+        console.error("Failed to send push notification:", error.message);
+        if (error.message.includes("expired") || error.message.includes("invalid")) {
+          await db.pushSubscription.delete({
+            where: { id: subscription.id }
+          }).catch(() => {
+          });
+        }
+      }
+    });
+    await Promise.allSettled(sendPromises);
+    console.log(`\u{1F514} Push notifications sent: ${success} success, ${failed} failed`);
+    return {
+      success: true,
+      type: "push_notification",
+      subscriptionsSent: success,
+      subscriptionsFailed: failed,
+      message: `Push notification sent to ${success} device(s)`
     };
   },
   replaceVariables(template, context) {
@@ -36274,11 +36446,372 @@ var StripeService = class {
   }
 };
 
+// src/services/payment/polar.service.ts
+var PolarService = class {
+  constructor() {
+    const env = process.env.POLAR_ENV === "production" ? "production" : "sandbox";
+    const accessToken = process.env.POLAR_ACCESS_TOKEN || process.env.POLAR_API_KEY || "";
+    this.baseUrl = process.env.POLAR_BASE_URL || (env === "production" ? "https://api.polar.sh/v1" : "https://sandbox-api.polar.sh/v1");
+    this.polarConfig = {
+      accessToken,
+      server: env
+    };
+    if (accessToken) {
+      this.client = new PolarSDK({
+        accessToken,
+        server: env === "production" ? "production" : "sandbox"
+      });
+    }
+    this.config = {
+      name: "Polar",
+      version: "1.0.0",
+      supportedCurrencies: ["USD", "EUR", "GBP", "BRL", "CAD", "AUD", "JPY"],
+      supportedMethods: ["card", "wallet"],
+      environment: env,
+      apiKey: accessToken,
+      webhookUrl: process.env.POLAR_WEBHOOK_URL
+    };
+  }
+  async makeRequest(method, path3, body) {
+    const url = `${this.baseUrl}${path3}`;
+    const headers = {
+      "Authorization": `Bearer ${this.polarConfig.accessToken}`,
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    };
+    const options = {
+      method,
+      headers
+    };
+    if (body && (method === "POST" || method === "PUT" || method === "PATCH")) {
+      options.body = JSON.stringify(body);
+    }
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({
+          type: "api_error",
+          message: `HTTP ${response.status}: ${response.statusText}`
+        }));
+        throw new Error(error.message || `API request failed with status ${response.status}`);
+      }
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error(`Polar API request failed: ${method} ${path3}`, error);
+      throw error;
+    }
+  }
+  async createPayment(data) {
+    try {
+      console.log("Creating payment with Polar:", data);
+      const productId = data.metadata?.product_id || data.metadata?.polar_product_id;
+      if (!productId) {
+        throw new Error("Polar checkout requires metadata.product_id (Polar Product UUID)");
+      }
+      const successUrl = process.env.POLAR_SUCCESS_URL || `${process.env.APP_URL || "http://localhost:3000"}/payment/success`;
+      const cancelUrl = process.env.POLAR_CANCEL_URL || `${process.env.APP_URL || "http://localhost:3000"}/payment/cancel`;
+      if (this.client) {
+        const checkout2 = await this.client.checkouts.create({
+          products: [productId],
+          successUrl,
+          // Campos opcionais adicionais
+          metadata: {
+            invoice_id: data.invoiceId,
+            description: data.description,
+            ...data.metadata
+          }
+        });
+        return {
+          success: true,
+          paymentId: checkout2.id,
+          status: checkout2.status === "complete" ? "completed" : "pending",
+          gatewayResponse: {
+            checkout_session_id: checkout2.id,
+            url: checkout2.url,
+            status: checkout2.status
+          }
+        };
+      }
+      const checkout = await this.makeRequest("POST", "/checkout/sessions", {
+        product_id: productId,
+        customer_id: data.customerId,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        metadata: {
+          invoice_id: data.invoiceId,
+          description: data.description,
+          ...data.metadata
+        }
+      });
+      return {
+        success: true,
+        paymentId: checkout.id,
+        status: checkout.status === "complete" ? "completed" : "pending",
+        gatewayResponse: {
+          checkout_session_id: checkout.id,
+          url: checkout.url,
+          status: checkout.status
+        }
+      };
+    } catch (error) {
+      console.error("Polar createPayment error:", error);
+      return {
+        success: false,
+        status: "failed",
+        error: error instanceof Error ? error.message : "Unknown error"
+      };
+    }
+  }
+  async createSubscription(data) {
+    try {
+      console.log("Creating subscription with Polar:", data);
+      const subscriptionRequest = {
+        customer_id: data.customerId,
+        product_id: "",
+        // Será determinado pelo price_id
+        price_id: data.priceId,
+        metadata: {}
+      };
+      const subscription = await this.makeRequest(
+        "POST",
+        "/subscriptions",
+        subscriptionRequest
+      );
+      return {
+        success: true,
+        paymentId: subscription.id,
+        status: subscription.status === "active" ? "completed" : "pending",
+        gatewayResponse: {
+          subscription_id: subscription.id,
+          status: subscription.status,
+          current_period_start: subscription.current_period_start,
+          current_period_end: subscription.current_period_end
+        }
+      };
+    } catch (error) {
+      console.error("Polar createSubscription error:", error);
+      return {
+        success: false,
+        status: "failed",
+        error: error instanceof Error ? error.message : "Unknown error"
+      };
+    }
+  }
+  async getPaymentStatus(paymentId) {
+    try {
+      console.log("Getting payment status from Polar:", paymentId);
+      try {
+        const checkout = await this.makeRequest(
+          "GET",
+          `/checkout/sessions/${paymentId}`
+        );
+        const status = checkout.status === "complete" ? "completed" : checkout.status === "expired" ? "cancelled" : "pending";
+        return {
+          paymentId: checkout.id,
+          status,
+          gatewayResponse: {
+            checkout_session: checkout
+          }
+        };
+      } catch {
+        try {
+          const invoice = await this.makeRequest(
+            "GET",
+            `/invoices/${paymentId}`
+          );
+          const status = invoice.status === "paid" ? "completed" : invoice.status === "void" || invoice.status === "uncollectible" ? "cancelled" : invoice.status === "open" ? "pending" : "failed";
+          return {
+            paymentId: invoice.id,
+            status,
+            amount: invoice.amount / 100,
+            // Converter de centavos
+            currency: invoice.currency,
+            gatewayResponse: {
+              invoice
+            }
+          };
+        } catch {
+          throw new Error("Payment not found");
+        }
+      }
+    } catch (error) {
+      console.error("Polar getPaymentStatus error:", error);
+      return {
+        paymentId,
+        status: "failed",
+        error: error instanceof Error ? error.message : "Unknown error"
+      };
+    }
+  }
+  async cancelPayment(paymentId) {
+    try {
+      console.log("Cancelling payment with Polar:", paymentId);
+      try {
+        await this.makeRequest(
+          "POST",
+          `/subscriptions/${paymentId}/cancel`
+        );
+      } catch {
+        const checkout = await this.makeRequest(
+          "GET",
+          `/checkout/sessions/${paymentId}`
+        );
+        if (checkout.status === "open") {
+          console.log(`Checkout session ${paymentId} will expire naturally`);
+        }
+      }
+    } catch (error) {
+      console.error("Polar cancelPayment error:", error);
+      throw error;
+    }
+  }
+  async refundPayment(data) {
+    try {
+      console.log("Processing refund with Polar:", data);
+      const refund = await this.makeRequest(
+        "POST",
+        "/refunds",
+        {
+          payment_id: data.paymentId,
+          amount: data.amount ? Math.round(data.amount * 100) : void 0,
+          // Converter para centavos
+          reason: data.reason
+        }
+      );
+      return {
+        success: true,
+        refundId: refund.id,
+        amount: refund.amount ? refund.amount / 100 : void 0,
+        gatewayResponse: refund
+      };
+    } catch (error) {
+      console.error("Polar refundPayment error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error"
+      };
+    }
+  }
+  async handleWebhook(payload, signature) {
+    try {
+      if (signature && process.env.POLAR_WEBHOOK_SECRET) {
+        console.log("Webhook signature verification should be implemented");
+      }
+      const event = payload;
+      let eventType = "payment.created";
+      let paymentId;
+      let invoiceId;
+      let customerId;
+      let status;
+      switch (event.type) {
+        case "checkout.succeeded":
+          eventType = "payment.completed";
+          paymentId = event.data.checkout_session?.id;
+          customerId = event.data.checkout_session?.customer_id;
+          status = "completed";
+          break;
+        case "checkout.expired":
+          eventType = "payment.cancelled";
+          paymentId = event.data.checkout_session?.id;
+          status = "cancelled";
+          break;
+        case "subscription.created":
+          eventType = "subscription.created";
+          paymentId = event.data.subscription?.id;
+          customerId = event.data.subscription?.customer_id;
+          status = event.data.subscription?.status;
+          break;
+        case "subscription.updated":
+          eventType = "subscription.updated";
+          paymentId = event.data.subscription?.id;
+          customerId = event.data.subscription?.customer_id;
+          status = event.data.subscription?.status;
+          break;
+        case "subscription.canceled":
+          eventType = "subscription.cancelled";
+          paymentId = event.data.subscription?.id;
+          customerId = event.data.subscription?.customer_id;
+          status = "canceled";
+          break;
+        case "invoice.paid":
+          eventType = "invoice.paid";
+          invoiceId = event.data.invoice?.id;
+          customerId = event.data.invoice?.customer_id;
+          status = "paid";
+          break;
+        case "invoice.payment_failed":
+          eventType = "invoice.failed";
+          invoiceId = event.data.invoice?.id;
+          customerId = event.data.invoice?.customer_id;
+          status = "failed";
+          break;
+        case "invoice.created":
+          eventType = "invoice.created";
+          invoiceId = event.data.invoice?.id;
+          customerId = event.data.invoice?.customer_id;
+          status = "open";
+          break;
+        default:
+          console.log(`Unhandled Polar webhook event type: ${event.type}`);
+      }
+      return {
+        success: true,
+        eventType,
+        paymentId,
+        invoiceId,
+        customerId,
+        status,
+        gatewayResponse: payload
+      };
+    } catch (error) {
+      console.error("Polar handleWebhook error:", error);
+      return {
+        success: false,
+        eventType: "unknown",
+        error: error instanceof Error ? error.message : "Unknown error"
+      };
+    }
+  }
+  async isAvailable() {
+    try {
+      await this.makeRequest("GET", "/products?limit=1");
+      return true;
+    } catch (error) {
+      console.error("Polar availability check failed:", error);
+      return false;
+    }
+  }
+  getConfig() {
+    return { ...this.config };
+  }
+  // Métodos auxiliares específicos do Polar
+  async createProduct(data) {
+    return this.makeRequest("POST", "/products", data);
+  }
+  async createCustomer(data) {
+    return this.makeRequest("POST", "/customers", data);
+  }
+  async getCustomer(customerId) {
+    return this.makeRequest("GET", `/customers/${customerId}`);
+  }
+  async getSubscription(subscriptionId) {
+    return this.makeRequest("GET", `/subscriptions/${subscriptionId}`);
+  }
+  async getCheckoutSession(sessionId) {
+    return this.makeRequest("GET", `/checkout/sessions/${sessionId}`);
+  }
+};
+
 // src/services/payment/payment.service.ts
+var abacatePayInstance = new AbacatePayService();
+var stripeInstance = new StripeService();
+var polarInstance = new PolarService();
 var PaymentService = {
   gateways: {
-    "abacate-pay": AbacatePayService,
-    stripe: StripeService
+    "abacate-pay": abacatePayInstance,
+    stripe: stripeInstance,
+    polar: polarInstance
   },
   async processPayment(gatewayName, data) {
     const gateway = this.gateways[gatewayName];
@@ -36365,17 +36898,17 @@ var PaymentService = {
     };
   },
   getGateway(gatewayName) {
-    return this.gateways.get(gatewayName);
+    return this.gateways[gatewayName];
   },
   getAvailableGateways() {
-    return Array.from(this.gateways.entries()).map(([name, gateway]) => ({
+    return Object.entries(this.gateways).map(([name, gateway]) => ({
       name,
       config: gateway.getConfig()
     }));
   },
   async getGatewayHealth() {
     const healthChecks = await Promise.allSettled(
-      Array.from(this.gateways.entries()).map(async ([name, gateway]) => {
+      Object.entries(this.gateways).map(async ([name, gateway]) => {
         try {
           const available = await gateway.isAvailable();
           return { name, available };
@@ -36409,9 +36942,16 @@ var PaymentService = {
         return "abacate-pay";
       }
     }
+    const polar = workingGateways.find((g) => g.name === "polar");
+    if (polar && data.metadata?.preferPolar) {
+      return "polar";
+    }
     const stripe = workingGateways.find((g) => g.name === "stripe");
     if (stripe) {
       return "stripe";
+    }
+    if (polar) {
+      return "polar";
     }
     return workingGateways[0]?.name || null;
   },
@@ -36522,17 +37062,27 @@ var WebhookHandler = {
   async handlePaymentCompleted(event) {
     if (event.data.invoiceId) {
       console.log(`Updating invoice ${event.data.invoiceId} to PAID`);
+      try {
+        await InvoiceCommands.markAsPaid(event.data.invoiceId, event.data.paymentId);
+      } catch (error) {
+        console.error(`Error updating invoice ${event.data.invoiceId}:`, error);
+      }
     }
     if (event.data.customerId) {
-      console.log(`Sending payment confirmation email to customer ${event.data.customerId}`);
+      console.log(`Payment confirmation for customer ${event.data.customerId}`);
     }
   },
   async handlePaymentFailed(event) {
     if (event.data.invoiceId) {
       console.log(`Updating invoice ${event.data.invoiceId} to FAILED`);
+      try {
+        await InvoiceCommands.markAsFailed(event.data.invoiceId);
+      } catch (error) {
+        console.error(`Error updating invoice ${event.data.invoiceId}:`, error);
+      }
     }
     if (event.data.customerId) {
-      console.log(`Sending payment failed email to customer ${event.data.customerId}`);
+      console.log(`Payment failed for customer ${event.data.customerId}`);
     }
   },
   async handlePaymentCancelled(event) {
@@ -36548,34 +37098,76 @@ var WebhookHandler = {
   async handleInvoicePaid(event) {
     if (event.data.invoiceId) {
       console.log(`Invoice ${event.data.invoiceId} marked as paid`);
+      try {
+        await InvoiceCommands.markAsPaid(event.data.invoiceId, event.data.paymentId);
+      } catch (error) {
+        console.error(`Error updating invoice ${event.data.invoiceId}:`, error);
+      }
     }
     if (event.data.customerId) {
       console.log(`Updating customer ${event.data.customerId} subscription status`);
+      try {
+        await CustomerCommands.renewSubscription(event.data.customerId);
+      } catch (error) {
+        console.error(`Error updating customer ${event.data.customerId}:`, error);
+      }
     }
   },
   async handleInvoiceFailed(event) {
     if (event.data.invoiceId) {
       console.log(`Invoice ${event.data.invoiceId} failed`);
+      try {
+        await InvoiceCommands.markAsFailed(event.data.invoiceId);
+      } catch (error) {
+        console.error(`Error updating invoice ${event.data.invoiceId}:`, error);
+      }
     }
   },
   async handleSubscriptionCreated(event) {
     if (event.data.customerId) {
       console.log(`Subscription created for customer ${event.data.customerId}`);
+      try {
+        await CustomerCommands.updateStatus(event.data.customerId, "ACTIVE");
+      } catch (error) {
+        console.error(`Error updating customer ${event.data.customerId}:`, error);
+      }
     }
   },
   async handleSubscriptionUpdated(event) {
     if (event.data.customerId) {
       console.log(`Subscription updated for customer ${event.data.customerId}`);
+      try {
+        const statusMap = {
+          "active": "ACTIVE",
+          "inactive": "INACTIVE",
+          "canceled": "CANCELLED",
+          "trialing": "TRIAL"
+        };
+        const status = statusMap[event.data.status?.toLowerCase() || "active"] || "ACTIVE";
+        await CustomerCommands.updateStatus(event.data.customerId, status);
+      } catch (error) {
+        console.error(`Error updating customer ${event.data.customerId}:`, error);
+      }
     }
   },
   async handleSubscriptionCancelled(event) {
     if (event.data.customerId) {
       console.log(`Subscription cancelled for customer ${event.data.customerId}`);
+      try {
+        await CustomerCommands.cancelSubscription(event.data.customerId);
+      } catch (error) {
+        console.error(`Error cancelling subscription for customer ${event.data.customerId}:`, error);
+      }
     }
   },
   async handleSubscriptionRenewed(event) {
     if (event.data.customerId) {
       console.log(`Subscription renewed for customer ${event.data.customerId}`);
+      try {
+        await CustomerCommands.renewSubscription(event.data.customerId);
+      } catch (error) {
+        console.error(`Error renewing subscription for customer ${event.data.customerId}:`, error);
+      }
     }
   },
   // Método para verificar a integridade do webhook
@@ -36863,6 +37455,34 @@ var WebhookController = {
       });
     }
   },
+  async processPolar(request, reply) {
+    try {
+      const payload = request.body;
+      const signature = request.headers["x-polar-signature"] || request.headers["polar-signature"] || request.headers["x-signature"];
+      const result = await WebhookService.processWebhook(
+        "polar",
+        payload,
+        signature
+      );
+      if (!result.success) {
+        return reply.status(400).send({
+          error: result.error
+        });
+      }
+      return reply.status(200).send({
+        success: true,
+        eventId: result.eventId,
+        eventType: result.eventType,
+        gateway: "polar",
+        processedAt: /* @__PURE__ */ new Date()
+      });
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(500).send({
+        error: "Internal server error"
+      });
+    }
+  },
   async processStripe(request, reply) {
     try {
       const payload = request.body;
@@ -37029,6 +37649,12 @@ async function WebhookRoutes(fastify2) {
       rawBody: true
     },
     handler: WebhookController.processStripe
+  });
+  fastify2.post("/polar", {
+    config: {
+      rawBody: true
+    },
+    handler: WebhookController.processPolar
   });
   fastify2.post("/:gateway", {
     config: {
@@ -40561,10 +41187,10 @@ var FlowController = {
   },
   async search(request, reply) {
     try {
-      const { q, limit = 10 } = request.query;
-      const storeId = request.store?.id || request.query.storeId;
-      const result = await FlowQueries.search(q, storeId, limit);
-      return reply.send({ flows: result });
+      const { searchTerm, limit = 10, page = 1 } = request.query;
+      const storeId = request.store?.id;
+      const result = await FlowQueries.search({ searchTerm, storeId, limit, page });
+      return reply.send(result);
     } catch (error) {
       request.log.error(error);
       return reply.status(500).send({
@@ -40881,7 +41507,7 @@ var listFlowsSchema = {
     200: {
       type: "object",
       properties: {
-        flows: { type: "array" },
+        items: { type: "array" },
         pagination: {
           type: "object",
           properties: {
@@ -41613,6 +42239,657 @@ async function FlowExecutionRoutes(fastify2) {
   });
 }
 
+// src/features/push-subscription/commands/push-subscription.commands.ts
+var PushSubscriptionCommands = class {
+  constructor(prisma2) {
+    this.prisma = prisma2;
+  }
+  async create(data, userId) {
+    const existing = await this.prisma.pushSubscription.findFirst({
+      where: {
+        userId,
+        endpoint: data.endpoint
+      }
+    });
+    if (existing) {
+      return await this.prisma.pushSubscription.update({
+        where: { id: existing.id },
+        data: {
+          endpoint: data.endpoint,
+          p256dh: data.keys.p256dh,
+          auth: data.keys.auth,
+          userAgent: data.userAgent,
+          deviceInfo: data.deviceInfo,
+          updatedAt: /* @__PURE__ */ new Date()
+        }
+      });
+    }
+    return await this.prisma.pushSubscription.create({
+      data: {
+        userId,
+        endpoint: data.endpoint,
+        p256dh: data.keys.p256dh,
+        auth: data.keys.auth,
+        userAgent: data.userAgent,
+        deviceInfo: data.deviceInfo
+      }
+    });
+  }
+  async delete(id, userId) {
+    const subscription = await this.prisma.pushSubscription.findFirst({
+      where: {
+        id,
+        userId
+      }
+    });
+    if (!subscription) {
+      throw new Error("Push subscription not found");
+    }
+    return await this.prisma.pushSubscription.delete({
+      where: { id }
+    });
+  }
+  async deleteByEndpoint(endpoint, userId) {
+    return await this.prisma.pushSubscription.deleteMany({
+      where: {
+        endpoint,
+        userId
+      }
+    });
+  }
+  async deleteByUser(userId) {
+    return await this.prisma.pushSubscription.deleteMany({
+      where: {
+        userId
+      }
+    });
+  }
+};
+
+// src/features/push-subscription/queries/push-subscription.queries.ts
+var PushSubscriptionQueries = class {
+  constructor(prisma2) {
+    this.prisma = prisma2;
+  }
+  async getById(id, userId) {
+    const subscription = await this.prisma.pushSubscription.findFirst({
+      where: {
+        id,
+        userId
+      }
+    });
+    if (!subscription) {
+      throw new Error("Push subscription not found");
+    }
+    return subscription;
+  }
+  async listByUser(userId) {
+    return await this.prisma.pushSubscription.findMany({
+      where: {
+        userId
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
+  }
+  async list(page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
+    const [items, total] = await Promise.all([
+      this.prisma.pushSubscription.findMany({
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: "desc"
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        }
+      }),
+      this.prisma.pushSubscription.count()
+    ]);
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    };
+  }
+};
+
+// src/features/push-subscription/push-subscription.controller.ts
+var PushSubscriptionController = {
+  async create(request, reply) {
+    try {
+      const { endpoint, keys, userAgent, deviceInfo } = request.body;
+      const userId = request.user?.id;
+      if (!userId) {
+        return reply.status(401).send({
+          error: "User not authenticated"
+        });
+      }
+      const prisma2 = request.server.prisma;
+      const commands = new PushSubscriptionCommands(prisma2);
+      const result = await commands.create({
+        endpoint,
+        keys,
+        userAgent,
+        deviceInfo
+      }, userId);
+      return reply.status(201).send(result);
+    } catch (error) {
+      request.log.error(error);
+      if (error.message === "Push subscription not found") {
+        return reply.status(404).send({
+          error: error.message
+        });
+      }
+      return reply.status(500).send({
+        error: "Internal server error"
+      });
+    }
+  },
+  async delete(request, reply) {
+    try {
+      const { id } = request.params;
+      const userId = request.user?.id;
+      if (!userId) {
+        return reply.status(401).send({
+          error: "User not authenticated"
+        });
+      }
+      const prisma2 = request.server.prisma;
+      const commands = new PushSubscriptionCommands(prisma2);
+      await commands.delete(id, userId);
+      return reply.status(204).send();
+    } catch (error) {
+      request.log.error(error);
+      if (error.message === "Push subscription not found") {
+        return reply.status(404).send({
+          error: error.message
+        });
+      }
+      return reply.status(500).send({
+        error: "Internal server error"
+      });
+    }
+  },
+  async listByUser(request, reply) {
+    try {
+      const { userId } = request.params;
+      const currentUserId = request.user?.id;
+      if (!currentUserId || currentUserId !== userId) {
+        return reply.status(403).send({
+          error: "Forbidden"
+        });
+      }
+      const prisma2 = request.server.prisma;
+      const queries = new PushSubscriptionQueries(prisma2);
+      const result = await queries.listByUser(userId);
+      return reply.send({ subscriptions: result });
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(500).send({
+        error: "Internal server error"
+      });
+    }
+  },
+  async list(request, reply) {
+    try {
+      const { page = 1, limit = 10 } = request.query;
+      const prisma2 = request.server.prisma;
+      const queries = new PushSubscriptionQueries(prisma2);
+      const result = await queries.list(page, limit);
+      return reply.send(result);
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(500).send({
+        error: "Internal server error"
+      });
+    }
+  },
+  async getVapidKey(request, reply) {
+    try {
+      const fastify2 = request.server;
+      const publicKey = fastify2.getVapidPublicKey();
+      return reply.send({
+        publicKey
+      });
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(500).send({
+        error: "Internal server error"
+      });
+    }
+  }
+};
+
+// src/features/push-subscription/push-subscription.schema.ts
+var createPushSubscriptionSchema = {
+  body: {
+    type: "object",
+    required: ["endpoint", "keys"],
+    properties: {
+      endpoint: { type: "string" },
+      keys: {
+        type: "object",
+        required: ["p256dh", "auth"],
+        properties: {
+          p256dh: { type: "string" },
+          auth: { type: "string" }
+        }
+      },
+      userAgent: { type: "string" },
+      deviceInfo: {}
+    }
+  },
+  response: {
+    201: {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        userId: { type: "string" },
+        endpoint: { type: "string" },
+        createdAt: { type: "string" },
+        updatedAt: { type: "string" }
+      }
+    },
+    500: {
+      type: "object",
+      properties: {
+        error: { type: "string" }
+      }
+    }
+  }
+};
+var deletePushSubscriptionSchema = {
+  params: {
+    type: "object",
+    required: ["id"],
+    properties: {
+      id: { type: "string" }
+    }
+  },
+  response: {
+    204: { type: "null" },
+    404: {
+      type: "object",
+      properties: {
+        error: { type: "string" }
+      }
+    },
+    500: {
+      type: "object",
+      properties: {
+        error: { type: "string" }
+      }
+    }
+  }
+};
+var listPushSubscriptionsSchema = {
+  querystring: {
+    type: "object",
+    properties: {
+      page: { type: "number", minimum: 1 },
+      limit: { type: "number", minimum: 1, maximum: 100 }
+    }
+  },
+  response: {
+    200: {
+      type: "object",
+      properties: {
+        items: { type: "array" },
+        pagination: {
+          type: "object",
+          properties: {
+            page: { type: "number" },
+            limit: { type: "number" },
+            total: { type: "number" },
+            totalPages: { type: "number" }
+          }
+        }
+      }
+    },
+    500: {
+      type: "object",
+      properties: {
+        error: { type: "string" }
+      }
+    }
+  }
+};
+var getVapidKeySchema = {
+  response: {
+    200: {
+      type: "object",
+      properties: {
+        publicKey: { type: "string" }
+      }
+    },
+    500: {
+      type: "object",
+      properties: {
+        error: { type: "string" }
+      }
+    }
+  }
+};
+var PushSubscriptionSchemas = {
+  create: createPushSubscriptionSchema,
+  delete: deletePushSubscriptionSchema,
+  list: listPushSubscriptionsSchema,
+  getVapidKey: getVapidKeySchema
+};
+
+// src/features/push-subscription/push-subscription.routes.ts
+init_auth_middleware();
+async function PushSubscriptionRoutes(fastify2) {
+  fastify2.post("/", {
+    schema: PushSubscriptionSchemas.create,
+    preHandler: [authMiddleware],
+    handler: PushSubscriptionController.create
+  });
+  fastify2.delete("/:id", {
+    schema: PushSubscriptionSchemas.delete,
+    preHandler: [authMiddleware],
+    handler: PushSubscriptionController.delete
+  });
+  fastify2.get("/user/:userId", {
+    preHandler: [authMiddleware],
+    handler: PushSubscriptionController.listByUser
+  });
+  fastify2.get("/vapid-key", {
+    schema: PushSubscriptionSchemas.getVapidKey,
+    handler: PushSubscriptionController.getVapidKey
+  });
+}
+
+// src/features/polar/commands/polar.commands.ts
+init_prisma();
+var PolarCommands = {
+  async checkout(data) {
+    const accessToken = process.env.POLAR_ACCESS_TOKEN;
+    const baseUrl = process.env.POLAR_BASE_URL || "https://api.polar.sh";
+    const successUrl = process.env.POLAR_SUCCESS_URL || `${process.env.APP_URL || "http://localhost:3000"}/payment/success`;
+    const cancelUrl = process.env.POLAR_CANCEL_URL || `${process.env.APP_URL || "http://localhost:3000"}/payment/cancel`;
+    const response = await fetch(`${baseUrl}/v1/checkout/sessions`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        product_id: data.productId,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        metadata: {
+          user_id: data.userId
+        }
+      })
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: response.statusText }));
+      throw new Error(errorData.message || `Failed to create checkout: ${response.statusText}`);
+    }
+    const result = await response.json();
+    return result;
+  },
+  async webhook(event) {
+    try {
+      const type = event?.type || "";
+      const checkout = event?.data?.checkout_session;
+      const subscription = event?.data?.subscription;
+      const setCustomerPolarFields = async (where, data) => {
+        const existing = await db.customer.findFirst({ where });
+        if (existing) {
+          return db.customer.update({ where: { id: existing.id }, data });
+        }
+        if (where.userId) {
+          return db.customer.create({ data: { userId: where.userId, ...data } });
+        }
+        return existing;
+      };
+      switch (type) {
+        case "checkout.succeeded": {
+          const userIdFromMetadata = checkout?.metadata?.user_id;
+          const polarCustomerId = checkout?.customer_id;
+          const polarSubscriptionId = checkout?.subscription_id;
+          if (userIdFromMetadata) {
+            await setCustomerPolarFields(
+              { userId: userIdFromMetadata },
+              {
+                polarCustomerId: polarCustomerId || void 0,
+                polarSubscriptionId: polarSubscriptionId || void 0
+              }
+            );
+          } else if (polarCustomerId) {
+            await setCustomerPolarFields(
+              { polarCustomerId },
+              {
+                polarCustomerId,
+                polarSubscriptionId: polarSubscriptionId || void 0
+              }
+            );
+          }
+          break;
+        }
+        case "subscription.created":
+        case "subscription.updated":
+        case "subscription.canceled": {
+          const polarCustomerId = subscription?.customer_id;
+          const polarSubscriptionId = subscription?.id;
+          if (polarCustomerId || polarSubscriptionId) {
+            await setCustomerPolarFields(
+              polarCustomerId ? { polarCustomerId } : { polarSubscriptionId },
+              {
+                polarCustomerId: polarCustomerId || void 0,
+                polarSubscriptionId: polarSubscriptionId || void 0
+              }
+            );
+          }
+          break;
+        }
+        default:
+          break;
+      }
+      return { success: true };
+    } catch (error) {
+      console.error("Polar webhook error:", error);
+      return { success: false, error: error?.message || "Internal error" };
+    }
+  }
+};
+
+// src/features/polar/queries/polar.queries.ts
+var PolarQueries = {
+  async list({ page, limit }) {
+    const accessToken = process.env.POLAR_ACCESS_TOKEN;
+    const baseUrl = process.env.POLAR_BASE_URL || "https://api.polar.sh";
+    const response = await fetch(`${baseUrl}/products?page=${page}&limit=${limit}`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      }
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch products: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data;
+  }
+};
+
+// src/features/polar/polar.controller.ts
+var PolarController = {
+  async list(request, reply) {
+    try {
+      const { page = 1, limit = 10 } = request.query;
+      const result = await PolarQueries.list({ page, limit });
+      reply.send(result);
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(500).send({
+        error: "Internal server error"
+      });
+    }
+  },
+  async checkout(request, reply) {
+    try {
+      const { productId } = request.body;
+      const userId = request.user.id;
+      const result = await PolarCommands.checkout({ productId, userId });
+      return reply.status(201).send(result);
+    } catch (error) {
+      request.log.error(error);
+      if (error.message === "Product not found") {
+        return reply.status(404).send({
+          error: error.message
+        });
+      }
+      return reply.status(500).send({
+        error: "Internal server error"
+      });
+    }
+  },
+  async webhook(request, reply) {
+    try {
+      const payload = request.body;
+      const result = await PolarCommands.webhook(payload);
+      if (!result || result.success !== true) {
+        return reply.status(400).send({
+          error: result?.error || "Webhook processing failed"
+        });
+      }
+      return reply.status(200).send({ success: true });
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(500).send({
+        error: "Internal server error"
+      });
+    }
+  }
+};
+
+// src/features/polar/polar.schema.ts
+var CreateCheckoutSchema = {
+  body: {
+    type: "object",
+    required: ["productId"],
+    properties: {
+      productId: {
+        type: "string",
+        format: "uuid",
+        description: "ID do produto Polar"
+      }
+    }
+  },
+  response: {
+    201: {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        url: { type: "string" },
+        product_id: { type: "string" },
+        customer_id: { type: "string", nullable: true }
+      }
+    },
+    401: {
+      type: "object",
+      properties: {
+        error: { type: "string" }
+      }
+    },
+    404: {
+      type: "object",
+      properties: {
+        error: { type: "string" }
+      }
+    },
+    500: {
+      type: "object",
+      properties: {
+        error: { type: "string" }
+      }
+    }
+  }
+};
+var ListPolarSchema = {
+  querystring: {
+    type: "object",
+    properties: {
+      page: {
+        type: "number",
+        minimum: 1,
+        default: 1
+      },
+      limit: {
+        type: "number",
+        minimum: 1,
+        maximum: 100,
+        default: 10
+      }
+    }
+  },
+  response: {
+    200: {
+      type: "object",
+      properties: {
+        data: {
+          type: "array",
+          items: { type: "object" }
+        },
+        pagination: {
+          type: "object",
+          properties: {
+            page: { type: "number" },
+            limit: { type: "number" },
+            total: { type: "number" }
+          }
+        }
+      }
+    },
+    500: {
+      type: "object",
+      properties: {
+        error: { type: "string" }
+      }
+    }
+  }
+};
+var PolarSchemas = {
+  createCheckout: CreateCheckoutSchema,
+  list: ListPolarSchema
+};
+
+// src/features/polar/polar.routes.ts
+async function PolarRoutes(fastify2) {
+  fastify2.get("/", {
+    schema: PolarSchemas.list,
+    preHandler: [Middlewares.auth, Middlewares.store],
+    handler: PolarController.list
+  });
+  fastify2.post("/checkout", {
+    schema: PolarSchemas.createCheckout,
+    preHandler: [Middlewares.auth, Middlewares.store],
+    handler: PolarController.checkout
+  });
+  fastify2.post("/webhook", {
+    handler: PolarController.webhook
+  });
+}
+
 // src/server.ts
 var fastify = (0, import_fastify.default)({
   logger: true,
@@ -41634,6 +42911,7 @@ fastify.register(import_cors.default, {
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
 });
 fastify.register(prismaPlugin);
+fastify.register(pushPlugin);
 fastify.register(require("@fastify/static"), {
   root: require("path").join(process.cwd(), "src", "uploads"),
   prefix: "/uploads/",
@@ -41696,6 +42974,8 @@ fastify.register(CrmRoutes, { prefix: "/crm" });
 fastify.register(UserPreferencesRoutes, { prefix: "/preferences" });
 fastify.register(FlowRoutes, { prefix: "" });
 fastify.register(FlowExecutionRoutes, { prefix: "" });
+fastify.register(PushSubscriptionRoutes, { prefix: "/push-subscriptions" });
+fastify.register(PolarRoutes, { prefix: "/polar" });
 var PORT = Number(process.env.PORT) || 3e3;
 var HOST = "0.0.0.0";
 fastify.listen({ port: PORT, host: HOST }).then(() => {

@@ -15,6 +15,8 @@
     "@opentelemetry/auto-instrumentations-node": "^0.64.1",
     "@opentelemetry/exporter-trace-otlp-http": "^0.205.0",
     "@opentelemetry/sdk-node": "^0.205.0",
+    "@polar-sh/fastify": "^0.3.0",
+    "@polar-sh/sdk": "^0.1.1",
     "@prisma/client": "^6.16.2",
     "@scalar/express-api-reference": "^0.8.16",
     "@types/supertest": "^6.0.3",
@@ -36,6 +38,7 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "tsconfig-paths": "^4.2.0",
+    "web-push": "^3.6.7",
     "zod": "^3.24.4"
   },
   "devDependencies": {

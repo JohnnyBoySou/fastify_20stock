@@ -8,7 +8,7 @@ export type FlowExecutionStatus = 'SUCCESS' | 'FAILED' | 'RUNNING' | 'CANCELLED'
 export type TriggerEventType = 'stock_change' | 'movement_created' | 'stock_below_min' | 'stock_above_max';
 export type ComparisonOperator = '<' | '>' | '==' | '<=' | '>=' | '!=';
 export type LogicalOperator = 'AND' | 'OR';
-export type ActionType = 'email' | 'webhook' | 'internal_notification' | 'sms';
+export type ActionType = 'email' | 'webhook' | 'internal_notification' | 'sms' | 'push_notification';
 
 // Base Interfaces
 export interface FlowNode {
@@ -73,7 +73,17 @@ export interface ActionConfig {
     priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
     
     // SMS
-    message?: string;
+    // message já definido acima
+    
+    // Push Notification
+    icon?: string;
+    badge?: string;
+    data?: any;
+    actions?: Array<{
+      action: string;
+      title: string;
+      icon?: string;
+    }>;
   };
 }
 

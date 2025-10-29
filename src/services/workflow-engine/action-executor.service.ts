@@ -1,5 +1,6 @@
 import { ActionConfig, ExecutionContext } from '@/features/flow/flow.interfaces';
 import { db } from '@/plugins/prisma';
+import { sendPushNotification } from '@/plugins/push';
 
 export const ActionExecutor = {
   async executeAction(actionConfig: ActionConfig, context: ExecutionContext) {
@@ -13,6 +14,8 @@ export const ActionExecutor = {
           return await this.sendInternalNotification(actionConfig.config, context);
         case 'sms':
           return await this.sendSMS(actionConfig.config, context);
+        case 'push_notification':
+          return await this.sendPushNotification(actionConfig.config, context);
         default:
           throw new Error(`Unknown action type: ${actionConfig.type}`);
       }
@@ -134,6 +137,99 @@ export const ActionExecutor = {
       type: 'sms',
       to,
       message: 'SMS sent successfully (simulated)'
+    };
+  },
+
+  async sendPushNotification(config: any, context: ExecutionContext) {
+    if (!config.userIds || !Array.isArray(config.userIds) || config.userIds.length === 0) {
+      throw new Error('User IDs are required for push notification');
+    }
+
+    const title = this.replaceVariables(config.title || 'Notification', context);
+    const message = this.replaceVariables(config.message || '', context);
+    const icon = config.icon;
+    const badge = config.badge;
+    const actions = config.actions || [];
+
+    // Buscar subscriptions de cada usuário
+    const subscriptionsResults = await Promise.all(
+      config.userIds.map(async (userId: string) => {
+        const subscriptions = await db.pushSubscription.findMany({
+          where: { userId }
+        });
+        return subscriptions;
+      })
+    );
+
+    const allSubscriptions = subscriptionsResults.flat();
+
+    if (allSubscriptions.length === 0) {
+      console.log('No push subscriptions found for users');
+      return {
+        success: true,
+        type: 'push_notification',
+        subscriptionsSent: 0,
+        message: 'No push subscriptions found for users'
+      };
+    }
+
+    // Preparar payload da notificação
+    const payload = {
+      title,
+      body: message,
+      icon,
+      badge,
+      data: {
+        workflowContext: context,
+        actions,
+        createdAt: new Date()
+      },
+      actions
+    };
+
+    // Enviar notificação push para todas as subscriptions
+    let success = 0;
+    let failed = 0;
+
+    const sendPromises = allSubscriptions.map(async (subscription) => {
+      try {
+        await sendPushNotification(
+          {
+            endpoint: subscription.endpoint,
+            keys: {
+              p256dh: subscription.p256dh,
+              auth: subscription.auth
+            }
+          },
+          payload
+        );
+        
+        success++;
+      } catch (error: any) {
+        failed++;
+        console.error('Failed to send push notification:', error.message);
+        
+        // Se subscription expirou, deletar do banco
+        if (error.message.includes('expired') || error.message.includes('invalid')) {
+          await db.pushSubscription.delete({
+            where: { id: subscription.id }
+          }).catch(() => {
+            // Ignorar erro de deleção
+          });
+        }
+      }
+    });
+
+    await Promise.allSettled(sendPromises);
+
+    console.log(`🔔 Push notifications sent: ${success} success, ${failed} failed`);
+
+    return {
+      success: true,
+      type: 'push_notification',
+      subscriptionsSent: success,
+      subscriptionsFailed: failed,
+      message: `Push notification sent to ${success} device(s)`
     };
   },
 

@@ -2,6 +2,7 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import { prismaPlugin, connectPrisma } from './plugins/prisma'
+import { pushPlugin } from './plugins/push'
 
 import { UserRoutes } from '@/features/user/user.routes'
 import { AuthRoutes } from '@/features/auth/auth.routes'
@@ -27,6 +28,8 @@ import { CrmRoutes } from '@/features/crm/crm.routes'
 import { UserPreferencesRoutes } from '@/features/user-preferences/user-preferences.routes'
 import { FlowRoutes } from '@/features/flow/flow.routes'
 import { FlowExecutionRoutes } from '@/features/flow-execution/flow-execution.routes'
+import { PushSubscriptionRoutes } from '@/features/push-subscription/push-subscription.routes'
+import { PolarRoutes } from '@/features/polar/polar.routes'
 
 const fastify = Fastify({
   logger: true,
@@ -45,6 +48,7 @@ fastify.register(cors, {
 })
 
 fastify.register(prismaPlugin)
+fastify.register(pushPlugin)
 
 // Registrar plugin para servir arquivos estáticos de upload
 fastify.register(require('@fastify/static'), {
@@ -119,6 +123,8 @@ fastify.register(CrmRoutes, { prefix: '/crm' })
 fastify.register(UserPreferencesRoutes, { prefix: '/preferences' })
 fastify.register(FlowRoutes, { prefix: '' })
 fastify.register(FlowExecutionRoutes, { prefix: '' })
+fastify.register(PushSubscriptionRoutes, { prefix: '/push-subscriptions' })
+fastify.register(PolarRoutes, { prefix: '/polar' })
 
 const PORT = Number(process.env.PORT) || 3000
 const HOST = '0.0.0.0'

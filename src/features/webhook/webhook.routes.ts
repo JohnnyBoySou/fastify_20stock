@@ -18,6 +18,13 @@ export async function WebhookRoutes(fastify: FastifyInstance) {
     handler: WebhookController.processStripe
   });
 
+  fastify.post('/polar', {
+    config: {
+      rawBody: true
+    },
+    handler: WebhookController.processPolar
+  });
+
   // Webhook genérico para outros gateways
   fastify.post('/:gateway', {
     config: {

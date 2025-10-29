@@ -38,6 +38,40 @@ export const WebhookController = {
     }
   },
 
+  async processPolar(request: WebhookRequest, reply: FastifyReply) {
+    try {
+      const payload = request.body;
+      const signature = request.headers['x-polar-signature'] || 
+                       request.headers['polar-signature'] || 
+                       request.headers['x-signature'];
+
+      const result = await WebhookService.processWebhook(
+        'polar',
+        payload,
+        signature
+      );
+
+      if (!result.success) {
+        return reply.status(400).send({
+          error: result.error
+        });
+      }
+
+      return reply.status(200).send({
+        success: true,
+        eventId: result.eventId,
+        eventType: result.eventType,
+        gateway: 'polar',
+        processedAt: new Date()
+      });
+    } catch (error: any) {
+      request.log.error(error);
+      return reply.status(500).send({
+        error: 'Internal server error'
+      });
+    }
+  },
+
   async processStripe(request: WebhookRequest, reply: FastifyReply) {
     try {
       const payload = request.body;
