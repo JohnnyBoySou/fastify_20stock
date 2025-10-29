@@ -5,9 +5,8 @@ import { Middlewares } from '@/middlewares';
 
 export async function PolarRoutes(fastify: FastifyInstance) {
   // Listar produtos
-  fastify.get('/', {
+  fastify.get('/plans', {
     schema: PolarSchemas.list,
-    preHandler: [Middlewares.auth, Middlewares.store],
     handler: PolarController.list
   });
 
