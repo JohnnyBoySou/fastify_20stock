@@ -9,7 +9,7 @@ export const PolarController = {
         try {
             const { page = 1, limit = 10 } = request.query;
             const result = await PolarQueries.list({ page, limit });
-            reply.send(result);
+            return reply.status(200).send(result);
         } catch (error) {
             request.log.error(error);
             return reply.status(500).send({

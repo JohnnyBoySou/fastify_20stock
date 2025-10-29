@@ -14,6 +14,8 @@ export const PolarQueries = {
             }
         });
 
+        console.log(response);
+
         if (!response.ok) {
             throw new Error(`Failed to fetch products: ${response.statusText}`);
         }
