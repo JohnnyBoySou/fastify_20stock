@@ -64,10 +64,7 @@ export const ListPolarSchema: FastifySchema = {
     200: {
       type: 'object',
       properties: {
-        items: {
-          type: 'array',
-          items: { type: 'object' }
-        },
+        items: { type: 'array' },
         pagination: {
           type: 'object',
           properties: {
