@@ -7,7 +7,6 @@ export const CreateCheckoutSchema: FastifySchema = {
     properties: {
       productId: {
         type: 'string',
-        format: 'uuid',
         description: 'ID do produto Polar'
       }
     }
