@@ -6,7 +6,7 @@ export const PolarQueries = {
         const baseUrl = process.env.POLAR_BASE_URL || 'https://api.polar.sh';
 
         try {
-            const response = await fetch(`https://api.polar.sh/v1/products?page=1&limit=10`, {
+            const response = await fetch(`https://sandbox-api.polar.sh/v1/products?page=1&limit=10`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
