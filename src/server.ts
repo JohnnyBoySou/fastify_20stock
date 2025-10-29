@@ -23,7 +23,6 @@ import { QuoteRoutes } from '@/features/quote/quote.routes'
 import { PlanRoutes } from '@/features/plan/plan.routes'
 import { CustomerRoutes } from '@/features/customer/customer.routes'
 import { InvoiceRoutes } from '@/features/invoice/invoice.routes'
-import { WebhookRoutes } from '@/features/webhook/webhook.routes'
 import { CrmRoutes } from '@/features/crm/crm.routes'
 import { UserPreferencesRoutes } from '@/features/user-preferences/user-preferences.routes'
 import { FlowRoutes } from '@/features/flow/flow.routes'
@@ -63,10 +62,6 @@ connectPrisma(fastify)
 // Healthcheck route
 fastify.get('/health', async (request, reply) => {
   try {
-    // Verificar conexão com o banco de dados
-    const prisma = (request.server as any).prisma
-    await prisma.$queryRaw`SELECT 1`
-
     return reply.send({
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -82,22 +77,6 @@ fastify.get('/health', async (request, reply) => {
       database: 'disconnected',
       error: 'Database connection failed'
     })
-  }
-})
-
-// Registrar rotas
-
-fastify.get('/llm/rag', {
-  preHandler: [authMiddleware, storeContextMiddleware]
-}, async (request, reply) => {
-  try {
-    const productId = "cmg4ixgh90005e8vgqdn5k6qz"; // ID do produto para teste
-    const query = "Qual a última movimentação de entrada do produto?";
-    const response = await queryRAG(productId, query);
-    return reply.send(response);
-  } catch (error) {
-    console.error('Error in RAG:', error);
-    return reply.status(500).send({ error: 'RAG processing failed' });
   }
 })
 
@@ -118,7 +97,6 @@ fastify.register(QuoteRoutes, { prefix: '/quotes' })
 fastify.register(PlanRoutes, { prefix: '/plans' })
 fastify.register(CustomerRoutes, { prefix: '/customers' })
 fastify.register(InvoiceRoutes, { prefix: '/invoices' })
-fastify.register(WebhookRoutes, { prefix: '/webhooks' })
 fastify.register(CrmRoutes, { prefix: '/crm' })
 fastify.register(UserPreferencesRoutes, { prefix: '/preferences' })
 fastify.register(FlowRoutes, { prefix: '' })
