@@ -40559,6 +40559,7 @@ var PolarQueries = {
 };
 
 // src/features/polar/polar.controller.ts
+var import_crypto3 = __toESM(require("crypto"));
 var PolarController = {
   async list(request, reply) {
     try {
@@ -40592,6 +40593,31 @@ var PolarController = {
   },
   async webhook(request, reply) {
     try {
+      const secret = process.env.POLAR_WEBHOOK_SECRET;
+      const signatureHeader = request.headers["polar-signature"] || request.headers["Polar-Signature"];
+      const rawBody = request.rawBody;
+      if (!secret) {
+        return reply.status(500).send({ error: "Webhook secret not configured" });
+      }
+      if (!signatureHeader || !rawBody) {
+        return reply.status(400).send({ error: "Missing signature or raw body" });
+      }
+      const normalize = (sig) => sig.startsWith("sha256=") ? sig.slice(7) : sig;
+      const received = normalize(signatureHeader);
+      const computed = import_crypto3.default.createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
+      const valid = (() => {
+        try {
+          const a = Buffer.from(computed, "hex");
+          const b = Buffer.from(received, "hex");
+          if (a.length !== b.length) return false;
+          return import_crypto3.default.timingSafeEqual(a, b);
+        } catch {
+          return false;
+        }
+      })();
+      if (!valid) {
+        return reply.status(400).send({ error: "Invalid signature" });
+      }
       const payload = request.body;
       const result = await PolarCommands.webhook(payload);
       if (!result || result.success !== true) {
@@ -40735,6 +40761,12 @@ fastify.register(import_cors.default, {
 });
 fastify.register(prismaPlugin);
 fastify.register(pushPlugin);
+fastify.register(require("fastify-raw-body"), {
+  field: "rawBody",
+  global: true,
+  encoding: "utf8",
+  runFirst: true
+});
 fastify.register(require("@fastify/static"), {
   root: require("path").join(process.cwd(), "src", "uploads"),
   prefix: "/uploads/",
