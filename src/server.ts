@@ -50,6 +50,13 @@ fastify.register(cors, {
 
 fastify.register(prismaPlugin)
 fastify.register(pushPlugin)
+// Raw body para validação de assinatura de webhooks (Polar)
+fastify.register(require('@fastify/raw-body'), {
+  field: 'rawBody',
+  global: true,
+  encoding: 'utf8',
+  runFirst: true
+})
 
 // Registrar plugin para servir arquivos estáticos de upload
 fastify.register(require('@fastify/static'), {
