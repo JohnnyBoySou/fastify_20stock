@@ -55,6 +55,7 @@ export const PolarController = {
             if (!secret) {
                 return reply.status(500).send({ error: "Webhook secret not configured" });
             }
+
             if (!signatureHeader || !rawBody) {
                 return reply.status(400).send({ error: "Missing signature or raw body" });
             }
@@ -82,7 +83,8 @@ export const PolarController = {
             // Opcional: validar janela de tempo se timestamp presente (5 minutos)
             if (timestamp) {
                 const tsNum = Number(timestamp);
-                if (!Number.isFinite(tsNum) || Math.abs(Date.now() / 1000 - tsNum) > 300) {
+                const delta = Math.abs(Date.now() / 1000 - tsNum);
+                if (!Number.isFinite(tsNum) || delta > 300) {
                     return reply.status(400).send({ error: "Signature timestamp too old" });
                 }
             }
