@@ -2,6 +2,25 @@ import { db } from '@/plugins/prisma';
 import { polar } from '@/plugins/polar';
 
 export const PolarQueries = {
+    async createCustomer(data: {
+        email: string
+        name: string
+        externalId: string // user.id
+    }) {
+        try {
+            const customer = await polar.customers.create({
+                email: data.email,
+                name: data.name,
+                externalId: data.externalId,
+                organizationId: process.env.POLAR_ORGANIZATION_ID!,
+            });
+
+            return customer;
+        } catch (error) {
+            console.error('Polar create customer error:', error);
+            return null;
+        }
+    },
     async list({ page, limit }: { page: number, limit: number }) {
         try {
             const { result } = await polar.products.list({
@@ -40,6 +59,23 @@ export const PolarQueries = {
             return freeProduct || null;
         } catch (error) {
             console.error('Polar get free plan error:', error);
+            return null;
+        }
+    },
+
+    async createSubscription(data: {
+        customerId: string // ID do customer no Polar
+        productId: string // ID do produto no Polar
+    }) {
+        try {
+            const subscription = await polar.subscriptions.create({
+                customerId: data.customerId,
+                productId: data.productId
+            });
+
+            return subscription;
+        } catch (error) {
+            console.error('Polar create subscription error:', error);
             return null;
         }
     }

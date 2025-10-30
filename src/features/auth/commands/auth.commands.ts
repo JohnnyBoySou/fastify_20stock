@@ -77,12 +77,30 @@ export const AuthCommands = {
           });
         }
 
-        // Criar Customer com o plano free
+        // Criar Customer no Polar
+        const polarCustomer = await PolarQueries.createCustomer({
+          email: user.email,
+          name: user.name!,
+          externalId: user.id
+        });
+
+        // Criar Subscription no Polar para o plano free
+        let polarSubscription = null;
+        if (polarCustomer && polarCustomer.id) {
+          polarSubscription = await PolarQueries.createSubscription({
+            customerId: polarCustomer.id,
+            productId: freePlan.id
+          });
+        }
+
+        // Criar Customer local com IDs do Polar
         await db.customer.create({
           data: {
             userId: user.id,
             planId: localPlan.id,
-            status: 'ACTIVE'
+            status: 'ACTIVE',
+            polarCustomerId: polarCustomer?.id || null,
+            polarSubscriptionId: polarSubscription?.id || null
           }
         });
       } else {
@@ -552,12 +570,30 @@ export const AuthCommands = {
               });
             }
 
-            // Criar Customer com o plano free
+            // Criar Customer no Polar
+            const polarCustomer = await PolarQueries.createCustomer({
+              email: user.email,
+              name: user.name!,
+              externalId: user.id
+            });
+
+            // Criar Subscription no Polar para o plano free
+            let polarSubscription = null;
+            if (polarCustomer && polarCustomer.id) {
+              polarSubscription = await PolarQueries.createSubscription({
+                customerId: polarCustomer.id,
+                productId: freePlan.id
+              });
+            }
+
+            // Criar Customer local com IDs do Polar
             await db.customer.create({
               data: {
                 userId: user.id,
                 planId: localPlan.id,
-                status: 'ACTIVE'
+                status: 'ACTIVE',
+                polarCustomerId: polarCustomer?.id || null,
+                polarSubscriptionId: polarSubscription?.id || null
               }
             });
           } else {
