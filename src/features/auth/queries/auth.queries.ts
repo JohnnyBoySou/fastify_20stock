@@ -314,6 +314,27 @@ export const AuthQueries = {
     return user;
   },
 
+  // Get user's plan through Customer relation
+  async getUserPlan(userId: string) {
+    const customer = await prisma.customer.findUnique({
+      where: { userId },
+      include: {
+        plan: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            price: true,
+            interval: true,
+            features: true
+          }
+        }
+      }
+    });
+
+    return customer?.plan || null;
+  },
+
   // Get store owned by user
   async getStoreByOwner(userId: string) {
     const store = await prisma.store.findFirst({

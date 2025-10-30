@@ -331,8 +331,9 @@ export const AuthController = {
       const payload = AuthCommands.verifyToken(token);
 
       const user = await AuthQueries.getUserProfile(payload.userId);
+      const plan = await AuthQueries.getUserPlan(payload.userId);
 
-      return reply.send({ user });
+      return reply.send({ user: { ...user, plan } });
     } catch (error: any) {
       request.log.error(error);
 

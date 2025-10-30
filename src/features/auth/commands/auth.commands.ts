@@ -7,6 +7,7 @@ import { db } from '@/plugins/prisma';
 import { AuthQueries } from '../queries/auth.queries';
 import { EmailService } from '@/services/email/email.service';
 import { OAuth2Client } from "google-auth-library";
+import { PolarQueries } from '@/features/polar/queries/polar.queries';
 
 
 export const AuthCommands = {
@@ -51,6 +52,46 @@ export const AuthCommands = {
         createdAt: true
       }
     });
+
+    // Create Customer linked to free plan from Polar
+    try {
+      const freePlan = await PolarQueries.getFreePlan();
+
+      if (freePlan) {
+        // Procurar ou criar o plano no banco local
+        let localPlan = await db.plan.findFirst({
+          where: { polarProductId: freePlan.id }
+        });
+
+        if (!localPlan) {
+          // Criar o plano local se não existir
+          localPlan = await db.plan.create({
+            data: {
+              name: freePlan.name,
+              description: freePlan.description || null,
+              price: 0, // Plano grátis
+              interval: freePlan.recurringInterval === 'month' ? 'MONTHLY' : 'YEARLY',
+              features: freePlan.benefits || {},
+              polarProductId: freePlan.id
+            }
+          });
+        }
+
+        // Criar Customer com o plano free
+        await db.customer.create({
+          data: {
+            userId: user.id,
+            planId: localPlan.id,
+            status: 'ACTIVE'
+          }
+        });
+      } else {
+        console.warn('Nenhum plano free encontrado no Polar');
+      }
+    } catch (e) {
+      // Não falhar o registro se a associação ao plano falhar
+      console.error('Falha ao associar plano free ao usuário:', e);
+    }
 
     // Send email verification with code
     try {
@@ -486,6 +527,45 @@ export const AuthCommands = {
             dashboard: null
           }
         });
+
+        // Criar Customer e associar ao plano free na criação via Google
+        try {
+          const freePlan = await PolarQueries.getFreePlan();
+
+          if (freePlan) {
+            // Procurar ou criar o plano no banco local
+            let localPlan = await db.plan.findFirst({
+              where: { polarProductId: freePlan.id }
+            });
+
+            if (!localPlan) {
+              // Criar o plano local se não existir
+              localPlan = await db.plan.create({
+                data: {
+                  name: freePlan.name,
+                  description: freePlan.description || null,
+                  price: 0,
+                  interval: freePlan.recurringInterval === 'month' ? 'MONTHLY' : 'YEARLY',
+                  features: freePlan.benefits || {},
+                  polarProductId: freePlan.id
+                }
+              });
+            }
+
+            // Criar Customer com o plano free
+            await db.customer.create({
+              data: {
+                userId: user.id,
+                planId: localPlan.id,
+                status: 'ACTIVE'
+              }
+            });
+          } else {
+            console.warn('Nenhum plano free encontrado no Polar (Google login)');
+          }
+        } catch (e) {
+          console.error('Falha ao associar plano free (Google):', e);
+        }
       } else {
         // Se usuário existe, atualizar último login
         await db.user.update({
