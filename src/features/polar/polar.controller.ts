@@ -46,7 +46,10 @@ export const PolarController = {
         try {
             // Verificar assinatura do webhook (HMAC-SHA256)
             const secret = process.env.POLAR_WEBHOOK_SECRET as string | undefined;
-            const signatureHeader = (request.headers["polar-signature"] || request.headers["Polar-Signature"]) as string | undefined;
+            const signatureHeader = (
+                request.headers["polar-signature"] ||
+                request.headers["x-polar-signature"]
+            ) as string | undefined;
             const rawBody = (request as any).rawBody as string | undefined;
 
             if (!secret) {
@@ -56,13 +59,39 @@ export const PolarController = {
                 return reply.status(400).send({ error: "Missing signature or raw body" });
             }
 
-            const normalize = (sig: string) => sig.startsWith("sha256=") ? sig.slice(7) : sig;
-            const received = normalize(signatureHeader);
+            // Suporta formatos: "sha256=<hex>" ou "t=...,v1=<hex>[,v2=...]"
+            const parseSignature = (header: string) => {
+                const trimmed = header.trim();
+                if (trimmed.startsWith("sha256=")) {
+                    return { hash: trimmed.slice(7), timestamp: undefined as string | undefined };
+                }
+                const parts = trimmed.split(",").map(p => p.trim());
+                const kv = new Map(parts.map(p => {
+                    const idx = p.indexOf("=");
+                    if (idx === -1) return [p, ""] as [string, string];
+                    return [p.slice(0, idx), p.slice(idx + 1)] as [string, string];
+                }));
+                return { hash: (kv.get("v1") || kv.get("sha256")) as string | undefined, timestamp: kv.get("t") as string | undefined };
+            };
+
+            const { hash: receivedHash, timestamp } = parseSignature(signatureHeader);
+            if (!receivedHash) {
+                return reply.status(400).send({ error: "Invalid signature format" });
+            }
+
+            // Opcional: validar janela de tempo se timestamp presente (5 minutos)
+            if (timestamp) {
+                const tsNum = Number(timestamp);
+                if (!Number.isFinite(tsNum) || Math.abs(Date.now() / 1000 - tsNum) > 300) {
+                    return reply.status(400).send({ error: "Signature timestamp too old" });
+                }
+            }
+
             const computed = crypto.createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
             const valid = (() => {
                 try {
                     const a = Buffer.from(computed, "hex");
-                    const b = Buffer.from(received, "hex");
+                    const b = Buffer.from(receivedHash, "hex");
                     if (a.length !== b.length) return false;
                     return crypto.timingSafeEqual(a, b);
                 } catch {

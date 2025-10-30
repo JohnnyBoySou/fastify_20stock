@@ -16,6 +16,8 @@ export async function PolarRoutes(fastify: FastifyInstance) {
   });
 
   fastify.post('/webhook', {
+    // Garante que fastify-raw-body anexe o rawBody neste endpoint
+    config: { rawBody: true },
     handler: PolarController.webhook
   });
 }
