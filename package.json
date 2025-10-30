@@ -16,7 +16,7 @@
     "@opentelemetry/exporter-trace-otlp-http": "^0.205.0",
     "@opentelemetry/sdk-node": "^0.205.0",
     "@polar-sh/fastify": "^0.3.0",
-    "@polar-sh/sdk": "^0.1.1",
+    "@polar-sh/sdk": "^0.40.2",
     "@prisma/client": "^6.16.2",
     "@scalar/express-api-reference": "^0.8.16",
     "@types/supertest": "^6.0.3",

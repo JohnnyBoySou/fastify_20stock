@@ -35,7 +35,9 @@ const fastify = Fastify({
   requestTimeout: 60000, // 30 segundos para timeout de requisições
   keepAliveTimeout: 5000, // 5 segundos para keep-alive
   bodyLimit: 1048576, // 1MB para limite do body
-  maxParamLength: 200 // Limite de caracteres para parâmetros de rota
+  routerOptions: {
+    maxParamLength: 200 // Limite de caracteres para parâmetros de rota
+  }
 })
 
 //Plugins

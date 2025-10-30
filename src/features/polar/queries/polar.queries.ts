@@ -1,31 +1,26 @@
 import { db } from '@/plugins/prisma';
+import { polar } from '@/plugins/polar';
 
 export const PolarQueries = {
     async list({ page, limit }: { page: number, limit: number }) {
-        const accessToken = process.env.POLAR_ACCESS_TOKEN as string;
-        const baseUrl = process.env.POLAR_BASE_URL || 'https://api.polar.sh';
-
         try {
-            const response = await fetch(`https://sandbox-api.polar.sh/v1/products?page=1&limit=10`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                }
+            const { result } = await polar.products.list({
+                organizationId: process.env.POLAR_ORGANIZATION_ID!,
+                page,
+                limit,
             });
 
-            const data = await response.json();
-            // Log para debug - remover depois
-            console.log('📦 Polar API Response:', JSON.stringify(data, null, 2));
-
             return {
-                items: data.items,
-                pagination: data.pagination
+                items: result.items,
+                pagination: {
+                    page,
+                    limit
+                }
             };
         } catch (error) {
-            console.error('📦 Polar API Error:', error);
+            console.error('Polar products list error:', error);
             throw new Error(`Failed to fetch products: ${error}`);
         }
-    },
+
+    }
 }

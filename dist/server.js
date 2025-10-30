@@ -4,13 +4,6 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __esm = (fn, res) => function __init() {
-  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
-};
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
     for (let key of __getOwnPropNames(from))
@@ -27,9 +20,15 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+// src/server.ts
+var import_fastify = __toESM(require("fastify"));
+var import_cors = __toESM(require("@fastify/cors"));
 
 // src/plugins/prisma.ts
+var import_client = require("@prisma/client");
+var prisma = new import_client.PrismaClient();
+var db = prisma;
 async function prismaPlugin(app) {
   app.decorate("prisma", prisma);
   app.addHook("onClose", async () => {
@@ -48,1604 +47,6 @@ async function connectPrisma(app) {
     process.exit(1);
   }
 }
-var import_client, prisma, db;
-var init_prisma = __esm({
-  "src/plugins/prisma.ts"() {
-    import_client = require("@prisma/client");
-    prisma = new import_client.PrismaClient();
-    db = prisma;
-  }
-});
-
-// src/features/auth/queries/auth.queries.ts
-var AuthQueries;
-var init_auth_queries = __esm({
-  "src/features/auth/queries/auth.queries.ts"() {
-    init_prisma();
-    AuthQueries = {
-      async getById(id) {
-        const user = await prisma.user.findUnique({
-          where: { id, status: true },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            emailVerified: true,
-            status: true,
-            roles: true,
-            lastLoginAt: true,
-            createdAt: true,
-            updatedAt: true
-          }
-        });
-        return user;
-      },
-      async getByEmail(email) {
-        const user = await prisma.user.findUnique({
-          where: { email, status: true },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            emailVerified: true,
-            status: true,
-            roles: true,
-            lastLoginAt: true,
-            createdAt: true,
-            updatedAt: true
-          }
-        });
-        return user;
-      },
-      async getByResetToken(token) {
-        const user = await prisma.user.findFirst({
-          where: {
-            resetPasswordToken: token,
-            resetPasswordExpires: {
-              gt: /* @__PURE__ */ new Date()
-            },
-            status: true
-          },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            emailVerified: true,
-            status: true,
-            roles: true,
-            lastLoginAt: true,
-            createdAt: true,
-            updatedAt: true
-          }
-        });
-        return user;
-      },
-      async getByVerificationToken(token) {
-        const user = await prisma.user.findFirst({
-          where: {
-            emailVerificationToken: token,
-            emailVerified: false,
-            status: true
-          },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            emailVerified: true,
-            status: true,
-            roles: true,
-            lastLoginAt: true,
-            createdAt: true,
-            updatedAt: true
-          }
-        });
-        return user;
-      },
-      async getActiveUsers() {
-        const users = await prisma.user.findMany({
-          where: { status: true },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            emailVerified: true,
-            status: true,
-            roles: true,
-            lastLoginAt: true,
-            createdAt: true,
-            updatedAt: true
-          },
-          orderBy: { createdAt: "desc" }
-        });
-        return users;
-      },
-      async getVerifiedUsers() {
-        const users = await prisma.user.findMany({
-          where: {
-            status: true,
-            emailVerified: true
-          },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            emailVerified: true,
-            status: true,
-            roles: true,
-            lastLoginAt: true,
-            createdAt: true,
-            updatedAt: true
-          },
-          orderBy: { createdAt: "desc" }
-        });
-        return users;
-      },
-      async getUnverifiedUsers() {
-        const users = await prisma.user.findMany({
-          where: {
-            status: true,
-            emailVerified: false
-          },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            emailVerified: true,
-            status: true,
-            roles: true,
-            lastLoginAt: true,
-            createdAt: true,
-            updatedAt: true
-          },
-          orderBy: { createdAt: "desc" }
-        });
-        return users;
-      },
-      async getUserStats() {
-        const [
-          totalUsers,
-          activeUsers,
-          verifiedUsers,
-          unverifiedUsers,
-          recentLogins
-        ] = await Promise.all([
-          this.prisma.user.count(),
-          this.prisma.user.count({ where: { status: true } }),
-          this.prisma.user.count({
-            where: {
-              status: true,
-              emailVerified: true
-            }
-          }),
-          this.prisma.user.count({
-            where: {
-              status: true,
-              emailVerified: false
-            }
-          }),
-          this.prisma.user.count({
-            where: {
-              status: true,
-              lastLoginAt: {
-                gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1e3)
-                // Last 7 days
-              }
-            }
-          })
-        ]);
-        return {
-          totalUsers,
-          activeUsers,
-          verifiedUsers,
-          unverifiedUsers,
-          recentLogins
-        };
-      },
-      async searchUsers(searchTerm, limit = 10) {
-        const users = await prisma.user.findMany({
-          where: {
-            status: true,
-            OR: [
-              { name: { contains: searchTerm, mode: "insensitive" } },
-              { email: { contains: searchTerm, mode: "insensitive" } }
-            ]
-          },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            emailVerified: true,
-            status: true,
-            roles: true,
-            lastLoginAt: true,
-            createdAt: true,
-            updatedAt: true
-          },
-          take: limit,
-          orderBy: { createdAt: "desc" }
-        });
-        return users;
-      },
-      async getUsersWithPendingVerification() {
-        const users = await prisma.user.findMany({
-          where: {
-            status: true,
-            emailVerified: false,
-            emailVerificationToken: {
-              not: null
-            }
-          },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            emailVerified: true,
-            emailVerificationToken: true,
-            createdAt: true
-          },
-          orderBy: { createdAt: "desc" }
-        });
-        return users;
-      },
-      async getUsersWithPendingReset() {
-        const users = await prisma.user.findMany({
-          where: {
-            status: true,
-            resetPasswordToken: {
-              not: null
-            },
-            resetPasswordExpires: {
-              gt: /* @__PURE__ */ new Date()
-            }
-          },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            resetPasswordToken: true,
-            resetPasswordExpires: true,
-            createdAt: true
-          },
-          orderBy: { createdAt: "desc" }
-        });
-        return users;
-      },
-      // Verify if user exists by email
-      async userExists(email) {
-        const count = await prisma.user.count({
-          where: { email }
-        });
-        return count > 0;
-      },
-      // Verify if email is already verified
-      async isEmailVerified(email) {
-        const user = await prisma.user.findUnique({
-          where: { email },
-          select: { emailVerified: true }
-        });
-        return user?.emailVerified || false;
-      },
-      // Get user profile for authenticated user
-      async getUserProfile(userId) {
-        const user = await prisma.user.findUnique({
-          where: { id: userId, status: true },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            emailVerified: true,
-            status: true,
-            roles: true,
-            lastLoginAt: true,
-            phone: true,
-            createdAt: true,
-            updatedAt: true
-          }
-        });
-        if (!user) {
-          throw new Error("User not found");
-        }
-        return user;
-      },
-      // Get store owned by user
-      async getStoreByOwner(userId) {
-        const store = await prisma.store.findFirst({
-          where: {
-            ownerId: userId,
-            status: true
-          },
-          select: {
-            id: true,
-            name: true,
-            cnpj: true,
-            email: true,
-            phone: true,
-            status: true,
-            cep: true,
-            city: true,
-            state: true,
-            address: true,
-            createdAt: true,
-            updatedAt: true
-          }
-        });
-        return store;
-      },
-      // Get user profile permissions
-      async getProfilePermissions(userId, filters) {
-        const { storeId, active, page = 1, limit = 10 } = filters;
-        const user = await prisma.user.findUnique({
-          where: { id: userId, status: true },
-          select: { id: true, roles: true }
-        });
-        if (!user) {
-          throw new Error("User not found");
-        }
-        const customPermissionsWhere = { userId };
-        if (storeId) customPermissionsWhere.storeId = storeId;
-        if (active !== void 0) {
-          if (active) {
-            customPermissionsWhere.OR = [
-              { expiresAt: null },
-              { expiresAt: { gt: /* @__PURE__ */ new Date() } }
-            ];
-          } else {
-            customPermissionsWhere.expiresAt = { lte: /* @__PURE__ */ new Date() };
-          }
-        }
-        const [customPermissions, customPermissionsTotal] = await Promise.all([
-          prisma.userPermission.findMany({
-            where: customPermissionsWhere,
-            skip: (page - 1) * limit,
-            take: limit,
-            orderBy: { createdAt: "desc" },
-            include: {
-              creator: {
-                select: { id: true, name: true, email: true }
-              }
-            }
-          }),
-          prisma.userPermission.count({ where: customPermissionsWhere })
-        ]);
-        const storePermissionsWhere = { userId };
-        if (storeId) storePermissionsWhere.storeId = storeId;
-        if (active !== void 0) {
-          if (active) {
-            storePermissionsWhere.OR = [
-              { expiresAt: null },
-              { expiresAt: { gt: /* @__PURE__ */ new Date() } }
-            ];
-          } else {
-            storePermissionsWhere.expiresAt = { lte: /* @__PURE__ */ new Date() };
-          }
-        }
-        const [storePermissions, storePermissionsTotal] = await Promise.all([
-          prisma.storePermission.findMany({
-            where: storePermissionsWhere,
-            skip: (page - 1) * limit,
-            take: limit,
-            orderBy: { createdAt: "desc" },
-            include: {
-              store: {
-                select: { id: true, name: true }
-              },
-              creator: {
-                select: { id: true, name: true, email: true }
-              }
-            }
-          }),
-          prisma.storePermission.count({ where: storePermissionsWhere })
-        ]);
-        const effectivePermissions = await this.getUserEffectivePermissions(userId, { storeId });
-        return {
-          userId: user.id,
-          userRoles: user.roles,
-          storeId: storeId || null,
-          effectivePermissions: effectivePermissions.effectivePermissions,
-          customPermissions: customPermissions.map((p) => ({
-            ...p,
-            conditions: p.conditions ? JSON.parse(p.conditions) : null
-          })),
-          storePermissions: storePermissions.map((p) => ({
-            ...p,
-            permissions: JSON.parse(p.permissions),
-            conditions: p.conditions ? JSON.parse(p.conditions) : null
-          })),
-          pagination: {
-            page,
-            limit,
-            total: customPermissionsTotal + storePermissionsTotal,
-            pages: Math.ceil((customPermissionsTotal + storePermissionsTotal) / limit)
-          }
-        };
-      },
-      // Get user effective permissions (helper method)
-      async getUserEffectivePermissions(userId, context) {
-        const { storeId } = context;
-        const user = await prisma.user.findUnique({
-          where: { id: userId },
-          select: { id: true, roles: true }
-        });
-        if (!user) {
-          throw new Error("User not found");
-        }
-        const customPermissions = await prisma.userPermission.findMany({
-          where: {
-            userId,
-            ...storeId ? { storeId } : {}
-          }
-        });
-        let storePermissions = [];
-        if (storeId) {
-          storePermissions = await prisma.storePermission.findMany({
-            where: { userId, storeId }
-          });
-        }
-        const effectivePermissions = [];
-        if (user.roles.includes("admin")) {
-          effectivePermissions.push("*");
-        } else if (user.roles.includes("manager")) {
-          effectivePermissions.push("read", "create", "update", "delete");
-        } else if (user.roles.includes("user")) {
-          effectivePermissions.push("read");
-        }
-        customPermissions.forEach((perm) => {
-          if (perm.grant && (!perm.expiresAt || perm.expiresAt > /* @__PURE__ */ new Date())) {
-            if (!effectivePermissions.includes(perm.action)) {
-              effectivePermissions.push(perm.action);
-            }
-          }
-        });
-        storePermissions.forEach((perm) => {
-          if (!perm.expiresAt || perm.expiresAt > /* @__PURE__ */ new Date()) {
-            const permissions = JSON.parse(perm.permissions);
-            permissions.forEach((action) => {
-              if (!effectivePermissions.includes(action)) {
-                effectivePermissions.push(action);
-              }
-            });
-          }
-        });
-        return {
-          userId,
-          userRoles: user.roles,
-          storeId,
-          effectivePermissions,
-          customPermissions: customPermissions.map((p) => ({
-            ...p,
-            conditions: p.conditions ? JSON.parse(p.conditions) : null
-          })),
-          storePermissions: storePermissions.map((p) => ({
-            ...p,
-            permissions: JSON.parse(p.permissions),
-            conditions: p.conditions ? JSON.parse(p.conditions) : null
-          }))
-        };
-      }
-    };
-  }
-});
-
-// src/services/email/templates/welcome.ts
-var generateWelcomeEmailHTML, generateWelcomeEmailText;
-var init_welcome = __esm({
-  "src/services/email/templates/welcome.ts"() {
-    generateWelcomeEmailHTML = (data) => {
-      return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Bem-vindo ao 25Stock</title>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-        .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>\u{1F389} Bem-vindo ao 25Stock!</h1>
-          <p>Sua conta foi criada com sucesso</p>
-        </div>
-        <div class="content">
-          <h2>Ol\xE1, ${data.name}!</h2>
-          <p>\xC9 um prazer t\xEA-lo conosco no 25Stock, a plataforma completa para gest\xE3o de estoque.</p>
-          <p>Com sua conta, voc\xEA poder\xE1:</p>
-          <ul>
-            <li>Gerenciar produtos e categorias</li>
-            <li>Controlar movimenta\xE7\xF5es de estoque</li>
-            <li>Gerar relat\xF3rios detalhados</li>
-            <li>Colaborar com sua equipe</li>
-            <li>E muito mais!</li>
-          </ul>
-          <p>Clique no bot\xE3o abaixo para acessar sua conta:</p>
-          <a href="${data.loginUrl}" class="button">Acessar Minha Conta</a>
-          <p>Se voc\xEA n\xE3o criou esta conta, pode ignorar este email.</p>
-        </div>
-        <div class="footer">
-          <p>Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.</p>
-          <p>&copy; 2024 25Stock. Todos os direitos reservados.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-    };
-    generateWelcomeEmailText = (data) => {
-      return `
-Bem-vindo ao 25Stock!
-
-Ol\xE1, ${data.name}!
-
-\xC9 um prazer t\xEA-lo conosco no 25Stock, a plataforma completa para gest\xE3o de estoque.
-
-Com sua conta, voc\xEA poder\xE1:
-- Gerenciar produtos e categorias
-- Controlar movimenta\xE7\xF5es de estoque
-- Gerar relat\xF3rios detalhados
-- Colaborar com sua equipe
-- E muito mais!
-
-Acesse sua conta em: ${data.loginUrl}
-
-Se voc\xEA n\xE3o criou esta conta, pode ignorar este email.
-
----
-Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.
-\xA9 2024 25Stock. Todos os direitos reservados.
-  `;
-    };
-  }
-});
-
-// src/services/email/templates/reset_password.ts
-var generatePasswordResetEmailHTML, generatePasswordResetEmailText;
-var init_reset_password = __esm({
-  "src/services/email/templates/reset_password.ts"() {
-    generatePasswordResetEmailHTML = (data) => {
-      return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Redefini\xE7\xE3o de Senha - 25Stock</title>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-        .code-box { background: #fff; border: 2px solid #e74c3c; padding: 20px; text-align: center; border-radius: 10px; margin: 20px 0; }
-        .reset-code { font-size: 32px; font-weight: bold; color: #e74c3c; letter-spacing: 5px; margin: 10px 0; }
-        .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
-        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>\u{1F510} Redefini\xE7\xE3o de Senha</h1>
-          <p>25Stock - Sistema de Gest\xE3o de Estoque</p>
-        </div>
-        <div class="content">
-          <h2>Ol\xE1, ${data.name}!</h2>
-          <p>Recebemos uma solicita\xE7\xE3o para redefinir a senha da sua conta no 25Stock.</p>
-          <p>Use o c\xF3digo abaixo para redefinir sua senha:</p>
-          <div class="code-box">
-            <p style="margin: 0 0 10px 0; color: #666;">Seu c\xF3digo de redefini\xE7\xE3o:</p>
-            <div class="reset-code">${data.resetCode}</div>
-          </div>
-          <div class="warning">
-            <strong>\u26A0\uFE0F Importante:</strong>
-            <ul>
-              <li>Este c\xF3digo expira em ${data.expiresIn}</li>
-              <li>Se voc\xEA n\xE3o solicitou esta redefini\xE7\xE3o, ignore este email</li>
-              <li>Sua senha atual continuar\xE1 funcionando at\xE9 ser alterada</li>
-              <li>N\xE3o compartilhe este c\xF3digo com ningu\xE9m</li>
-            </ul>
-          </div>
-          <p>Digite este c\xF3digo na tela de redefini\xE7\xE3o de senha do aplicativo.</p>
-        </div>
-        <div class="footer">
-          <p>Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.</p>
-          <p>&copy; 2024 25Stock. Todos os direitos reservados.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-    };
-    generatePasswordResetEmailText = (data) => {
-      return `
-Redefini\xE7\xE3o de Senha - 25Stock
-
-Ol\xE1, ${data.name}!
-
-Recebemos uma solicita\xE7\xE3o para redefinir a senha da sua conta no 25Stock.
-
-Use o c\xF3digo abaixo para redefinir sua senha:
-
-SEU C\xD3DIGO DE REDEFINI\xC7\xC3O: ${data.resetCode}
-
-IMPORTANTE:
-- Este c\xF3digo expira em ${data.expiresIn}
-- Se voc\xEA n\xE3o solicitou esta redefini\xE7\xE3o, ignore este email
-- Sua senha atual continuar\xE1 funcionando at\xE9 ser alterada
-- N\xE3o compartilhe este c\xF3digo com ningu\xE9m
-
-Digite este c\xF3digo na tela de redefini\xE7\xE3o de senha do aplicativo.
-
----
-Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.
-\xA9 2024 25Stock. Todos os direitos reservados.
-  `;
-    };
-  }
-});
-
-// src/services/email/templates/stock_low.ts
-var generateStockLowEmailHTML, generateStockLowEmailText;
-var init_stock_low = __esm({
-  "src/services/email/templates/stock_low.ts"() {
-    generateStockLowEmailHTML = (data) => {
-      return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${data.title} - 25Stock</title>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-        .button { display: inline-block; background: #f39c12; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-        .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
-        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>\u26A0\uFE0F ${data.title}</h1>
-          <p>25Stock - Sistema de Gest\xE3o de Estoque</p>
-        </div>
-        <div class="content">
-          <h2>Ol\xE1, ${data.name}!</h2>
-          <div class="warning">
-            <strong>\u{1F6A8} Aten\xE7\xE3o:</strong>
-            <p>${data.message}</p>
-          </div>
-          <p>\xC9 recomendado que voc\xEA fa\xE7a um novo pedido para este produto o quanto antes para evitar a falta de estoque.</p>
-          ${data.actionUrl ? `<a href="${data.actionUrl}" class="button">${data.actionText || "Ver Produto"}</a>` : ""}
-        </div>
-        <div class="footer">
-          <p>Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.</p>
-          <p>&copy; 2024 25Stock. Todos os direitos reservados.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-    };
-    generateStockLowEmailText = (data) => {
-      return `
-${data.title} - 25Stock
-
-Ol\xE1, ${data.name}!
-
-\u{1F6A8} ATEN\xC7\xC3O: ${data.message}
-
-\xC9 recomendado que voc\xEA fa\xE7a um novo pedido para este produto o quanto antes para evitar a falta de estoque.
-
-${data.actionUrl ? `Acesse: ${data.actionUrl}` : ""}
-
----
-Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.
-\xA9 2024 25Stock. Todos os direitos reservados.
-  `;
-    };
-  }
-});
-
-// src/services/email/templates/notification.ts
-var generateNotificationEmailHTML, generateNotificationEmailText;
-var init_notification = __esm({
-  "src/services/email/templates/notification.ts"() {
-    generateNotificationEmailHTML = (data) => {
-      return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${data.title} - 25Stock</title>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-        .button { display: inline-block; background: #3498db; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>\u{1F4E2} ${data.title}</h1>
-          <p>25Stock - Sistema de Gest\xE3o de Estoque</p>
-        </div>
-        <div class="content">
-          <h2>Ol\xE1, ${data.name}!</h2>
-          <p>${data.message}</p>
-          ${data.actionUrl ? `<a href="${data.actionUrl}" class="button">${data.actionText || "Ver Detalhes"}</a>` : ""}
-        </div>
-        <div class="footer">
-          <p>Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.</p>
-          <p>&copy; 2024 25Stock. Todos os direitos reservados.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-    };
-    generateNotificationEmailText = (data) => {
-      return `
-${data.title} - 25Stock
-
-Ol\xE1, ${data.name}!
-
-${data.message}
-
-${data.actionUrl ? `Acesse: ${data.actionUrl}` : ""}
-
----
-Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.
-\xA9 2024 25Stock. Todos os direitos reservados.
-  `;
-    };
-  }
-});
-
-// src/services/email/templates/store_invite.ts
-var generateStoreInviteEmailHTML, generateStoreInviteEmailText;
-var init_store_invite = __esm({
-  "src/services/email/templates/store_invite.ts"() {
-    generateStoreInviteEmailHTML = (data) => {
-      return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Convite para Loja - 25Stock</title>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-        .button { display: inline-block; background: #27ae60; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-        .info { background: #e8f5e8; border: 1px solid #27ae60; padding: 15px; border-radius: 5px; margin: 20px 0; }
-        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>\u{1F3EA} Convite para Loja</h1>
-          <p>25Stock - Sistema de Gest\xE3o de Estoque</p>
-        </div>
-        <div class="content">
-          <h2>Ol\xE1, ${data.name}!</h2>
-          <p><strong>${data.inviterName}</strong> convidou voc\xEA para colaborar na loja <strong>"${data.storeName}"</strong> no 25Stock.</p>
-          <div class="info">
-            <strong>\u{1F4CB} Detalhes do Convite:</strong>
-            <ul>
-              <li><strong>Loja:</strong> ${data.storeName}</li>
-              <li><strong>Convidado por:</strong> ${data.inviterName}</li>
-              <li><strong>Expira em:</strong> ${data.expiresIn}</li>
-            </ul>
-          </div>
-          <p>Clique no bot\xE3o abaixo para aceitar o convite:</p>
-          <a href="${data.acceptUrl}" class="button">Aceitar Convite</a>
-          <p>Se voc\xEA n\xE3o conhece esta pessoa ou n\xE3o deseja participar desta loja, pode ignorar este email.</p>
-        </div>
-        <div class="footer">
-          <p>Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.</p>
-          <p>&copy; 2024 25Stock. Todos os direitos reservados.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-    };
-    generateStoreInviteEmailText = (data) => {
-      return `
-Convite para Loja - 25Stock
-
-Ol\xE1, ${data.name}!
-
-${data.inviterName} convidou voc\xEA para colaborar na loja "${data.storeName}" no 25Stock.
-
-Detalhes do Convite:
-- Loja: ${data.storeName}
-- Convidado por: ${data.inviterName}
-- Expira em: ${data.expiresIn}
-
-Aceite o convite em: ${data.acceptUrl}
-
-Se voc\xEA n\xE3o conhece esta pessoa ou n\xE3o deseja participar desta loja, pode ignorar este email.
-
----
-Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.
-\xA9 2024 25Stock. Todos os direitos reservados.
-  `;
-    };
-  }
-});
-
-// src/services/email/templates/email_verification.ts
-var generateEmailVerificationHTML, generateEmailVerificationText;
-var init_email_verification = __esm({
-  "src/services/email/templates/email_verification.ts"() {
-    generateEmailVerificationHTML = (data) => {
-      return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Confirma\xE7\xE3o de Email - 25Stock</title>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-        .code-container { background: #fff; border: 2px solid #667eea; padding: 20px; border-radius: 10px; text-align: center; margin: 20px 0; }
-        .verification-code { font-size: 32px; font-weight: bold; color: #667eea; letter-spacing: 8px; margin: 10px 0; }
-        .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-        .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
-        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>\u{1F510} Confirma\xE7\xE3o de Email</h1>
-          <p>25Stock - Sistema de Gest\xE3o de Estoque</p>
-        </div>
-        <div class="content">
-          <h2>Ol\xE1, ${data.name}!</h2>
-          <p>Bem-vindo ao 25Stock! Para confirmar sua conta, use o c\xF3digo de verifica\xE7\xE3o abaixo:</p>
-          
-          <div class="code-container">
-            <p style="margin: 0 0 10px 0; font-size: 18px; color: #666;">Seu c\xF3digo de verifica\xE7\xE3o \xE9:</p>
-            <div class="verification-code">${data.verificationCode}</div>
-            <p style="margin: 10px 0 0 0; font-size: 14px; color: #666;">Este c\xF3digo expira em ${data.expiresIn}</p>
-          </div>
-
-          <p>Digite este c\xF3digo no aplicativo para confirmar seu email e ativar sua conta.</p>
-          
-          <div class="warning">
-            <strong>\u26A0\uFE0F Importante:</strong>
-            <ul>
-              <li>Este c\xF3digo \xE9 v\xE1lido por ${data.expiresIn}</li>
-              <li>N\xE3o compartilhe este c\xF3digo com ningu\xE9m</li>
-              <li>Se voc\xEA n\xE3o solicitou esta conta, ignore este email</li>
-            </ul>
-          </div>
-
-          <p>Se voc\xEA n\xE3o conseguir usar o c\xF3digo, pode solicitar um novo c\xF3digo de verifica\xE7\xE3o no aplicativo.</p>
-        </div>
-        <div class="footer">
-          <p>Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.</p>
-          <p>&copy; 2024 25Stock. Todos os direitos reservados.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-    };
-    generateEmailVerificationText = (data) => {
-      return `
-Confirma\xE7\xE3o de Email - 25Stock
-
-Ol\xE1, ${data.name}!
-
-Bem-vindo ao 25Stock! Para confirmar sua conta, use o c\xF3digo de verifica\xE7\xE3o abaixo:
-
-C\xD3DIGO DE VERIFICA\xC7\xC3O: ${data.verificationCode}
-
-Este c\xF3digo expira em ${data.expiresIn}
-
-Digite este c\xF3digo no aplicativo para confirmar seu email e ativar sua conta.
-
-IMPORTANTE:
-- Este c\xF3digo \xE9 v\xE1lido por ${data.expiresIn}
-- N\xE3o compartilhe este c\xF3digo com ningu\xE9m
-- Se voc\xEA n\xE3o solicitou esta conta, ignore este email
-
-Se voc\xEA n\xE3o conseguir usar o c\xF3digo, pode solicitar um novo c\xF3digo de verifica\xE7\xE3o no aplicativo.
-
----
-Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.
-\xA9 2024 25Stock. Todos os direitos reservados.
-  `;
-    };
-  }
-});
-
-// src/services/email/templates/index.ts
-var init_templates = __esm({
-  "src/services/email/templates/index.ts"() {
-    init_welcome();
-    init_reset_password();
-    init_stock_low();
-    init_notification();
-    init_store_invite();
-    init_email_verification();
-  }
-});
-
-// src/services/email/email.service.ts
-var import_resend, resend, EmailService;
-var init_email_service = __esm({
-  "src/services/email/email.service.ts"() {
-    import_resend = require("resend");
-    init_templates();
-    resend = new import_resend.Resend(process.env.RESEND_API_KEY);
-    EmailService = {
-      /**
-       * Envia email de boas-vindas para novos usuários
-       */
-      sendWelcomeEmail: async (data) => {
-        try {
-          const html = generateWelcomeEmailHTML(data);
-          const text = generateWelcomeEmailText(data);
-          const result = await resend.emails.send({
-            from: process.env.FROM_EMAIL || "noreply@25stock.com",
-            to: data.email,
-            subject: `Bem-vindo ao 25Stock, ${data.name}!`,
-            html,
-            text
-          });
-          console.log("Welcome email sent:", result.data?.id);
-          return true;
-        } catch (error) {
-          console.error("Error sending welcome email:", error);
-          return false;
-        }
-      },
-      /**
-       * Envia email de redefinição de senha
-       */
-      sendPasswordResetEmail: async (data) => {
-        try {
-          const html = generatePasswordResetEmailHTML(data);
-          const text = generatePasswordResetEmailText(data);
-          const result = await resend.emails.send({
-            from: process.env.FROM_EMAIL || "noreply@25stock.com",
-            to: data.email,
-            subject: "Redefini\xE7\xE3o de senha - 25Stock",
-            html,
-            text
-          });
-          console.log("Password reset email sent:", result.data?.id);
-          return true;
-        } catch (error) {
-          console.error("Error sending password reset email:", error);
-          return false;
-        }
-      },
-      /**
-       * Envia email de notificação
-       */
-      sendNotificationEmail: async (data) => {
-        try {
-          const html = generateNotificationEmailHTML(data);
-          const text = generateNotificationEmailText(data);
-          const result = await resend.emails.send({
-            from: process.env.FROM_EMAIL || "noreply@25stock.com",
-            to: data.email,
-            subject: `Notifica\xE7\xE3o - ${data.title}`,
-            html,
-            text
-          });
-          console.log("Notification email sent:", result.data?.id);
-          return true;
-        } catch (error) {
-          console.error("Error sending notification email:", error);
-          return false;
-        }
-      },
-      /**
-       * Envia convite para loja
-       */
-      sendStoreInviteEmail: async (data) => {
-        try {
-          const html = generateStoreInviteEmailHTML(data);
-          const text = generateStoreInviteEmailText(data);
-          const result = await resend.emails.send({
-            from: process.env.FROM_EMAIL || "noreply@25stock.com",
-            to: data.email,
-            subject: `Convite para loja ${data.storeName} - 25Stock`,
-            html,
-            text
-          });
-          console.log("Store invite email sent:", result.data?.id);
-          return true;
-        } catch (error) {
-          console.error("Error sending store invite email:", error);
-          return false;
-        }
-      },
-      /**
-       * Envia email de notificação de estoque baixo
-       */
-      sendStockLowEmail: async (data) => {
-        try {
-          const html = generateStockLowEmailHTML(data);
-          const text = generateStockLowEmailText(data);
-          const result = await resend.emails.send({
-            from: process.env.FROM_EMAIL || "noreply@25stock.com",
-            to: data.email,
-            subject: `\u26A0\uFE0F ${data.title} - 25Stock`,
-            html,
-            text
-          });
-          console.log("Stock low email sent:", result.data?.id);
-          return true;
-        } catch (error) {
-          console.error("Error sending stock low email:", error);
-          return false;
-        }
-      },
-      /**
-       * Envia email de verificação com código de 6 dígitos
-       */
-      sendEmailVerification: async (data) => {
-        try {
-          const html = generateEmailVerificationHTML(data);
-          const text = generateEmailVerificationText(data);
-          const result = await resend.emails.send({
-            from: process.env.FROM_EMAIL || "noreply@25stock.com",
-            to: data.email,
-            subject: `Confirma\xE7\xE3o de Email - 25Stock`,
-            html,
-            text
-          });
-          console.log("Email verification sent:", result.data?.id);
-          return true;
-        } catch (error) {
-          console.error("Error sending email verification:", error);
-          return false;
-        }
-      },
-      /**
-       * Envia email genérico
-       */
-      sendEmail: async (template) => {
-        try {
-          const result = await resend.emails.send({
-            from: process.env.FROM_EMAIL || "noreply@25stock.com",
-            to: template.to,
-            subject: template.subject,
-            html: template.html,
-            text: template.text
-          });
-          console.log("Email sent:", result.data?.id);
-          return true;
-        } catch (error) {
-          console.error("Error sending email:", error);
-          return false;
-        }
-      }
-    };
-  }
-});
-
-// src/features/auth/commands/auth.commands.ts
-var import_bcryptjs2, import_jsonwebtoken, import_crypto, import_google_auth_library, AuthCommands;
-var init_auth_commands = __esm({
-  "src/features/auth/commands/auth.commands.ts"() {
-    import_bcryptjs2 = __toESM(require("bcryptjs"));
-    import_jsonwebtoken = __toESM(require("jsonwebtoken"));
-    import_crypto = __toESM(require("crypto"));
-    init_prisma();
-    init_auth_queries();
-    init_email_service();
-    import_google_auth_library = require("google-auth-library");
-    AuthCommands = {
-      async register(data) {
-        const { name, email, password, phone } = data;
-        const existingUser = await db.user.findUnique({
-          where: { email }
-        });
-        if (existingUser) {
-          throw new Error("User already exists with this email");
-        }
-        const hashedPassword = await import_bcryptjs2.default.hash(password, 12);
-        const emailVerificationCode = AuthCommands.generateVerificationCode();
-        const emailVerificationCodeExpires = new Date(Date.now() + 15 * 60 * 1e3);
-        const emailVerificationToken = AuthCommands.generateVerificationToken();
-        const user = await db.user.create({
-          data: {
-            name,
-            email,
-            phone,
-            password: hashedPassword,
-            emailVerificationToken,
-            emailVerificationCode,
-            emailVerificationCodeExpires,
-            emailVerified: false
-          },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            emailVerified: true,
-            createdAt: true
-          }
-        });
-        try {
-          await EmailService.sendEmailVerification({
-            name,
-            email,
-            verificationCode: emailVerificationCode,
-            expiresIn: "15 minutos"
-          });
-        } catch (error) {
-          console.error("Failed to send verification email:", error);
-        }
-        return user;
-      },
-      async login(data) {
-        const { email, password } = data;
-        const user = await db.user.findUnique({
-          where: { email, status: true }
-        });
-        if (!user) {
-          throw new Error("Invalid credentials");
-        }
-        const isValidPassword = await import_bcryptjs2.default.compare(password, user.password);
-        if (!isValidPassword) {
-          throw new Error("Invalid credentials");
-        }
-        if (!user.emailVerified) {
-          throw new Error("Email verification required");
-        }
-        await db.user.update({
-          where: { id: user.id },
-          data: { lastLoginAt: /* @__PURE__ */ new Date() }
-        });
-        const store = await AuthQueries.getStoreByOwner(user.id);
-        const token = AuthCommands.generateJWT({
-          userId: user.id,
-          email: user.email,
-          roles: user.roles
-        });
-        return {
-          user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            emailVerified: user.emailVerified,
-            lastLoginAt: /* @__PURE__ */ new Date()
-          },
-          store: store || void 0,
-          token
-        };
-      },
-      async forgotPassword(email) {
-        const user = await db.user.findUnique({
-          where: { email, status: true }
-        });
-        if (!user) {
-          throw new Error("User not found");
-        }
-        const resetCode = AuthCommands.generateVerificationCode();
-        const resetExpires = new Date(Date.now() + 15 * 60 * 1e3);
-        await db.user.update({
-          where: { id: user.id },
-          data: {
-            resetPasswordCode: resetCode,
-            resetPasswordExpires: resetExpires
-          }
-        });
-        try {
-          await EmailService.sendPasswordResetEmail({
-            name: user.name,
-            email: user.email,
-            resetCode,
-            expiresIn: "15 minutos"
-          });
-        } catch (error) {
-          console.error("Failed to send reset password email:", error);
-        }
-        return { message: "Reset password code sent to email" };
-      },
-      async verifyResetCode(email, code) {
-        const user = await db.user.findFirst({
-          where: {
-            email,
-            resetPasswordCode: code,
-            resetPasswordExpires: {
-              gt: /* @__PURE__ */ new Date()
-            }
-          }
-        });
-        if (!user) {
-          throw new Error("Invalid or expired reset code");
-        }
-        if (user.resetPasswordExpires && user.resetPasswordExpires < /* @__PURE__ */ new Date()) {
-          throw new Error("Reset code expired");
-        }
-        return { message: "Reset code verified successfully" };
-      },
-      async resetPassword(email, code, newPassword) {
-        const user = await db.user.findFirst({
-          where: {
-            email,
-            resetPasswordCode: code,
-            resetPasswordExpires: {
-              gt: /* @__PURE__ */ new Date()
-            }
-          }
-        });
-        if (!user) {
-          throw new Error("Invalid or expired reset code");
-        }
-        if (user.resetPasswordExpires && user.resetPasswordExpires < /* @__PURE__ */ new Date()) {
-          throw new Error("Reset code expired");
-        }
-        const hashedPassword = await import_bcryptjs2.default.hash(newPassword, 12);
-        await db.user.update({
-          where: { id: user.id },
-          data: {
-            password: hashedPassword,
-            resetPasswordCode: null,
-            resetPasswordExpires: null
-          }
-        });
-        return { message: "Password reset successfully" };
-      },
-      async verifyEmail(token) {
-        const user = await db.user.findFirst({
-          where: {
-            emailVerificationToken: token,
-            emailVerified: false
-          }
-        });
-        if (!user) {
-          throw new Error("Invalid verification token");
-        }
-        await db.user.update({
-          where: { id: user.id },
-          data: {
-            emailVerified: true,
-            emailVerificationToken: null
-          }
-        });
-        return { message: "Email verified successfully" };
-      },
-      async verifyEmailCode(email, code) {
-        const user = await db.user.findFirst({
-          where: {
-            email,
-            emailVerificationCode: code,
-            emailVerificationCodeExpires: {
-              gt: /* @__PURE__ */ new Date()
-            },
-            emailVerified: false
-          }
-        });
-        if (!user) {
-          throw new Error("Invalid verification code");
-        }
-        if (user.emailVerificationCodeExpires && user.emailVerificationCodeExpires < /* @__PURE__ */ new Date()) {
-          throw new Error("Verification code expired");
-        }
-        const updatedUser = await db.user.update({
-          where: { id: user.id },
-          data: {
-            emailVerified: true,
-            emailVerificationToken: null,
-            emailVerificationCode: null,
-            emailVerificationCodeExpires: null
-          },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            emailVerified: true,
-            createdAt: true
-          }
-        });
-        return updatedUser;
-      },
-      async resendVerification(email) {
-        const user = await db.user.findUnique({
-          where: { email, status: true }
-        });
-        if (!user) {
-          throw new Error("User not found");
-        }
-        if (user.emailVerified) {
-          throw new Error("Email already verified");
-        }
-        const emailVerificationCode = AuthCommands.generateVerificationCode();
-        const emailVerificationCodeExpires = new Date(Date.now() + 15 * 60 * 1e3);
-        const emailVerificationToken = AuthCommands.generateVerificationToken();
-        await db.user.update({
-          where: { id: user.id },
-          data: {
-            emailVerificationCode,
-            emailVerificationCodeExpires,
-            emailVerificationToken
-          }
-        });
-        try {
-          await EmailService.sendEmailVerification({
-            name: user.name,
-            email: user.email,
-            verificationCode: emailVerificationCode,
-            expiresIn: "15 minutos"
-          });
-        } catch (error) {
-          console.error("Failed to send verification email:", error);
-        }
-        return { message: "Verification email sent" };
-      },
-      async refreshToken(userId) {
-        const user = await db.user.findUnique({
-          where: { id: userId, status: true }
-        });
-        if (!user) {
-          throw new Error("User not found");
-        }
-        const token = AuthCommands.generateJWT({
-          userId: user.id,
-          email: user.email,
-          roles: user.roles
-        });
-        return { token, message: "Token refreshed successfully" };
-      },
-      // Helper methods
-      generateJWT(payload) {
-        const secret = process.env.JWT_SECRET || "your-secret-key";
-        return import_jsonwebtoken.default.sign(payload, secret, { expiresIn: "7d" });
-      },
-      generateResetToken() {
-        return import_crypto.default.randomBytes(32).toString("hex");
-      },
-      generateVerificationToken() {
-        return import_crypto.default.randomBytes(32).toString("hex");
-      },
-      generateVerificationCode() {
-        return Math.floor(1e5 + Math.random() * 9e5).toString();
-      },
-      // Verify JWT token
-      verifyToken(token) {
-        const secret = process.env.JWT_SECRET || "your-secret-key";
-        return import_jsonwebtoken.default.verify(token, secret);
-      },
-      // Extract token from Authorization header
-      extractToken(authHeader) {
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-          throw new Error("Invalid authorization header");
-        }
-        return authHeader.substring(7);
-      },
-      async updateProfile(userId, data) {
-        const { name, email } = data;
-        if (email) {
-          const existingUser = await db.user.findFirst({
-            where: {
-              email,
-              id: { not: userId }
-            }
-          });
-          if (existingUser) {
-            throw new Error("Email already exists");
-          }
-        }
-        const updateData = {};
-        if (name) updateData.name = name;
-        if (email) {
-          updateData.email = email;
-          updateData.emailVerified = false;
-          updateData.emailVerificationToken = AuthCommands.generateVerificationToken();
-        }
-        const user = await db.user.update({
-          where: { id: userId },
-          data: updateData,
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            emailVerified: true,
-            status: true,
-            roles: true,
-            lastLoginAt: true,
-            createdAt: true,
-            updatedAt: true
-          }
-        });
-        return user;
-      },
-      async googleLogin(token) {
-        if (!process.env.GOOGLE_CLIENT_ID) {
-          throw new Error("Google OAuth configuration missing");
-        }
-        const client = new import_google_auth_library.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-        try {
-          const ticket = await client.verifyIdToken({
-            idToken: token,
-            audience: process.env.GOOGLE_CLIENT_ID
-          });
-          const payload = ticket.getPayload();
-          if (!payload || !payload.email || !payload.name) {
-            throw new Error("Invalid Google token payload");
-          }
-          let user = await db.user.findUnique({
-            where: { email: payload.email }
-          });
-          if (!user) {
-            user = await db.user.create({
-              data: {
-                name: payload.name,
-                email: payload.email,
-                emailVerified: true,
-                // Google já verifica o email
-                status: true,
-                roles: ["USER"],
-                // Role padrão
-                phone: "",
-                // Campo obrigatório mas não temos do Google
-                password: "",
-                // Campo obrigatório mas não usamos para login Google
-                lastLoginAt: /* @__PURE__ */ new Date(),
-                // User preferences defaults
-                theme: "light",
-                language: "pt-BR",
-                currency: "BRL",
-                timezone: "America/Sao_Paulo",
-                dateFormat: "DD/MM/YYYY",
-                timeFormat: "24h",
-                dashboard: null
-              }
-            });
-          } else {
-            await db.user.update({
-              where: { id: user.id },
-              data: { lastLoginAt: /* @__PURE__ */ new Date() }
-            });
-          }
-          if (!user.status) {
-            throw new Error("User account is disabled");
-          }
-          const store = await AuthQueries.getStoreByOwner(user.id);
-          const jwtToken = AuthCommands.generateJWT({
-            userId: user.id,
-            email: user.email,
-            roles: user.roles
-          });
-          return {
-            user: {
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              emailVerified: user.emailVerified,
-              lastLoginAt: user.lastLoginAt
-            },
-            store: store || void 0,
-            token: jwtToken
-          };
-        } catch (error) {
-          console.error("Google Login Error:", error);
-          if (error.message === "Google OAuth configuration missing") {
-            throw new Error("Google OAuth configuration missing");
-          }
-          if (error.message === "Invalid Google token payload") {
-            throw new Error("Invalid Google token");
-          }
-          if (error.message === "User account is disabled") {
-            throw new Error("User account is disabled");
-          }
-          throw new Error("Invalid Google token");
-        }
-      }
-    };
-  }
-});
-
-// src/middlewares/auth.middleware.ts
-var auth_middleware_exports = {};
-__export(auth_middleware_exports, {
-  authMiddleware: () => authMiddleware,
-  optionalAuthMiddleware: () => optionalAuthMiddleware
-});
-var authMiddleware, optionalAuthMiddleware;
-var init_auth_middleware = __esm({
-  "src/middlewares/auth.middleware.ts"() {
-    init_auth_commands();
-    init_auth_queries();
-    authMiddleware = async (request, reply) => {
-      try {
-        const authHeader = request.headers.authorization;
-        if (!authHeader) {
-          return reply.status(401).send({
-            error: "Authorization header required"
-          });
-        }
-        const token = AuthCommands.extractToken(authHeader);
-        const payload = AuthCommands.verifyToken(token);
-        const user = await AuthQueries.getUserProfile(payload.userId);
-        if (!user || !user.status) {
-          return reply.status(401).send({
-            error: "User not found or inactive"
-          });
-        }
-        request.user = user;
-        request.token = token;
-        return;
-      } catch (error) {
-        request.log.error(error);
-        if (error.message === "Invalid authorization header") {
-          return reply.status(401).send({
-            error: "Invalid authorization header format"
-          });
-        }
-        if (error.name === "JsonWebTokenError") {
-          return reply.status(401).send({
-            error: "Invalid token"
-          });
-        }
-        if (error.name === "TokenExpiredError") {
-          return reply.status(401).send({
-            error: "Token expired"
-          });
-        }
-        return reply.status(500).send({
-          error: "Internal server error"
-        });
-      }
-    };
-    optionalAuthMiddleware = async (request, reply) => {
-      try {
-        const authHeader = request.headers.authorization;
-        if (!authHeader) {
-          return;
-        }
-        const token = AuthCommands.extractToken(authHeader);
-        const payload = AuthCommands.verifyToken(token);
-        const user = await AuthQueries.getUserProfile(payload.userId);
-        if (user && user.status) {
-          request.user = user;
-          request.token = token;
-        }
-        return;
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Unknown error";
-        request.log.warn(`Optional auth failed: ${errorMessage}`);
-        return;
-      }
-    };
-  }
-});
-
-// src/server.ts
-var import_fastify = __toESM(require("fastify"));
-var import_cors = __toESM(require("@fastify/cors"));
-init_prisma();
 
 // src/plugins/push.ts
 var import_web_push = __toESM(require("web-push"));
@@ -1734,7 +135,6 @@ var pushPlugin = async (fastify2) => {
 
 // src/features/user/commands/user.commands.ts
 var import_bcryptjs = __toESM(require("bcryptjs"));
-init_prisma();
 var UserCommands = {
   async create(data) {
     const existingUser = await db.user.findUnique({
@@ -1864,7 +264,7 @@ var PaginationUtils = {
   /**
    * Executa uma consulta paginada com Prisma
    */
-  async paginate(prisma2, model2, options) {
+  async paginate(prisma2, model, options) {
     const {
       where = {},
       select,
@@ -1887,8 +287,8 @@ var PaginationUtils = {
       queryOptions.include = include;
     }
     const [data, total] = await Promise.all([
-      prisma2[model2].findMany(queryOptions),
-      prisma2[model2].count({ where })
+      prisma2[model].findMany(queryOptions),
+      prisma2[model].count({ where })
     ]);
     return {
       data,
@@ -1898,10 +298,10 @@ var PaginationUtils = {
   /**
    * Cria um helper para queries específicas com paginação
    */
-  createPaginatedQuery(model2, defaultOptions = {}) {
+  createPaginatedQuery(model, defaultOptions = {}) {
     return async (prisma2, params) => {
       const { where, ...paginationParams } = params;
-      return this.paginate(prisma2, model2, {
+      return this.paginate(prisma2, model, {
         ...defaultOptions,
         where: where || {},
         params: paginationParams
@@ -1921,7 +321,6 @@ var PaginationUtils = {
 };
 
 // src/features/user/querys/user.query.ts
-init_prisma();
 var UserQueries = {
   async getById(id) {
     const user = await db.user.findUnique({
@@ -2502,12 +901,1459 @@ async function UserRoutes(fastify2) {
   });
 }
 
-// src/features/auth/auth.controller.ts
-init_auth_commands();
-init_auth_queries();
+// src/features/auth/commands/auth.commands.ts
+var import_bcryptjs2 = __toESM(require("bcryptjs"));
+var import_jsonwebtoken = __toESM(require("jsonwebtoken"));
+var import_crypto = __toESM(require("crypto"));
+
+// src/features/auth/queries/auth.queries.ts
+var AuthQueries = {
+  async getById(id) {
+    const user = await prisma.user.findUnique({
+      where: { id, status: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        emailVerified: true,
+        status: true,
+        roles: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
+    return user;
+  },
+  async getByEmail(email) {
+    const user = await prisma.user.findUnique({
+      where: { email, status: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        emailVerified: true,
+        status: true,
+        roles: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
+    return user;
+  },
+  async getByResetToken(token) {
+    const user = await prisma.user.findFirst({
+      where: {
+        resetPasswordToken: token,
+        resetPasswordExpires: {
+          gt: /* @__PURE__ */ new Date()
+        },
+        status: true
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        emailVerified: true,
+        status: true,
+        roles: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
+    return user;
+  },
+  async getByVerificationToken(token) {
+    const user = await prisma.user.findFirst({
+      where: {
+        emailVerificationToken: token,
+        emailVerified: false,
+        status: true
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        emailVerified: true,
+        status: true,
+        roles: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
+    return user;
+  },
+  async getActiveUsers() {
+    const users = await prisma.user.findMany({
+      where: { status: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        emailVerified: true,
+        status: true,
+        roles: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true
+      },
+      orderBy: { createdAt: "desc" }
+    });
+    return users;
+  },
+  async getVerifiedUsers() {
+    const users = await prisma.user.findMany({
+      where: {
+        status: true,
+        emailVerified: true
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        emailVerified: true,
+        status: true,
+        roles: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true
+      },
+      orderBy: { createdAt: "desc" }
+    });
+    return users;
+  },
+  async getUnverifiedUsers() {
+    const users = await prisma.user.findMany({
+      where: {
+        status: true,
+        emailVerified: false
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        emailVerified: true,
+        status: true,
+        roles: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true
+      },
+      orderBy: { createdAt: "desc" }
+    });
+    return users;
+  },
+  async getUserStats() {
+    const [
+      totalUsers,
+      activeUsers,
+      verifiedUsers,
+      unverifiedUsers,
+      recentLogins
+    ] = await Promise.all([
+      this.prisma.user.count(),
+      this.prisma.user.count({ where: { status: true } }),
+      this.prisma.user.count({
+        where: {
+          status: true,
+          emailVerified: true
+        }
+      }),
+      this.prisma.user.count({
+        where: {
+          status: true,
+          emailVerified: false
+        }
+      }),
+      this.prisma.user.count({
+        where: {
+          status: true,
+          lastLoginAt: {
+            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1e3)
+            // Last 7 days
+          }
+        }
+      })
+    ]);
+    return {
+      totalUsers,
+      activeUsers,
+      verifiedUsers,
+      unverifiedUsers,
+      recentLogins
+    };
+  },
+  async searchUsers(searchTerm, limit = 10) {
+    const users = await prisma.user.findMany({
+      where: {
+        status: true,
+        OR: [
+          { name: { contains: searchTerm, mode: "insensitive" } },
+          { email: { contains: searchTerm, mode: "insensitive" } }
+        ]
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        emailVerified: true,
+        status: true,
+        roles: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true
+      },
+      take: limit,
+      orderBy: { createdAt: "desc" }
+    });
+    return users;
+  },
+  async getUsersWithPendingVerification() {
+    const users = await prisma.user.findMany({
+      where: {
+        status: true,
+        emailVerified: false,
+        emailVerificationToken: {
+          not: null
+        }
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        emailVerified: true,
+        emailVerificationToken: true,
+        createdAt: true
+      },
+      orderBy: { createdAt: "desc" }
+    });
+    return users;
+  },
+  async getUsersWithPendingReset() {
+    const users = await prisma.user.findMany({
+      where: {
+        status: true,
+        resetPasswordToken: {
+          not: null
+        },
+        resetPasswordExpires: {
+          gt: /* @__PURE__ */ new Date()
+        }
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        resetPasswordToken: true,
+        resetPasswordExpires: true,
+        createdAt: true
+      },
+      orderBy: { createdAt: "desc" }
+    });
+    return users;
+  },
+  // Verify if user exists by email
+  async userExists(email) {
+    const count = await prisma.user.count({
+      where: { email }
+    });
+    return count > 0;
+  },
+  // Verify if email is already verified
+  async isEmailVerified(email) {
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: { emailVerified: true }
+    });
+    return user?.emailVerified || false;
+  },
+  // Get user profile for authenticated user
+  async getUserProfile(userId) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId, status: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        emailVerified: true,
+        status: true,
+        roles: true,
+        lastLoginAt: true,
+        phone: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return user;
+  },
+  // Get store owned by user
+  async getStoreByOwner(userId) {
+    const store = await prisma.store.findFirst({
+      where: {
+        ownerId: userId,
+        status: true
+      },
+      select: {
+        id: true,
+        name: true,
+        cnpj: true,
+        email: true,
+        phone: true,
+        status: true,
+        cep: true,
+        city: true,
+        state: true,
+        address: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
+    return store;
+  },
+  // Get user profile permissions
+  async getProfilePermissions(userId, filters) {
+    const { storeId, active, page = 1, limit = 10 } = filters;
+    const user = await prisma.user.findUnique({
+      where: { id: userId, status: true },
+      select: { id: true, roles: true }
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    const customPermissionsWhere = { userId };
+    if (storeId) customPermissionsWhere.storeId = storeId;
+    if (active !== void 0) {
+      if (active) {
+        customPermissionsWhere.OR = [
+          { expiresAt: null },
+          { expiresAt: { gt: /* @__PURE__ */ new Date() } }
+        ];
+      } else {
+        customPermissionsWhere.expiresAt = { lte: /* @__PURE__ */ new Date() };
+      }
+    }
+    const [customPermissions, customPermissionsTotal] = await Promise.all([
+      prisma.userPermission.findMany({
+        where: customPermissionsWhere,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: {
+          creator: {
+            select: { id: true, name: true, email: true }
+          }
+        }
+      }),
+      prisma.userPermission.count({ where: customPermissionsWhere })
+    ]);
+    const storePermissionsWhere = { userId };
+    if (storeId) storePermissionsWhere.storeId = storeId;
+    if (active !== void 0) {
+      if (active) {
+        storePermissionsWhere.OR = [
+          { expiresAt: null },
+          { expiresAt: { gt: /* @__PURE__ */ new Date() } }
+        ];
+      } else {
+        storePermissionsWhere.expiresAt = { lte: /* @__PURE__ */ new Date() };
+      }
+    }
+    const [storePermissions, storePermissionsTotal] = await Promise.all([
+      prisma.storePermission.findMany({
+        where: storePermissionsWhere,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: {
+          store: {
+            select: { id: true, name: true }
+          },
+          creator: {
+            select: { id: true, name: true, email: true }
+          }
+        }
+      }),
+      prisma.storePermission.count({ where: storePermissionsWhere })
+    ]);
+    const effectivePermissions = await this.getUserEffectivePermissions(userId, { storeId });
+    return {
+      userId: user.id,
+      userRoles: user.roles,
+      storeId: storeId || null,
+      effectivePermissions: effectivePermissions.effectivePermissions,
+      customPermissions: customPermissions.map((p) => ({
+        ...p,
+        conditions: p.conditions ? JSON.parse(p.conditions) : null
+      })),
+      storePermissions: storePermissions.map((p) => ({
+        ...p,
+        permissions: JSON.parse(p.permissions),
+        conditions: p.conditions ? JSON.parse(p.conditions) : null
+      })),
+      pagination: {
+        page,
+        limit,
+        total: customPermissionsTotal + storePermissionsTotal,
+        pages: Math.ceil((customPermissionsTotal + storePermissionsTotal) / limit)
+      }
+    };
+  },
+  // Get user effective permissions (helper method)
+  async getUserEffectivePermissions(userId, context) {
+    const { storeId } = context;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, roles: true }
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    const customPermissions = await prisma.userPermission.findMany({
+      where: {
+        userId,
+        ...storeId ? { storeId } : {}
+      }
+    });
+    let storePermissions = [];
+    if (storeId) {
+      storePermissions = await prisma.storePermission.findMany({
+        where: { userId, storeId }
+      });
+    }
+    const effectivePermissions = [];
+    if (user.roles.includes("admin")) {
+      effectivePermissions.push("*");
+    } else if (user.roles.includes("manager")) {
+      effectivePermissions.push("read", "create", "update", "delete");
+    } else if (user.roles.includes("user")) {
+      effectivePermissions.push("read");
+    }
+    customPermissions.forEach((perm) => {
+      if (perm.grant && (!perm.expiresAt || perm.expiresAt > /* @__PURE__ */ new Date())) {
+        if (!effectivePermissions.includes(perm.action)) {
+          effectivePermissions.push(perm.action);
+        }
+      }
+    });
+    storePermissions.forEach((perm) => {
+      if (!perm.expiresAt || perm.expiresAt > /* @__PURE__ */ new Date()) {
+        const permissions = JSON.parse(perm.permissions);
+        permissions.forEach((action) => {
+          if (!effectivePermissions.includes(action)) {
+            effectivePermissions.push(action);
+          }
+        });
+      }
+    });
+    return {
+      userId,
+      userRoles: user.roles,
+      storeId,
+      effectivePermissions,
+      customPermissions: customPermissions.map((p) => ({
+        ...p,
+        conditions: p.conditions ? JSON.parse(p.conditions) : null
+      })),
+      storePermissions: storePermissions.map((p) => ({
+        ...p,
+        permissions: JSON.parse(p.permissions),
+        conditions: p.conditions ? JSON.parse(p.conditions) : null
+      }))
+    };
+  }
+};
+
+// src/services/email/email.service.ts
+var import_resend = require("resend");
+
+// src/services/email/templates/welcome.ts
+var generateWelcomeEmailHTML = (data) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Bem-vindo ao 25Stock</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+        .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>\u{1F389} Bem-vindo ao 25Stock!</h1>
+          <p>Sua conta foi criada com sucesso</p>
+        </div>
+        <div class="content">
+          <h2>Ol\xE1, ${data.name}!</h2>
+          <p>\xC9 um prazer t\xEA-lo conosco no 25Stock, a plataforma completa para gest\xE3o de estoque.</p>
+          <p>Com sua conta, voc\xEA poder\xE1:</p>
+          <ul>
+            <li>Gerenciar produtos e categorias</li>
+            <li>Controlar movimenta\xE7\xF5es de estoque</li>
+            <li>Gerar relat\xF3rios detalhados</li>
+            <li>Colaborar com sua equipe</li>
+            <li>E muito mais!</li>
+          </ul>
+          <p>Clique no bot\xE3o abaixo para acessar sua conta:</p>
+          <a href="${data.loginUrl}" class="button">Acessar Minha Conta</a>
+          <p>Se voc\xEA n\xE3o criou esta conta, pode ignorar este email.</p>
+        </div>
+        <div class="footer">
+          <p>Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.</p>
+          <p>&copy; 2024 25Stock. Todos os direitos reservados.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+var generateWelcomeEmailText = (data) => {
+  return `
+Bem-vindo ao 25Stock!
+
+Ol\xE1, ${data.name}!
+
+\xC9 um prazer t\xEA-lo conosco no 25Stock, a plataforma completa para gest\xE3o de estoque.
+
+Com sua conta, voc\xEA poder\xE1:
+- Gerenciar produtos e categorias
+- Controlar movimenta\xE7\xF5es de estoque
+- Gerar relat\xF3rios detalhados
+- Colaborar com sua equipe
+- E muito mais!
+
+Acesse sua conta em: ${data.loginUrl}
+
+Se voc\xEA n\xE3o criou esta conta, pode ignorar este email.
+
+---
+Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.
+\xA9 2024 25Stock. Todos os direitos reservados.
+  `;
+};
+
+// src/services/email/templates/reset_password.ts
+var generatePasswordResetEmailHTML = (data) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Redefini\xE7\xE3o de Senha - 25Stock</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+        .code-box { background: #fff; border: 2px solid #e74c3c; padding: 20px; text-align: center; border-radius: 10px; margin: 20px 0; }
+        .reset-code { font-size: 32px; font-weight: bold; color: #e74c3c; letter-spacing: 5px; margin: 10px 0; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>\u{1F510} Redefini\xE7\xE3o de Senha</h1>
+          <p>25Stock - Sistema de Gest\xE3o de Estoque</p>
+        </div>
+        <div class="content">
+          <h2>Ol\xE1, ${data.name}!</h2>
+          <p>Recebemos uma solicita\xE7\xE3o para redefinir a senha da sua conta no 25Stock.</p>
+          <p>Use o c\xF3digo abaixo para redefinir sua senha:</p>
+          <div class="code-box">
+            <p style="margin: 0 0 10px 0; color: #666;">Seu c\xF3digo de redefini\xE7\xE3o:</p>
+            <div class="reset-code">${data.resetCode}</div>
+          </div>
+          <div class="warning">
+            <strong>\u26A0\uFE0F Importante:</strong>
+            <ul>
+              <li>Este c\xF3digo expira em ${data.expiresIn}</li>
+              <li>Se voc\xEA n\xE3o solicitou esta redefini\xE7\xE3o, ignore este email</li>
+              <li>Sua senha atual continuar\xE1 funcionando at\xE9 ser alterada</li>
+              <li>N\xE3o compartilhe este c\xF3digo com ningu\xE9m</li>
+            </ul>
+          </div>
+          <p>Digite este c\xF3digo na tela de redefini\xE7\xE3o de senha do aplicativo.</p>
+        </div>
+        <div class="footer">
+          <p>Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.</p>
+          <p>&copy; 2024 25Stock. Todos os direitos reservados.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+var generatePasswordResetEmailText = (data) => {
+  return `
+Redefini\xE7\xE3o de Senha - 25Stock
+
+Ol\xE1, ${data.name}!
+
+Recebemos uma solicita\xE7\xE3o para redefinir a senha da sua conta no 25Stock.
+
+Use o c\xF3digo abaixo para redefinir sua senha:
+
+SEU C\xD3DIGO DE REDEFINI\xC7\xC3O: ${data.resetCode}
+
+IMPORTANTE:
+- Este c\xF3digo expira em ${data.expiresIn}
+- Se voc\xEA n\xE3o solicitou esta redefini\xE7\xE3o, ignore este email
+- Sua senha atual continuar\xE1 funcionando at\xE9 ser alterada
+- N\xE3o compartilhe este c\xF3digo com ningu\xE9m
+
+Digite este c\xF3digo na tela de redefini\xE7\xE3o de senha do aplicativo.
+
+---
+Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.
+\xA9 2024 25Stock. Todos os direitos reservados.
+  `;
+};
+
+// src/services/email/templates/stock_low.ts
+var generateStockLowEmailHTML = (data) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${data.title} - 25Stock</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+        .button { display: inline-block; background: #f39c12; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>\u26A0\uFE0F ${data.title}</h1>
+          <p>25Stock - Sistema de Gest\xE3o de Estoque</p>
+        </div>
+        <div class="content">
+          <h2>Ol\xE1, ${data.name}!</h2>
+          <div class="warning">
+            <strong>\u{1F6A8} Aten\xE7\xE3o:</strong>
+            <p>${data.message}</p>
+          </div>
+          <p>\xC9 recomendado que voc\xEA fa\xE7a um novo pedido para este produto o quanto antes para evitar a falta de estoque.</p>
+          ${data.actionUrl ? `<a href="${data.actionUrl}" class="button">${data.actionText || "Ver Produto"}</a>` : ""}
+        </div>
+        <div class="footer">
+          <p>Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.</p>
+          <p>&copy; 2024 25Stock. Todos os direitos reservados.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+var generateStockLowEmailText = (data) => {
+  return `
+${data.title} - 25Stock
+
+Ol\xE1, ${data.name}!
+
+\u{1F6A8} ATEN\xC7\xC3O: ${data.message}
+
+\xC9 recomendado que voc\xEA fa\xE7a um novo pedido para este produto o quanto antes para evitar a falta de estoque.
+
+${data.actionUrl ? `Acesse: ${data.actionUrl}` : ""}
+
+---
+Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.
+\xA9 2024 25Stock. Todos os direitos reservados.
+  `;
+};
+
+// src/services/email/templates/notification.ts
+var generateNotificationEmailHTML = (data) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${data.title} - 25Stock</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+        .button { display: inline-block; background: #3498db; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>\u{1F4E2} ${data.title}</h1>
+          <p>25Stock - Sistema de Gest\xE3o de Estoque</p>
+        </div>
+        <div class="content">
+          <h2>Ol\xE1, ${data.name}!</h2>
+          <p>${data.message}</p>
+          ${data.actionUrl ? `<a href="${data.actionUrl}" class="button">${data.actionText || "Ver Detalhes"}</a>` : ""}
+        </div>
+        <div class="footer">
+          <p>Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.</p>
+          <p>&copy; 2024 25Stock. Todos os direitos reservados.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+var generateNotificationEmailText = (data) => {
+  return `
+${data.title} - 25Stock
+
+Ol\xE1, ${data.name}!
+
+${data.message}
+
+${data.actionUrl ? `Acesse: ${data.actionUrl}` : ""}
+
+---
+Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.
+\xA9 2024 25Stock. Todos os direitos reservados.
+  `;
+};
+
+// src/services/email/templates/store_invite.ts
+var generateStoreInviteEmailHTML = (data) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Convite para Loja - 25Stock</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+        .button { display: inline-block; background: #27ae60; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .info { background: #e8f5e8; border: 1px solid #27ae60; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>\u{1F3EA} Convite para Loja</h1>
+          <p>25Stock - Sistema de Gest\xE3o de Estoque</p>
+        </div>
+        <div class="content">
+          <h2>Ol\xE1, ${data.name}!</h2>
+          <p><strong>${data.inviterName}</strong> convidou voc\xEA para colaborar na loja <strong>"${data.storeName}"</strong> no 25Stock.</p>
+          <div class="info">
+            <strong>\u{1F4CB} Detalhes do Convite:</strong>
+            <ul>
+              <li><strong>Loja:</strong> ${data.storeName}</li>
+              <li><strong>Convidado por:</strong> ${data.inviterName}</li>
+              <li><strong>Expira em:</strong> ${data.expiresIn}</li>
+            </ul>
+          </div>
+          <p>Clique no bot\xE3o abaixo para aceitar o convite:</p>
+          <a href="${data.acceptUrl}" class="button">Aceitar Convite</a>
+          <p>Se voc\xEA n\xE3o conhece esta pessoa ou n\xE3o deseja participar desta loja, pode ignorar este email.</p>
+        </div>
+        <div class="footer">
+          <p>Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.</p>
+          <p>&copy; 2024 25Stock. Todos os direitos reservados.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+var generateStoreInviteEmailText = (data) => {
+  return `
+Convite para Loja - 25Stock
+
+Ol\xE1, ${data.name}!
+
+${data.inviterName} convidou voc\xEA para colaborar na loja "${data.storeName}" no 25Stock.
+
+Detalhes do Convite:
+- Loja: ${data.storeName}
+- Convidado por: ${data.inviterName}
+- Expira em: ${data.expiresIn}
+
+Aceite o convite em: ${data.acceptUrl}
+
+Se voc\xEA n\xE3o conhece esta pessoa ou n\xE3o deseja participar desta loja, pode ignorar este email.
+
+---
+Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.
+\xA9 2024 25Stock. Todos os direitos reservados.
+  `;
+};
+
+// src/services/email/templates/email_verification.ts
+var generateEmailVerificationHTML = (data) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Confirma\xE7\xE3o de Email - 25Stock</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+        .code-container { background: #fff; border: 2px solid #667eea; padding: 20px; border-radius: 10px; text-align: center; margin: 20px 0; }
+        .verification-code { font-size: 32px; font-weight: bold; color: #667eea; letter-spacing: 8px; margin: 10px 0; }
+        .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>\u{1F510} Confirma\xE7\xE3o de Email</h1>
+          <p>25Stock - Sistema de Gest\xE3o de Estoque</p>
+        </div>
+        <div class="content">
+          <h2>Ol\xE1, ${data.name}!</h2>
+          <p>Bem-vindo ao 25Stock! Para confirmar sua conta, use o c\xF3digo de verifica\xE7\xE3o abaixo:</p>
+          
+          <div class="code-container">
+            <p style="margin: 0 0 10px 0; font-size: 18px; color: #666;">Seu c\xF3digo de verifica\xE7\xE3o \xE9:</p>
+            <div class="verification-code">${data.verificationCode}</div>
+            <p style="margin: 10px 0 0 0; font-size: 14px; color: #666;">Este c\xF3digo expira em ${data.expiresIn}</p>
+          </div>
+
+          <p>Digite este c\xF3digo no aplicativo para confirmar seu email e ativar sua conta.</p>
+          
+          <div class="warning">
+            <strong>\u26A0\uFE0F Importante:</strong>
+            <ul>
+              <li>Este c\xF3digo \xE9 v\xE1lido por ${data.expiresIn}</li>
+              <li>N\xE3o compartilhe este c\xF3digo com ningu\xE9m</li>
+              <li>Se voc\xEA n\xE3o solicitou esta conta, ignore este email</li>
+            </ul>
+          </div>
+
+          <p>Se voc\xEA n\xE3o conseguir usar o c\xF3digo, pode solicitar um novo c\xF3digo de verifica\xE7\xE3o no aplicativo.</p>
+        </div>
+        <div class="footer">
+          <p>Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.</p>
+          <p>&copy; 2024 25Stock. Todos os direitos reservados.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+var generateEmailVerificationText = (data) => {
+  return `
+Confirma\xE7\xE3o de Email - 25Stock
+
+Ol\xE1, ${data.name}!
+
+Bem-vindo ao 25Stock! Para confirmar sua conta, use o c\xF3digo de verifica\xE7\xE3o abaixo:
+
+C\xD3DIGO DE VERIFICA\xC7\xC3O: ${data.verificationCode}
+
+Este c\xF3digo expira em ${data.expiresIn}
+
+Digite este c\xF3digo no aplicativo para confirmar seu email e ativar sua conta.
+
+IMPORTANTE:
+- Este c\xF3digo \xE9 v\xE1lido por ${data.expiresIn}
+- N\xE3o compartilhe este c\xF3digo com ningu\xE9m
+- Se voc\xEA n\xE3o solicitou esta conta, ignore este email
+
+Se voc\xEA n\xE3o conseguir usar o c\xF3digo, pode solicitar um novo c\xF3digo de verifica\xE7\xE3o no aplicativo.
+
+---
+Este \xE9 um email autom\xE1tico, n\xE3o responda a esta mensagem.
+\xA9 2024 25Stock. Todos os direitos reservados.
+  `;
+};
+
+// src/services/email/email.service.ts
+var resend = new import_resend.Resend(process.env.RESEND_API_KEY);
+var EmailService = {
+  /**
+   * Envia email de boas-vindas para novos usuários
+   */
+  sendWelcomeEmail: async (data) => {
+    try {
+      const html = generateWelcomeEmailHTML(data);
+      const text = generateWelcomeEmailText(data);
+      const result = await resend.emails.send({
+        from: process.env.FROM_EMAIL || "noreply@25stock.com",
+        to: data.email,
+        subject: `Bem-vindo ao 25Stock, ${data.name}!`,
+        html,
+        text
+      });
+      console.log("Welcome email sent:", result.data?.id);
+      return true;
+    } catch (error) {
+      console.error("Error sending welcome email:", error);
+      return false;
+    }
+  },
+  /**
+   * Envia email de redefinição de senha
+   */
+  sendPasswordResetEmail: async (data) => {
+    try {
+      const html = generatePasswordResetEmailHTML(data);
+      const text = generatePasswordResetEmailText(data);
+      const result = await resend.emails.send({
+        from: process.env.FROM_EMAIL || "noreply@25stock.com",
+        to: data.email,
+        subject: "Redefini\xE7\xE3o de senha - 25Stock",
+        html,
+        text
+      });
+      console.log("Password reset email sent:", result.data?.id);
+      return true;
+    } catch (error) {
+      console.error("Error sending password reset email:", error);
+      return false;
+    }
+  },
+  /**
+   * Envia email de notificação
+   */
+  sendNotificationEmail: async (data) => {
+    try {
+      const html = generateNotificationEmailHTML(data);
+      const text = generateNotificationEmailText(data);
+      const result = await resend.emails.send({
+        from: process.env.FROM_EMAIL || "noreply@25stock.com",
+        to: data.email,
+        subject: `Notifica\xE7\xE3o - ${data.title}`,
+        html,
+        text
+      });
+      console.log("Notification email sent:", result.data?.id);
+      return true;
+    } catch (error) {
+      console.error("Error sending notification email:", error);
+      return false;
+    }
+  },
+  /**
+   * Envia convite para loja
+   */
+  sendStoreInviteEmail: async (data) => {
+    try {
+      const html = generateStoreInviteEmailHTML(data);
+      const text = generateStoreInviteEmailText(data);
+      const result = await resend.emails.send({
+        from: process.env.FROM_EMAIL || "noreply@25stock.com",
+        to: data.email,
+        subject: `Convite para loja ${data.storeName} - 25Stock`,
+        html,
+        text
+      });
+      console.log("Store invite email sent:", result.data?.id);
+      return true;
+    } catch (error) {
+      console.error("Error sending store invite email:", error);
+      return false;
+    }
+  },
+  /**
+   * Envia email de notificação de estoque baixo
+   */
+  sendStockLowEmail: async (data) => {
+    try {
+      const html = generateStockLowEmailHTML(data);
+      const text = generateStockLowEmailText(data);
+      const result = await resend.emails.send({
+        from: process.env.FROM_EMAIL || "noreply@25stock.com",
+        to: data.email,
+        subject: `\u26A0\uFE0F ${data.title} - 25Stock`,
+        html,
+        text
+      });
+      console.log("Stock low email sent:", result.data?.id);
+      return true;
+    } catch (error) {
+      console.error("Error sending stock low email:", error);
+      return false;
+    }
+  },
+  /**
+   * Envia email de verificação com código de 6 dígitos
+   */
+  sendEmailVerification: async (data) => {
+    try {
+      const html = generateEmailVerificationHTML(data);
+      const text = generateEmailVerificationText(data);
+      const result = await resend.emails.send({
+        from: process.env.FROM_EMAIL || "noreply@25stock.com",
+        to: data.email,
+        subject: `Confirma\xE7\xE3o de Email - 25Stock`,
+        html,
+        text
+      });
+      console.log("Email verification sent:", result.data?.id);
+      return true;
+    } catch (error) {
+      console.error("Error sending email verification:", error);
+      return false;
+    }
+  },
+  /**
+   * Envia email genérico
+   */
+  sendEmail: async (template) => {
+    try {
+      const result = await resend.emails.send({
+        from: process.env.FROM_EMAIL || "noreply@25stock.com",
+        to: template.to,
+        subject: template.subject,
+        html: template.html,
+        text: template.text
+      });
+      console.log("Email sent:", result.data?.id);
+      return true;
+    } catch (error) {
+      console.error("Error sending email:", error);
+      return false;
+    }
+  }
+};
+
+// src/features/auth/commands/auth.commands.ts
+var import_google_auth_library = require("google-auth-library");
+var AuthCommands = {
+  async register(data) {
+    const { name, email, password, phone } = data;
+    const existingUser = await db.user.findUnique({
+      where: { email }
+    });
+    if (existingUser) {
+      throw new Error("User already exists with this email");
+    }
+    const hashedPassword = await import_bcryptjs2.default.hash(password, 12);
+    const emailVerificationCode = AuthCommands.generateVerificationCode();
+    const emailVerificationCodeExpires = new Date(Date.now() + 15 * 60 * 1e3);
+    const emailVerificationToken = AuthCommands.generateVerificationToken();
+    const user = await db.user.create({
+      data: {
+        name,
+        email,
+        phone,
+        password: hashedPassword,
+        emailVerificationToken,
+        emailVerificationCode,
+        emailVerificationCodeExpires,
+        emailVerified: false
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        emailVerified: true,
+        createdAt: true
+      }
+    });
+    try {
+      await EmailService.sendEmailVerification({
+        name,
+        email,
+        verificationCode: emailVerificationCode,
+        expiresIn: "15 minutos"
+      });
+    } catch (error) {
+      console.error("Failed to send verification email:", error);
+    }
+    return user;
+  },
+  async login(data) {
+    const { email, password } = data;
+    const user = await db.user.findUnique({
+      where: { email, status: true }
+    });
+    if (!user) {
+      throw new Error("Invalid credentials");
+    }
+    const isValidPassword = await import_bcryptjs2.default.compare(password, user.password);
+    if (!isValidPassword) {
+      throw new Error("Invalid credentials");
+    }
+    if (!user.emailVerified) {
+      throw new Error("Email verification required");
+    }
+    await db.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: /* @__PURE__ */ new Date() }
+    });
+    const store = await AuthQueries.getStoreByOwner(user.id);
+    const token = AuthCommands.generateJWT({
+      userId: user.id,
+      email: user.email,
+      roles: user.roles
+    });
+    return {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        emailVerified: user.emailVerified,
+        lastLoginAt: /* @__PURE__ */ new Date()
+      },
+      store: store || void 0,
+      token
+    };
+  },
+  async forgotPassword(email) {
+    const user = await db.user.findUnique({
+      where: { email, status: true }
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    const resetCode = AuthCommands.generateVerificationCode();
+    const resetExpires = new Date(Date.now() + 15 * 60 * 1e3);
+    await db.user.update({
+      where: { id: user.id },
+      data: {
+        resetPasswordCode: resetCode,
+        resetPasswordExpires: resetExpires
+      }
+    });
+    try {
+      await EmailService.sendPasswordResetEmail({
+        name: user.name,
+        email: user.email,
+        resetCode,
+        expiresIn: "15 minutos"
+      });
+    } catch (error) {
+      console.error("Failed to send reset password email:", error);
+    }
+    return { message: "Reset password code sent to email" };
+  },
+  async verifyResetCode(email, code) {
+    const user = await db.user.findFirst({
+      where: {
+        email,
+        resetPasswordCode: code,
+        resetPasswordExpires: {
+          gt: /* @__PURE__ */ new Date()
+        }
+      }
+    });
+    if (!user) {
+      throw new Error("Invalid or expired reset code");
+    }
+    if (user.resetPasswordExpires && user.resetPasswordExpires < /* @__PURE__ */ new Date()) {
+      throw new Error("Reset code expired");
+    }
+    return { message: "Reset code verified successfully" };
+  },
+  async resetPassword(email, code, newPassword) {
+    const user = await db.user.findFirst({
+      where: {
+        email,
+        resetPasswordCode: code,
+        resetPasswordExpires: {
+          gt: /* @__PURE__ */ new Date()
+        }
+      }
+    });
+    if (!user) {
+      throw new Error("Invalid or expired reset code");
+    }
+    if (user.resetPasswordExpires && user.resetPasswordExpires < /* @__PURE__ */ new Date()) {
+      throw new Error("Reset code expired");
+    }
+    const hashedPassword = await import_bcryptjs2.default.hash(newPassword, 12);
+    await db.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetPasswordCode: null,
+        resetPasswordExpires: null
+      }
+    });
+    return { message: "Password reset successfully" };
+  },
+  async verifyEmail(token) {
+    const user = await db.user.findFirst({
+      where: {
+        emailVerificationToken: token,
+        emailVerified: false
+      }
+    });
+    if (!user) {
+      throw new Error("Invalid verification token");
+    }
+    await db.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerified: true,
+        emailVerificationToken: null
+      }
+    });
+    return { message: "Email verified successfully" };
+  },
+  async verifyEmailCode(email, code) {
+    const user = await db.user.findFirst({
+      where: {
+        email,
+        emailVerificationCode: code,
+        emailVerificationCodeExpires: {
+          gt: /* @__PURE__ */ new Date()
+        },
+        emailVerified: false
+      }
+    });
+    if (!user) {
+      throw new Error("Invalid verification code");
+    }
+    if (user.emailVerificationCodeExpires && user.emailVerificationCodeExpires < /* @__PURE__ */ new Date()) {
+      throw new Error("Verification code expired");
+    }
+    const updatedUser = await db.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationCode: null,
+        emailVerificationCodeExpires: null
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        emailVerified: true,
+        createdAt: true
+      }
+    });
+    return updatedUser;
+  },
+  async resendVerification(email) {
+    const user = await db.user.findUnique({
+      where: { email, status: true }
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if (user.emailVerified) {
+      throw new Error("Email already verified");
+    }
+    const emailVerificationCode = AuthCommands.generateVerificationCode();
+    const emailVerificationCodeExpires = new Date(Date.now() + 15 * 60 * 1e3);
+    const emailVerificationToken = AuthCommands.generateVerificationToken();
+    await db.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerificationCode,
+        emailVerificationCodeExpires,
+        emailVerificationToken
+      }
+    });
+    try {
+      await EmailService.sendEmailVerification({
+        name: user.name,
+        email: user.email,
+        verificationCode: emailVerificationCode,
+        expiresIn: "15 minutos"
+      });
+    } catch (error) {
+      console.error("Failed to send verification email:", error);
+    }
+    return { message: "Verification email sent" };
+  },
+  async refreshToken(userId) {
+    const user = await db.user.findUnique({
+      where: { id: userId, status: true }
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    const token = AuthCommands.generateJWT({
+      userId: user.id,
+      email: user.email,
+      roles: user.roles
+    });
+    return { token, message: "Token refreshed successfully" };
+  },
+  // Helper methods
+  generateJWT(payload) {
+    const secret = process.env.JWT_SECRET || "your-secret-key";
+    return import_jsonwebtoken.default.sign(payload, secret, { expiresIn: "7d" });
+  },
+  generateResetToken() {
+    return import_crypto.default.randomBytes(32).toString("hex");
+  },
+  generateVerificationToken() {
+    return import_crypto.default.randomBytes(32).toString("hex");
+  },
+  generateVerificationCode() {
+    return Math.floor(1e5 + Math.random() * 9e5).toString();
+  },
+  // Verify JWT token
+  verifyToken(token) {
+    const secret = process.env.JWT_SECRET || "your-secret-key";
+    return import_jsonwebtoken.default.verify(token, secret);
+  },
+  // Extract token from Authorization header
+  extractToken(authHeader) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      throw new Error("Invalid authorization header");
+    }
+    return authHeader.substring(7);
+  },
+  async updateProfile(userId, data) {
+    const { name, email } = data;
+    if (email) {
+      const existingUser = await db.user.findFirst({
+        where: {
+          email,
+          id: { not: userId }
+        }
+      });
+      if (existingUser) {
+        throw new Error("Email already exists");
+      }
+    }
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (email) {
+      updateData.email = email;
+      updateData.emailVerified = false;
+      updateData.emailVerificationToken = AuthCommands.generateVerificationToken();
+    }
+    const user = await db.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        emailVerified: true,
+        status: true,
+        roles: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
+    return user;
+  },
+  async googleLogin(token) {
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      throw new Error("Google OAuth configuration missing");
+    }
+    const client = new import_google_auth_library.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID
+      });
+      const payload = ticket.getPayload();
+      if (!payload || !payload.email || !payload.name) {
+        throw new Error("Invalid Google token payload");
+      }
+      let user = await db.user.findUnique({
+        where: { email: payload.email }
+      });
+      if (!user) {
+        user = await db.user.create({
+          data: {
+            name: payload.name,
+            email: payload.email,
+            emailVerified: true,
+            // Google já verifica o email
+            status: true,
+            roles: ["USER"],
+            // Role padrão
+            phone: "",
+            // Campo obrigatório mas não temos do Google
+            password: "",
+            // Campo obrigatório mas não usamos para login Google
+            lastLoginAt: /* @__PURE__ */ new Date(),
+            // User preferences defaults
+            theme: "light",
+            language: "pt-BR",
+            currency: "BRL",
+            timezone: "America/Sao_Paulo",
+            dateFormat: "DD/MM/YYYY",
+            timeFormat: "24h",
+            dashboard: null
+          }
+        });
+      } else {
+        await db.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: /* @__PURE__ */ new Date() }
+        });
+      }
+      if (!user.status) {
+        throw new Error("User account is disabled");
+      }
+      const store = await AuthQueries.getStoreByOwner(user.id);
+      const jwtToken = AuthCommands.generateJWT({
+        userId: user.id,
+        email: user.email,
+        roles: user.roles
+      });
+      return {
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          emailVerified: user.emailVerified,
+          lastLoginAt: user.lastLoginAt
+        },
+        store: store || void 0,
+        token: jwtToken
+      };
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      if (error.message === "Google OAuth configuration missing") {
+        throw new Error("Google OAuth configuration missing");
+      }
+      if (error.message === "Invalid Google token payload") {
+        throw new Error("Invalid Google token");
+      }
+      if (error.message === "User account is disabled") {
+        throw new Error("User account is disabled");
+      }
+      throw new Error("Invalid Google token");
+    }
+  }
+};
 
 // src/features/user-preferences/queries/user-preferences.query.ts
-init_prisma();
 var UserPreferencesQueries = {
   // ================================
   // GET OPERATIONS
@@ -4169,7 +4015,6 @@ async function AuthRoutes(fastify2) {
 }
 
 // src/features/product/commands/product.commands.ts
-init_prisma();
 var getUserStore = async (userId) => {
   const ownedStore = await db.store.findFirst({
     where: { ownerId: userId },
@@ -4749,7 +4594,6 @@ var ProductCommands = {
 };
 
 // src/features/product/queries/product.queries.ts
-init_prisma();
 async function calculateCurrentStock(productId) {
   const movements = await db.movement.findMany({
     where: { productId },
@@ -7017,11 +6861,50 @@ var ProductSchemas = {
   getByCategory: getProductsByCategorySchema
 };
 
-// src/features/product/product.routes.ts
-init_auth_middleware();
+// src/middlewares/auth.middleware.ts
+var authMiddleware = async (request, reply) => {
+  try {
+    const authHeader = request.headers.authorization;
+    if (!authHeader) {
+      return reply.status(401).send({
+        error: "Authorization header required"
+      });
+    }
+    const token = AuthCommands.extractToken(authHeader);
+    const payload = AuthCommands.verifyToken(token);
+    const user = await AuthQueries.getUserProfile(payload.userId);
+    if (!user || !user.status) {
+      return reply.status(401).send({
+        error: "User not found or inactive"
+      });
+    }
+    request.user = user;
+    request.token = token;
+    return;
+  } catch (error) {
+    request.log.error(error);
+    if (error.message === "Invalid authorization header") {
+      return reply.status(401).send({
+        error: "Invalid authorization header format"
+      });
+    }
+    if (error.name === "JsonWebTokenError") {
+      return reply.status(401).send({
+        error: "Invalid token"
+      });
+    }
+    if (error.name === "TokenExpiredError") {
+      return reply.status(401).send({
+        error: "Token expired"
+      });
+    }
+    return reply.status(500).send({
+      error: "Internal server error"
+    });
+  }
+};
 
 // src/middlewares/store-context.middleware.ts
-init_prisma();
 var getUserStore2 = async (userId) => {
   console.log("getUserStore: Searching for store for user:", userId);
   console.log("getUserStore: Checking owned stores...");
@@ -7194,7 +7077,6 @@ async function ProductRoutes(fastify2) {
 }
 
 // src/features/supplier/commands/supplier.commands.ts
-init_prisma();
 var SupplierCommands = {
   async create(data) {
     const existingSupplier = await db.supplier.findUnique({
@@ -7319,7 +7201,6 @@ var SupplierCommands = {
 };
 
 // src/features/supplier/queries/supplier.queries.ts
-init_prisma();
 var SupplierQueries = {
   async getById(id) {
     const supplier = await db.supplier.findUnique({
@@ -8121,7 +8002,6 @@ var SupplierSchemas = {
 };
 
 // src/features/supplier/commands/supplier-responsible.commands.ts
-init_prisma();
 var SupplierResponsibleCommands = {
   async create({ supplierId, data }) {
     const supplier = await db.supplier.findUnique({
@@ -8280,7 +8160,6 @@ var SupplierResponsibleCommands = {
 };
 
 // src/features/supplier/queries/supplier-responsible.queries.ts
-init_prisma();
 var SupplierResponsibleQueries = {
   async getById({ supplierId, responsibleId }) {
     const responsible = await db.supplierResponsible.findFirst({
@@ -8935,7 +8814,6 @@ var SupplierResponsibleSchemas = {
 };
 
 // src/features/supplier/supplier-responsible.routes.ts
-init_auth_middleware();
 async function SupplierResponsibleRoutes(fastify2) {
   fastify2.post("/:supplierId/responsibles", {
     schema: SupplierResponsibleSchemas.create,
@@ -8991,7 +8869,6 @@ async function SupplierResponsibleRoutes(fastify2) {
 }
 
 // src/features/supplier/supplier.routes.ts
-init_auth_middleware();
 async function SupplierRoutes(fastify2) {
   fastify2.addHook("preHandler", authMiddleware);
   fastify2.addHook("preHandler", storeContextMiddleware);
@@ -9048,7 +8925,6 @@ async function SupplierRoutes(fastify2) {
 }
 
 // src/features/store/commands/store.commands.ts
-init_prisma();
 var StoreCommands = {
   async create(data) {
     const existingStore = await db.store.findUnique({
@@ -9368,7 +9244,6 @@ var StoreCommands = {
 };
 
 // src/features/store/queries/store.queries.ts
-init_prisma();
 var StoreQueries = {
   async getById(id) {
     const store = await db.store.findUnique({
@@ -11190,9 +11065,6 @@ var StoreSchemas = {
   transferOwnership: transferOwnershipSchema
 };
 
-// src/middlewares/index.ts
-init_auth_middleware();
-
 // src/middlewares/authorization.middleware.ts
 var StoreRole = /* @__PURE__ */ ((StoreRole2) => {
   StoreRole2["OWNER"] = "OWNER";
@@ -11895,7 +11767,6 @@ var requireStoreAccess = (storeIdParam = "storeId") => {
 };
 
 // src/middlewares/index.ts
-init_auth_middleware();
 var Middlewares = {
   auth: authMiddleware,
   store: storeContextMiddleware,
@@ -11981,7 +11852,6 @@ async function StoreRoutes(fastify2) {
 }
 
 // src/features/category/commands/category.commands.ts
-init_prisma();
 var CategoryCommands = {
   async create(data) {
     return await db.category.create({
@@ -12208,7 +12078,6 @@ var CategoryCommands = {
 };
 
 // src/features/category/queries/category.queries.ts
-init_prisma();
 var CategoryQueries = {
   async getById(id) {
     return await db.category.findUnique({
@@ -14262,7 +14131,6 @@ var CategorySchemas = {
 };
 
 // src/features/category/category.routes.ts
-init_auth_middleware();
 async function CategoryRoutes(fastify2) {
   fastify2.addHook("preHandler", authMiddleware);
   fastify2.addHook("preHandler", storeContextMiddleware);
@@ -14372,11 +14240,7 @@ async function CategoryRoutes(fastify2) {
   });
 }
 
-// src/features/movement/commands/movement.commands.ts
-init_prisma();
-
 // src/features/flow/queries/flow.queries.ts
-init_prisma();
 var FlowQueries = {
   async getById(id) {
     try {
@@ -14729,7 +14593,6 @@ var ConditionEvaluator = {
 };
 
 // src/services/workflow-engine/action-executor.service.ts
-init_prisma();
 var ActionExecutor = {
   async executeAction(actionConfig, context) {
     try {
@@ -14954,7 +14817,6 @@ var ActionExecutor = {
 };
 
 // src/features/flow-execution/commands/flow-execution.commands.ts
-init_prisma();
 var FlowExecutionCommands = {
   async create(data) {
     try {
@@ -15932,9 +15794,6 @@ var MovementCommands = {
     };
   }
 };
-
-// src/features/movement/queries/movement.queries.ts
-init_prisma();
 
 // src/services/llm/index.ts
 var import_ollama = require("@langchain/ollama");
@@ -17185,14 +17044,7 @@ var MovementQueries = {
   }
 };
 
-// src/features/movement/movement.controller.ts
-init_prisma();
-
-// src/services/stock-monitoring/stock-alert.service.ts
-init_prisma();
-
 // src/features/notification/commands/notification.commands.ts
-init_prisma();
 var NotificationCommands = {
   async create(data) {
     return await db.notification.create({
@@ -20438,7 +20290,6 @@ async function PermissionRoutes(fastify2) {
 }
 
 // src/features/report/queries/report.queries.ts
-init_prisma();
 var ReportQueries = {
   // ================================
   // DASHBOARD STATS
@@ -21258,7 +21109,6 @@ var ReportQueries = {
 };
 
 // src/features/report/commands/report.commands.ts
-init_prisma();
 var ReportCommands = {
   // ================================
   // EXPORT REPORTS
@@ -23046,7 +22896,6 @@ async function ReportRoutes(fastify2) {
 }
 
 // src/features/notification/queries/notification.queries.ts
-init_prisma();
 var NotificationQueries = {
   async getById(id) {
     return await db.notification.findUnique({
@@ -24176,7 +24025,6 @@ var NotificationSchemas = {
 };
 
 // src/features/notification/notification.routes.ts
-init_auth_middleware();
 async function NotificationRoutes(fastify2) {
   fastify2.post("/", {
     schema: NotificationSchemas.create,
@@ -24312,7 +24160,6 @@ async function NotificationRoutes(fastify2) {
 }
 
 // src/features/chat/queries/chat.query.ts
-init_prisma();
 var ChatToolbox = class {
   constructor(prisma2) {
     this.prisma = prisma2;
@@ -24917,7 +24764,6 @@ var ChatQueries = {
 };
 
 // src/features/chat/commands/chat.commands.ts
-init_prisma();
 var ChatCommands = {
   // === CRIAÇÃO DE SESSÃO ===
   async createSession(data) {
@@ -25915,7 +25761,6 @@ var ChatSchemas = {
 };
 
 // src/features/chat/chat.routes.ts
-init_auth_middleware();
 async function ChatRoutes(fastify2) {
   fastify2.post("/messages", {
     schema: ChatSchemas.sendMessage,
@@ -25995,344 +25840,7 @@ async function ChatRoutes(fastify2) {
   });
 }
 
-// src/services/llm/rag.ts
-var import_tools = require("@langchain/core/tools");
-var import_ollama2 = require("@langchain/ollama");
-var import_retrieval = require("langchain/chains/retrieval");
-var import_combine_documents = require("langchain/chains/combine_documents");
-var import_prompts = require("@langchain/core/prompts");
-var import_memory = require("langchain/vectorstores/memory");
-
-// src/services/llm/movements.json
-var movements_default = [
-  {
-    id: "cmgffctkq0001e8lc8lembpyv",
-    type: "ENTRADA",
-    quantity: 12,
-    storeId: "cmg4iuzet0002e8vgr7xtjo10",
-    productId: "cmg4ixgh90005e8vgqdn5k6qz",
-    supplierId: null,
-    batch: null,
-    expiration: null,
-    price: null,
-    balanceAfter: 27,
-    verified: false,
-    verifiedAt: null,
-    verifiedBy: null,
-    verificationNote: null,
-    cancelled: false,
-    cancelledAt: null,
-    cancelledBy: null,
-    cancellationReason: null,
-    createdAt: "2025-10-06T17:48:32.565Z",
-    updatedAt: "2025-10-06T17:48:32.565Z",
-    userId: "cmg4itq6j0000e8vgj7t4abbq",
-    store: {},
-    supplier: null,
-    user: {}
-  },
-  {
-    id: "cmgfemfu60003e8ak602dmvsz",
-    type: "ENTRADA",
-    quantity: 12,
-    storeId: "cmg4iuzet0002e8vgr7xtjo10",
-    productId: "cmg4ixgh90005e8vgqdn5k6qz",
-    supplierId: null,
-    batch: null,
-    expiration: null,
-    price: null,
-    balanceAfter: 15,
-    verified: false,
-    verifiedAt: null,
-    verifiedBy: null,
-    verificationNote: null,
-    cancelled: false,
-    cancelledAt: null,
-    cancelledBy: null,
-    cancellationReason: null,
-    createdAt: "2025-10-06T17:28:01.708Z",
-    updatedAt: "2025-10-06T17:28:01.708Z",
-    userId: "cmg4itq6j0000e8vgj7t4abbq",
-    store: {},
-    supplier: null,
-    user: {}
-  },
-  {
-    id: "cmgfembjm0001e8ak0e7tvwbv",
-    type: "ENTRADA",
-    quantity: 2,
-    storeId: "cmg4iuzet0002e8vgr7xtjo10",
-    productId: "cmg4ixgh90005e8vgqdn5k6qz",
-    supplierId: null,
-    batch: null,
-    expiration: null,
-    price: null,
-    balanceAfter: 3,
-    verified: false,
-    verifiedAt: null,
-    verifiedBy: null,
-    verificationNote: null,
-    cancelled: false,
-    cancelledAt: null,
-    cancelledBy: null,
-    cancellationReason: null,
-    createdAt: "2025-10-06T17:27:56.141Z",
-    updatedAt: "2025-10-06T17:27:56.141Z",
-    userId: "cmg4itq6j0000e8vgj7t4abbq",
-    store: {},
-    supplier: null,
-    user: {}
-  },
-  {
-    id: "cmgacsg6w0007e8j4p80rtch5",
-    type: "SAIDA",
-    quantity: 2,
-    storeId: "cmg4iuzet0002e8vgr7xtjo10",
-    productId: "cmg4ixgh90005e8vgqdn5k6qz",
-    supplierId: null,
-    batch: null,
-    expiration: null,
-    price: null,
-    balanceAfter: 1,
-    verified: false,
-    verifiedAt: null,
-    verifiedBy: null,
-    verificationNote: null,
-    cancelled: false,
-    cancelledAt: null,
-    cancelledBy: null,
-    cancellationReason: null,
-    createdAt: "2025-10-03T04:37:51.991Z",
-    updatedAt: "2025-10-03T04:37:51.991Z",
-    userId: "cmg4itq6j0000e8vgj7t4abbq",
-    store: {},
-    supplier: null,
-    user: {}
-  },
-  {
-    id: "cmgacrf420005e8j4n73dql7v",
-    type: "SAIDA",
-    quantity: 2,
-    storeId: "cmg4iuzet0002e8vgr7xtjo10",
-    productId: "cmg4ixgh90005e8vgqdn5k6qz",
-    supplierId: null,
-    batch: null,
-    expiration: null,
-    price: null,
-    balanceAfter: 3,
-    verified: false,
-    verifiedAt: null,
-    verifiedBy: null,
-    verificationNote: null,
-    cancelled: false,
-    cancelledAt: null,
-    cancelledBy: null,
-    cancellationReason: null,
-    createdAt: "2025-10-03T04:37:03.936Z",
-    updatedAt: "2025-10-03T04:37:03.936Z",
-    userId: "cmg4itq6j0000e8vgj7t4abbq",
-    store: {},
-    supplier: null,
-    user: {}
-  },
-  {
-    id: "cmgacr0400001e8j4qvyetx1w",
-    type: "ENTRADA",
-    quantity: 5,
-    storeId: "cmg4iuzet0002e8vgr7xtjo10",
-    productId: "cmg4ixgh90005e8vgqdn5k6qz",
-    supplierId: null,
-    batch: null,
-    expiration: null,
-    price: null,
-    balanceAfter: 5,
-    verified: false,
-    verifiedAt: null,
-    verifiedBy: null,
-    verificationNote: null,
-    cancelled: false,
-    cancelledAt: null,
-    cancelledBy: null,
-    cancellationReason: null,
-    createdAt: "2025-10-03T04:36:44.494Z",
-    updatedAt: "2025-10-03T04:36:44.494Z",
-    userId: "cmg4itq6j0000e8vgj7t4abbq",
-    store: {},
-    supplier: null,
-    user: {}
-  },
-  {
-    id: "cmgackw1d0001e8k8tpi6dl89",
-    type: "SAIDA",
-    quantity: 1,
-    storeId: "cmg4iuzet0002e8vgr7xtjo10",
-    productId: "cmg4ixgh90005e8vgqdn5k6qz",
-    supplierId: null,
-    batch: null,
-    expiration: null,
-    price: 25.5,
-    balanceAfter: 0,
-    verified: false,
-    verifiedAt: null,
-    verifiedBy: null,
-    verificationNote: null,
-    cancelled: false,
-    cancelledAt: null,
-    cancelledBy: null,
-    cancellationReason: null,
-    createdAt: "2025-10-03T04:31:59.276Z",
-    updatedAt: "2025-10-03T04:31:59.276Z",
-    userId: "cmg4itq6j0000e8vgj7t4abbq",
-    store: {},
-    supplier: null,
-    user: {}
-  },
-  {
-    id: "cmgacij4a0001e8fkqiqxiqis",
-    type: "SAIDA",
-    quantity: 1,
-    storeId: "cmg4iuzet0002e8vgr7xtjo10",
-    productId: "cmg4ixgh90005e8vgqdn5k6qz",
-    supplierId: null,
-    batch: null,
-    expiration: null,
-    price: 25.5,
-    balanceAfter: 1,
-    verified: false,
-    verifiedAt: null,
-    verifiedBy: null,
-    verificationNote: null,
-    cancelled: false,
-    cancelledAt: null,
-    cancelledBy: null,
-    cancellationReason: null,
-    createdAt: "2025-10-03T04:30:09.224Z",
-    updatedAt: "2025-10-03T04:30:09.224Z",
-    userId: "cmg4itq6j0000e8vgj7t4abbq",
-    store: {},
-    supplier: null,
-    user: {}
-  },
-  {
-    id: "cmgacb7r40005e8j8amptlfye",
-    type: "SAIDA",
-    quantity: 9,
-    storeId: "cmg4iuzet0002e8vgr7xtjo10",
-    productId: "cmg4ixgh90005e8vgqdn5k6qz",
-    supplierId: null,
-    batch: null,
-    expiration: null,
-    price: 25.5,
-    balanceAfter: 2,
-    verified: false,
-    verifiedAt: null,
-    verifiedBy: null,
-    verificationNote: null,
-    cancelled: false,
-    cancelledAt: null,
-    cancelledBy: null,
-    cancellationReason: null,
-    createdAt: "2025-10-03T04:24:27.902Z",
-    updatedAt: "2025-10-03T04:24:27.902Z",
-    userId: "cmg4itq6j0000e8vgj7t4abbq",
-    store: {},
-    supplier: null,
-    user: {}
-  },
-  {
-    id: "cmgac9icl0003e8j84v41e88d",
-    type: "SAIDA",
-    quantity: 20,
-    storeId: "cmg4iuzet0002e8vgr7xtjo10",
-    productId: "cmg4ixgh90005e8vgqdn5k6qz",
-    supplierId: null,
-    batch: null,
-    expiration: null,
-    price: 25.5,
-    balanceAfter: 11,
-    verified: false,
-    verifiedAt: null,
-    verifiedBy: null,
-    verificationNote: null,
-    cancelled: false,
-    cancelledAt: null,
-    cancelledBy: null,
-    cancellationReason: null,
-    createdAt: "2025-10-03T04:23:08.323Z",
-    updatedAt: "2025-10-03T04:23:08.323Z",
-    userId: "cmg4itq6j0000e8vgj7t4abbq",
-    store: {},
-    supplier: null,
-    user: {}
-  }
-];
-
-// src/services/llm/rag.ts
-var model = new import_ollama2.ChatOllama({ model: "mistral" });
-var getStockMovementsTool = (0, import_tools.tool)(
-  async (input) => {
-    const productId = input.productId;
-    return movements_default;
-  },
-  {
-    name: "get_stock_movements",
-    description: "Busca entradas, sa\xEDdas e perdas de um produto pelo ID",
-    schema: {
-      type: "object",
-      properties: {
-        productId: { type: "string" }
-      },
-      required: ["productId"]
-    }
-  }
-);
-function generateDocuments(movements) {
-  const entries = movements.filter((m) => m.type === "ENTRADA");
-  entries.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  return entries.map((m) => {
-    const date = new Date(m.createdAt).toLocaleDateString("pt-BR");
-    const time = new Date(m.createdAt).toLocaleTimeString("pt-BR");
-    const price = m.price ? ` | Pre\xE7o: R$ ${m.price}` : "";
-    const balance = m.balanceAfter ? ` | Saldo ap\xF3s: ${m.balanceAfter}` : "";
-    return `Data: ${date} ${time} | Tipo: ${m.type} | Quantidade: ${m.quantity}${price}${balance}`;
-  });
-}
-async function createRAGChain(productId) {
-  const movements = await getStockMovementsTool.invoke({ productId });
-  const documents = generateDocuments(movements);
-  const vectorStore = await import_memory.MemoryVectorStore.fromTexts(
-    documents,
-    [{ id: productId }],
-    new import_ollama2.OllamaEmbeddings({ model: "mistral" })
-  );
-  const documentChain = await (0, import_combine_documents.createStuffDocumentsChain)({
-    llm: model,
-    prompt: new import_prompts.PromptTemplate({
-      template: "Voc\xEA \xE9 um assistente especializado em an\xE1lise de movimenta\xE7\xF5es de estoque. Responda a pergunta com base no contexto fornecido sobre as movimenta\xE7\xF5es do produto.\n\nContexto das movimenta\xE7\xF5es:\n{context}\n\nPergunta:\n{input}\n\nResponda de forma clara e precisa, utilizando as informa\xE7\xF5es do contexto.",
-      inputVariables: ["context", "input"]
-    })
-  });
-  return (0, import_retrieval.createRetrievalChain)({
-    combineDocsChain: documentChain,
-    retriever: vectorStore.asRetriever()
-  });
-}
-async function queryRAG(productId, query) {
-  try {
-    const chain = await createRAGChain(productId);
-    const result = await chain.invoke({ input: query });
-    return result;
-  } catch (error) {
-    return {
-      input: query,
-      context: [],
-      answer: "Erro ao processar a consulta. Verifique se o produto existe e possui movimenta\xE7\xF5es nesta loja."
-    };
-  }
-}
-
 // src/features/roadmap/commands/roadmap.commands.ts
-init_prisma();
 var RoadmapCommands = {
   async create(data) {
     return await db.roadmap.create({ data });
@@ -26357,7 +25865,6 @@ var RoadmapCommands = {
 };
 
 // src/features/roadmap/queries/roadmap.queries.ts
-init_prisma();
 var RoadmapQueries = {
   async getById(id) {
     return await db.roadmap.findUnique({
@@ -26645,7 +26152,6 @@ var RoadmapController = {
 };
 
 // src/features/roadmap/commands/milestone.commands.ts
-init_prisma();
 var MilestoneCommands = {
   async create(data) {
     const roadmap = await db.roadmap.findUnique({
@@ -26795,7 +26301,6 @@ var MilestoneCommands = {
 };
 
 // src/features/roadmap/queries/milestone.queries.ts
-init_prisma();
 var MilestoneQueries = {
   async getById(id, roadmapId) {
     const milestone = await db.milestone.findFirst({
@@ -27778,7 +27283,6 @@ var MilestoneSchemas = {
 };
 
 // src/features/roadmap/roadmap.routes.ts
-init_auth_middleware();
 async function RoadmapRoutes(fastify2) {
   fastify2.get("/active", {
     preHandler: [authMiddleware, storeContextMiddleware],
@@ -27891,7 +27395,6 @@ async function RoadmapRoutes(fastify2) {
 var import_path2 = __toESM(require("path"));
 
 // src/features/upload/commands/upload.commands.ts
-init_prisma();
 var UploadCommands = {
   async create(data) {
     const upload = await db.media.create({
@@ -28091,7 +27594,6 @@ var UploadCommands = {
 };
 
 // src/features/upload/queries/upload.queries.ts
-init_prisma();
 var UploadQueries = {
   async getById(id) {
     const upload = await db.media.findUnique({
@@ -29535,7 +29037,6 @@ async function UploadRoutes(fastify2) {
 }
 
 // src/features/quote/commands/quote.commands.ts
-init_prisma();
 var import_library = require("@prisma/client/runtime/library");
 var QuoteCommands = {
   async create(data) {
@@ -29981,7 +29482,6 @@ Rejection reason: ${reason}`.trim() : quote.observations
 };
 
 // src/features/quote/queries/quote.queries.ts
-init_prisma();
 var QuoteQueries = {
   async getById(id) {
     const quote = await db.quote.findUnique({
@@ -31435,7 +30935,6 @@ var QuoteSchemas = {
 };
 
 // src/features/quote/quote.routes.ts
-init_auth_middleware();
 async function QuoteRoutes(fastify2) {
   fastify2.post("/", {
     schema: QuoteSchemas.create,
@@ -31611,7 +31110,6 @@ async function QuoteRoutes(fastify2) {
 }
 
 // src/features/plan/commands/plan.commands.ts
-init_prisma();
 var PlanCommands = {
   async create(data) {
     const existingPlan = await db.plan.findFirst({
@@ -31732,7 +31230,6 @@ var PlanCommands = {
 };
 
 // src/features/plan/queries/plan.queries.ts
-init_prisma();
 var PlanQueries = {
   async getById(id) {
     const plan = await db.plan.findUnique({
@@ -32610,7 +32107,6 @@ var PlanSchemas = {
 };
 
 // src/features/plan/plan.routes.ts
-init_auth_middleware();
 async function PlanRoutes(fastify2) {
   fastify2.post("/", {
     schema: PlanSchemas.create,
@@ -32664,7 +32160,6 @@ async function PlanRoutes(fastify2) {
 }
 
 // src/features/customer/commands/customer.commands.ts
-init_prisma();
 var CustomerCommands = {
   async create(data) {
     const { planId, ...createData } = data;
@@ -32985,7 +32480,6 @@ var CustomerCommands = {
 };
 
 // src/features/customer/queries/customer.queries.ts
-init_prisma();
 var CustomerQueries = {
   async getById(id) {
     const customer = await db.customer.findUnique({
@@ -34370,7 +33864,6 @@ var CustomerSchemas = {
 };
 
 // src/features/customer/customer.routes.ts
-init_auth_middleware();
 async function CustomerRoutes(fastify2) {
   fastify2.post("/", {
     schema: CustomerSchemas.create,
@@ -34464,7 +33957,6 @@ async function CustomerRoutes(fastify2) {
 }
 
 // src/features/invoice/commands/invoice.commands.ts
-init_prisma();
 var InvoiceCommands = {
   async create(data) {
     const { customerId, ...createData } = data;
@@ -34669,7 +34161,6 @@ var InvoiceCommands = {
 };
 
 // src/features/invoice/queries/invoice.queries.ts
-init_prisma();
 var InvoiceQueries = {
   async getById(id) {
     const invoice = await db.invoice.findUnique({
@@ -35971,7 +35462,6 @@ var InvoiceSchemas = {
 };
 
 // src/features/invoice/invoice.routes.ts
-init_auth_middleware();
 async function InvoiceRoutes(fastify2) {
   fastify2.post("/", {
     schema: InvoiceSchemas.create,
@@ -36056,1793 +35546,7 @@ async function InvoiceRoutes(fastify2) {
   });
 }
 
-// src/services/payment/abacate-pay.service.ts
-var AbacatePayService = {
-  config: {
-    name: "Abacate Pay",
-    version: "1.0.0",
-    supportedCurrencies: ["BRL"],
-    supportedMethods: ["pix", "credit_card", "debit_card", "boleto"],
-    environment: process.env.ABACATE_PAY_ENV === "production" ? "production" : "sandbox",
-    apiKey: process.env.ABACATE_PAY_API_KEY,
-    secretKey: process.env.ABACATE_PAY_SECRET_KEY,
-    webhookUrl: process.env.ABACATE_PAY_WEBHOOK_URL
-  },
-  async createPayment(data) {
-    try {
-      console.log("Creating payment with Abacate Pay:", data);
-      const paymentId = `abacate_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const success = data.amount > 0 && data.amount < 1e4;
-      return {
-        success,
-        paymentId: success ? paymentId : void 0,
-        status: success ? "pending" : "failed",
-        gatewayResponse: {
-          payment_id: paymentId,
-          status: success ? "pending" : "failed",
-          amount: data.amount,
-          currency: data.currency || "BRL",
-          created_at: (/* @__PURE__ */ new Date()).toISOString()
-        },
-        error: success ? void 0 : "Payment amount exceeds limit"
-      };
-    } catch (error) {
-      return {
-        success: false,
-        status: "failed",
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  },
-  async getPaymentStatus(paymentId) {
-    try {
-      console.log("Getting payment status from Abacate Pay:", paymentId);
-      const statuses = ["pending", "completed", "failed", "cancelled"];
-      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-      return {
-        paymentId,
-        status: randomStatus,
-        amount: Math.random() * 1e3,
-        currency: "BRL",
-        gatewayResponse: {
-          payment_id: paymentId,
-          status: randomStatus,
-          amount: Math.random() * 1e3,
-          currency: "BRL",
-          updated_at: (/* @__PURE__ */ new Date()).toISOString()
-        }
-      };
-    } catch (error) {
-      return {
-        paymentId,
-        status: "failed",
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  },
-  async cancelPayment(paymentId) {
-    try {
-      console.log("Cancelling payment with Abacate Pay:", paymentId);
-    } catch (error) {
-      console.error("Error cancelling payment:", error);
-      throw error;
-    }
-  },
-  async refundPayment(data) {
-    try {
-      console.log("Processing refund with Abacate Pay:", data);
-      const refundId = `refund_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      return {
-        success: true,
-        refundId,
-        amount: data.amount,
-        gatewayResponse: {
-          refund_id: refundId,
-          payment_id: data.paymentId,
-          amount: data.amount,
-          reason: data.reason,
-          status: "processed",
-          created_at: (/* @__PURE__ */ new Date()).toISOString()
-        }
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  },
-  async handleWebhook(payload, signature) {
-    try {
-      if (signature && !this.verifySignature(payload, signature)) {
-        return {
-          success: false,
-          eventType: "unknown",
-          error: "Invalid signature"
-        };
-      }
-      const eventType = this.mapEventType(payload.type);
-      return {
-        success: true,
-        eventType,
-        paymentId: payload.data?.payment_id,
-        invoiceId: payload.data?.invoice_id,
-        customerId: payload.data?.customer_id,
-        status: payload.data?.status,
-        gatewayResponse: payload
-      };
-    } catch (error) {
-      return {
-        success: false,
-        eventType: "unknown",
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  },
-  async isAvailable() {
-    try {
-      return this.config.apiKey !== void 0 && this.config.secretKey !== void 0;
-    } catch (error) {
-      return false;
-    }
-  },
-  getConfig() {
-    return { ...this.config };
-  },
-  async verifySignature(payload, signature) {
-    return true;
-  },
-  async mapEventType(abacateEventType) {
-    const eventMap = {
-      "payment.created": "payment.created",
-      "payment.completed": "payment.completed",
-      "payment.failed": "payment.failed",
-      "payment.cancelled": "payment.cancelled",
-      "payment.refunded": "payment.refunded",
-      "invoice.created": "invoice.created",
-      "invoice.paid": "invoice.paid",
-      "invoice.failed": "invoice.failed"
-    };
-    return eventMap[abacateEventType] || "payment.created";
-  },
-  // Métodos específicos do Abacate Pay
-  async generatePixPayment(data) {
-    const paymentData = {
-      ...data,
-      paymentMethod: "pix"
-    };
-    return this.createPayment(paymentData);
-  },
-  async generateBoletoPayment(data) {
-    const paymentData = {
-      ...data,
-      paymentMethod: "boleto"
-    };
-    return this.createPayment(paymentData);
-  },
-  async createSubscription(data) {
-    console.log("Creating subscription with Abacate Pay:", data);
-    const subscriptionId = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    return {
-      success: true,
-      paymentId: subscriptionId,
-      status: "completed",
-      gatewayResponse: {
-        subscription_id: subscriptionId,
-        customer_id: data.customerId,
-        plan_id: data.planId,
-        amount: data.amount,
-        interval: data.interval,
-        status: "active",
-        created_at: (/* @__PURE__ */ new Date()).toISOString()
-      }
-    };
-  }
-};
-
-// src/services/payment/stripe.service.ts
-var StripeService = class {
-  constructor() {
-    this.config = {
-      name: "Stripe",
-      version: "2023-10-16",
-      supportedCurrencies: ["USD", "EUR", "BRL", "GBP", "CAD", "AUD"],
-      supportedMethods: ["card", "bank_transfer", "wallet", "buy_now_pay_later"],
-      environment: process.env.STRIPE_ENV === "production" ? "production" : "sandbox",
-      apiKey: process.env.STRIPE_API_KEY,
-      secretKey: process.env.STRIPE_SECRET_KEY,
-      webhookUrl: process.env.STRIPE_WEBHOOK_URL
-    };
-  }
-  async createPayment(data) {
-    try {
-      console.log("Creating payment with Stripe:", data);
-      const paymentId = `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const success = data.amount > 0 && data.amount < 5e4;
-      return {
-        success,
-        paymentId: success ? paymentId : void 0,
-        status: success ? "pending" : "failed",
-        gatewayResponse: {
-          id: paymentId,
-          object: "payment_intent",
-          status: success ? "requires_payment_method" : "failed",
-          amount: Math.round(data.amount * 100),
-          // Stripe usa centavos
-          currency: data.currency || "usd",
-          created: Math.floor(Date.now() / 1e3)
-        },
-        error: success ? void 0 : "Payment amount exceeds limit"
-      };
-    } catch (error) {
-      return {
-        success: false,
-        status: "failed",
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  }
-  async getPaymentStatus(paymentId) {
-    try {
-      console.log("Getting payment status from Stripe:", paymentId);
-      const statuses = ["pending", "completed", "failed", "cancelled"];
-      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-      return {
-        paymentId,
-        status: randomStatus,
-        amount: Math.random() * 1e3,
-        currency: "usd",
-        gatewayResponse: {
-          id: paymentId,
-          object: "payment_intent",
-          status: randomStatus,
-          amount: Math.round(Math.random() * 1e5),
-          currency: "usd",
-          updated: Math.floor(Date.now() / 1e3)
-        }
-      };
-    } catch (error) {
-      return {
-        paymentId,
-        status: "failed",
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  }
-  async cancelPayment(paymentId) {
-    try {
-      console.log("Cancelling payment with Stripe:", paymentId);
-    } catch (error) {
-      console.error("Error cancelling payment:", error);
-      throw error;
-    }
-  }
-  async refundPayment(data) {
-    try {
-      console.log("Processing refund with Stripe:", data);
-      const refundId = `re_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      return {
-        success: true,
-        refundId,
-        amount: data.amount,
-        gatewayResponse: {
-          id: refundId,
-          object: "refund",
-          payment_intent: data.paymentId,
-          amount: data.amount ? Math.round(data.amount * 100) : void 0,
-          reason: data.reason,
-          status: "succeeded",
-          created: Math.floor(Date.now() / 1e3)
-        }
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  }
-  async handleWebhook(payload, signature) {
-    try {
-      if (signature && !this.verifySignature(payload, signature)) {
-        return {
-          success: false,
-          eventType: "unknown",
-          error: "Invalid signature"
-        };
-      }
-      const eventType = this.mapEventType(payload.type);
-      return {
-        success: true,
-        eventType,
-        paymentId: payload.data?.object?.id,
-        invoiceId: payload.data?.object?.metadata?.invoice_id,
-        customerId: payload.data?.object?.customer,
-        status: payload.data?.object?.status,
-        gatewayResponse: payload
-      };
-    } catch (error) {
-      return {
-        success: false,
-        eventType: "unknown",
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  }
-  async isAvailable() {
-    try {
-      return this.config.apiKey !== void 0 && this.config.secretKey !== void 0;
-    } catch (error) {
-      return false;
-    }
-  }
-  getConfig() {
-    return { ...this.config };
-  }
-  verifySignature(payload, signature) {
-    return true;
-  }
-  mapEventType(stripeEventType) {
-    const eventMap = {
-      "payment_intent.created": "payment.created",
-      "payment_intent.succeeded": "payment.completed",
-      "payment_intent.payment_failed": "payment.failed",
-      "payment_intent.canceled": "payment.cancelled",
-      "charge.dispute.created": "payment.refunded",
-      "invoice.created": "invoice.created",
-      "invoice.payment_succeeded": "invoice.paid",
-      "invoice.payment_failed": "invoice.failed",
-      "customer.subscription.created": "subscription.created",
-      "customer.subscription.updated": "subscription.updated",
-      "customer.subscription.deleted": "subscription.cancelled"
-    };
-    return eventMap[stripeEventType] || "payment.created";
-  }
-  // Métodos específicos do Stripe
-  async createPaymentIntent(data) {
-    return this.createPayment(data);
-  }
-  async createCustomer(data) {
-    console.log("Creating customer with Stripe:", data);
-    const customerId = `cus_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    return {
-      success: true,
-      customerId
-    };
-  }
-  async createSubscription(data) {
-    console.log("Creating subscription with Stripe:", data);
-    const subscriptionId = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    return {
-      success: true,
-      paymentId: subscriptionId,
-      status: "completed",
-      gatewayResponse: {
-        id: subscriptionId,
-        object: "subscription",
-        customer: data.customerId,
-        status: "active",
-        current_period_start: Math.floor(Date.now() / 1e3),
-        current_period_end: Math.floor(Date.now() / 1e3) + 30 * 24 * 60 * 60,
-        created: Math.floor(Date.now() / 1e3)
-      }
-    };
-  }
-  async createSetupIntent(customerId) {
-    console.log("Creating setup intent with Stripe:", customerId);
-    const setupIntentId = `seti_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    return {
-      success: true,
-      paymentId: setupIntentId,
-      status: "completed",
-      gatewayResponse: {
-        id: setupIntentId,
-        object: "setup_intent",
-        customer: customerId,
-        status: "succeeded",
-        created: Math.floor(Date.now() / 1e3)
-      }
-    };
-  }
-};
-
-// src/services/payment/polar.service.ts
-var PolarService = class {
-  constructor() {
-    const env = process.env.POLAR_ENV === "production" ? "production" : "sandbox";
-    const accessToken = process.env.POLAR_ACCESS_TOKEN || process.env.POLAR_API_KEY || "";
-    this.baseUrl = process.env.POLAR_BASE_URL || (env === "production" ? "https://api.polar.sh/v1" : "https://sandbox-api.polar.sh/v1");
-    this.polarConfig = {
-      accessToken,
-      server: env
-    };
-    if (accessToken) {
-      this.client = new PolarSDK({
-        accessToken,
-        server: env === "production" ? "production" : "sandbox"
-      });
-    }
-    this.config = {
-      name: "Polar",
-      version: "1.0.0",
-      supportedCurrencies: ["USD", "EUR", "GBP", "BRL", "CAD", "AUD", "JPY"],
-      supportedMethods: ["card", "wallet"],
-      environment: env,
-      apiKey: accessToken,
-      webhookUrl: process.env.POLAR_WEBHOOK_URL
-    };
-  }
-  async makeRequest(method, path3, body) {
-    const url = `${this.baseUrl}${path3}`;
-    const headers = {
-      "Authorization": `Bearer ${this.polarConfig.accessToken}`,
-      "Content-Type": "application/json",
-      "Accept": "application/json"
-    };
-    const options = {
-      method,
-      headers
-    };
-    if (body && (method === "POST" || method === "PUT" || method === "PATCH")) {
-      options.body = JSON.stringify(body);
-    }
-    try {
-      const response = await fetch(url, options);
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({
-          type: "api_error",
-          message: `HTTP ${response.status}: ${response.statusText}`
-        }));
-        throw new Error(error.message || `API request failed with status ${response.status}`);
-      }
-      const data = await response.json();
-      return data.data;
-    } catch (error) {
-      console.error(`Polar API request failed: ${method} ${path3}`, error);
-      throw error;
-    }
-  }
-  async createPayment(data) {
-    try {
-      console.log("Creating payment with Polar:", data);
-      const productId = data.metadata?.product_id || data.metadata?.polar_product_id;
-      if (!productId) {
-        throw new Error("Polar checkout requires metadata.product_id (Polar Product UUID)");
-      }
-      const successUrl = process.env.POLAR_SUCCESS_URL || `${process.env.APP_URL || "http://localhost:3000"}/payment/success`;
-      const cancelUrl = process.env.POLAR_CANCEL_URL || `${process.env.APP_URL || "http://localhost:3000"}/payment/cancel`;
-      if (this.client) {
-        const checkout2 = await this.client.checkouts.create({
-          products: [productId],
-          successUrl,
-          // Campos opcionais adicionais
-          metadata: {
-            invoice_id: data.invoiceId,
-            description: data.description,
-            ...data.metadata
-          }
-        });
-        return {
-          success: true,
-          paymentId: checkout2.id,
-          status: checkout2.status === "complete" ? "completed" : "pending",
-          gatewayResponse: {
-            checkout_session_id: checkout2.id,
-            url: checkout2.url,
-            status: checkout2.status
-          }
-        };
-      }
-      const checkout = await this.makeRequest("POST", "/checkout/sessions", {
-        product_id: productId,
-        customer_id: data.customerId,
-        success_url: successUrl,
-        cancel_url: cancelUrl,
-        metadata: {
-          invoice_id: data.invoiceId,
-          description: data.description,
-          ...data.metadata
-        }
-      });
-      return {
-        success: true,
-        paymentId: checkout.id,
-        status: checkout.status === "complete" ? "completed" : "pending",
-        gatewayResponse: {
-          checkout_session_id: checkout.id,
-          url: checkout.url,
-          status: checkout.status
-        }
-      };
-    } catch (error) {
-      console.error("Polar createPayment error:", error);
-      return {
-        success: false,
-        status: "failed",
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  }
-  async createSubscription(data) {
-    try {
-      console.log("Creating subscription with Polar:", data);
-      const subscriptionRequest = {
-        customer_id: data.customerId,
-        product_id: "",
-        // Será determinado pelo price_id
-        price_id: data.priceId,
-        metadata: {}
-      };
-      const subscription = await this.makeRequest(
-        "POST",
-        "/subscriptions",
-        subscriptionRequest
-      );
-      return {
-        success: true,
-        paymentId: subscription.id,
-        status: subscription.status === "active" ? "completed" : "pending",
-        gatewayResponse: {
-          subscription_id: subscription.id,
-          status: subscription.status,
-          current_period_start: subscription.current_period_start,
-          current_period_end: subscription.current_period_end
-        }
-      };
-    } catch (error) {
-      console.error("Polar createSubscription error:", error);
-      return {
-        success: false,
-        status: "failed",
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  }
-  async getPaymentStatus(paymentId) {
-    try {
-      console.log("Getting payment status from Polar:", paymentId);
-      try {
-        const checkout = await this.makeRequest(
-          "GET",
-          `/checkout/sessions/${paymentId}`
-        );
-        const status = checkout.status === "complete" ? "completed" : checkout.status === "expired" ? "cancelled" : "pending";
-        return {
-          paymentId: checkout.id,
-          status,
-          gatewayResponse: {
-            checkout_session: checkout
-          }
-        };
-      } catch {
-        try {
-          const invoice = await this.makeRequest(
-            "GET",
-            `/invoices/${paymentId}`
-          );
-          const status = invoice.status === "paid" ? "completed" : invoice.status === "void" || invoice.status === "uncollectible" ? "cancelled" : invoice.status === "open" ? "pending" : "failed";
-          return {
-            paymentId: invoice.id,
-            status,
-            amount: invoice.amount / 100,
-            // Converter de centavos
-            currency: invoice.currency,
-            gatewayResponse: {
-              invoice
-            }
-          };
-        } catch {
-          throw new Error("Payment not found");
-        }
-      }
-    } catch (error) {
-      console.error("Polar getPaymentStatus error:", error);
-      return {
-        paymentId,
-        status: "failed",
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  }
-  async cancelPayment(paymentId) {
-    try {
-      console.log("Cancelling payment with Polar:", paymentId);
-      try {
-        await this.makeRequest(
-          "POST",
-          `/subscriptions/${paymentId}/cancel`
-        );
-      } catch {
-        const checkout = await this.makeRequest(
-          "GET",
-          `/checkout/sessions/${paymentId}`
-        );
-        if (checkout.status === "open") {
-          console.log(`Checkout session ${paymentId} will expire naturally`);
-        }
-      }
-    } catch (error) {
-      console.error("Polar cancelPayment error:", error);
-      throw error;
-    }
-  }
-  async refundPayment(data) {
-    try {
-      console.log("Processing refund with Polar:", data);
-      const refund = await this.makeRequest(
-        "POST",
-        "/refunds",
-        {
-          payment_id: data.paymentId,
-          amount: data.amount ? Math.round(data.amount * 100) : void 0,
-          // Converter para centavos
-          reason: data.reason
-        }
-      );
-      return {
-        success: true,
-        refundId: refund.id,
-        amount: refund.amount ? refund.amount / 100 : void 0,
-        gatewayResponse: refund
-      };
-    } catch (error) {
-      console.error("Polar refundPayment error:", error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  }
-  async handleWebhook(payload, signature) {
-    try {
-      if (signature && process.env.POLAR_WEBHOOK_SECRET) {
-        console.log("Webhook signature verification should be implemented");
-      }
-      const event = payload;
-      let eventType = "payment.created";
-      let paymentId;
-      let invoiceId;
-      let customerId;
-      let status;
-      switch (event.type) {
-        case "checkout.succeeded":
-          eventType = "payment.completed";
-          paymentId = event.data.checkout_session?.id;
-          customerId = event.data.checkout_session?.customer_id;
-          status = "completed";
-          break;
-        case "checkout.expired":
-          eventType = "payment.cancelled";
-          paymentId = event.data.checkout_session?.id;
-          status = "cancelled";
-          break;
-        case "subscription.created":
-          eventType = "subscription.created";
-          paymentId = event.data.subscription?.id;
-          customerId = event.data.subscription?.customer_id;
-          status = event.data.subscription?.status;
-          break;
-        case "subscription.updated":
-          eventType = "subscription.updated";
-          paymentId = event.data.subscription?.id;
-          customerId = event.data.subscription?.customer_id;
-          status = event.data.subscription?.status;
-          break;
-        case "subscription.canceled":
-          eventType = "subscription.cancelled";
-          paymentId = event.data.subscription?.id;
-          customerId = event.data.subscription?.customer_id;
-          status = "canceled";
-          break;
-        case "invoice.paid":
-          eventType = "invoice.paid";
-          invoiceId = event.data.invoice?.id;
-          customerId = event.data.invoice?.customer_id;
-          status = "paid";
-          break;
-        case "invoice.payment_failed":
-          eventType = "invoice.failed";
-          invoiceId = event.data.invoice?.id;
-          customerId = event.data.invoice?.customer_id;
-          status = "failed";
-          break;
-        case "invoice.created":
-          eventType = "invoice.created";
-          invoiceId = event.data.invoice?.id;
-          customerId = event.data.invoice?.customer_id;
-          status = "open";
-          break;
-        default:
-          console.log(`Unhandled Polar webhook event type: ${event.type}`);
-      }
-      return {
-        success: true,
-        eventType,
-        paymentId,
-        invoiceId,
-        customerId,
-        status,
-        gatewayResponse: payload
-      };
-    } catch (error) {
-      console.error("Polar handleWebhook error:", error);
-      return {
-        success: false,
-        eventType: "unknown",
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  }
-  async isAvailable() {
-    try {
-      await this.makeRequest("GET", "/products?limit=1");
-      return true;
-    } catch (error) {
-      console.error("Polar availability check failed:", error);
-      return false;
-    }
-  }
-  getConfig() {
-    return { ...this.config };
-  }
-  // Métodos auxiliares específicos do Polar
-  async createProduct(data) {
-    return this.makeRequest("POST", "/products", data);
-  }
-  async createCustomer(data) {
-    return this.makeRequest("POST", "/customers", data);
-  }
-  async getCustomer(customerId) {
-    return this.makeRequest("GET", `/customers/${customerId}`);
-  }
-  async getSubscription(subscriptionId) {
-    return this.makeRequest("GET", `/subscriptions/${subscriptionId}`);
-  }
-  async getCheckoutSession(sessionId) {
-    return this.makeRequest("GET", `/checkout/sessions/${sessionId}`);
-  }
-};
-
-// src/services/payment/payment.service.ts
-var abacatePayInstance = new AbacatePayService();
-var stripeInstance = new StripeService();
-var polarInstance = new PolarService();
-var PaymentService = {
-  gateways: {
-    "abacate-pay": abacatePayInstance,
-    stripe: stripeInstance,
-    polar: polarInstance
-  },
-  async processPayment(gatewayName, data) {
-    const gateway = this.gateways[gatewayName];
-    if (!gateway) {
-      throw new Error(`Gateway '${gatewayName}' not found`);
-    }
-    return gateway.createPayment(data);
-  },
-  async getPaymentStatus(gatewayName, paymentId) {
-    const gateway = this.gateways[gatewayName];
-    if (!gateway) {
-      throw new Error(`Gateway '${gatewayName}' not found`);
-    }
-    try {
-      return await gateway.getPaymentStatus(paymentId);
-    } catch (error) {
-      throw new Error(`Error getting payment status via ${gatewayName}: ${error}`);
-    }
-  },
-  async cancelPayment(gatewayName, paymentId) {
-    const gateway = this.gateways[gatewayName];
-    if (!gateway) {
-      throw new Error(`Gateway '${gatewayName}' not found`);
-    }
-    return gateway.cancelPayment(paymentId);
-  },
-  async refundPayment(gatewayName, data) {
-    const gateway = this.getGateway(gatewayName);
-    if (!gateway) {
-      return {
-        success: false,
-        error: `Gateway '${gatewayName}' not found`
-      };
-    }
-    try {
-      return await gateway.refundPayment(data);
-    } catch (error) {
-      console.error(`Error processing refund via ${gatewayName}:`, error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  },
-  async handleWebhook(gatewayName, payload, signature) {
-    const gateway = this.getGateway(gatewayName);
-    if (!gateway) {
-      return {
-        success: false,
-        eventType: "unknown",
-        error: `Gateway '${gatewayName}' not found`
-      };
-    }
-    try {
-      return await gateway.handleWebhook(payload, signature);
-    } catch (error) {
-      console.error(`Error handling webhook for ${gatewayName}:`, error);
-      return {
-        success: false,
-        eventType: "unknown",
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  },
-  async retryFailedPayment(gatewayName, data, maxRetries = 3) {
-    let attempts = 0;
-    let lastError;
-    while (attempts < maxRetries) {
-      attempts++;
-      const result = await this.processPayment(gatewayName, data);
-      if (result.success) {
-        return result;
-      }
-      lastError = result.error;
-      if (attempts < maxRetries) {
-        const delay = Math.pow(2, attempts) * 1e3;
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
-    }
-    return {
-      success: false,
-      status: "failed",
-      error: `Payment failed after ${maxRetries} attempts. Last error: ${lastError}`
-    };
-  },
-  getGateway(gatewayName) {
-    return this.gateways[gatewayName];
-  },
-  getAvailableGateways() {
-    return Object.entries(this.gateways).map(([name, gateway]) => ({
-      name,
-      config: gateway.getConfig()
-    }));
-  },
-  async getGatewayHealth() {
-    const healthChecks = await Promise.allSettled(
-      Object.entries(this.gateways).map(async ([name, gateway]) => {
-        try {
-          const available = await gateway.isAvailable();
-          return { name, available };
-        } catch (error) {
-          return {
-            name,
-            available: false,
-            error: error instanceof Error ? error.message : "Unknown error"
-          };
-        }
-      })
-    );
-    return healthChecks.map(
-      (result) => result.status === "fulfilled" ? result.value : {
-        name: "unknown",
-        available: false,
-        error: "Health check failed"
-      }
-    );
-  },
-  // Método para determinar o melhor gateway baseado nos dados do pagamento
-  async selectBestGateway(data) {
-    const availableGateways = await this.getGatewayHealth();
-    const workingGateways = availableGateways.filter((g) => g.available);
-    if (workingGateways.length === 0) {
-      return null;
-    }
-    if (data.currency === "BRL") {
-      const abacatePay = workingGateways.find((g) => g.name === "abacate-pay");
-      if (abacatePay) {
-        return "abacate-pay";
-      }
-    }
-    const polar = workingGateways.find((g) => g.name === "polar");
-    if (polar && data.metadata?.preferPolar) {
-      return "polar";
-    }
-    const stripe = workingGateways.find((g) => g.name === "stripe");
-    if (stripe) {
-      return "stripe";
-    }
-    if (polar) {
-      return "polar";
-    }
-    return workingGateways[0]?.name || null;
-  },
-  // Método para processar pagamento com gateway automático
-  async processPaymentAuto(data) {
-    const selectedGateway = await this.selectBestGateway(data);
-    if (!selectedGateway) {
-      return {
-        success: false,
-        status: "failed",
-        error: "No payment gateways available",
-        gateway: "none"
-      };
-    }
-    const result = await this.processPayment(selectedGateway, data);
-    return {
-      ...result,
-      gateway: selectedGateway
-    };
-  }
-};
-
-// src/services/payment/webhook-handler.ts
-var WebhookHandler = {
-  async processWebhook(gatewayName, payload, signature) {
-    try {
-      const result = await PaymentService.handleWebhook(
-        gatewayName,
-        payload,
-        signature
-      );
-      if (!result.success) {
-        return {
-          success: false,
-          error: result.error
-        };
-      }
-      const webhookEvent = {
-        id: payload.id || `webhook_${Date.now()}`,
-        type: result.eventType,
-        data: {
-          paymentId: result.paymentId,
-          invoiceId: result.invoiceId,
-          customerId: result.customerId,
-          amount: payload.data?.object?.amount || payload.data?.amount,
-          currency: payload.data?.object?.currency || payload.data?.currency,
-          status: result.status,
-          metadata: payload.data?.object?.metadata || payload.data?.metadata
-        },
-        createdAt: /* @__PURE__ */ new Date(),
-        gateway: gatewayName
-      };
-      await WebhookHandler.processEvent(webhookEvent);
-      return {
-        success: true,
-        event: webhookEvent
-      };
-    } catch (error) {
-      console.error("Error processing webhook:", error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  },
-  async processEvent(event) {
-    try {
-      console.log(`Processing webhook event: ${event.type}`, event);
-      switch (event.type) {
-        case "payment.completed":
-          await WebhookHandler.handlePaymentCompleted(event);
-          break;
-        case "payment.failed":
-          await WebhookHandler.handlePaymentFailed(event);
-          break;
-        case "payment.cancelled":
-          await WebhookHandler.handlePaymentCancelled(event);
-          break;
-        case "payment.refunded":
-          await WebhookHandler.handlePaymentRefunded(event);
-          break;
-        case "invoice.paid":
-          await WebhookHandler.handleInvoicePaid(event);
-          break;
-        case "invoice.failed":
-          await WebhookHandler.handleInvoiceFailed(event);
-          break;
-        case "subscription.created":
-          await WebhookHandler.handleSubscriptionCreated(event);
-          break;
-        case "subscription.updated":
-          await WebhookHandler.handleSubscriptionUpdated(event);
-          break;
-        case "subscription.cancelled":
-          await WebhookHandler.handleSubscriptionCancelled(event);
-          break;
-        case "subscription.renewed":
-          await WebhookHandler.handleSubscriptionRenewed(event);
-          break;
-        default:
-          console.log(`Unhandled webhook event type: ${event.type}`);
-      }
-    } catch (error) {
-      console.error(`Error processing event ${event.type}:`, error);
-      throw error;
-    }
-  },
-  async handlePaymentCompleted(event) {
-    if (event.data.invoiceId) {
-      console.log(`Updating invoice ${event.data.invoiceId} to PAID`);
-      try {
-        await InvoiceCommands.markAsPaid(event.data.invoiceId, event.data.paymentId);
-      } catch (error) {
-        console.error(`Error updating invoice ${event.data.invoiceId}:`, error);
-      }
-    }
-    if (event.data.customerId) {
-      console.log(`Payment confirmation for customer ${event.data.customerId}`);
-    }
-  },
-  async handlePaymentFailed(event) {
-    if (event.data.invoiceId) {
-      console.log(`Updating invoice ${event.data.invoiceId} to FAILED`);
-      try {
-        await InvoiceCommands.markAsFailed(event.data.invoiceId);
-      } catch (error) {
-        console.error(`Error updating invoice ${event.data.invoiceId}:`, error);
-      }
-    }
-    if (event.data.customerId) {
-      console.log(`Payment failed for customer ${event.data.customerId}`);
-    }
-  },
-  async handlePaymentCancelled(event) {
-    if (event.data.invoiceId) {
-      console.log(`Updating invoice ${event.data.invoiceId} to CANCELLED`);
-    }
-  },
-  async handlePaymentRefunded(event) {
-    if (event.data.invoiceId) {
-      console.log(`Processing refund for invoice ${event.data.invoiceId}`);
-    }
-  },
-  async handleInvoicePaid(event) {
-    if (event.data.invoiceId) {
-      console.log(`Invoice ${event.data.invoiceId} marked as paid`);
-      try {
-        await InvoiceCommands.markAsPaid(event.data.invoiceId, event.data.paymentId);
-      } catch (error) {
-        console.error(`Error updating invoice ${event.data.invoiceId}:`, error);
-      }
-    }
-    if (event.data.customerId) {
-      console.log(`Updating customer ${event.data.customerId} subscription status`);
-      try {
-        await CustomerCommands.renewSubscription(event.data.customerId);
-      } catch (error) {
-        console.error(`Error updating customer ${event.data.customerId}:`, error);
-      }
-    }
-  },
-  async handleInvoiceFailed(event) {
-    if (event.data.invoiceId) {
-      console.log(`Invoice ${event.data.invoiceId} failed`);
-      try {
-        await InvoiceCommands.markAsFailed(event.data.invoiceId);
-      } catch (error) {
-        console.error(`Error updating invoice ${event.data.invoiceId}:`, error);
-      }
-    }
-  },
-  async handleSubscriptionCreated(event) {
-    if (event.data.customerId) {
-      console.log(`Subscription created for customer ${event.data.customerId}`);
-      try {
-        await CustomerCommands.updateStatus(event.data.customerId, "ACTIVE");
-      } catch (error) {
-        console.error(`Error updating customer ${event.data.customerId}:`, error);
-      }
-    }
-  },
-  async handleSubscriptionUpdated(event) {
-    if (event.data.customerId) {
-      console.log(`Subscription updated for customer ${event.data.customerId}`);
-      try {
-        const statusMap = {
-          "active": "ACTIVE",
-          "inactive": "INACTIVE",
-          "canceled": "CANCELLED",
-          "trialing": "TRIAL"
-        };
-        const status = statusMap[event.data.status?.toLowerCase() || "active"] || "ACTIVE";
-        await CustomerCommands.updateStatus(event.data.customerId, status);
-      } catch (error) {
-        console.error(`Error updating customer ${event.data.customerId}:`, error);
-      }
-    }
-  },
-  async handleSubscriptionCancelled(event) {
-    if (event.data.customerId) {
-      console.log(`Subscription cancelled for customer ${event.data.customerId}`);
-      try {
-        await CustomerCommands.cancelSubscription(event.data.customerId);
-      } catch (error) {
-        console.error(`Error cancelling subscription for customer ${event.data.customerId}:`, error);
-      }
-    }
-  },
-  async handleSubscriptionRenewed(event) {
-    if (event.data.customerId) {
-      console.log(`Subscription renewed for customer ${event.data.customerId}`);
-      try {
-        await CustomerCommands.renewSubscription(event.data.customerId);
-      } catch (error) {
-        console.error(`Error renewing subscription for customer ${event.data.customerId}:`, error);
-      }
-    }
-  },
-  // Método para verificar a integridade do webhook
-  async verifyWebhook(gatewayName, payload, signature) {
-    try {
-      const result = await PaymentService.handleWebhook(
-        gatewayName,
-        payload,
-        signature
-      );
-      return result.success;
-    } catch (error) {
-      console.error("Error verifying webhook:", error);
-      return false;
-    }
-  },
-  // Método para listar todos os tipos de eventos suportados
-  getSupportedEvents() {
-    return [
-      "payment.created",
-      "payment.completed",
-      "payment.failed",
-      "payment.cancelled",
-      "payment.refunded",
-      "invoice.created",
-      "invoice.paid",
-      "invoice.failed",
-      "subscription.created",
-      "subscription.updated",
-      "subscription.cancelled",
-      "subscription.renewed"
-    ];
-  }
-};
-
-// src/features/webhook/webhook.service.ts
-var WebhookService = {
-  async processWebhook(gateway, payload, signature) {
-    try {
-      const availableGateways = PaymentService.getAvailableGateways();
-      const gatewayExists = availableGateways.some((g) => g.name === gateway);
-      if (!gatewayExists) {
-        return {
-          success: false,
-          error: `Gateway '${gateway}' not supported`
-        };
-      }
-      const result = await WebhookHandler.processWebhook(
-        gateway,
-        payload,
-        signature
-      );
-      await WebhookService.logWebhook({
-        gateway,
-        eventType: result.event?.type || "unknown",
-        eventId: result.event?.id,
-        success: result.success,
-        payload,
-        response: result.event,
-        error: result.error,
-        processedAt: /* @__PURE__ */ new Date()
-      });
-      return {
-        success: result.success,
-        eventId: result.event?.id,
-        eventType: result.event?.type,
-        error: result.error
-      };
-    } catch (error) {
-      await WebhookService.logWebhook({
-        gateway,
-        eventType: "error",
-        success: false,
-        payload,
-        error: error instanceof Error ? error.message : "Unknown error",
-        processedAt: /* @__PURE__ */ new Date()
-      });
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  },
-  async verifyWebhook(gateway, payload, signature) {
-    try {
-      return await WebhookHandler.verifyWebhook(
-        gateway,
-        payload,
-        signature
-      );
-    } catch (error) {
-      console.error("Error verifying webhook:", error);
-      return false;
-    }
-  },
-  async getWebhookLogs(params) {
-    const mockLogs = [
-      {
-        id: "log_1",
-        gateway: "stripe",
-        eventType: "payment.completed",
-        eventId: "evt_123",
-        success: true,
-        payload: { type: "payment_intent.succeeded" },
-        processedAt: new Date(Date.now() - 1e3 * 60 * 5),
-        // 5 minutos atrás
-        createdAt: new Date(Date.now() - 1e3 * 60 * 5)
-      },
-      {
-        id: "log_2",
-        gateway: "abacate-pay",
-        eventType: "payment.failed",
-        eventId: "evt_456",
-        success: false,
-        payload: { type: "payment_failed" },
-        error: "Payment declined",
-        processedAt: new Date(Date.now() - 1e3 * 60 * 10),
-        // 10 minutos atrás
-        createdAt: new Date(Date.now() - 1e3 * 60 * 10)
-      }
-    ];
-    let filteredLogs = mockLogs;
-    if (params.gateway) {
-      filteredLogs = filteredLogs.filter((log) => log.gateway === params.gateway);
-    }
-    if (params.eventType) {
-      filteredLogs = filteredLogs.filter((log) => log.eventType === params.eventType);
-    }
-    if (params.success !== void 0) {
-      filteredLogs = filteredLogs.filter((log) => log.success === params.success);
-    }
-    if (params.startDate) {
-      const startDate = new Date(params.startDate);
-      filteredLogs = filteredLogs.filter((log) => log.processedAt >= startDate);
-    }
-    if (params.endDate) {
-      const endDate = new Date(params.endDate);
-      filteredLogs = filteredLogs.filter((log) => log.processedAt <= endDate);
-    }
-    const page = params.page || 1;
-    const limit = params.limit || 10;
-    const skip = (page - 1) * limit;
-    const items = filteredLogs.slice(skip, skip + limit);
-    const total = filteredLogs.length;
-    return {
-      items,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit)
-      }
-    };
-  },
-  async getWebhookStats() {
-    const mockStats = {
-      total: 150,
-      successful: 142,
-      failed: 8,
-      byGateway: {
-        "stripe": {
-          total: 100,
-          successful: 95,
-          failed: 5
-        },
-        "abacate-pay": {
-          total: 50,
-          successful: 47,
-          failed: 3
-        }
-      },
-      byEventType: {
-        "payment.completed": 95,
-        "payment.failed": 8,
-        "payment.cancelled": 2,
-        "invoice.paid": 45,
-        "invoice.failed": 3
-      },
-      last24Hours: {
-        total: 25,
-        successful: 24,
-        failed: 1
-      }
-    };
-    return mockStats;
-  },
-  async getWebhookHealth() {
-    try {
-      const gatewayHealth = await PaymentService.getGatewayHealth();
-      const gateways = gatewayHealth.map((gateway) => ({
-        name: gateway.name,
-        available: gateway.available,
-        lastWebhook: new Date(Date.now() - Math.random() * 1e3 * 60 * 60),
-        // Mock
-        errorRate: Math.random() * 5
-        // Mock: 0-5% error rate
-      }));
-      const availableGateways = gateways.filter((g) => g.available).length;
-      const totalGateways = gateways.length;
-      return {
-        gateways,
-        overall: {
-          available: availableGateways > 0,
-          totalGateways,
-          availableGateways
-        }
-      };
-    } catch (error) {
-      console.error("Error getting webhook health:", error);
-      return {
-        gateways: [],
-        overall: {
-          available: false,
-          totalGateways: 0,
-          availableGateways: 0
-        }
-      };
-    }
-  },
-  async getSupportedEvents() {
-    return WebhookHandler.getSupportedEvents();
-  },
-  async retryFailedWebhook(webhookId) {
-    try {
-      console.log(`Retrying failed webhook: ${webhookId}`);
-      return {
-        success: true
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  },
-  async deleteWebhookLog(webhookId) {
-    try {
-      console.log(`Deleting webhook log: ${webhookId}`);
-      return {
-        success: true
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error"
-      };
-    }
-  },
-  async logWebhook(data) {
-    console.log("Webhook logged:", {
-      ...data,
-      id: `webhook_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: /* @__PURE__ */ new Date()
-    });
-  }
-};
-
-// src/features/webhook/webhook.controller.ts
-var WebhookController = {
-  async processAbacatePay(request, reply) {
-    try {
-      const { payload } = request.body;
-      const signature = request.headers["x-abacate-signature"] || request.headers["x-signature"];
-      const result = await WebhookService.processWebhook(
-        "abacate-pay",
-        payload,
-        signature
-      );
-      if (!result.success) {
-        return reply.status(400).send({
-          error: result.error
-        });
-      }
-      return reply.status(200).send({
-        success: true,
-        eventId: result.eventId,
-        eventType: result.eventType,
-        gateway: "abacate-pay",
-        processedAt: /* @__PURE__ */ new Date()
-      });
-    } catch (error) {
-      request.log.error(error);
-      return reply.status(500).send({
-        error: "Internal server error"
-      });
-    }
-  },
-  async processPolar(request, reply) {
-    try {
-      const payload = request.body;
-      const signature = request.headers["x-polar-signature"] || request.headers["polar-signature"] || request.headers["x-signature"];
-      const result = await WebhookService.processWebhook(
-        "polar",
-        payload,
-        signature
-      );
-      if (!result.success) {
-        return reply.status(400).send({
-          error: result.error
-        });
-      }
-      return reply.status(200).send({
-        success: true,
-        eventId: result.eventId,
-        eventType: result.eventType,
-        gateway: "polar",
-        processedAt: /* @__PURE__ */ new Date()
-      });
-    } catch (error) {
-      request.log.error(error);
-      return reply.status(500).send({
-        error: "Internal server error"
-      });
-    }
-  },
-  async processStripe(request, reply) {
-    try {
-      const payload = request.body;
-      const signature = request.headers["stripe-signature"];
-      const result = await WebhookService.processWebhook(
-        "stripe",
-        payload,
-        signature
-      );
-      if (!result.success) {
-        return reply.status(400).send({
-          error: result.error
-        });
-      }
-      return reply.status(200).send({
-        success: true,
-        eventId: result.eventId,
-        eventType: result.eventType,
-        gateway: "stripe",
-        processedAt: /* @__PURE__ */ new Date()
-      });
-    } catch (error) {
-      request.log.error(error);
-      return reply.status(500).send({
-        error: "Internal server error"
-      });
-    }
-  },
-  async processGeneric(request, reply) {
-    try {
-      const { gateway } = request.params;
-      const payload = request.body;
-      const signature = request.headers["x-signature"] || request.headers["x-hub-signature"];
-      const result = await WebhookService.processWebhook(
-        gateway,
-        payload,
-        signature
-      );
-      if (!result.success) {
-        return reply.status(400).send({
-          error: result.error
-        });
-      }
-      return reply.status(200).send({
-        success: true,
-        eventId: result.eventId,
-        eventType: result.eventType,
-        gateway,
-        processedAt: /* @__PURE__ */ new Date()
-      });
-    } catch (error) {
-      request.log.error(error);
-      return reply.status(500).send({
-        error: "Internal server error"
-      });
-    }
-  },
-  async getLogs(request, reply) {
-    try {
-      const { page = 1, limit = 10, gateway, eventType, success, startDate, endDate } = request.query;
-      const result = await WebhookService.getWebhookLogs({
-        page,
-        limit,
-        gateway,
-        eventType,
-        success,
-        startDate,
-        endDate
-      });
-      return reply.send(result);
-    } catch (error) {
-      request.log.error(error);
-      return reply.status(500).send({
-        error: "Internal server error"
-      });
-    }
-  },
-  async getStats(request, reply) {
-    try {
-      const result = await WebhookService.getWebhookStats();
-      return reply.send(result);
-    } catch (error) {
-      request.log.error(error);
-      return reply.status(500).send({
-        error: "Internal server error"
-      });
-    }
-  },
-  async getHealth(request, reply) {
-    try {
-      const result = await WebhookService.getWebhookHealth();
-      return reply.send(result);
-    } catch (error) {
-      request.log.error(error);
-      return reply.status(500).send({
-        error: "Internal server error"
-      });
-    }
-  },
-  async getSupportedEvents(request, reply) {
-    try {
-      const result = await WebhookService.getSupportedEvents();
-      return reply.send({
-        events: result
-      });
-    } catch (error) {
-      request.log.error(error);
-      return reply.status(500).send({
-        error: "Internal server error"
-      });
-    }
-  },
-  async retryFailed(request, reply) {
-    try {
-      const { id } = request.params;
-      const result = await WebhookService.retryFailedWebhook(id);
-      if (!result.success) {
-        return reply.status(400).send({
-          error: result.error
-        });
-      }
-      return reply.send({
-        success: true,
-        message: "Webhook retry initiated"
-      });
-    } catch (error) {
-      request.log.error(error);
-      return reply.status(500).send({
-        error: "Internal server error"
-      });
-    }
-  },
-  async deleteLog(request, reply) {
-    try {
-      const { id } = request.params;
-      const result = await WebhookService.deleteWebhookLog(id);
-      if (!result.success) {
-        return reply.status(400).send({
-          error: result.error
-        });
-      }
-      return reply.status(204).send();
-    } catch (error) {
-      request.log.error(error);
-      return reply.status(500).send({
-        error: "Internal server error"
-      });
-    }
-  }
-};
-
-// src/features/webhook/webhook.routes.ts
-async function WebhookRoutes(fastify2) {
-  fastify2.post("/abacate-pay", {
-    config: {
-      // Configurações específicas para webhooks
-      rawBody: true
-      // Para preservar o body original para verificação de assinatura
-    },
-    handler: WebhookController.processAbacatePay
-  });
-  fastify2.post("/stripe", {
-    config: {
-      rawBody: true
-    },
-    handler: WebhookController.processStripe
-  });
-  fastify2.post("/polar", {
-    config: {
-      rawBody: true
-    },
-    handler: WebhookController.processPolar
-  });
-  fastify2.post("/:gateway", {
-    config: {
-      rawBody: true
-    },
-    handler: WebhookController.processGeneric
-  });
-  fastify2.get("/logs", {
-    schema: {
-      querystring: {
-        type: "object",
-        properties: {
-          page: { type: "number", minimum: 1, default: 1 },
-          limit: { type: "number", minimum: 1, maximum: 100, default: 10 },
-          gateway: { type: "string" },
-          eventType: { type: "string" },
-          success: { type: "boolean" },
-          startDate: { type: "string", format: "date" },
-          endDate: { type: "string", format: "date" }
-        }
-      },
-      response: {
-        200: {
-          type: "object",
-          properties: {
-            items: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  id: { type: "string" },
-                  gateway: { type: "string" },
-                  eventType: { type: "string" },
-                  eventId: { type: "string", nullable: true },
-                  success: { type: "boolean" },
-                  payload: { type: "object" },
-                  response: { type: "object", nullable: true },
-                  error: { type: "string", nullable: true },
-                  processedAt: { type: "string", format: "date-time" },
-                  createdAt: { type: "string", format: "date-time" }
-                }
-              }
-            },
-            pagination: {
-              type: "object",
-              properties: {
-                page: { type: "number" },
-                limit: { type: "number" },
-                total: { type: "number" },
-                totalPages: { type: "number" }
-              }
-            }
-          }
-        }
-      }
-    },
-    preHandler: [(init_auth_middleware(), __toCommonJS(auth_middleware_exports)).authMiddleware],
-    handler: WebhookController.getLogs
-  });
-  fastify2.get("/stats", {
-    schema: {
-      response: {
-        200: {
-          type: "object",
-          properties: {
-            total: { type: "number" },
-            successful: { type: "number" },
-            failed: { type: "number" },
-            byGateway: {
-              type: "object",
-              additionalProperties: {
-                type: "object",
-                properties: {
-                  total: { type: "number" },
-                  successful: { type: "number" },
-                  failed: { type: "number" }
-                }
-              }
-            },
-            byEventType: {
-              type: "object",
-              additionalProperties: { type: "number" }
-            },
-            last24Hours: {
-              type: "object",
-              properties: {
-                total: { type: "number" },
-                successful: { type: "number" },
-                failed: { type: "number" }
-              }
-            }
-          }
-        }
-      }
-    },
-    preHandler: [(init_auth_middleware(), __toCommonJS(auth_middleware_exports)).authMiddleware],
-    handler: WebhookController.getStats
-  });
-  fastify2.get("/health", {
-    schema: {
-      response: {
-        200: {
-          type: "object",
-          properties: {
-            gateways: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  name: { type: "string" },
-                  available: { type: "boolean" },
-                  lastWebhook: { type: "string", format: "date-time", nullable: true },
-                  errorRate: { type: "number", nullable: true }
-                }
-              }
-            },
-            overall: {
-              type: "object",
-              properties: {
-                available: { type: "boolean" },
-                totalGateways: { type: "number" },
-                availableGateways: { type: "number" }
-              }
-            }
-          }
-        }
-      }
-    },
-    handler: WebhookController.getHealth
-  });
-  fastify2.get("/events", {
-    schema: {
-      response: {
-        200: {
-          type: "object",
-          properties: {
-            events: {
-              type: "array",
-              items: { type: "string" }
-            }
-          }
-        }
-      }
-    },
-    handler: WebhookController.getSupportedEvents
-  });
-  fastify2.post("/:id/retry", {
-    schema: {
-      params: {
-        type: "object",
-        required: ["id"],
-        properties: {
-          id: { type: "string" }
-        }
-      },
-      response: {
-        200: {
-          type: "object",
-          properties: {
-            success: { type: "boolean" },
-            message: { type: "string" }
-          }
-        }
-      }
-    },
-    preHandler: [(init_auth_middleware(), __toCommonJS(auth_middleware_exports)).authMiddleware],
-    handler: WebhookController.retryFailed
-  });
-  fastify2.delete("/:id/log", {
-    schema: {
-      params: {
-        type: "object",
-        required: ["id"],
-        properties: {
-          id: { type: "string" }
-        }
-      },
-      response: {
-        204: { type: "null" }
-      }
-    },
-    preHandler: [(init_auth_middleware(), __toCommonJS(auth_middleware_exports)).authMiddleware],
-    handler: WebhookController.deleteLog
-  });
-}
-
 // src/features/crm/commands/crm.commands.ts
-init_prisma();
 var CrmCommands = {
   async create(data) {
     if (data.stageId) {
@@ -37947,7 +35651,6 @@ var CrmCommands = {
 };
 
 // src/features/crm/queries/crm.queries.ts
-init_prisma();
 var CrmQueries = {
   async getById(id, storeId) {
     return await db.crmClient.findFirst({
@@ -38110,7 +35813,6 @@ var CrmQueries = {
 };
 
 // src/features/crm/commands/crm.stage.commands.ts
-init_prisma();
 var CrmStageCommands = {
   async create(data) {
     return await db.crmStage.create({
@@ -38178,7 +35880,6 @@ var CrmStageCommands = {
 };
 
 // src/features/crm/queries/crm.stage.queries.ts
-init_prisma();
 var CrmStageQueries = {
   async getById(id, storeId) {
     return await db.crmStage.findFirst({
@@ -39310,7 +37011,6 @@ async function CrmRoutes(fastify2) {
 }
 
 // src/features/user-preferences/commands/user-preferences.commands.ts
-init_prisma();
 var UserPreferencesCommands = {
   async create(data) {
     try {
@@ -40818,7 +38518,6 @@ async function UserPreferencesRoutes(fastify2) {
 }
 
 // src/features/flow/commands/flow.commands.ts
-init_prisma();
 var FlowCommands = {
   async create(data) {
     try {
@@ -41715,7 +39414,6 @@ async function FlowRoutes(fastify2) {
 }
 
 // src/features/flow-execution/queries/flow-execution.queries.ts
-init_prisma();
 var FlowExecutionQueries = {
   async getById(id) {
     try {
@@ -42591,7 +40289,6 @@ var PushSubscriptionSchemas = {
 };
 
 // src/features/push-subscription/push-subscription.routes.ts
-init_auth_middleware();
 async function PushSubscriptionRoutes(fastify2) {
   fastify2.post("/", {
     schema: PushSubscriptionSchemas.create,
@@ -42613,73 +40310,120 @@ async function PushSubscriptionRoutes(fastify2) {
   });
 }
 
+// src/plugins/polar.ts
+var import_sdk = require("@polar-sh/sdk");
+var polar = new import_sdk.Polar({
+  accessToken: process.env.POLAR_ACCESS_KEY,
+  server: "sandbox"
+  //"sandbox") as "production" | "sandbox"
+});
+
 // src/features/polar/commands/polar.commands.ts
-init_prisma();
 var PolarCommands = {
   async checkout(data) {
-    const accessToken = process.env.POLAR_ACCESS_TOKEN;
-    const baseUrl = process.env.POLAR_BASE_URL || "https://api.polar.sh";
-    const successUrl = process.env.POLAR_SUCCESS_URL || `${process.env.APP_URL || "http://localhost:3000"}/payment/success`;
-    const cancelUrl = process.env.POLAR_CANCEL_URL || `${process.env.APP_URL || "http://localhost:3000"}/payment/cancel`;
-    const response = await fetch(`${baseUrl}/v1/checkout/sessions`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
-      body: JSON.stringify({
-        product_id: data.productId,
-        success_url: successUrl,
-        cancel_url: cancelUrl,
-        metadata: {
-          user_id: data.userId
-        }
-      })
-    });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: response.statusText }));
-      throw new Error(errorData.message || `Failed to create checkout: ${response.statusText}`);
+    try {
+      const checkout = await polar.checkouts.create({
+        customerBillingAddress: {
+          country: "BR"
+        },
+        customerEmail: data.customer.email,
+        customerName: data.customer.name,
+        products: [data.productId]
+      });
+      if (!checkout) {
+        throw new Error("Failed to create checkout");
+      }
+      return checkout;
+    } catch (error) {
+      console.error("Polar checkout error:", error);
+      throw new Error("Failed to create checkout");
     }
-    const result = await response.json();
-    return result;
   },
   async webhook(event) {
     try {
       const type = event?.type || "";
-      const checkout = event?.data?.checkout_session;
-      const subscription = event?.data?.subscription;
-      const setCustomerPolarFields = async (where, data) => {
-        const existing = await db.customer.findFirst({ where });
-        if (existing) {
-          return db.customer.update({ where: { id: existing.id }, data });
+      const data = event?.data || {};
+      const findOrCreateCustomerByUserId = async (userId) => {
+        let customer = await db.customer.findFirst({ where: { userId } });
+        if (!customer) {
+          customer = await db.customer.create({ data: { userId, status: "ACTIVE" } });
         }
-        if (where.userId) {
-          return db.customer.create({ data: { userId: where.userId, ...data } });
-        }
-        return existing;
+        return customer;
       };
+      const findCustomerByPolarOrEmail = async (opts) => {
+        const { polarCustomerId, email } = opts;
+        if (polarCustomerId) {
+          const byPolar = await db.customer.findFirst({ where: { polarCustomerId } });
+          if (byPolar) return byPolar;
+        }
+        if (email) {
+          const user = await db.user.findFirst({ where: { email } });
+          if (user) return await findOrCreateCustomerByUserId(user.id);
+        }
+        return null;
+      };
+      const resolvePlanByPolarProduct = async (polarProductId) => {
+        if (!polarProductId) return null;
+        return await db.plan.findFirst({ where: { polarProductId } });
+      };
+      const setCustomerPlanAndStatus = async (customerId, planId, status, renewalDate, trialEndsAt) => {
+        return await db.customer.update({
+          where: { id: customerId },
+          data: {
+            planId: planId || void 0,
+            status,
+            renewalDate: renewalDate || null,
+            trialEndsAt: trialEndsAt || null
+          }
+        });
+      };
+      const upsertInvoice = async (customerId, amountCents, polarInvoiceId, status = "PENDING", paymentDate) => {
+        if (!amountCents && !polarInvoiceId) return null;
+        const amount = amountCents ? (Number(amountCents) / 100).toFixed(2) : "0.00";
+        const existing = polarInvoiceId ? await db.invoice.findFirst({ where: { polarInvoiceId } }) : null;
+        if (existing) {
+          return await db.invoice.update({
+            where: { id: existing.id },
+            data: {
+              status,
+              paymentDate: paymentDate || existing.paymentDate || null
+            }
+          });
+        }
+        return await db.invoice.create({
+          data: {
+            customerId,
+            amount,
+            status,
+            polarInvoiceId: polarInvoiceId || null,
+            paymentDate: paymentDate || null
+          }
+        });
+      };
+      const checkout = data?.checkout_session;
+      const subscription = data?.subscription;
       switch (type) {
         case "checkout.succeeded": {
           const userIdFromMetadata = checkout?.metadata?.user_id;
           const polarCustomerId = checkout?.customer_id;
           const polarSubscriptionId = checkout?.subscription_id;
           if (userIdFromMetadata) {
-            await setCustomerPolarFields(
-              { userId: userIdFromMetadata },
-              {
-                polarCustomerId: polarCustomerId || void 0,
-                polarSubscriptionId: polarSubscriptionId || void 0
+            const customer = await findOrCreateCustomerByUserId(userIdFromMetadata);
+            await db.customer.update({
+              where: { id: customer.id },
+              data: {
+                polarCustomerId: polarCustomerId || customer.polarCustomerId || null,
+                polarSubscriptionId: polarSubscriptionId || customer.polarSubscriptionId || null
               }
-            );
+            });
           } else if (polarCustomerId) {
-            await setCustomerPolarFields(
-              { polarCustomerId },
-              {
-                polarCustomerId,
-                polarSubscriptionId: polarSubscriptionId || void 0
-              }
-            );
+            const customer = await findCustomerByPolarOrEmail({ polarCustomerId, email: null });
+            if (customer) {
+              await db.customer.update({
+                where: { id: customer.id },
+                data: { polarCustomerId, polarSubscriptionId: polarSubscriptionId || customer.polarSubscriptionId || null }
+              });
+            }
           }
           break;
         }
@@ -42689,14 +40433,95 @@ var PolarCommands = {
           const polarCustomerId = subscription?.customer_id;
           const polarSubscriptionId = subscription?.id;
           if (polarCustomerId || polarSubscriptionId) {
-            await setCustomerPolarFields(
-              polarCustomerId ? { polarCustomerId } : { polarSubscriptionId },
-              {
-                polarCustomerId: polarCustomerId || void 0,
-                polarSubscriptionId: polarSubscriptionId || void 0
-              }
-            );
+            const customer = await findCustomerByPolarOrEmail({ polarCustomerId, email: null });
+            if (customer) {
+              await db.customer.update({
+                where: { id: customer.id },
+                data: {
+                  polarCustomerId: polarCustomerId || customer.polarCustomerId || null,
+                  polarSubscriptionId: polarSubscriptionId || customer.polarSubscriptionId || null
+                }
+              });
+            }
           }
+          break;
+        }
+        // === NOVOS EVENTOS DE ORDER ===
+        case "order.created":
+        case "order.updated": {
+          const order = data;
+          const polarCustomerId = order?.customer_id || order?.customerId;
+          const email = order?.customer?.email || order?.email;
+          const productId = order?.product_id || order?.productId;
+          const customer = await findCustomerByPolarOrEmail({ polarCustomerId, email });
+          if (customer) {
+            await db.customer.update({
+              where: { id: customer.id },
+              data: {
+                polarCustomerId: polarCustomerId || customer.polarCustomerId || null
+              }
+            });
+            const plan = await resolvePlanByPolarProduct(productId);
+            if (plan && customer.planId !== plan.id) {
+              await db.customer.update({ where: { id: customer.id }, data: { planId: plan.id } });
+            }
+          }
+          break;
+        }
+        case "order.paid": {
+          const order = data;
+          const polarCustomerId = order?.customer_id || order?.customerId;
+          const email = order?.customer?.email || order?.email;
+          const productId = order?.product_id || order?.productId;
+          const amountCents = order?.amount || order?.amount_cents || order?.total_amount_cents;
+          const invoiceId = order?.invoice_id || order?.invoiceId;
+          const currentPeriodEndIso = order?.current_period_end;
+          const customer = await findCustomerByPolarOrEmail({ polarCustomerId, email });
+          if (!customer) break;
+          const plan = await resolvePlanByPolarProduct(productId);
+          const renewalDate = currentPeriodEndIso ? new Date(currentPeriodEndIso) : null;
+          await setCustomerPlanAndStatus(customer.id, plan ? plan.id : null, "ACTIVE", renewalDate, null);
+          await upsertInvoice(customer.id, amountCents, invoiceId || null, "PAID", /* @__PURE__ */ new Date());
+          break;
+        }
+        case "order.refunded": {
+          const order = data;
+          const polarCustomerId = order?.customer_id || order?.customerId;
+          const email = order?.customer?.email || order?.email;
+          const invoiceId = order?.invoice_id || order?.invoiceId;
+          const customer = await findCustomerByPolarOrEmail({ polarCustomerId, email });
+          if (!customer) break;
+          await setCustomerPlanAndStatus(customer.id, customer.planId, "INACTIVE", null, null);
+          await upsertInvoice(customer.id, null, invoiceId || null, "FAILED", null);
+          break;
+        }
+        case "customer.state_changed": {
+          const email = data?.email;
+          const polarCustomerId = data?.id;
+          const activeSub = Array.isArray(data?.active_subscriptions) && data.active_subscriptions.length > 0 ? data.active_subscriptions[0] : null;
+          const customer = await findCustomerByPolarOrEmail({ polarCustomerId, email });
+          if (!customer) break;
+          const productId = activeSub?.product_id;
+          const plan = await resolvePlanByPolarProduct(productId);
+          const statusMap = {
+            active: "ACTIVE",
+            trialing: "TRIAL",
+            canceled: "CANCELLED",
+            paused: "INACTIVE",
+            past_due: "INACTIVE"
+          };
+          const subStatus = activeSub?.status;
+          const mappedStatus = subStatus && statusMap[subStatus] ? statusMap[subStatus] : "ACTIVE";
+          const renewalDate = activeSub?.current_period_end ? new Date(activeSub.current_period_end) : null;
+          const trialEndsAt = activeSub?.trial_end ? new Date(activeSub.trial_end) : null;
+          await db.customer.update({
+            where: { id: customer.id },
+            data: {
+              polarCustomerId: polarCustomerId || customer.polarCustomerId || null,
+              polarSubscriptionId: activeSub?.id || customer.polarSubscriptionId || null
+            }
+          });
+          await setCustomerPlanAndStatus(customer.id, plan ? plan.id : null, mappedStatus, renewalDate, trialEndsAt);
           break;
         }
         default:
@@ -42713,21 +40538,23 @@ var PolarCommands = {
 // src/features/polar/queries/polar.queries.ts
 var PolarQueries = {
   async list({ page, limit }) {
-    const accessToken = process.env.POLAR_ACCESS_TOKEN;
-    const baseUrl = process.env.POLAR_BASE_URL || "https://api.polar.sh";
-    const response = await fetch(`${baseUrl}/products?page=${page}&limit=${limit}`, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      }
-    });
-    if (!response.ok) {
-      throw new Error(`Failed to fetch products: ${response.statusText}`);
+    try {
+      const { result } = await polar.products.list({
+        organizationId: process.env.POLAR_ORGANIZATION_ID,
+        page,
+        limit
+      });
+      return {
+        items: result.items,
+        pagination: {
+          page,
+          limit
+        }
+      };
+    } catch (error) {
+      console.error("Polar products list error:", error);
+      throw new Error(`Failed to fetch products: ${error}`);
     }
-    const data = await response.json();
-    return data;
   }
 };
 
@@ -42737,7 +40564,7 @@ var PolarController = {
     try {
       const { page = 1, limit = 10 } = request.query;
       const result = await PolarQueries.list({ page, limit });
-      reply.send(result);
+      return reply.status(200).send(result);
     } catch (error) {
       request.log.error(error);
       return reply.status(500).send({
@@ -42748,8 +40575,8 @@ var PolarController = {
   async checkout(request, reply) {
     try {
       const { productId } = request.body;
-      const userId = request.user.id;
-      const result = await PolarCommands.checkout({ productId, userId });
+      const customer = request.user;
+      const result = await PolarCommands.checkout({ productId, customer });
       return reply.status(201).send(result);
     } catch (error) {
       request.log.error(error);
@@ -42790,7 +40617,6 @@ var CreateCheckoutSchema = {
     properties: {
       productId: {
         type: "string",
-        format: "uuid",
         description: "ID do produto Polar"
       }
     }
@@ -42846,16 +40672,12 @@ var ListPolarSchema = {
     200: {
       type: "object",
       properties: {
-        data: {
-          type: "array",
-          items: { type: "object" }
-        },
+        items: { type: "array" },
         pagination: {
           type: "object",
           properties: {
             page: { type: "number" },
-            limit: { type: "number" },
-            total: { type: "number" }
+            limit: { type: "number" }
           }
         }
       }
@@ -42875,9 +40697,8 @@ var PolarSchemas = {
 
 // src/features/polar/polar.routes.ts
 async function PolarRoutes(fastify2) {
-  fastify2.get("/", {
+  fastify2.get("/plans", {
     schema: PolarSchemas.list,
-    preHandler: [Middlewares.auth, Middlewares.store],
     handler: PolarController.list
   });
   fastify2.post("/checkout", {
@@ -42899,8 +40720,10 @@ var fastify = (0, import_fastify.default)({
   // 5 segundos para keep-alive
   bodyLimit: 1048576,
   // 1MB para limite do body
-  maxParamLength: 200
-  // Limite de caracteres para parâmetros de rota
+  routerOptions: {
+    maxParamLength: 200
+    // Limite de caracteres para parâmetros de rota
+  }
 });
 fastify.register(import_cors.default, {
   origin: true,
@@ -42920,8 +40743,6 @@ fastify.register(require("@fastify/static"), {
 connectPrisma(fastify);
 fastify.get("/health", async (request, reply) => {
   try {
-    const prisma2 = request.server.prisma;
-    await prisma2.$queryRaw`SELECT 1`;
     return reply.send({
       status: "ok",
       timestamp: (/* @__PURE__ */ new Date()).toISOString(),
@@ -42937,19 +40758,6 @@ fastify.get("/health", async (request, reply) => {
       database: "disconnected",
       error: "Database connection failed"
     });
-  }
-});
-fastify.get("/llm/rag", {
-  preHandler: [authMiddleware, storeContextMiddleware]
-}, async (request, reply) => {
-  try {
-    const productId = "cmg4ixgh90005e8vgqdn5k6qz";
-    const query = "Qual a \xFAltima movimenta\xE7\xE3o de entrada do produto?";
-    const response = await queryRAG(productId, query);
-    return reply.send(response);
-  } catch (error) {
-    console.error("Error in RAG:", error);
-    return reply.status(500).send({ error: "RAG processing failed" });
   }
 });
 fastify.register(AuthRoutes, { prefix: "/auth" });
@@ -42969,7 +40777,6 @@ fastify.register(QuoteRoutes, { prefix: "/quotes" });
 fastify.register(PlanRoutes, { prefix: "/plans" });
 fastify.register(CustomerRoutes, { prefix: "/customers" });
 fastify.register(InvoiceRoutes, { prefix: "/invoices" });
-fastify.register(WebhookRoutes, { prefix: "/webhooks" });
 fastify.register(CrmRoutes, { prefix: "/crm" });
 fastify.register(UserPreferencesRoutes, { prefix: "/preferences" });
 fastify.register(FlowRoutes, { prefix: "" });

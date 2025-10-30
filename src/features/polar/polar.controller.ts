@@ -5,6 +5,7 @@ import { PolarQueries } from "./queries/polar.queries";
 import { CreateCheckoutRequest, ListPolarRequest } from "./polar.interfaces";
 
 export const PolarController = {
+
     async list(request: ListPolarRequest, reply: FastifyReply) {
         try {
             const { page = 1, limit = 10 } = request.query;
@@ -21,8 +22,8 @@ export const PolarController = {
     async checkout(request: CreateCheckoutRequest, reply: FastifyReply) {
         try {
             const { productId } = request.body;
-            const userId = request.user.id;
-            const result = await PolarCommands.checkout({ productId, userId });
+            const customer = request.user;
+            const result = await PolarCommands.checkout({ productId, customer });
 
             return reply.status(201).send(result);
         } catch (error: any) {
