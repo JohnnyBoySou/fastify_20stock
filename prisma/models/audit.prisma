@@ -1,0 +1,64 @@
+/// ===============================
+///  AUDIT LOG STRUCTURE
+///  - Rastreia todas as ações importantes do sistema.
+///  - Cada log registra o que mudou, quem fez e onde.
+///  - Base para auditorias, relatórios e segurança.
+/// ===============================
+
+model AuditLog {
+  id             String     @id @default(cuid())
+
+  // Entidade e ação auditada
+  entity         AuditEntity
+  entityId       String?
+  action         AuditAction
+
+  // Contexto e origem
+  userId         String?
+  user           User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  storeId        String?     // para rastrear logs por loja
+  store          Store?      @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  ipAddress      String?     // IP de origem da ação
+  userAgent      String?     // navegador / dispositivo
+  source         String?     // origem da ação: "web", "mobile", "api", "system"
+
+  // Dados de mudança
+  before         Json?       // estado anterior do registro
+  after          Json?       // estado após a mudança
+  metadata       Json?       // informações adicionais (ex: rota, payload, headers)
+
+  // Auditoria temporal
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@map("audit_logs")
+
+  // Índices e otimização
+  @@index([entity])
+  @@index([storeId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  VERIFY
+  RESTORE
+}
+
+enum AuditEntity {
+  USER
+  STORE
+  PRODUCT
+  SUPPLIER
+  MOVEMENT
+  CATEGORY
+  QUOTE
+  FLOW
+  SYSTEM
+}

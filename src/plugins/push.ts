@@ -14,7 +14,6 @@ if (vapidKeys.publicKey && vapidKeys.privateKey) {
     vapidKeys.publicKey,
     vapidKeys.privateKey
   );
-  console.log('✅ Web Push VAPID keys configuradas');
 } else {
   console.warn('⚠️ VAPID keys não configuradas. Configure VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY');
 }
@@ -57,7 +56,7 @@ export async function sendPushNotification(
 
 export const pushPlugin = async (fastify: FastifyInstance) => {
   // Adicionar método para enviar notificação push
-  fastify.decorate('sendPushNotification', async function(
+  fastify.decorate('sendPushNotification', async function (
     subscription: PushSubscription,
     payload: {
       title: string;
@@ -83,23 +82,23 @@ export const pushPlugin = async (fastify: FastifyInstance) => {
       });
 
       const result = await webpush.sendNotification(subscription, notificationPayload);
-      
+
       fastify.log.info(`Push notification sent successfully`);
       return result;
     } catch (error: any) {
       fastify.log.error(`Error sending push notification: ${error.message}`);
-      
+
       // Se a subscription expirou ou é inválida, retornar erro específico
       if (error.statusCode === 410) {
         fastify.log.warn('Push subscription expired or invalid');
       }
-      
+
       throw error;
     }
   });
 
   // Adicionar método para enviar notificação push a múltiplos dispositivos
-  fastify.decorate('sendPushToSubscriptions', async function(
+  fastify.decorate('sendPushToSubscriptions', async function (
     subscriptions: PushSubscription[],
     payload: {
       title: string;
@@ -133,7 +132,7 @@ export const pushPlugin = async (fastify: FastifyInstance) => {
   });
 
   // Adicionar método para validar subscription
-  fastify.decorate('validatePushSubscription', function(subscription: PushSubscription): boolean {
+  fastify.decorate('validatePushSubscription', function (subscription: PushSubscription): boolean {
     try {
       return !!(
         subscription.endpoint &&

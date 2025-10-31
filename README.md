@@ -80,11 +80,33 @@ src/
 ## 🔧 Configuração e Instalação
 
 ### Pré-requisitos
-- **Node.js 22.x**
+- **Node.js 22.x** ou **Bun >=1.0.0** (recomendado)
 - **PostgreSQL 16**
-- **pnpm** (recomendado) ou npm
+- **pnpm** (recomendado) ou npm ou bun
 
 ### Instalação
+
+#### Com Bun (Recomendado - Mais rápido)
+```bash
+# Clone o repositório
+git clone <repository-url>
+cd fastify_20stock
+
+# Instale as dependências
+bun install
+
+# Configure as variáveis de ambiente
+cp .env.example .env
+# Edite o arquivo .env com suas configurações
+
+# Execute as migrações do banco
+bunx prisma migrate dev
+
+# Inicie o servidor de desenvolvimento
+bun dev
+```
+
+#### Com Node.js
 ```bash
 # Clone o repositório
 git clone <repository-url>
@@ -101,7 +123,7 @@ cp .env.example .env
 pnpm prisma migrate dev
 
 # Inicie o servidor de desenvolvimento
-pnpm dev
+pnpm dev:node
 ```
 
 ### Variáveis de Ambiente
@@ -122,10 +144,26 @@ docker-compose up -d
 
 ## 🚀 Scripts Disponíveis
 
+### Com Bun (Recomendado)
 ```bash
 # Desenvolvimento
-pnpm dev                 # Servidor com hot reload
-pnpm start              # Servidor de produção
+bun dev                 # Servidor com hot reload (Bun)
+bun start               # Servidor de produção (Bun)
+bun typecheck           # Verificação de tipos
+
+# Qualidade de código
+bun lint                # Verificar problemas de lint
+bun lint:fix            # Corrigir problemas automaticamente
+
+# Features
+bun create-feature      # Gerar nova feature com estrutura CQRS
+```
+
+### Com Node.js
+```bash
+# Desenvolvimento
+pnpm dev:node           # Servidor com hot reload (Node.js)
+pnpm start:node         # Servidor de produção (Node.js)
 pnpm typecheck          # Verificação de tipos
 
 # Qualidade de código
@@ -133,8 +171,10 @@ pnpm lint               # Verificar problemas de lint
 pnpm lint:fix           # Corrigir problemas automaticamente
 
 # Features
-pnpm create-feature     # Gerar nova feature com estrutura CQRS
+pnpm create-feature:node # Gerar nova feature com estrutura CQRS
 ```
+
+> **💡 Dica**: O Bun oferece performance superior e execução nativa de TypeScript, sendo até 3x mais rápido que Node.js para desenvolvimento.
 
 ## 📡 Endpoints da API
 

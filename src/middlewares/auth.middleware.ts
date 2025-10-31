@@ -22,13 +22,9 @@ export const authMiddleware = async (request: FastifyRequest, reply: FastifyRepl
       });
     }
 
-    // Extract token from header
     const token = AuthCommands.extractToken(authHeader);
 
-    // Verify token
     const payload: JWTPayload = AuthCommands.verifyToken(token);
-
-    // Get user from database to ensure user still exists and is active
     const user = await AuthQueries.getUserProfile(payload.userId);
 
     if (!user || !user.status) {
@@ -37,11 +33,9 @@ export const authMiddleware = async (request: FastifyRequest, reply: FastifyRepl
       });
     }
 
-    // Attach user and token to request
     request.user = user;
     request.token = token;
 
-    // Continue to next middleware/handler
     return;
   } catch (error: any) {
     request.log.error(error);

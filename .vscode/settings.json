@@ -1,0 +1,19 @@
+{
+    "files.exclude": {
+        "prisma/migrations": true,
+        "scripts": true,
+        ".dockerignore": true,
+        ".gitignore": true,
+        "Makefile": true,
+        "pnpm-workspace.yaml": true,
+        "pnpm-lock.yaml": true,
+        "Dockerfile": true,
+        "README.md": true,
+        "tsconfig.paths.json": true,
+        "vite.config.ts": true,
+        "src/types": true,
+        "src/uploads": true,
+        "docker-compose.yml": true,
+        "src/utils": true
+    }
+}

@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
-import { JWTPayload } from '../auth.interfaces';
+import crypto from 'node:crypto';
+import type { JWTPayload } from '../auth.interfaces';
 import { db } from '@/plugins/prisma';
 
 import { AuthQueries } from '../queries/auth.queries';
@@ -656,5 +656,5 @@ export const AuthCommands = {
       // Para outros erros, assumir token inválido
       throw new Error('Invalid Google token');
     }
-  }
+  },
 };

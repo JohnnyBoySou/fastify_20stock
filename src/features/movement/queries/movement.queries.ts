@@ -1,5 +1,4 @@
 import { db } from '@/plugins/prisma';
-import { LLMService } from '@/services/llm';
 
 export const MovementQueries = {
   async getById(id: string) {
@@ -1127,64 +1126,6 @@ export const MovementQueries = {
     };
   },
 
-  async summarize() {
-    const movements = await db.movement.findMany();
-    const summary = movements
-      .map(
-        (m) =>
-          `Produto: ${m.productId}, Tipo: ${m.type}, Quantidade: ${m.quantity}`
-      )
-      .join("\n");
-
-    const prompt = `
-    Olá! Sou o gerente do estoque e preciso de uma análise amigável sobre as movimentações de hoje.
-      
-      Analise os dados abaixo e me conte como está nosso estoque de forma conversacional e humanizada.
-      Quero entender o que está acontecendo sem muito jargão técnico. Me fale sobre:
-      - O que mais está entrando e saindo
-      - Se temos algum problema com perdas
-      - Como está a demanda geral
-      - Alguma observação importante que devo saber
- 
-    ${summary}`;
-
-    const result = LLMService.executePrompt(prompt);
-
-    return result;
-  },
-
-  /*
-  Resumo gerado pelo LLM:
-  Olá, eu analisei os dados do seu estoque de hoje e aqui está uma resumida:
-
-- Entradas mais comuns: Notebook Dell Inspiron 15 3000 (25 unidades), SSD NVMe 
-1TB Kingston (30 unidades) e Smartphone Samsung Galaxy A54 (40 unidades). Esses 
-itens estão entrando em grande quantidade, indicando uma alta demanda.
-
-- Saídas mais comuns: Monitor Samsung 24" Full HD (12 unidades), Memória RAM 
-DDR4 16GB Corsair (18 unidades) e Fone Bluetooth JBL Tune 500BT (22 unidades). 
-Esses itens estão sendo vendidos em grande quantidade, indicando uma alta demanda.
-
-- Perdas: Cabo HDMI Premium 2m (3 unidades), Carregador USB-C 65W Universal (1 
-unidade) e Webcam Logitech C920 HD Pro (2 unidades). Esses itens estão sendo 
-perdidos, o que pode ser causado por erros de inventário ou falhas no produto.
-
-- Observação importante: O estoque de Memória RAM DDR4 16GB Corsair está 
-sendo vendido em grande quantidade e também está entrando em pequena quantidade. 
-Isso indica que a demanda pode estar ultrapassando a oferta, o que pode causar 
-problemas no futuro se não for feito alguma ação para aumentar a quantidade 
-disponível.
-
-- Demanda geral: A demanda geral parece ser alta, com muitos itens entrando e 
-saídas em grande quantidade. Isso é um bom sinal para o negócio, mas precisa 
-ser monitorado de forma regular para evitar problemas no futuro.
-
-Espero que essa análise ajude a entender melhor o que está acontecendo com seu 
-estoque hoje!
-  */
-
-
-
   async getProductSummary(productId: string, params: {
     startDate?: string
     endDate?: string
@@ -1275,51 +1216,6 @@ estoque hoje!
       })
     );
 
-    // Gerar resumo com LLM
-    const movementsSummary = movements
-      .slice(0, 20) // Limitar a 20 movimentações mais recentes para o prompt
-      .map(m =>
-        `Data: ${m.createdAt.toISOString().split('T')[0]}, ` +
-        `Tipo: ${m.type}, ` +
-        `Quantidade: ${m.quantity} ${product.unitOfMeasure}, ` +
-        `Loja: ${m.store.name}, ` +
-        `Preço: R$ ${Number(m.price || 0).toFixed(2)}, ` +
-        `Lote: ${m.batch || 'N/A'}`
-      )
-      .join('\n');
-
-    const prompt = `
-      Você é um especialista em análise de estoque. Analise as movimentações do produto "${product.name}" e gere um resumo executivo em português.
-
-      INFORMAÇÕES DO PRODUTO:
-      - Nome: ${product.name}
-      - Unidade: ${product.unitOfMeasure}
-      - Estoque Mínimo: ${product.stockMin}
-      - Estoque Máximo: ${product.stockMax}
-      - Percentual de Alerta: ${product.alertPercentage}%
-
-      ESTATÍSTICAS GERAIS:
-      - Total de Movimentações: ${totalMovements}
-      - Entradas: ${entradaMovements.length} (${totalEntrada} ${product.unitOfMeasure})
-      - Saídas: ${saidaMovements.length} (${totalSaida} ${product.unitOfMeasure})
-      - Perdas: ${perdaMovements.length} (${totalPerda} ${product.unitOfMeasure})
-      - Valor Total: R$ ${totalValue.toFixed(2)}
-      - Valor Médio por Movimentação: R$ ${averageValue.toFixed(2)}
-
-      ESTOQUE ATUAL POR LOJA:
-      ${currentStockByStore.map(s => `- ${s.storeName}: ${s.currentStock} ${product.unitOfMeasure}`).join('\n')}
-
-      MOVIMENTAÇÕES RECENTES:
-      ${movementsSummary}
-
-      Gere um resumo executivo destacando:
-      1. Situação atual do estoque
-      2. Tendências de movimentação
-      3. Alertas importantes (estoque baixo, perdas, etc.)
-      4. Recomendações de ação
-    `;
-
-    const llmSummary = await LLMService.executePrompt(prompt);
 
     return {
       product: {
@@ -1363,8 +1259,7 @@ estoque hoje!
         store: m.store,
         supplier: m.supplier,
         user: m.user
-      })),
-      summary: llmSummary
+      })), 
     };
   }
 };

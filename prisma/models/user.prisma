@@ -1,0 +1,144 @@
+/// ===============================
+///  USER & STORE STRUCTURE
+///  - Cada usuário pertence a uma única loja.
+///  - Dono (isOwner = true) é o criador da loja.
+///  - Permissões são granulares (ACL).
+///  - Soft delete com deletedAt.
+/// ===============================
+
+model User {
+  id String @id @default(cuid())
+
+  // Identificação
+  email    String  @unique
+  password String
+  name     String?
+  phone    String?
+
+  // Associação direta com a loja
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  // Controle de status e hierarquia
+  isOwner     Boolean   @default(false)
+  status      Boolean   @default(true)
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("UserDeleted", fields: [deletedById], references: [id])
+  suspendedAt DateTime? // bloqueio temporário
+
+  invitedById       String?
+  invitedBy         User?     @relation("UserInviter", fields: [invitedById], references: [id])
+  acceptedAt        DateTime?
+  inviteCode        String?   @unique
+  pendingInvitation Boolean   @default(false)
+
+  ownedStore Store? @relation("StoreOwner")
+
+  // Auditoria e segurança
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastLoginAt  DateTime?
+  lastActiveAt DateTime?
+
+  emailVerified        Boolean   @default(false)
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+
+  // Relações
+  permissions   UserPermission[]
+  preferences   UserPreferences?
+  notifications Notification[]
+  media         UserMedia[]
+  uploadedMedia Media[]
+  quotes        Quote[]
+
+  subscription Subscription?
+
+  auditLogs         AuditLog[]
+  movements         Movement[]
+  roadmaps          Roadmap[] 
+  createdFlows      Flow[]
+  flowExecutions    FlowExecution[]
+  crmClients        CrmClient[]
+  chatSessions      ChatSession[]
+
+  // Relações auto-referenciais
+  invitedUsers User[] @relation("UserInviter")
+  deletedUsers User[] @relation("UserDeleted")
+
+  // Índices estratégicos
+  @@index([storeId])
+  @@index([storeId, isOwner])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model UserPermission {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  action     String // Ex: "create", "update", "delete"
+  resource   String // Ex: "product", "supplier"
+  scope      String? // módulo lógico ex: "inventory", "crm"
+  grant      Boolean   @default(true)
+  expiresAt  DateTime? // expiração da permissão (temporária)
+  conditions Json? // Ex: { "category": "Bebidas" }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, action, resource])
+  @@index([userId])
+  @@index([resource])
+  @@index([scope])
+  @@map("user_permissions")
+}
+
+model UserPreferences {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // ===== THEME & UI =====
+  theme            String  @default("light")
+  primaryColor     String?
+  sidebarCollapsed Boolean @default(false)
+  compactMode      Boolean @default(false)
+  uiScale          Float   @default(1.0) // escala visual (zoom/acessibilidade)
+
+  // ===== LANGUAGE & LOCALIZATION =====
+  language     String @default("pt-BR")
+  currency     String @default("BRL")
+  timezone     String @default("America/Sao_Paulo")
+  dateFormat   String @default("DD/MM/YYYY")
+  timeFormat   String @default("24h")
+  numberFormat String @default("pt-BR")
+
+  // ===== NOTIFICATION PREFERENCES =====
+  emailNotifications Boolean @default(true)
+  pushNotifications  Boolean @default(true)
+  smsNotifications   Boolean @default(false)
+  notificationTypes  Json?
+
+  // ===== DASHBOARD & LAYOUT =====
+  dashboardLayout Json?
+  defaultPage     String?
+  itemsPerPage    Int     @default(20)
+
+  // ===== BEHAVIOR =====
+  autoRefresh     Boolean @default(true)
+  refreshInterval Int     @default(30)
+
+  // ===== ADVANCED =====
+  customSettings      Json?
+  aiAssistantSettings Json? // IA / LLM settings por usuário
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("user_preferences")
+}

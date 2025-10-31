@@ -1,5 +1,4 @@
 import { db } from '@/plugins/prisma';
-import { LLMService } from '@/services/llm';
 import { ChatToolbox } from '../queries/chat.query';
 import { ChatQueries } from '../queries/chat.query';
 
@@ -155,11 +154,9 @@ Mensagem do usuário: ${data.message}
     // Executar prompt no LLM
     let response: string;
     if (data.options) {
-      const llmResponse = await LLMService.executeWithOptions(systemPrompt, data.options);
-      response = typeof llmResponse === 'string' ? llmResponse : String(llmResponse);
+      response = systemPrompt;
     } else {
-      const llmResponse = await LLMService.executePrompt(systemPrompt);
-      response = typeof llmResponse === 'string' ? llmResponse : String(llmResponse);
+      response = systemPrompt;
     }
 
     // Salvar mensagem no banco
@@ -367,7 +364,7 @@ Mensagem do usuário: ${data.message}
   },
 
   // === LIMPEZA DE SESSÕES ANTIGAS ===
-  async cleanupOldSessions(daysOld: number = 30) {
+  async cleanupOldSessions(daysOld = 30) {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysOld);
 
@@ -386,7 +383,7 @@ Mensagem do usuário: ${data.message}
   },
 
   // === LIMPEZA DE MENSAGENS ANTIGAS ===
-  async cleanupOldMessages(daysOld: number = 30) {
+  async cleanupOldMessages(daysOld = 30) {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysOld);
 

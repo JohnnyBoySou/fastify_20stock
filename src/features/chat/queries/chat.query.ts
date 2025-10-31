@@ -1,11 +1,9 @@
 import { db } from '@/plugins/prisma';
-import { LLMService } from '@/services/llm';
 import { ProductQueries } from '@/features/product/queries/product.queries';
 import { StoreQueries } from '@/features/store/queries/store.queries';
 import { CategoryQueries } from '@/features/category/queries/category.queries';
 import { SupplierQueries } from '@/features/supplier/queries/supplier.queries';
 import { MovementQueries } from '@/features/movement/queries/movement.queries';
-import { ReportQueries } from '@/features/report/queries/report.queries';
 
 // Toolbox para acesso aos serviços do sistema
 export class ChatToolbox {
@@ -62,7 +60,7 @@ export class ChatToolbox {
     return await StoreQueries.getById(id);
   }
 
-  async searchStores(term: string, limit: number = 10) {
+  async searchStores(term: string, limit = 10) {
     return await StoreQueries.search(term, limit);
   }
 
@@ -83,11 +81,11 @@ export class ChatToolbox {
     return await CategoryQueries.getById(id);
   }
 
-  async searchCategories(term: string, limit: number = 10, storeId?: string) {
+  async searchCategories(term: string, limit = 10, storeId?: string) {
     if (!storeId) {
       throw new Error('Store ID is required for category queries');
     }
-    return await CategoryQueries.search(term, storeId, limit);
+    return await CategoryQueries.search(term, storeId, { limit });
   }
 
   async getActiveCategories(storeId?: string) {
@@ -120,8 +118,8 @@ export class ChatToolbox {
     return await SupplierQueries.getById(id);
   }
 
-  async searchSuppliers(term: string, limit: number = 10) {
-    return await SupplierQueries.search(term, limit);
+  async searchSuppliers(term: string, limit = 10) {
+    return await SupplierQueries.search(term, String(limit));
   }
 
   async getActiveSuppliers() {
@@ -145,7 +143,7 @@ export class ChatToolbox {
     return await MovementQueries.getStats();
   }
 
-  async getRecentMovements(limit: number = 10) {
+  async getRecentMovements(limit = 10) {
     return;
     //return await MovementQueries.getRecent(limit);
   }
@@ -491,9 +489,9 @@ export const ChatQueries = {
     });
 
     // Transformar mensagens para formato cronológico com identificação
-    const formattedMessages = [];
+    const formattedMessages: any[] = [];
     
-    session.messages.forEach(message => {
+    for (const message of session.messages) {
       // Adicionar mensagem do usuário
       formattedMessages.push({
         id: `${message.id}_user`,
@@ -511,7 +509,7 @@ export const ChatQueries = {
         createdAt: message.createdAt,
         updatedAt: message.updatedAt
       });
-    });
+    }
 
     return {
       id: session.id,
@@ -705,7 +703,7 @@ export const ChatQueries = {
     };
   },
 
-  async search(term: string, limit: number = 10) {
+  async search(term: string, limit = 10) {
     const messages = await db.chatMessage.findMany({
       where: {
         OR: [

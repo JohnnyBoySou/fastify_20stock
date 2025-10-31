@@ -24,6 +24,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 // src/server.ts
 var import_fastify = __toESM(require("fastify"));
 var import_cors = __toESM(require("@fastify/cors"));
+var import_node_path = __toESM(require("path"));
 
 // src/plugins/prisma.ts
 var import_client = require("@prisma/client");
@@ -38,13 +39,9 @@ async function prismaPlugin(app) {
 async function connectPrisma(app) {
   try {
     await prisma.$connect();
-    console.log("\u2705 Prisma conectado com sucesso ao banco de dados");
-    app.log.info("Prisma conectado com sucesso ao banco de dados");
   } catch (error) {
-    app.log.error("Falha ao conectar com o banco de dados:");
-    console.log("\u274C Falha ao conectar com o banco de dados:");
-    console.error(error);
-    process.exit(1);
+    console.error("Falha ao conectar com o banco de dados:", error);
+    throw error;
   }
 }
 
@@ -60,7 +57,6 @@ if (vapidKeys.publicKey && vapidKeys.privateKey) {
     vapidKeys.publicKey,
     vapidKeys.privateKey
   );
-  console.log("\u2705 Web Push VAPID keys configuradas");
 } else {
   console.warn("\u26A0\uFE0F VAPID keys n\xE3o configuradas. Configure VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY");
 }
@@ -132,6 +128,157 @@ var pushPlugin = async (fastify2) => {
     return vapidKeys.publicKey;
   });
 };
+
+// src/utils/bootstrap.ts
+var import_ora = __toESM(require("ora"));
+var import_chalk = __toESM(require("chalk"));
+var import_node_os = __toESM(require("os"));
+var BootstrapUI = class {
+  constructor() {
+    this.spinner = null;
+    this.steps = [];
+    this.currentStep = 0;
+    this.startTime = Date.now();
+    this.colors = {
+      primary: import_chalk.default.cyanBright,
+      success: import_chalk.default.greenBright,
+      error: import_chalk.default.redBright,
+      warning: import_chalk.default.yellowBright,
+      info: import_chalk.default.blueBright,
+      dim: import_chalk.default.dim
+    };
+  }
+  formatTime(ms) {
+    if (ms < 1e3) return `${ms}ms`;
+    return `${(ms / 1e3).toFixed(2)}s`;
+  }
+  log(message, type = "info") {
+    const icons = {
+      info: "\u2139\uFE0F",
+      success: "\u2705",
+      error: "\u274C",
+      warning: "\u26A0\uFE0F"
+    };
+    const colors = {
+      info: this.colors.info,
+      success: this.colors.success,
+      error: this.colors.error,
+      warning: this.colors.warning
+    };
+    console.log(`${icons[type]} ${colors[type](message)}`);
+  }
+  async executeStep(step) {
+    const startTime = Date.now();
+    this.currentStep++;
+    const stepLabel = `${this.currentStep}/${this.steps.length}`;
+    const prefix = this.colors.dim(`[${stepLabel}]`);
+    this.spinner = (0, import_ora.default)({
+      text: `${prefix} ${this.colors.primary(step.name)}...`,
+      spinner: "dots",
+      color: "cyan"
+    }).start();
+    try {
+      await step.action();
+      const duration = Date.now() - startTime;
+      this.spinner.succeed(
+        `${prefix} ${this.colors.success(step.name)} ${this.colors.dim(`(${this.formatTime(duration)})`)}`
+      );
+      return true;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      if (step.optional) {
+        this.spinner.warn(
+          `${prefix} ${this.colors.warning(step.name)} ${this.colors.dim(`(opcional - ${this.formatTime(duration)})`)}`
+        );
+        return true;
+      }
+      this.spinner.fail(
+        `${prefix} ${this.colors.error(step.name)} ${this.colors.dim(`(${this.formatTime(duration)})`)}`
+      );
+      this.log(`Erro: ${error.message}`, "error");
+      return false;
+    } finally {
+      this.spinner = null;
+    }
+  }
+  async run(steps) {
+    this.steps = steps;
+    this.currentStep = 0;
+    this.startTime = Date.now();
+    console.log("\n");
+    console.log(this.colors.primary("\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557"));
+    console.log(this.colors.primary("\u2551") + this.colors.info("           Iniciando Servidor Fastify") + this.colors.primary("                      \u2551"));
+    console.log(this.colors.primary("\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D"));
+    console.log("");
+    for (const step of steps) {
+      const success = await this.executeStep(step);
+      if (!success && !step.optional) {
+        return false;
+      }
+    }
+    const totalTime = Date.now() - this.startTime;
+    console.log("");
+    this.log(`Colocando o servidor em execu\xE7\xE3o conclu\xEDdo em ${this.formatTime(totalTime)}`, "success");
+    console.log("");
+    return true;
+  }
+  showServerInfo(_fastify, port, host) {
+    const networkInterfaces = import_node_os.default.networkInterfaces();
+    const addresses = [];
+    for (const netInterface of Object.values(networkInterfaces)) {
+      if (netInterface) {
+        for (const iface of netInterface) {
+          if (iface.family === "IPv4" && !iface.internal) {
+            addresses.push(iface.address);
+          }
+        }
+      }
+    }
+    const uniqueAddresses = Array.from(new Set(addresses));
+    console.log("");
+    console.log(this.colors.primary("\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557"));
+    console.log(`${this.colors.primary("\u2551")}${this.colors.success("              \u2705 Servidor em Execu\xE7\xE3o")}${this.colors.primary("                      \u2551")}`);
+    console.log(this.colors.primary("\u2560\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2563"));
+    const localUrl = `http://127.0.0.1:${port}`;
+    const localPadding = " ".repeat(Math.max(0, 47 - localUrl.length));
+    console.log(
+      `${this.colors.primary("\u2551")}  ${this.colors.info("Local:")}    ${this.colors.success(localUrl)}${localPadding}${this.colors.primary("\u2551")}`
+    );
+    if (host === "0.0.0.0") {
+      const networkUrl = `http://${host}:${port}`;
+      const networkPadding = " ".repeat(Math.max(0, 47 - networkUrl.length));
+      console.log(
+        `${this.colors.primary("\u2551")}  ${this.colors.info("Rede:")}     ${this.colors.success(networkUrl)}${networkPadding}${this.colors.primary("\u2551")}`
+      );
+    }
+    for (const addr of uniqueAddresses.slice(0, 3)) {
+      const url = `http://${addr}:${port}`;
+      const padding = " ".repeat(Math.max(0, 47 - url.length));
+      console.log(
+        `${this.colors.primary("\u2551")}  ${this.colors.info("Rede:")}     ${this.colors.success(url)}${padding}${this.colors.primary("\u2551")}`
+      );
+    }
+    console.log(this.colors.primary("\u2560\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2563"));
+    const healthUrl = `http://127.0.0.1:${port}/health`;
+    const healthPadding = " ".repeat(Math.max(0, 23 - "/health".length));
+    console.log(
+      `${this.colors.primary("\u2551")}  ${this.colors.dim("Healthcheck:")} ${this.colors.info(healthUrl)}${healthPadding}${this.colors.primary("\u2551")}`
+    );
+    console.log(this.colors.primary("\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D"));
+    console.log("");
+    console.log(this.colors.dim("Pressione Ctrl+C para encerrar o servidor"));
+    console.log("");
+  }
+  showError(message, error) {
+    console.log("");
+    this.log(message, "error");
+    if (error) {
+      console.log(this.colors.error(error.stack || error.message));
+    }
+    console.log("");
+  }
+};
+var bootstrapUI = new BootstrapUI();
 
 // src/features/user/commands/user.commands.ts
 var import_bcryptjs = __toESM(require("bcryptjs"));
@@ -904,7 +1051,7 @@ async function UserRoutes(fastify2) {
 // src/features/auth/commands/auth.commands.ts
 var import_bcryptjs2 = __toESM(require("bcryptjs"));
 var import_jsonwebtoken = __toESM(require("jsonwebtoken"));
-var import_crypto = __toESM(require("crypto"));
+var import_node_crypto = __toESM(require("crypto"));
 
 // src/features/auth/queries/auth.queries.ts
 var AuthQueries = {
@@ -1191,6 +1338,25 @@ var AuthQueries = {
       throw new Error("User not found");
     }
     return user;
+  },
+  // Get user's plan through Customer relation
+  async getUserPlan(userId) {
+    const customer = await prisma.customer.findUnique({
+      where: { userId },
+      include: {
+        plan: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            price: true,
+            interval: true,
+            features: true
+          }
+        }
+      }
+    });
+    return customer?.plan || null;
   },
   // Get store owned by user
   async getStoreByOwner(userId) {
@@ -1950,6 +2116,81 @@ var EmailService = {
 
 // src/features/auth/commands/auth.commands.ts
 var import_google_auth_library = require("google-auth-library");
+
+// src/plugins/polar.ts
+var import_sdk = require("@polar-sh/sdk");
+var polar = new import_sdk.Polar({
+  accessToken: process.env.POLAR_ACCESS_KEY,
+  server: "sandbox"
+  //"sandbox") as "production" | "sandbox"
+});
+
+// src/features/polar/queries/polar.queries.ts
+var PolarQueries = {
+  async createCustomer(data) {
+    try {
+      const customer = await polar.customers.create({
+        email: data.email,
+        name: data.name,
+        externalId: data.externalId
+        //organizationId: process.env.POLAR_ORGANIZATION_ID as string,
+      });
+      return customer;
+    } catch (error) {
+      console.error("Polar create customer error:", error);
+      return null;
+    }
+  },
+  async list({ page, limit }) {
+    try {
+      const { result } = await polar.products.list({
+        organizationId: process.env.POLAR_ORGANIZATION_ID,
+        page,
+        limit
+      });
+      return {
+        items: result.items,
+        pagination: {
+          page,
+          limit
+        }
+      };
+    } catch (error) {
+      console.error("Polar products list error:", error);
+      throw new Error(`Failed to fetch products: ${error}`);
+    }
+  },
+  async getFreePlan() {
+    try {
+      const { result } = await polar.products.list({
+        organizationId: process.env.POLAR_ORGANIZATION_ID,
+        page: 1,
+        limit: 10
+      });
+      const freeProduct = result.items.find(
+        (product) => product.prices && product.prices.length > 0 && product.prices.some((price) => price.amountType === "free")
+      );
+      return freeProduct || null;
+    } catch (error) {
+      console.error("Polar get free plan error:", error);
+      return null;
+    }
+  },
+  async createSubscription(data) {
+    try {
+      const subscription = await polar.subscriptions.create({
+        customerId: data.customerId,
+        productId: data.productId
+      });
+      return subscription;
+    } catch (error) {
+      console.error("Polar create subscription error:", error);
+      return null;
+    }
+  }
+};
+
+// src/features/auth/commands/auth.commands.ts
 var AuthCommands = {
   async register(data) {
     const { name, email, password, phone } = data;
@@ -1983,6 +2224,52 @@ var AuthCommands = {
         createdAt: true
       }
     });
+    try {
+      const freePlan = await PolarQueries.getFreePlan();
+      if (freePlan) {
+        let localPlan = await db.plan.findFirst({
+          where: { polarProductId: freePlan.id }
+        });
+        if (!localPlan) {
+          localPlan = await db.plan.create({
+            data: {
+              name: freePlan.name,
+              description: freePlan.description || null,
+              price: 0,
+              // Plano grátis
+              interval: freePlan.recurringInterval === "month" ? "MONTHLY" : "YEARLY",
+              features: freePlan.benefits || {},
+              polarProductId: freePlan.id
+            }
+          });
+        }
+        const polarCustomer = await PolarQueries.createCustomer({
+          email: user.email,
+          name: user.name,
+          externalId: user.id
+        });
+        let polarSubscription = null;
+        if (polarCustomer && polarCustomer.id) {
+          polarSubscription = await PolarQueries.createSubscription({
+            customerId: polarCustomer.id,
+            productId: freePlan.id
+          });
+        }
+        await db.customer.create({
+          data: {
+            userId: user.id,
+            planId: localPlan.id,
+            status: "ACTIVE",
+            polarCustomerId: polarCustomer?.id || null,
+            polarSubscriptionId: polarSubscription?.id || null
+          }
+        });
+      } else {
+        console.warn("Nenhum plano free encontrado no Polar");
+      }
+    } catch (e) {
+      console.error("Falha ao associar plano free ao usu\xE1rio:", e);
+    }
     try {
       await EmailService.sendEmailVerification({
         name,
@@ -2212,10 +2499,10 @@ var AuthCommands = {
     return import_jsonwebtoken.default.sign(payload, secret, { expiresIn: "7d" });
   },
   generateResetToken() {
-    return import_crypto.default.randomBytes(32).toString("hex");
+    return import_node_crypto.default.randomBytes(32).toString("hex");
   },
   generateVerificationToken() {
-    return import_crypto.default.randomBytes(32).toString("hex");
+    return import_node_crypto.default.randomBytes(32).toString("hex");
   },
   generateVerificationCode() {
     return Math.floor(1e5 + Math.random() * 9e5).toString();
@@ -2311,6 +2598,51 @@ var AuthCommands = {
             dashboard: null
           }
         });
+        try {
+          const freePlan = await PolarQueries.getFreePlan();
+          if (freePlan) {
+            let localPlan = await db.plan.findFirst({
+              where: { polarProductId: freePlan.id }
+            });
+            if (!localPlan) {
+              localPlan = await db.plan.create({
+                data: {
+                  name: freePlan.name,
+                  description: freePlan.description || null,
+                  price: 0,
+                  interval: freePlan.recurringInterval === "month" ? "MONTHLY" : "YEARLY",
+                  features: freePlan.benefits || {},
+                  polarProductId: freePlan.id
+                }
+              });
+            }
+            const polarCustomer = await PolarQueries.createCustomer({
+              email: user.email,
+              name: user.name,
+              externalId: user.id
+            });
+            let polarSubscription = null;
+            if (polarCustomer && polarCustomer.id) {
+              polarSubscription = await PolarQueries.createSubscription({
+                customerId: polarCustomer.id,
+                productId: freePlan.id
+              });
+            }
+            await db.customer.create({
+              data: {
+                userId: user.id,
+                planId: localPlan.id,
+                status: "ACTIVE",
+                polarCustomerId: polarCustomer?.id || null,
+                polarSubscriptionId: polarSubscription?.id || null
+              }
+            });
+          } else {
+            console.warn("Nenhum plano free encontrado no Polar (Google login)");
+          }
+        } catch (e) {
+          console.error("Falha ao associar plano free (Google):", e);
+        }
       } else {
         await db.user.update({
           where: { id: user.id },
@@ -3068,7 +3400,8 @@ var AuthController = {
       const token = AuthCommands.extractToken(authHeader);
       const payload = AuthCommands.verifyToken(token);
       const user = await AuthQueries.getUserProfile(payload.userId);
-      return reply.send({ user });
+      const plan2 = await AuthQueries.getUserPlan(payload.userId);
+      return reply.send({ user: { ...user, plan: plan2 } });
     } catch (error) {
       request.log.error(error);
       if (error.message === "Invalid authorization header" || error.message === "User not found") {
@@ -6906,17 +7239,13 @@ var authMiddleware = async (request, reply) => {
 
 // src/middlewares/store-context.middleware.ts
 var getUserStore2 = async (userId) => {
-  console.log("getUserStore: Searching for store for user:", userId);
-  console.log("getUserStore: Checking owned stores...");
   const ownedStore = await db.store.findFirst({
     where: { ownerId: userId },
     select: { id: true, name: true }
   });
   if (ownedStore) {
-    console.log("getUserStore: Found owned store:", ownedStore);
     return ownedStore;
   }
-  console.log("getUserStore: Checking store user access...");
   const storeUser = await db.storeUser.findFirst({
     where: { userId },
     include: {
@@ -6926,40 +7255,29 @@ var getUserStore2 = async (userId) => {
     }
   });
   if (storeUser) {
-    console.log("getUserStore: Found store user access:", storeUser);
     return storeUser.store;
   }
-  console.log("getUserStore: No store found for user");
   return null;
 };
 var storeContextMiddleware = async (request, reply) => {
   try {
-    console.log("StoreContextMiddleware: Starting...");
     if (!request.user?.id) {
-      console.log("StoreContextMiddleware: User not authenticated");
       return reply.status(401).send({
         error: "User not authenticated"
       });
     }
-    console.log("StoreContextMiddleware: User authenticated:", request.user.id);
-    console.log("StoreContextMiddleware: Getting store for user...");
     const userStore = await getUserStore2(request.user.id);
     if (!userStore) {
-      console.log("StoreContextMiddleware: User has no associated store");
       return reply.status(400).send({
         error: "User has no associated store. Please create a store or provide storeId in request."
       });
     }
-    console.log("StoreContextMiddleware: Found user store:", userStore);
     request.store = userStore;
     if (request.body && typeof request.body === "object" && !("storeId" in request.body)) {
-      console.log("StoreContextMiddleware: Adding storeId to request body");
       request.body.storeId = userStore.id;
     }
-    console.log("StoreContextMiddleware: Completed successfully");
     return;
   } catch (error) {
-    console.log("StoreContextMiddleware: Error:", error);
     request.log.error(error);
     return reply.status(500).send({
       error: "Internal server error"
@@ -11588,8 +11906,8 @@ var GranularPermissionService = class {
     }
   }
   // Resolve valor de propriedades aninhadas (ex: requestData.body.amount)
-  static resolveValue(path3, requestData) {
-    const parts = path3.split(".");
+  static resolveValue(path4, requestData) {
+    const parts = path4.split(".");
     let value = requestData;
     for (const part of parts) {
       if (value === void 0 || value === null) {
@@ -14809,8 +15127,8 @@ var ActionExecutor = {
     });
     return result;
   },
-  getNestedValue(obj, path3) {
-    return path3.split(".").reduce((current, key) => {
+  getNestedValue(obj, path4) {
+    return path4.split(".").reduce((current, key) => {
       return current && current[key] !== void 0 ? current[key] : void 0;
     }, obj);
   }
@@ -15795,82 +16113,6 @@ var MovementCommands = {
   }
 };
 
-// src/services/llm/index.ts
-var import_ollama = require("@langchain/ollama");
-var import_messages = require("@langchain/core/messages");
-var defaultModel = new import_ollama.ChatOllama({
-  model: "mistral",
-  temperature: 0.2
-});
-var LLMService = {
-  async executePrompt(prompt) {
-    try {
-      const response = await defaultModel.invoke([new import_messages.HumanMessage(prompt)]);
-      return response.content;
-    } catch (error) {
-      console.error("Erro em executePrompt:", error);
-      throw new Error("Falha ao executar prompt no LLM");
-    }
-  },
-  async executeWithStreaming(prompt, onToken) {
-    try {
-      if (!defaultModel.stream) {
-        throw new Error("Streaming n\xE3o suportado nesta vers\xE3o do ChatOllama");
-      }
-      const stream = await defaultModel.stream([new import_messages.HumanMessage(prompt)]);
-      let fullResponse = "";
-      for await (const chunk of stream) {
-        const token = chunk.content;
-        if (token) {
-          fullResponse += token;
-          onToken(token);
-        }
-      }
-      return fullResponse;
-    } catch (error) {
-      console.error("Erro em executeWithStreaming:", error);
-      throw new Error("Falha ao executar prompt com streaming");
-    }
-  },
-  async executeBatch(prompts) {
-    try {
-      const results = await Promise.all(prompts.map((p) => this.executePrompt(p)));
-      return results;
-    } catch (error) {
-      console.error("Erro em executeBatch:", error);
-      throw new Error("Falha ao executar batch de prompts no LLM");
-    }
-  },
-  async executeWithTemplate(template, variables) {
-    try {
-      const prompt = await template.format(variables);
-      return await this.executePrompt(prompt);
-    } catch (error) {
-      console.error("Erro em executeWithTemplate:", error);
-      throw new Error("Falha ao executar prompt com template");
-    }
-  },
-  async executeWithOptions(prompt, options) {
-    try {
-      const useDefault = (options.temperature ?? 0.2) === 0.2 && (options.numPredict ?? 1e3) === 1e3 && (options.repeatPenalty ?? 1.1) === 1.1;
-      if (useDefault) {
-        return await this.executePrompt(prompt);
-      }
-      const tempModel = new import_ollama.ChatOllama({
-        model: "mistral",
-        temperature: options.temperature ?? 0.2,
-        numPredict: options.numPredict ?? 1e3,
-        repeatPenalty: options.repeatPenalty ?? 1.1
-      });
-      const response = await tempModel.invoke([new import_messages.HumanMessage(prompt)]);
-      return response.content;
-    } catch (error) {
-      console.error("Erro em executeWithOptions:", error);
-      throw new Error("Falha ao executar prompt com op\xE7\xF5es customizadas");
-    }
-  }
-};
-
 // src/features/movement/queries/movement.queries.ts
 var MovementQueries = {
   async getById(id) {
@@ -16844,54 +17086,6 @@ var MovementQueries = {
       }))
     };
   },
-  async summarize() {
-    const movements = await db.movement.findMany();
-    const summary = movements.map(
-      (m) => `Produto: ${m.productId}, Tipo: ${m.type}, Quantidade: ${m.quantity}`
-    ).join("\n");
-    const prompt = `
-    Ol\xE1! Sou o gerente do estoque e preciso de uma an\xE1lise amig\xE1vel sobre as movimenta\xE7\xF5es de hoje.
-      
-      Analise os dados abaixo e me conte como est\xE1 nosso estoque de forma conversacional e humanizada.
-      Quero entender o que est\xE1 acontecendo sem muito jarg\xE3o t\xE9cnico. Me fale sobre:
-      - O que mais est\xE1 entrando e saindo
-      - Se temos algum problema com perdas
-      - Como est\xE1 a demanda geral
-      - Alguma observa\xE7\xE3o importante que devo saber
- 
-    ${summary}`;
-    const result = LLMService.executePrompt(prompt);
-    return result;
-  },
-  /*
-    Resumo gerado pelo LLM:
-    Olá, eu analisei os dados do seu estoque de hoje e aqui está uma resumida:
-  
-  - Entradas mais comuns: Notebook Dell Inspiron 15 3000 (25 unidades), SSD NVMe 
-  1TB Kingston (30 unidades) e Smartphone Samsung Galaxy A54 (40 unidades). Esses 
-  itens estão entrando em grande quantidade, indicando uma alta demanda.
-  
-  - Saídas mais comuns: Monitor Samsung 24" Full HD (12 unidades), Memória RAM 
-  DDR4 16GB Corsair (18 unidades) e Fone Bluetooth JBL Tune 500BT (22 unidades). 
-  Esses itens estão sendo vendidos em grande quantidade, indicando uma alta demanda.
-  
-  - Perdas: Cabo HDMI Premium 2m (3 unidades), Carregador USB-C 65W Universal (1 
-  unidade) e Webcam Logitech C920 HD Pro (2 unidades). Esses itens estão sendo 
-  perdidos, o que pode ser causado por erros de inventário ou falhas no produto.
-  
-  - Observação importante: O estoque de Memória RAM DDR4 16GB Corsair está 
-  sendo vendido em grande quantidade e também está entrando em pequena quantidade. 
-  Isso indica que a demanda pode estar ultrapassando a oferta, o que pode causar 
-  problemas no futuro se não for feito alguma ação para aumentar a quantidade 
-  disponível.
-  
-  - Demanda geral: A demanda geral parece ser alta, com muitos itens entrando e 
-  saídas em grande quantidade. Isso é um bom sinal para o negócio, mas precisa 
-  ser monitorado de forma regular para evitar problemas no futuro.
-  
-  Espero que essa análise ajude a entender melhor o que está acontecendo com seu 
-  estoque hoje!
-    */
   async getProductSummary(productId, params) {
     const { startDate, endDate, storeId } = params;
     const product = await db.product.findUnique({
@@ -16962,40 +17156,6 @@ var MovementQueries = {
         };
       })
     );
-    const movementsSummary = movements.slice(0, 20).map(
-      (m) => `Data: ${m.createdAt.toISOString().split("T")[0]}, Tipo: ${m.type}, Quantidade: ${m.quantity} ${product.unitOfMeasure}, Loja: ${m.store.name}, Pre\xE7o: R$ ${Number(m.price || 0).toFixed(2)}, Lote: ${m.batch || "N/A"}`
-    ).join("\n");
-    const prompt = `
-      Voc\xEA \xE9 um especialista em an\xE1lise de estoque. Analise as movimenta\xE7\xF5es do produto "${product.name}" e gere um resumo executivo em portugu\xEAs.
-
-      INFORMA\xC7\xD5ES DO PRODUTO:
-      - Nome: ${product.name}
-      - Unidade: ${product.unitOfMeasure}
-      - Estoque M\xEDnimo: ${product.stockMin}
-      - Estoque M\xE1ximo: ${product.stockMax}
-      - Percentual de Alerta: ${product.alertPercentage}%
-
-      ESTAT\xCDSTICAS GERAIS:
-      - Total de Movimenta\xE7\xF5es: ${totalMovements}
-      - Entradas: ${entradaMovements.length} (${totalEntrada} ${product.unitOfMeasure})
-      - Sa\xEDdas: ${saidaMovements.length} (${totalSaida} ${product.unitOfMeasure})
-      - Perdas: ${perdaMovements.length} (${totalPerda} ${product.unitOfMeasure})
-      - Valor Total: R$ ${totalValue.toFixed(2)}
-      - Valor M\xE9dio por Movimenta\xE7\xE3o: R$ ${averageValue.toFixed(2)}
-
-      ESTOQUE ATUAL POR LOJA:
-      ${currentStockByStore.map((s) => `- ${s.storeName}: ${s.currentStock} ${product.unitOfMeasure}`).join("\n")}
-
-      MOVIMENTA\xC7\xD5ES RECENTES:
-      ${movementsSummary}
-
-      Gere um resumo executivo destacando:
-      1. Situa\xE7\xE3o atual do estoque
-      2. Tend\xEAncias de movimenta\xE7\xE3o
-      3. Alertas importantes (estoque baixo, perdas, etc.)
-      4. Recomenda\xE7\xF5es de a\xE7\xE3o
-    `;
-    const llmSummary = await LLMService.executePrompt(prompt);
     return {
       product: {
         id: product.id,
@@ -17038,8 +17198,7 @@ var MovementQueries = {
         store: m.store,
         supplier: m.supplier,
         user: m.user
-      })),
-      summary: llmSummary
+      }))
     };
   }
 };
@@ -21352,8 +21511,8 @@ var ReportCommands = {
   // ================================
   // HELPER METHODS
   // ================================
-  getNestedValue(obj, path3) {
-    return path3.split(".").reduce((current, key) => current?.[key], obj);
+  getNestedValue(obj, path4) {
+    return path4.split(".").reduce((current, key) => current?.[key], obj);
   },
   getDefaultColumns(reportType) {
     const columnMap = {
@@ -24219,7 +24378,7 @@ var ChatToolbox = class {
     if (!storeId) {
       throw new Error("Store ID is required for category queries");
     }
-    return await CategoryQueries.search(term, storeId, limit);
+    return await CategoryQueries.search(term, storeId, { limit });
   }
   async getActiveCategories(storeId) {
     if (!storeId) {
@@ -24247,7 +24406,7 @@ var ChatToolbox = class {
     return await SupplierQueries.getById(id);
   }
   async searchSuppliers(term, limit = 10) {
-    return await SupplierQueries.search(term, limit);
+    return await SupplierQueries.search(term, String(limit));
   }
   async getActiveSuppliers() {
     return await SupplierQueries.getActive();
@@ -24556,7 +24715,7 @@ var ChatQueries = {
       where: { sessionId }
     });
     const formattedMessages = [];
-    session.messages.forEach((message) => {
+    for (const message of session.messages) {
       formattedMessages.push({
         id: `${message.id}_user`,
         content: message.content,
@@ -24571,7 +24730,7 @@ var ChatQueries = {
         createdAt: message.createdAt,
         updatedAt: message.updatedAt
       });
-    });
+    }
     return {
       id: session.id,
       userId: session.userId,
@@ -24900,11 +25059,9 @@ Mensagem do usu\xE1rio: ${data.message}
 `;
     let response;
     if (data.options) {
-      const llmResponse = await LLMService.executeWithOptions(systemPrompt, data.options);
-      response = typeof llmResponse === "string" ? llmResponse : String(llmResponse);
+      response = systemPrompt;
     } else {
-      const llmResponse = await LLMService.executePrompt(systemPrompt);
-      response = typeof llmResponse === "string" ? llmResponse : String(llmResponse);
+      response = systemPrompt;
     }
     const chatMessage = await ChatCommands.createMessage({
       content: data.message,
@@ -27882,7 +28039,7 @@ var UploadQueries = {
 // src/features/upload/upload.service.ts
 var import_fs = require("fs");
 var import_path = __toESM(require("path"));
-var import_crypto2 = require("crypto");
+var import_crypto = require("crypto");
 var UPLOAD_DIR = import_path.default.join(process.cwd(), "src", "uploads");
 var MAX_FILE_SIZE = 10 * 1024 * 1024;
 var ALLOWED_TYPES = [
@@ -27952,7 +28109,7 @@ var UploadService = class _UploadService {
   generateUniqueFilename(originalName) {
     const ext = import_path.default.extname(originalName);
     const name = import_path.default.basename(originalName, ext);
-    const uuid = (0, import_crypto2.randomUUID)();
+    const uuid = (0, import_crypto.randomUUID)();
     return `${name}-${uuid}${ext}`;
   }
   // === UPLOAD ÚNICO ===
@@ -27988,7 +28145,7 @@ var UploadService = class _UploadService {
       await import_fs.promises.copyFile(file.path, destination);
       publicUrl = `${publicUrl}/${uniqueFilename}`;
       const result = {
-        id: (0, import_crypto2.randomUUID)(),
+        id: (0, import_crypto.randomUUID)(),
         url: publicUrl,
         name: file.originalname,
         type: file.mimetype,
@@ -31170,7 +31327,7 @@ var PlanCommands = {
     });
   },
   async delete(id) {
-    const plan = await db.plan.findUnique({
+    const plan2 = await db.plan.findUnique({
       where: { id },
       include: {
         customers: {
@@ -31178,21 +31335,21 @@ var PlanCommands = {
         }
       }
     });
-    if (!plan) {
+    if (!plan2) {
       throw new Error("Plan not found");
     }
-    if (plan.customers.length > 0) {
-      throw new Error(`Cannot delete plan. It has ${plan.customers.length} associated customers. Please reassign or delete the customers first.`);
+    if (plan2.customers.length > 0) {
+      throw new Error(`Cannot delete plan. It has ${plan2.customers.length} associated customers. Please reassign or delete the customers first.`);
     }
     return await db.plan.delete({
       where: { id }
     });
   },
   async forceDelete(id) {
-    const plan = await db.plan.findUnique({
+    const plan2 = await db.plan.findUnique({
       where: { id }
     });
-    if (!plan) {
+    if (!plan2) {
       throw new Error("Plan not found");
     }
     await db.customer.updateMany({
@@ -31204,10 +31361,10 @@ var PlanCommands = {
     });
   },
   async updateStatus(id, active) {
-    const plan = await db.plan.findUnique({
+    const plan2 = await db.plan.findUnique({
       where: { id }
     });
-    if (!plan) {
+    if (!plan2) {
       throw new Error("Plan not found");
     }
     return await db.plan.update({
@@ -31232,7 +31389,7 @@ var PlanCommands = {
 // src/features/plan/queries/plan.queries.ts
 var PlanQueries = {
   async getById(id) {
-    const plan = await db.plan.findUnique({
+    const plan2 = await db.plan.findUnique({
       where: { id },
       include: {
         customers: {
@@ -31251,12 +31408,12 @@ var PlanQueries = {
         }
       }
     });
-    if (!plan) {
+    if (!plan2) {
       return null;
     }
     return {
-      ...plan,
-      customersCount: plan.customers.length
+      ...plan2,
+      customersCount: plan2.customers.length
     };
   },
   async list(params) {
@@ -31289,9 +31446,9 @@ var PlanQueries = {
       }),
       db.plan.count({ where })
     ]);
-    const itemsWithCount = plans.map((plan) => ({
-      ...plan,
-      customersCount: plan.customers.length
+    const itemsWithCount = plans.map((plan2) => ({
+      ...plan2,
+      customersCount: plan2.customers.length
     }));
     return {
       items: itemsWithCount,
@@ -31315,9 +31472,9 @@ var PlanQueries = {
         }
       }
     });
-    return plans.map((plan) => ({
-      ...plan,
-      customersCount: plan.customers.length
+    return plans.map((plan2) => ({
+      ...plan2,
+      customersCount: plan2.customers.length
     }));
   },
   async compare(planIds) {
@@ -31339,17 +31496,17 @@ var PlanQueries = {
     if (plans.length === 0) {
       throw new Error("No plans found for comparison");
     }
-    const prices = plans.map((plan) => Number(plan.price));
-    const intervals = [...new Set(plans.map((plan) => plan.interval))];
+    const prices = plans.map((plan2) => Number(plan2.price));
+    const intervals = [...new Set(plans.map((plan2) => plan2.interval))];
     const allFeatures = /* @__PURE__ */ new Set();
-    plans.forEach((plan) => {
-      if (plan.features && typeof plan.features === "object") {
-        Object.keys(plan.features).forEach((key) => allFeatures.add(key));
+    plans.forEach((plan2) => {
+      if (plan2.features && typeof plan2.features === "object") {
+        Object.keys(plan2.features).forEach((key) => allFeatures.add(key));
       }
     });
-    const plansWithCount = plans.map((plan) => ({
-      ...plan,
-      customersCount: plan.customers.length
+    const plansWithCount = plans.map((plan2) => ({
+      ...plan2,
+      customersCount: plan2.customers.length
     }));
     return {
       plans: plansWithCount,
@@ -31366,10 +31523,10 @@ var PlanQueries = {
   async getCustomers(planId, params) {
     const { page = 1, limit = 10, status } = params;
     const skip = (page - 1) * limit;
-    const plan = await db.plan.findUnique({
+    const plan2 = await db.plan.findUnique({
       where: { id: planId }
     });
-    if (!plan) {
+    if (!plan2) {
       throw new Error("Plan not found");
     }
     const where = {
@@ -31418,10 +31575,10 @@ var PlanQueries = {
     ]);
     return {
       plan: {
-        id: plan.id,
-        name: plan.name,
-        price: plan.price,
-        interval: plan.interval
+        id: plan2.id,
+        name: plan2.name,
+        price: plan2.price,
+        interval: plan2.interval
       },
       customers,
       pagination: {
@@ -31466,8 +31623,8 @@ var PlanQueries = {
       }
     });
     let totalRevenue = 0;
-    planRevenue.forEach((plan) => {
-      plan.customers.forEach((customer) => {
+    planRevenue.forEach((plan2) => {
+      plan2.customers.forEach((customer) => {
         customer.invoices.forEach((invoice) => {
           totalRevenue += Number(invoice.amount);
         });
@@ -32176,10 +32333,10 @@ var CustomerCommands = {
       throw new Error("User is already a customer");
     }
     if (planId) {
-      const plan = await db.plan.findUnique({
+      const plan2 = await db.plan.findUnique({
         where: { id: planId }
       });
-      if (!plan) {
+      if (!plan2) {
         throw new Error("Plan not found");
       }
     }
@@ -32222,10 +32379,10 @@ var CustomerCommands = {
       throw new Error("Customer not found");
     }
     if (planId) {
-      const plan = await db.plan.findUnique({
+      const plan2 = await db.plan.findUnique({
         where: { id: planId }
       });
-      if (!plan) {
+      if (!plan2) {
         throw new Error("Plan not found");
       }
     }
@@ -32297,17 +32454,17 @@ var CustomerCommands = {
     if (!customer) {
       throw new Error("Customer not found");
     }
-    const plan = await db.plan.findUnique({
+    const plan2 = await db.plan.findUnique({
       where: { id: planId }
     });
-    if (!plan) {
+    if (!plan2) {
       throw new Error("Plan not found");
     }
     return await db.customer.update({
       where: { id: customerId },
       data: {
         plan: { connect: { id: planId } },
-        renewalDate: new Date(Date.now() + (plan.interval === "MONTHLY" ? 30 : 365) * 24 * 60 * 60 * 1e3)
+        renewalDate: new Date(Date.now() + (plan2.interval === "MONTHLY" ? 30 : 365) * 24 * 60 * 60 * 1e3)
       },
       include: {
         user: {
@@ -40310,14 +40467,6 @@ async function PushSubscriptionRoutes(fastify2) {
   });
 }
 
-// src/plugins/polar.ts
-var import_sdk = require("@polar-sh/sdk");
-var polar = new import_sdk.Polar({
-  accessToken: process.env.POLAR_ACCESS_KEY,
-  server: "sandbox"
-  //"sandbox") as "production" | "sandbox"
-});
-
 // src/features/polar/commands/polar.commands.ts
 var PolarCommands = {
   async checkout(data) {
@@ -40461,9 +40610,9 @@ var PolarCommands = {
                 polarCustomerId: polarCustomerId || customer.polarCustomerId || null
               }
             });
-            const plan = await resolvePlanByPolarProduct(productId);
-            if (plan && customer.planId !== plan.id) {
-              await db.customer.update({ where: { id: customer.id }, data: { planId: plan.id } });
+            const plan2 = await resolvePlanByPolarProduct(productId);
+            if (plan2 && customer.planId !== plan2.id) {
+              await db.customer.update({ where: { id: customer.id }, data: { planId: plan2.id } });
             }
           }
           break;
@@ -40478,9 +40627,9 @@ var PolarCommands = {
           const currentPeriodEndIso = order?.current_period_end;
           const customer = await findCustomerByPolarOrEmail({ polarCustomerId, email });
           if (!customer) break;
-          const plan = await resolvePlanByPolarProduct(productId);
+          const plan2 = await resolvePlanByPolarProduct(productId);
           const renewalDate = currentPeriodEndIso ? new Date(currentPeriodEndIso) : null;
-          await setCustomerPlanAndStatus(customer.id, plan ? plan.id : null, "ACTIVE", renewalDate, null);
+          await setCustomerPlanAndStatus(customer.id, plan2 ? plan2.id : null, "ACTIVE", renewalDate, null);
           await upsertInvoice(customer.id, amountCents, invoiceId || null, "PAID", /* @__PURE__ */ new Date());
           break;
         }
@@ -40502,7 +40651,7 @@ var PolarCommands = {
           const customer = await findCustomerByPolarOrEmail({ polarCustomerId, email });
           if (!customer) break;
           const productId = activeSub?.product_id;
-          const plan = await resolvePlanByPolarProduct(productId);
+          const plan2 = await resolvePlanByPolarProduct(productId);
           const statusMap = {
             active: "ACTIVE",
             trialing: "TRIAL",
@@ -40521,7 +40670,7 @@ var PolarCommands = {
               polarSubscriptionId: activeSub?.id || customer.polarSubscriptionId || null
             }
           });
-          await setCustomerPlanAndStatus(customer.id, plan ? plan.id : null, mappedStatus, renewalDate, trialEndsAt);
+          await setCustomerPlanAndStatus(customer.id, plan2 ? plan2.id : null, mappedStatus, renewalDate, trialEndsAt);
           break;
         }
         default:
@@ -40535,31 +40684,8 @@ var PolarCommands = {
   }
 };
 
-// src/features/polar/queries/polar.queries.ts
-var PolarQueries = {
-  async list({ page, limit }) {
-    try {
-      const { result } = await polar.products.list({
-        organizationId: process.env.POLAR_ORGANIZATION_ID,
-        page,
-        limit
-      });
-      return {
-        items: result.items,
-        pagination: {
-          page,
-          limit
-        }
-      };
-    } catch (error) {
-      console.error("Polar products list error:", error);
-      throw new Error(`Failed to fetch products: ${error}`);
-    }
-  }
-};
-
 // src/features/polar/polar.controller.ts
-var import_crypto3 = __toESM(require("crypto"));
+var import_crypto2 = __toESM(require("crypto"));
 var PolarController = {
   async list(request, reply) {
     try {
@@ -40594,7 +40720,7 @@ var PolarController = {
   async webhook(request, reply) {
     try {
       const secret = process.env.POLAR_WEBHOOK_SECRET;
-      const signatureHeader = request.headers["polar-signature"] || request.headers["Polar-Signature"];
+      const signatureHeader = request.headers["polar-signature"] || request.headers["x-polar-signature"];
       const rawBody = request.rawBody;
       if (!secret) {
         return reply.status(500).send({ error: "Webhook secret not configured" });
@@ -40602,15 +40728,37 @@ var PolarController = {
       if (!signatureHeader || !rawBody) {
         return reply.status(400).send({ error: "Missing signature or raw body" });
       }
-      const normalize = (sig) => sig.startsWith("sha256=") ? sig.slice(7) : sig;
-      const received = normalize(signatureHeader);
-      const computed = import_crypto3.default.createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
+      const parseSignature = (header) => {
+        const trimmed = header.trim();
+        if (trimmed.startsWith("sha256=")) {
+          return { hash: trimmed.slice(7), timestamp: void 0 };
+        }
+        const parts = trimmed.split(",").map((p) => p.trim());
+        const kv = new Map(parts.map((p) => {
+          const idx = p.indexOf("=");
+          if (idx === -1) return [p, ""];
+          return [p.slice(0, idx), p.slice(idx + 1)];
+        }));
+        return { hash: kv.get("v1") || kv.get("sha256"), timestamp: kv.get("t") };
+      };
+      const { hash: receivedHash, timestamp } = parseSignature(signatureHeader);
+      if (!receivedHash) {
+        return reply.status(400).send({ error: "Invalid signature format" });
+      }
+      if (timestamp) {
+        const tsNum = Number(timestamp);
+        const delta = Math.abs(Date.now() / 1e3 - tsNum);
+        if (!Number.isFinite(tsNum) || delta > 300) {
+          return reply.status(400).send({ error: "Signature timestamp too old" });
+        }
+      }
+      const computed = import_crypto2.default.createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
       const valid = (() => {
         try {
           const a = Buffer.from(computed, "hex");
-          const b = Buffer.from(received, "hex");
+          const b = Buffer.from(receivedHash, "hex");
           if (a.length !== b.length) return false;
-          return import_crypto3.default.timingSafeEqual(a, b);
+          return import_crypto2.default.timingSafeEqual(a, b);
         } catch {
           return false;
         }
@@ -40733,13 +40881,256 @@ async function PolarRoutes(fastify2) {
     handler: PolarController.checkout
   });
   fastify2.post("/webhook", {
+    // Garante que fastify-raw-body anexe o rawBody neste endpoint
+    config: { rawBody: true },
     handler: PolarController.webhook
+  });
+}
+
+// src/features/profile/queires/profile.queries.ts
+var ProfileQueries = {
+  async single(userId) {
+    const user = await db.user.findUnique({
+      where: { id: userId, status: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true
+      }
+    });
+    return user;
+  },
+  async plan(userId) {
+    const customer = await db.customer.findFirst({
+      where: {
+        userId,
+        status: "ACTIVE"
+      },
+      select: {
+        id: true,
+        planId: true,
+        plan: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            price: true,
+            interval: true,
+            features: true
+          }
+        }
+      }
+    });
+    console.log(customer?.plan);
+    return {
+      plan: customer?.plan || null
+    };
+  },
+  async preferences(userId) {
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true
+      }
+    });
+    return user;
+  }
+};
+
+// src/features/profile/commands/profile.commands.ts
+var ProfileCommands = {
+  async update(userId, data) {
+    const user = await db.user.update({
+      where: { id: userId },
+      data: {
+        name: data.name,
+        email: data.email,
+        phone: data.phone
+      }
+    });
+    return user;
+  },
+  async exclude(userId) {
+    const user = await db.user.delete({
+      where: { id: userId }
+    });
+    return user;
+  }
+};
+
+// src/features/profile/profile.controller.ts
+var ProfileController = {
+  async single(request, reply) {
+    try {
+      const userId = request.user?.id;
+      const user = await ProfileQueries.single(userId);
+      return reply.status(200).send({ user });
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(500).send({ error: "Internal server error" });
+    }
+  },
+  async update(request, reply) {
+    try {
+      const userId = request.user?.id;
+      const user = await ProfileCommands.update(userId, request.body);
+      return reply.status(200).send({ user, message: "Profile updated successfully" });
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(500).send({ error: "Internal server error" });
+    }
+  },
+  async exclude(request, reply) {
+    try {
+      const userId = request.user?.id;
+      const user = await ProfileCommands.exclude(userId);
+      return reply.status(200).send({ user, message: "Profile excluded successfully" });
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(500).send({ error: "Internal server error" });
+    }
+  },
+  async plan(request, reply) {
+    try {
+      const userId = request.user?.id;
+      const plan2 = await ProfileQueries.plan(userId);
+      return reply.status(200).send(plan2);
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(500).send({ error: "Internal server error" });
+    }
+  }
+};
+
+// src/features/profile/profile.schema.ts
+var update = {
+  body: {
+    type: "object",
+    required: ["name", "email"],
+    properties: {
+      name: { type: "string", minLength: 1 },
+      email: { type: "string", format: "email" },
+      phone: { type: "string", minLength: 1 }
+    }
+  },
+  response: {
+    200: {
+      type: "object",
+      properties: {
+        user: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            name: { type: "string" },
+            email: { type: "string" },
+            phone: { type: "string" }
+          },
+          additionalProperties: false
+        },
+        message: { type: "string" }
+      },
+      additionalProperties: false
+    }
+  }
+};
+var single = {
+  response: {
+    200: {
+      type: "object",
+      properties: {
+        user: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            name: { type: "string" },
+            email: { type: "string" },
+            phone: { type: "string" }
+          },
+          additionalProperties: false
+        }
+      },
+      additionalProperties: false
+    }
+  }
+};
+var exclude = {
+  response: {
+    200: {
+      type: "object",
+      properties: {
+        user: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            name: { type: "string" },
+            email: { type: "string" },
+            phone: { type: "string" }
+          },
+          additionalProperties: false
+        },
+        message: { type: "string" }
+      },
+      additionalProperties: false
+    }
+  }
+};
+var plan = {
+  response: {
+    200: {
+      type: "object",
+      properties: {
+        plan: {
+          type: ["object", "null"],
+          properties: {
+            id: { type: "string" },
+            name: { type: "string" },
+            description: { type: "string" },
+            price: { type: "number" },
+            interval: { type: "string" },
+            features: { type: "array", items: { type: "string" } }
+          }
+        }
+      }
+    }
+  }
+};
+var ProfileSchemas = {
+  update,
+  single,
+  exclude,
+  plan
+};
+
+// src/features/profile/profile.routes.ts
+async function ProfileRoutes(fastify2) {
+  fastify2.addHook("preHandler", Middlewares.auth);
+  fastify2.addHook("preHandler", Middlewares.store);
+  fastify2.get("/", {
+    schema: ProfileSchemas.single,
+    handler: ProfileController.single
+  });
+  fastify2.put("/", {
+    schema: ProfileSchemas.update,
+    handler: ProfileController.update
+  });
+  fastify2.delete("/", {
+    schema: ProfileSchemas.exclude,
+    handler: ProfileController.exclude
+  });
+  fastify2.get("/plan", {
+    schema: ProfileSchemas.plan,
+    handler: ProfileController.plan
   });
 }
 
 // src/server.ts
 var fastify = (0, import_fastify.default)({
-  logger: true,
+  logger: false,
+  // Desabilitado - usando bootstrap UI para feedback visual
   requestTimeout: 6e4,
   // 30 segundos para timeout de requisições
   keepAliveTimeout: 5e3,
@@ -40751,28 +41142,6 @@ var fastify = (0, import_fastify.default)({
     // Limite de caracteres para parâmetros de rota
   }
 });
-fastify.register(import_cors.default, {
-  origin: true,
-  // Permite todas as origens em desenvolvimento
-  credentials: true,
-  // Permite cookies e headers de autenticação
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
-});
-fastify.register(prismaPlugin);
-fastify.register(pushPlugin);
-fastify.register(require("fastify-raw-body"), {
-  field: "rawBody",
-  global: true,
-  encoding: "utf8",
-  runFirst: true
-});
-fastify.register(require("@fastify/static"), {
-  root: require("path").join(process.cwd(), "src", "uploads"),
-  prefix: "/uploads/",
-  decorateReply: false
-});
-connectPrisma(fastify);
 fastify.get("/health", async (request, reply) => {
   try {
     return reply.send({
@@ -40792,36 +41161,123 @@ fastify.get("/health", async (request, reply) => {
     });
   }
 });
-fastify.register(AuthRoutes, { prefix: "/auth" });
-fastify.register(UserRoutes, { prefix: "/users" });
-fastify.register(ProductRoutes, { prefix: "/products" });
-fastify.register(SupplierRoutes, { prefix: "/suppliers" });
-fastify.register(StoreRoutes, { prefix: "/stores" });
-fastify.register(CategoryRoutes, { prefix: "/categories" });
-fastify.register(MovementRoutes, { prefix: "/movements" });
-fastify.register(PermissionRoutes, { prefix: "/permissions" });
-fastify.register(ReportRoutes, { prefix: "/reports" });
-fastify.register(NotificationRoutes, { prefix: "/notifications" });
-fastify.register(ChatRoutes, { prefix: "/chat" });
-fastify.register(RoadmapRoutes, { prefix: "/roadmaps" });
-fastify.register(UploadRoutes, { prefix: "/uploads" });
-fastify.register(QuoteRoutes, { prefix: "/quotes" });
-fastify.register(PlanRoutes, { prefix: "/plans" });
-fastify.register(CustomerRoutes, { prefix: "/customers" });
-fastify.register(InvoiceRoutes, { prefix: "/invoices" });
-fastify.register(CrmRoutes, { prefix: "/crm" });
-fastify.register(UserPreferencesRoutes, { prefix: "/preferences" });
-fastify.register(FlowRoutes, { prefix: "" });
-fastify.register(FlowExecutionRoutes, { prefix: "" });
-fastify.register(PushSubscriptionRoutes, { prefix: "/push-subscriptions" });
-fastify.register(PolarRoutes, { prefix: "/polar" });
 var PORT = Number(process.env.PORT) || 3e3;
 var HOST = "0.0.0.0";
-fastify.listen({ port: PORT, host: HOST }).then(() => {
-  fastify.log.info(`\u{1F680} Servidor rodando na porta ${PORT}`);
-  console.log(`\u2705 Servidor rodando em http://${HOST}:${PORT}`);
-}).catch((err) => {
-  fastify.log.error(err);
-  console.error("\u274C Falha ao iniciar o servidor:", err);
+var closeGracefully = async (signal) => {
+  console.log(`
+\u26A0\uFE0F  Recebido sinal ${signal}, encerrando servidor...`);
+  try {
+    await fastify.close();
+    console.log("\u2705 Servidor encerrado com sucesso");
+    process.exit(0);
+  } catch (err) {
+    console.error("\u274C Erro ao encerrar servidor:", err);
+    process.exit(1);
+  }
+};
+process.on("SIGINT", () => closeGracefully("SIGINT"));
+process.on("SIGTERM", () => closeGracefully("SIGTERM"));
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+  bootstrapUI.showError("Uncaught Exception", err);
+  process.exit(1);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Rejection:", reason);
+  bootstrapUI.showError("Unhandled Rejection", reason);
+  process.exit(1);
+});
+async function startServer() {
+  const success = await bootstrapUI.run([
+    {
+      name: "Conectando ao banco de dados",
+      action: async () => {
+        await connectPrisma(fastify);
+      }
+    },
+    {
+      name: "Registrando plugins",
+      action: async () => {
+        await fastify.register(prismaPlugin);
+        await fastify.register(pushPlugin);
+      }
+    },
+    {
+      name: "Configurando CORS",
+      action: async () => {
+        await fastify.register(import_cors.default, {
+          origin: true,
+          credentials: true,
+          methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+          allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+        });
+      }
+    },
+    {
+      name: "Registrando raw body parser",
+      action: async () => {
+        await fastify.register(require("fastify-raw-body"), {
+          field: "rawBody",
+          global: true,
+          encoding: "utf8",
+          runFirst: true
+        });
+      }
+    },
+    {
+      name: "Configurando arquivos est\xE1ticos",
+      action: async () => {
+        await fastify.register(require("@fastify/static"), {
+          root: import_node_path.default.join(process.cwd(), "src", "uploads"),
+          prefix: "/uploads/",
+          decorateReply: false
+        });
+      }
+    },
+    {
+      name: "Registrando rotas",
+      action: async () => {
+        await fastify.register(AuthRoutes, { prefix: "/auth" });
+        await fastify.register(UserRoutes, { prefix: "/users" });
+        await fastify.register(ProductRoutes, { prefix: "/products" });
+        await fastify.register(SupplierRoutes, { prefix: "/suppliers" });
+        await fastify.register(StoreRoutes, { prefix: "/stores" });
+        await fastify.register(CategoryRoutes, { prefix: "/categories" });
+        await fastify.register(MovementRoutes, { prefix: "/movements" });
+        await fastify.register(PermissionRoutes, { prefix: "/permissions" });
+        await fastify.register(ReportRoutes, { prefix: "/reports" });
+        await fastify.register(NotificationRoutes, { prefix: "/notifications" });
+        await fastify.register(ChatRoutes, { prefix: "/chat" });
+        await fastify.register(RoadmapRoutes, { prefix: "/roadmaps" });
+        await fastify.register(UploadRoutes, { prefix: "/uploads" });
+        await fastify.register(QuoteRoutes, { prefix: "/quotes" });
+        await fastify.register(PlanRoutes, { prefix: "/plans" });
+        await fastify.register(CustomerRoutes, { prefix: "/customers" });
+        await fastify.register(InvoiceRoutes, { prefix: "/invoices" });
+        await fastify.register(CrmRoutes, { prefix: "/crm" });
+        await fastify.register(UserPreferencesRoutes, { prefix: "/preferences" });
+        await fastify.register(FlowRoutes, { prefix: "" });
+        await fastify.register(FlowExecutionRoutes, { prefix: "" });
+        await fastify.register(PushSubscriptionRoutes, { prefix: "/push-subscriptions" });
+        await fastify.register(PolarRoutes, { prefix: "/polar" });
+        await fastify.register(ProfileRoutes, { prefix: "/profile" });
+      }
+    },
+    {
+      name: "Iniciando servidor",
+      action: async () => {
+        await fastify.listen({ port: PORT, host: HOST });
+      }
+    }
+  ]);
+  if (!success) {
+    bootstrapUI.showError("Falha ao inicializar o servidor");
+    process.exit(1);
+  }
+  bootstrapUI.showServerInfo(fastify, PORT, HOST);
+}
+startServer().catch((err) => {
+  console.error("Erro fatal ao iniciar o servidor:", err);
+  bootstrapUI.showError("Erro fatal ao iniciar o servidor", err);
   process.exit(1);
 });

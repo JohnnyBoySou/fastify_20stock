@@ -12,7 +12,7 @@ export const PolarQueries = {
                 email: data.email,
                 name: data.name,
                 externalId: data.externalId,
-                organizationId: process.env.POLAR_ORGANIZATION_ID!,
+                //organizationId: process.env.POLAR_ORGANIZATION_ID as string,
             });
 
             return customer;
@@ -24,7 +24,7 @@ export const PolarQueries = {
     async list({ page, limit }: { page: number, limit: number }) {
         try {
             const { result } = await polar.products.list({
-                organizationId: process.env.POLAR_ORGANIZATION_ID!,
+                organizationId: process.env.POLAR_ORGANIZATION_ID as string,
                 page,
                 limit,
             });
@@ -46,7 +46,7 @@ export const PolarQueries = {
     async getFreePlan() {
         try {
             const { result } = await polar.products.list({
-                organizationId: process.env.POLAR_ORGANIZATION_ID!,
+                organizationId: process.env.POLAR_ORGANIZATION_ID as string,
                 page: 1,
                 limit: 10,
             });
