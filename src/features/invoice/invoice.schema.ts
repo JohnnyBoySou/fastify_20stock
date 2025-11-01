@@ -1,4 +1,4 @@
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify'
 
 export const createInvoiceSchema: FastifySchema = {
   body: {
@@ -7,14 +7,14 @@ export const createInvoiceSchema: FastifySchema = {
     properties: {
       customerId: { type: 'string', minLength: 1 },
       amount: { type: 'number', minimum: 0.01 },
-      status: { 
-        type: 'string', 
+      status: {
+        type: 'string',
         enum: ['PENDING', 'PAID', 'FAILED'],
-        default: 'PENDING'
+        default: 'PENDING',
       },
       gatewayPaymentId: { type: 'string' },
-      paymentDate: { type: 'string', format: 'date-time' }
-    }
+      paymentDate: { type: 'string', format: 'date-time' },
+    },
   },
   response: {
     201: {
@@ -39,8 +39,8 @@ export const createInvoiceSchema: FastifySchema = {
                 id: { type: 'string' },
                 name: { type: 'string' },
                 email: { type: 'string' },
-                phone: { type: 'string', nullable: true }
-              }
+                phone: { type: 'string', nullable: true },
+              },
             },
             plan: {
               type: 'object',
@@ -50,35 +50,35 @@ export const createInvoiceSchema: FastifySchema = {
                 name: { type: 'string' },
                 description: { type: 'string', nullable: true },
                 price: { type: 'number' },
-                interval: { type: 'string' }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+                interval: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const updateInvoiceSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     properties: {
       amount: { type: 'number', minimum: 0.01 },
-      status: { 
-        type: 'string', 
-        enum: ['PENDING', 'PAID', 'FAILED']
+      status: {
+        type: 'string',
+        enum: ['PENDING', 'PAID', 'FAILED'],
       },
       gatewayPaymentId: { type: 'string' },
-      paymentDate: { type: 'string', format: 'date-time' }
-    }
+      paymentDate: { type: 'string', format: 'date-time' },
+    },
   },
   response: {
     200: {
@@ -103,8 +103,8 @@ export const updateInvoiceSchema: FastifySchema = {
                 id: { type: 'string' },
                 name: { type: 'string' },
                 email: { type: 'string' },
-                phone: { type: 'string', nullable: true }
-              }
+                phone: { type: 'string', nullable: true },
+              },
             },
             plan: {
               type: 'object',
@@ -114,23 +114,23 @@ export const updateInvoiceSchema: FastifySchema = {
                 name: { type: 'string' },
                 description: { type: 'string', nullable: true },
                 price: { type: 'number' },
-                interval: { type: 'string' }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+                interval: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getInvoiceSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -155,8 +155,8 @@ export const getInvoiceSchema: FastifySchema = {
                 id: { type: 'string' },
                 name: { type: 'string' },
                 email: { type: 'string' },
-                phone: { type: 'string', nullable: true }
-              }
+                phone: { type: 'string', nullable: true },
+              },
             },
             plan: {
               type: 'object',
@@ -166,15 +166,15 @@ export const getInvoiceSchema: FastifySchema = {
                 name: { type: 'string' },
                 description: { type: 'string', nullable: true },
                 price: { type: 'number' },
-                interval: { type: 'string' }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+                interval: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const listInvoicesSchema: FastifySchema = {
   querystring: {
@@ -183,13 +183,13 @@ export const listInvoicesSchema: FastifySchema = {
       page: { type: 'number', minimum: 1, default: 1 },
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       customerId: { type: 'string' },
-      status: { 
-        type: 'string', 
-        enum: ['PENDING', 'PAID', 'FAILED'] 
+      status: {
+        type: 'string',
+        enum: ['PENDING', 'PAID', 'FAILED'],
       },
       startDate: { type: 'string', format: 'date' },
-      endDate: { type: 'string', format: 'date' }
-    }
+      endDate: { type: 'string', format: 'date' },
+    },
   },
   response: {
     200: {
@@ -219,8 +219,8 @@ export const listInvoicesSchema: FastifySchema = {
                       id: { type: 'string' },
                       name: { type: 'string' },
                       email: { type: 'string' },
-                      phone: { type: 'string', nullable: true }
-                    }
+                      phone: { type: 'string', nullable: true },
+                    },
                   },
                   plan: {
                     type: 'object',
@@ -230,13 +230,13 @@ export const listInvoicesSchema: FastifySchema = {
                       name: { type: 'string' },
                       description: { type: 'string', nullable: true },
                       price: { type: 'number' },
-                      interval: { type: 'string' }
-                    }
-                  }
-                }
-              }
-            }
-          }
+                      interval: { type: 'string' },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -244,46 +244,46 @@ export const listInvoicesSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const deleteInvoiceSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
-    204: { type: 'null' }
-  }
-};
+    204: { type: 'null' },
+  },
+}
 
 export const updateInvoiceStatusSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     required: ['status'],
     properties: {
-      status: { 
-        type: 'string', 
-        enum: ['PENDING', 'PAID', 'FAILED']
+      status: {
+        type: 'string',
+        enum: ['PENDING', 'PAID', 'FAILED'],
       },
       paymentDate: { type: 'string', format: 'date-time' },
-      gatewayPaymentId: { type: 'string' }
-    }
+      gatewayPaymentId: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -301,28 +301,28 @@ export const updateInvoiceStatusSchema: FastifySchema = {
           properties: {
             id: { type: 'string' },
             userId: { type: 'string' },
-            status: { type: 'string' }
-          }
-        }
-      }
-    }
-  }
-};
+            status: { type: 'string' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const retryPaymentSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     properties: {
       gateway: { type: 'string' },
-      paymentMethod: { type: 'object' }
-    }
+      paymentMethod: { type: 'object' },
+    },
   },
   response: {
     200: {
@@ -337,29 +337,29 @@ export const retryPaymentSchema: FastifySchema = {
             status: { type: 'string' },
             gatewayPaymentId: { type: 'string', nullable: true },
             paymentDate: { type: 'string', format: 'date-time', nullable: true },
-            createdAt: { type: 'string', format: 'date-time' }
-          }
+            createdAt: { type: 'string', format: 'date-time' },
+          },
         },
         retryResult: {
           type: 'object',
           properties: {
             success: { type: 'boolean' },
             gatewayResponse: { type: 'object', nullable: true },
-            error: { type: 'string', nullable: true }
-          }
-        }
-      }
-    }
-  }
-};
+            error: { type: 'string', nullable: true },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getInvoicePdfSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -367,26 +367,26 @@ export const getInvoicePdfSchema: FastifySchema = {
       properties: {
         success: { type: 'boolean' },
         pdfData: { type: 'object' },
-        message: { type: 'string' }
-      }
-    }
-  }
-};
+        message: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const sendInvoiceEmailSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     properties: {
       email: { type: 'string', format: 'email' },
-      includePdf: { type: 'boolean', default: false }
-    }
+      includePdf: { type: 'boolean', default: false },
+    },
   },
   response: {
     200: {
@@ -398,40 +398,40 @@ export const sendInvoiceEmailSchema: FastifySchema = {
             id: { type: 'string' },
             customerId: { type: 'string' },
             amount: { type: 'number' },
-            status: { type: 'string' }
-          }
+            status: { type: 'string' },
+          },
         },
         emailResult: {
           type: 'object',
           properties: {
             success: { type: 'boolean' },
             messageId: { type: 'string', nullable: true },
-            error: { type: 'string', nullable: true }
-          }
-        }
-      }
-    }
-  }
-};
+            error: { type: 'string', nullable: true },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getCustomerInvoicesSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['customerId'],
     properties: {
-      customerId: { type: 'string' }
-    }
+      customerId: { type: 'string' },
+    },
   },
   querystring: {
     type: 'object',
     properties: {
       page: { type: 'number', minimum: 1, default: 1 },
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
-      status: { 
-        type: 'string', 
-        enum: ['PENDING', 'PAID', 'FAILED'] 
-      }
-    }
+      status: {
+        type: 'string',
+        enum: ['PENDING', 'PAID', 'FAILED'],
+      },
+    },
   },
   response: {
     200: {
@@ -442,8 +442,8 @@ export const getCustomerInvoicesSchema: FastifySchema = {
           properties: {
             id: { type: 'string' },
             userId: { type: 'string' },
-            status: { type: 'string' }
-          }
+            status: { type: 'string' },
+          },
         },
         invoices: {
           type: 'array',
@@ -456,9 +456,9 @@ export const getCustomerInvoicesSchema: FastifySchema = {
               status: { type: 'string' },
               gatewayPaymentId: { type: 'string', nullable: true },
               paymentDate: { type: 'string', format: 'date-time', nullable: true },
-              createdAt: { type: 'string', format: 'date-time' }
-            }
-          }
+              createdAt: { type: 'string', format: 'date-time' },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -466,13 +466,13 @@ export const getCustomerInvoicesSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getInvoiceStatsSchema: FastifySchema = {
   response: {
@@ -488,11 +488,11 @@ export const getInvoiceStatsSchema: FastifySchema = {
         totalPending: { type: 'number' },
         totalFailed: { type: 'number' },
         averageAmount: { type: 'number' },
-        conversionRate: { type: 'number' }
-      }
-    }
-  }
-};
+        conversionRate: { type: 'number' },
+      },
+    },
+  },
+}
 
 export const getOverdueInvoicesSchema: FastifySchema = {
   response: {
@@ -520,26 +520,26 @@ export const getOverdueInvoicesSchema: FastifySchema = {
                       id: { type: 'string' },
                       name: { type: 'string' },
                       email: { type: 'string' },
-                      phone: { type: 'string', nullable: true }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+                      phone: { type: 'string', nullable: true },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getRevenueSchema: FastifySchema = {
   querystring: {
     type: 'object',
     properties: {
       startDate: { type: 'string', format: 'date' },
-      endDate: { type: 'string', format: 'date' }
-    }
+      endDate: { type: 'string', format: 'date' },
+    },
   },
   response: {
     200: {
@@ -554,28 +554,28 @@ export const getRevenueSchema: FastifySchema = {
             properties: {
               plan: { type: 'object' },
               revenue: { type: 'number' },
-              count: { type: 'number' }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+              count: { type: 'number' },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const markAsPaidSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     properties: {
-      gatewayPaymentId: { type: 'string' }
-    }
+      gatewayPaymentId: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -587,19 +587,19 @@ export const markAsPaidSchema: FastifySchema = {
         status: { type: 'string' },
         gatewayPaymentId: { type: 'string', nullable: true },
         paymentDate: { type: 'string', format: 'date-time', nullable: true },
-        createdAt: { type: 'string', format: 'date-time' }
-      }
-    }
-  }
-};
+        createdAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  },
+}
 
 export const markAsFailedSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -611,11 +611,11 @@ export const markAsFailedSchema: FastifySchema = {
         status: { type: 'string' },
         gatewayPaymentId: { type: 'string', nullable: true },
         paymentDate: { type: 'string', format: 'date-time', nullable: true },
-        createdAt: { type: 'string', format: 'date-time' }
-      }
-    }
-  }
-};
+        createdAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  },
+}
 
 export const InvoiceSchemas = {
   create: createInvoiceSchema,
@@ -632,5 +632,5 @@ export const InvoiceSchemas = {
   getOverdue: getOverdueInvoicesSchema,
   getRevenue: getRevenueSchema,
   markAsPaid: markAsPaidSchema,
-  markAsFailed: markAsFailedSchema
-};
+  markAsFailed: markAsFailedSchema,
+}

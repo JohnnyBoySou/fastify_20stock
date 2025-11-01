@@ -1,0 +1,89 @@
+/// ===============================
+///  PRODUCT STRUCTURE
+///  - Cada produto pertence a uma loja.
+///  - Pode ter um fornecedor vinculado.
+///  - Suporte a categorias, mídia, controle de estoque e rastreabilidade.
+///  - Soft delete e campos para IA e relatórios.
+/// ===============================
+
+model Product {
+  id              String          @id @default(cuid())
+
+  // Identificação
+  name            String
+  sku             String?         @unique // SKU interno (opcional)
+  barcode         String?         @unique // EAN/UPC opcional
+  referenceCode   String?         // código interno curto (ex: "PRD-001")
+  description     String?
+
+  // Unidade e precificação
+  unitOfMeasure   UnitOfMeasure
+  referencePrice  Decimal         @db.Decimal(10, 2) // preço de referência
+  costPrice       Decimal?        @db.Decimal(10, 2) // custo médio
+  markupPercent   Decimal?        @db.Decimal(5, 2)  // margem sobre o custo (%)
+  currency        String          @default("BRL")
+
+  // Estoque
+  stockCurrent    Int             @default(0)
+  stockMin        Int             @default(0)
+  stockMax        Int             @default(0)
+  alertPercentage Int             @default(20) @db.SmallInt
+  allowNegative   Boolean         @default(false)
+
+  // Controle de lote / validade (para alimentos, medicamentos etc.)
+  batchTracked    Boolean         @default(false)
+  expirationDate  DateTime?       // validade do produto principal (se aplicável)
+
+  // Associação
+  storeId         String
+  supplierId      String?
+  store           Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  supplier        Supplier?       @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+
+  // Status e auditoria
+  status          Boolean         @default(true)
+  deletedAt       DateTime?       // soft delete
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relações
+  movements       Movement[]
+  categories      ProductCategory[]
+  media           ProductMedia[]
+  quotes          QuoteItem[]
+
+  // Extensões e metadados
+  tags            Json?           // ex: ["bebida", "perecível"]
+  metadata        Json?           // ex: { "ncm": "2202.10.00", "origem": "nacional" }
+
+  @@map("products")
+
+  // Índices e constraints
+  @@index([storeId])
+  @@index([supplierId])
+  @@index([status])
+  @@index([deletedAt])
+  @@index([name])
+  @@index([sku])
+  @@schema("product")
+}
+
+
+enum UnitOfMeasure {
+  UNIDADE
+  KG
+  L
+  ML
+  M
+  CM
+  MM
+  UN
+  DZ
+  CX
+  PCT
+  KIT
+  PAR
+  H
+  D
+  @@schema("product")
+}

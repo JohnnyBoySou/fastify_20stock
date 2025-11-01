@@ -1,111 +1,114 @@
-import { FastifyInstance } from 'fastify'
+import { Middlewares } from '@/middlewares'
+import type { FastifyInstance } from 'fastify'
 import { NotificationController } from './notification.controller'
 import { NotificationSchemas } from './notification.schema'
-import { authMiddleware } from '@/middlewares/auth.middleware'
-import { storeContextMiddleware } from '@/middlewares/store-context.middleware'
 
 export async function NotificationRoutes(fastify: FastifyInstance) {
+  // Middlewares para todas as rotas
+  fastify.addHook('preHandler', Middlewares.auth)
+  fastify.addHook('preHandler', Middlewares.store)
+
   // CRUD básico
   fastify.post('/', {
     schema: NotificationSchemas.create,
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.create
+
+    handler: NotificationController.create,
   })
 
   fastify.get('/', {
     schema: NotificationSchemas.list,
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.list
+
+    handler: NotificationController.list,
   })
 
   fastify.get('/:id', {
     schema: NotificationSchemas.get,
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.get
+
+    handler: NotificationController.get,
   })
 
   fastify.put('/:id', {
     schema: NotificationSchemas.update,
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.update
+
+    handler: NotificationController.update,
   })
 
   fastify.delete('/:id', {
     schema: NotificationSchemas.delete,
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.delete
+
+    handler: NotificationController.delete,
   })
 
   // Funções de leitura específicas
   fastify.get('/user/:userId', {
     schema: NotificationSchemas.getByUser,
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.getByUser
+
+    handler: NotificationController.getByUser,
   })
 
   fastify.get('/user/:userId/unread', {
     schema: NotificationSchemas.getUnread,
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.getUnread
+
+    handler: NotificationController.getUnread,
   })
 
   fastify.get('/user/:userId/recent', {
     schema: NotificationSchemas.getRecent,
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.getRecent
+
+    handler: NotificationController.getRecent,
   })
 
   fastify.get('/type/:type', {
     schema: NotificationSchemas.getByType,
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.getByType
+
+    handler: NotificationController.getByType,
   })
 
   fastify.get('/priority/:priority', {
     schema: NotificationSchemas.getByPriority,
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.getByPriority
+
+    handler: NotificationController.getByPriority,
   })
 
   fastify.get('/stats', {
     schema: NotificationSchemas.getStats,
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.getStats
+
+    handler: NotificationController.getStats,
   })
 
   fastify.get('/search', {
     schema: NotificationSchemas.search,
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.search
+
+    handler: NotificationController.search,
   })
 
   // Funções de comando específicas
   fastify.patch('/:id/read', {
     schema: NotificationSchemas.markAsRead,
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.markAsRead
+
+    handler: NotificationController.markAsRead,
   })
 
   fastify.patch('/:id/unread', {
     schema: NotificationSchemas.markAsRead,
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.markAsUnread
+
+    handler: NotificationController.markAsUnread,
   })
 
   fastify.patch('/mark-all-read', {
     schema: NotificationSchemas.markAllAsRead,
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.markAllAsRead
+
+    handler: NotificationController.markAllAsRead,
   })
 
   fastify.delete('/expired', {
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.deleteExpired
+
+    handler: NotificationController.deleteExpired,
   })
 
   fastify.delete('/user/:userId', {
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.deleteByUser
+
+    handler: NotificationController.deleteByUser,
   })
 
   // === ROTAS ESPECÍFICAS PARA ALERTAS DE ESTOQUE ===
@@ -117,12 +120,12 @@ export async function NotificationRoutes(fastify: FastifyInstance) {
           userId: { type: 'string' },
           storeId: { type: 'string' },
           isRead: { type: 'boolean' },
-          limit: { type: 'number', minimum: 1, maximum: 100 }
-        }
-      }
+          limit: { type: 'number', minimum: 1, maximum: 100 },
+        },
+      },
     },
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.getStockAlerts
+
+    handler: NotificationController.getStockAlerts,
   })
 
   fastify.get('/user/:userId/stock-alerts/unread', {
@@ -131,18 +134,18 @@ export async function NotificationRoutes(fastify: FastifyInstance) {
         type: 'object',
         required: ['userId'],
         properties: {
-          userId: { type: 'string' }
-        }
+          userId: { type: 'string' },
+        },
       },
       querystring: {
         type: 'object',
         properties: {
-          limit: { type: 'number', minimum: 1, maximum: 100 }
-        }
-      }
+          limit: { type: 'number', minimum: 1, maximum: 100 },
+        },
+      },
     },
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.getUnreadStockAlerts
+
+    handler: NotificationController.getUnreadStockAlerts,
   })
 
   fastify.patch('/stock-alerts/mark-read', {
@@ -152,11 +155,11 @@ export async function NotificationRoutes(fastify: FastifyInstance) {
         required: ['userId'],
         properties: {
           userId: { type: 'string' },
-          storeId: { type: 'string' }
-        }
-      }
+          storeId: { type: 'string' },
+        },
+      },
     },
-    preHandler: [authMiddleware, storeContextMiddleware],
-    handler: NotificationController.markStockAlertsAsRead
+
+    handler: NotificationController.markStockAlertsAsRead,
   })
 }

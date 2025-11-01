@@ -1,116 +1,117 @@
-import { FastifyInstance } from 'fastify'
+import { Middlewares } from '@/middlewares'
+import type { FastifyInstance } from 'fastify'
 import { UserPreferencesController } from './user-preferences.controller'
 import {
   createUserPreferencesSchema,
-  updateUserPreferencesSchema,
-  updateUserPreferencesMeSchema,
-  getUserPreferencesSchema,
+  deleteUserPreferencesSchema,
   getUserPreferencesByUserIdSchema,
   getUserPreferencesMeSchema,
-  deleteUserPreferencesSchema,
-  listUserPreferencesSchema,
+  getUserPreferencesSchema,
   getUserPreferencesStatsSchema,
+  listUserPreferencesSchema,
   searchUserPreferencesSchema,
-  validateUserPreferencesSchema
+  updateUserPreferencesMeSchema,
+  updateUserPreferencesSchema,
+  validateUserPreferencesSchema,
 } from './user-preferences.schema'
-import { authMiddleware, storeContextMiddleware } from '@/middlewares'
 
 // ================================
 // USER PREFERENCES ROUTES
 // ================================
 
 export async function UserPreferencesRoutes(fastify: FastifyInstance) {
-  fastify.addHook('preHandler', authMiddleware)
-  fastify.addHook('preHandler', storeContextMiddleware)
+  // Middlewares para todas as rotas
+  fastify.addHook('preHandler', Middlewares.auth)
+  fastify.addHook('preHandler', Middlewares.store)
   // CRUD básico
   fastify.post('/', {
     schema: createUserPreferencesSchema,
-    handler: UserPreferencesController.create
+    handler: UserPreferencesController.create,
   })
 
   fastify.get('/', {
     schema: listUserPreferencesSchema,
-    handler: UserPreferencesController.list
+    handler: UserPreferencesController.list,
   })
 
   fastify.get('/:id', {
     schema: getUserPreferencesSchema,
-    handler: UserPreferencesController.get
+    handler: UserPreferencesController.get,
   })
 
   fastify.put('/:id', {
     schema: updateUserPreferencesSchema,
-    handler: UserPreferencesController.update
+    handler: UserPreferencesController.update,
   })
 
   fastify.delete('/:id', {
     schema: deleteUserPreferencesSchema,
-    handler: UserPreferencesController.delete
+    handler: UserPreferencesController.delete,
   })
 
   // Funções específicas por usuário (usando ID do usuário autenticado)
   fastify.get('/me', {
     schema: getUserPreferencesMeSchema,
-    handler: UserPreferencesController.getByUserId
+    handler: UserPreferencesController.getByUserId,
   })
 
   fastify.get('/me/or-create', {
     schema: getUserPreferencesMeSchema,
-    handler: UserPreferencesController.getByUserIdOrCreate
+    handler: UserPreferencesController.getByUserIdOrCreate,
   })
 
   fastify.put('/me', {
     schema: updateUserPreferencesMeSchema,
-    handler: UserPreferencesController.updateByUserId
+    handler: UserPreferencesController.updateByUserId,
   })
 
   fastify.delete('/me', {
     schema: getUserPreferencesMeSchema,
-    handler: UserPreferencesController.deleteByUserId
+    handler: UserPreferencesController.deleteByUserId,
   })
 
   // Funções de filtro e busca
   fastify.get('/theme/:theme', {
-    handler: UserPreferencesController.getByTheme
+    handler: UserPreferencesController.getByTheme,
   })
 
   fastify.get('/language/:language', {
-    handler: UserPreferencesController.getByLanguage
+    handler: UserPreferencesController.getByLanguage,
   })
 
   fastify.get('/currency/:currency', {
-    handler: UserPreferencesController.getByCurrency
+    handler: UserPreferencesController.getByCurrency,
   })
 
   fastify.get('/custom-settings', {
-    handler: UserPreferencesController.getWithCustomSettings
+    handler: UserPreferencesController.getWithCustomSettings,
   })
 
   // Funções de estatísticas e busca
   fastify.get('/stats', {
     schema: getUserPreferencesStatsSchema,
-    handler: UserPreferencesController.getStats
+    handler: UserPreferencesController.getStats,
   })
 
   fastify.get('/search', {
     schema: searchUserPreferencesSchema,
-    handler: UserPreferencesController.search
+    handler: UserPreferencesController.search,
   })
 
   // Funções de reset
   fastify.patch('/:id/reset', {
     schema: getUserPreferencesSchema,
-    handler: UserPreferencesController.resetToDefaults
+    handler: UserPreferencesController.resetToDefaults,
   })
 
   fastify.patch('/me/reset', {
     schema: getUserPreferencesMeSchema,
-    handler: UserPreferencesController.resetToDefaultsByUserId
+    handler: UserPreferencesController.resetToDefaultsByUserId,
   })
 
   // Função de validação
   fastify.post('/validate', {
     schema: validateUserPreferencesSchema,
-    handler: UserPreferencesController.validatePreferences
+    handler: UserPreferencesController.validatePreferences,
   })
 }

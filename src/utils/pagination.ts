@@ -28,16 +28,15 @@ export const PaginationUtils = {
   /**
    * Normaliza os parâmetros de paginação
    */
-  normalizeParams(params: PaginationParams, options: PaginationOptions = {}): {
+  normalizeParams(
+    params: PaginationParams,
+    options: PaginationOptions = {}
+  ): {
     page: number
     limit: number
     skip: number
   } {
-    const {
-      defaultPage = 1,
-      defaultLimit = 10,
-      maxLimit = 100
-    } = options
+    const { defaultPage = 1, defaultLimit = 10, maxLimit = 100 } = options
 
     const page = Math.max(1, params.page || defaultPage)
     const limit = Math.min(maxLimit, Math.max(1, params.limit || defaultLimit))
@@ -51,14 +50,14 @@ export const PaginationUtils = {
    */
   createPaginationMeta(page: number, limit: number, total: number) {
     const totalPages = Math.ceil(total / limit)
-    
+
     return {
       page,
       limit,
       total,
       totalPages,
       hasNext: page < totalPages,
-      hasPrev: page > 1
+      hasPrev: page > 1,
     }
   },
 
@@ -83,7 +82,7 @@ export const PaginationUtils = {
       include,
       orderBy = { createdAt: 'desc' },
       params = {},
-      paginationOptions = {}
+      paginationOptions = {},
     } = options
 
     const { page, limit, skip } = this.normalizeParams(params, paginationOptions)
@@ -93,7 +92,7 @@ export const PaginationUtils = {
       where,
       skip,
       take: limit,
-      orderBy
+      orderBy,
     }
 
     if (select) {
@@ -107,12 +106,12 @@ export const PaginationUtils = {
     // Executar consultas em paralelo
     const [data, total] = await Promise.all([
       prisma[model].findMany(queryOptions),
-      prisma[model].count({ where })
+      prisma[model].count({ where }),
     ])
 
     return {
       data,
-      pagination: this.createPaginationMeta(page, limit, total)
+      pagination: this.createPaginationMeta(page, limit, total),
     }
   },
 
@@ -133,11 +132,11 @@ export const PaginationUtils = {
       params: PaginationParams & { where?: any }
     ): Promise<PaginationResult<T>> => {
       const { where, ...paginationParams } = params
-      
+
       return this.paginate(prisma, model, {
         ...defaultOptions,
         where: where || {},
-        params: paginationParams
+        params: paginationParams,
       })
     }
   },
@@ -150,15 +149,15 @@ export const PaginationUtils = {
     dataKey: string,
     transformer?: (item: T) => R
   ): any {
-    const transformedData = transformer 
+    const transformedData = transformer
       ? result.data.map(transformer)
       : (result.data as unknown as R[])
 
     return {
       [dataKey]: transformedData,
-      pagination: result.pagination
+      pagination: result.pagination,
     }
-  }
+  },
 }
 
 /**
@@ -179,7 +178,7 @@ export function createPaginatedQuery<T>(
     include,
     orderBy = { createdAt: 'desc' },
     defaultLimit = 10,
-    maxLimit = 100
+    maxLimit = 100,
   } = options
 
   return async (
@@ -193,12 +192,12 @@ export function createPaginatedQuery<T>(
       orderBy,
       params: {
         page: params.page,
-        limit: params.limit
+        limit: params.limit,
       },
       paginationOptions: {
         defaultLimit,
-        maxLimit
-      }
+        maxLimit,
+      },
     })
   }
 }
@@ -219,14 +218,16 @@ export interface PaginatedResponse<T> {
 }
 
 export interface PaginatedListResponse<T> {
-  [key: string]: T[] | {
-    page: number
-    limit: number
-    total: number
-    totalPages: number
-    hasNext: boolean
-    hasPrev: boolean
-  }
+  [key: string]:
+    | T[]
+    | {
+        page: number
+        limit: number
+        total: number
+        totalPages: number
+        hasNext: boolean
+        hasPrev: boolean
+      }
   pagination: {
     page: number
     limit: number
@@ -239,28 +240,28 @@ export interface PaginatedListResponse<T> {
 
 /**
  * Exemplos de uso:
- * 
+ *
  * // Uso básico
  * const result = await PaginationUtils.paginate(prisma, 'user', {
  *   where: { status: true },
  *   params: { page: 1, limit: 10 }
  * })
- * 
+ *
  * // Com transformação
  * const result = await PaginationUtils.paginate(prisma, 'store', {
  *   where: { status: true },
  *   include: { owner: true },
  *   params: { page: 1, limit: 10 }
  * })
- * 
+ *
  * const formatted = PaginationUtils.transformPaginationResult(result, 'stores')
- * 
+ *
  * // Query helper
  * const getUserList = createPaginatedQuery('user', {
  *   select: { id: true, name: true, email: true },
  *   defaultLimit: 20
  * })
- * 
+ *
  * const users = await getUserList(prisma, {
  *   page: 1,
  *   limit: 10,

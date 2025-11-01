@@ -71,7 +71,9 @@
     "lint:fix": "biome check --write src/",
     "format": "biome format --write src/",
     "create-feature": "bun scripts/create-feature.ts",
-    "create-feature:node": "tsx scripts/create-feature.ts"
+    "create-feature:node": "tsx scripts/create-feature.ts",
+    "schema:generate": "bun scripts/generate-schema.js && npx prisma generate",
+    "prisma:generate": "npm run schema:generate"
   },
   "engines": {
     "node": "22.x",

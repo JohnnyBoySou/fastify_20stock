@@ -1,5 +1,5 @@
-import { PaginationUtils, PaginationParams } from '@/utils/pagination';
-import { db } from '@/plugins/prisma';
+import { db } from '@/plugins/prisma'
+import { type PaginationParams, PaginationUtils } from '@/utils/pagination'
 
 export const UserQueries = {
   async getById(id: string) {
@@ -14,15 +14,15 @@ export const UserQueries = {
         emailVerified: true,
         lastLoginAt: true,
         createdAt: true,
-        updatedAt: true
-      }
-    });
+        updatedAt: true,
+      },
+    })
 
     if (!user) {
-      throw new Error('User not found');
+      throw new Error('User not found')
     }
 
-    return user;
+    return user
   },
 
   async getByEmail(email: string) {
@@ -37,11 +37,11 @@ export const UserQueries = {
         emailVerified: true,
         lastLoginAt: true,
         createdAt: true,
-        updatedAt: true
-      }
-    });
+        updatedAt: true,
+      },
+    })
 
-    return user;
+    return user
   },
 
   async getByEmailWithPassword(email: string) {
@@ -57,36 +57,38 @@ export const UserQueries = {
         emailVerified: true,
         lastLoginAt: true,
         createdAt: true,
-        updatedAt: true
-      }
-    });
+        updatedAt: true,
+      },
+    })
 
-    return user;
+    return user
   },
 
-  async list(filters: PaginationParams & {
-    search?: string
-    status?: boolean
-    roles?: string[]
-  }) {
+  async list(
+    filters: PaginationParams & {
+      search?: string
+      status?: boolean
+      roles?: string[]
+    }
+  ) {
     // Construir filtros
-    const where: any = {};
+    const where: any = {}
 
     if (filters.search) {
       where.OR = [
         { email: { contains: filters.search, mode: 'insensitive' } },
-        { name: { contains: filters.search, mode: 'insensitive' } }
-      ];
+        { name: { contains: filters.search, mode: 'insensitive' } },
+      ]
     }
 
     if (filters.status !== undefined) {
-      where.status = filters.status;
+      where.status = filters.status
     }
 
     if (filters.roles && filters.roles.length > 0) {
       where.roles = {
-        hasSome: filters.roles
-      };
+        hasSome: filters.roles,
+      }
     }
 
     // Usar o util de paginação
@@ -100,34 +102,31 @@ export const UserQueries = {
         status: true,
         emailVerified: true,
         lastLoginAt: true,
-        createdAt: true
+        createdAt: true,
       },
       orderBy: { createdAt: 'desc' },
       params: {
         page: filters.page,
-        limit: filters.limit
+        limit: filters.limit,
       },
       paginationOptions: {
         defaultPage: 1,
         defaultLimit: 10,
-        maxLimit: 100
-      }
-    });
+        maxLimit: 100,
+      },
+    })
 
     // Transformar para o formato esperado
-    return PaginationUtils.transformPaginationResult(
-      result,
-      'users'
-    );
+    return PaginationUtils.transformPaginationResult(result, 'users')
   },
 
   async getByRole(role: string) {
     const users = await db.user.findMany({
       where: {
         roles: {
-          has: role
+          has: role,
         },
-        status: true
+        status: true,
       },
       select: {
         id: true,
@@ -137,12 +136,12 @@ export const UserQueries = {
         status: true,
         emailVerified: true,
         lastLoginAt: true,
-        createdAt: true
+        createdAt: true,
       },
-      orderBy: { createdAt: 'desc' }
-    });
+      orderBy: { createdAt: 'desc' },
+    })
 
-    return users;
+    return users
   },
 
   async getActive() {
@@ -155,12 +154,12 @@ export const UserQueries = {
         roles: true,
         emailVerified: true,
         lastLoginAt: true,
-        createdAt: true
+        createdAt: true,
       },
-      orderBy: { createdAt: 'desc' }
-    });
+      orderBy: { createdAt: 'desc' },
+    })
 
-    return users;
+    return users
   },
 
   async getStats() {
@@ -169,47 +168,47 @@ export const UserQueries = {
       db.user.count({ where: { status: true } }),
       db.user.count({ where: { status: false } }),
       db.user.count({ where: { emailVerified: true } }),
-      db.user.count({ where: { emailVerified: false } })
-    ]);
+      db.user.count({ where: { emailVerified: false } }),
+    ])
 
     return {
       total,
       active,
       inactive,
       verified,
-      unverified
-    };
+      unverified,
+    }
   },
 
   async checkEmailExists(email: string) {
     const user = await db.user.findUnique({
       where: { email },
-      select: { id: true }
-    });
+      select: { id: true },
+    })
 
-    return !!user;
+    return !!user
   },
 
-  async search(searchTerm: string, limit: number = 10) {
+  async search(searchTerm: string, limit = 10) {
     const users = await db.user.findMany({
       where: {
         OR: [
           { email: { contains: searchTerm, mode: 'insensitive' } },
-          { name: { contains: searchTerm, mode: 'insensitive' } }
+          { name: { contains: searchTerm, mode: 'insensitive' } },
         ],
-        status: true
+        status: true,
       },
       select: {
         id: true,
         email: true,
         name: true,
         roles: true,
-        emailVerified: true
+        emailVerified: true,
       },
       take: limit,
-      orderBy: { name: 'asc' }
-    });
+      orderBy: { name: 'asc' },
+    })
 
-    return users;
-  }
-};
+    return users
+  },
+}

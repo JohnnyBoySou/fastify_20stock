@@ -1,46 +1,52 @@
-import { db } from '@/plugins/prisma';
+import { db } from '@/plugins/prisma'
 
 export const SupplierResponsibleQueries = {
-  async getById({ supplierId, responsibleId }: { supplierId: string, responsibleId: string }) {
+  async getById({ supplierId, responsibleId }: { supplierId: string; responsibleId: string }) {
     const responsible = await db.supplierResponsible.findFirst({
       where: {
         id: responsibleId,
-        supplierId
-      }
-    });
+        supplierId,
+      },
+    })
 
     if (!responsible) {
-      throw new Error('Responsible not found for this supplier');
+      throw new Error('Responsible not found for this supplier')
     }
 
-    return responsible;
+    return responsible
   },
 
-  async list({ supplierId, params }: { supplierId: string, params: {
-    page?: number
-    limit?: number
-    search?: string
-    status?: boolean
-  }}) {
-    const { page = 1, limit = 10, search, status } = params;
-    const skip = (page - 1) * limit;
+  async list({
+    supplierId,
+    params,
+  }: {
+    supplierId: string
+    params: {
+      page?: number
+      limit?: number
+      search?: string
+      status?: boolean
+    }
+  }) {
+    const { page = 1, limit = 10, search, status } = params
+    const skip = (page - 1) * limit
 
     // Verificar se o supplier existe
     const supplier = await db.supplier.findUnique({
-      where: { id: supplierId }
-    });
+      where: { id: supplierId },
+    })
 
     if (!supplier) {
-      throw new Error('Supplier not found');
+      throw new Error('Supplier not found')
     }
 
     // Construir filtros
     const where: any = {
-      supplierId
-    };
+      supplierId,
+    }
 
     if (status !== undefined) {
-      where.status = status;
+      where.status = status
     }
 
     if (search) {
@@ -48,8 +54,8 @@ export const SupplierResponsibleQueries = {
         { name: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
         { phone: { contains: search, mode: 'insensitive' } },
-        { cpf: { contains: search, mode: 'insensitive' } }
-      ];
+        { cpf: { contains: search, mode: 'insensitive' } },
+      ]
     }
 
     // Buscar responsáveis
@@ -59,10 +65,10 @@ export const SupplierResponsibleQueries = {
         skip,
         take: limit,
       }),
-      db.supplierResponsible.count({ where })
-    ]);
+      db.supplierResponsible.count({ where }),
+    ])
 
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit)
 
     return {
       responsibles,
@@ -70,97 +76,101 @@ export const SupplierResponsibleQueries = {
         page,
         limit,
         total,
-        totalPages
-      }
-    };
+        totalPages,
+      },
+    }
   },
 
-  async getByEmail({ supplierId, email }: { supplierId: string, email: string }) {
+  async getByEmail({ supplierId, email }: { supplierId: string; email: string }) {
     const responsible = await db.supplierResponsible.findFirst({
       where: {
         supplierId,
-        email
-      }
-    });
+        email,
+      },
+    })
 
     if (!responsible) {
-      throw new Error('Responsible not found with this email for this supplier');
+      throw new Error('Responsible not found with this email for this supplier')
     }
 
-    return responsible;
+    return responsible
   },
 
-  async getByCpf({ supplierId, cpf }: { supplierId: string, cpf: string }) {
+  async getByCpf({ supplierId, cpf }: { supplierId: string; cpf: string }) {
     const responsible = await db.supplierResponsible.findFirst({
       where: {
         supplierId,
-        cpf
-      }
-    });
+        cpf,
+      },
+    })
 
     if (!responsible) {
-      throw new Error('Responsible not found with this CPF for this supplier');
+      throw new Error('Responsible not found with this CPF for this supplier')
     }
 
-    return responsible;
-  },  
+    return responsible
+  },
 
   async getActive({ supplierId }: { supplierId: string }) {
     // Verificar se o supplier existe
     const supplier = await db.supplier.findUnique({
-      where: { id: supplierId }
-    });
+      where: { id: supplierId },
+    })
 
     if (!supplier) {
-      throw new Error('Supplier not found');
+      throw new Error('Supplier not found')
     }
 
     return await db.supplierResponsible.findMany({
       where: {
         supplierId,
-        status: true
+        status: true,
       },
-      orderBy: { name: 'asc' }
-    });
+      orderBy: { name: 'asc' },
+    })
   },
 
-  async getStats({ supplierId }: { supplierId: string } ) {
+  async getStats({ supplierId }: { supplierId: string }) {
     // Verificar se o supplier existe
     const supplier = await db.supplier.findUnique({
-      where: { id: supplierId }
-    });
+      where: { id: supplierId },
+    })
 
     if (!supplier) {
-      throw new Error('Supplier not found');
+      throw new Error('Supplier not found')
     }
 
     const [total, active, inactive] = await Promise.all([
       db.supplierResponsible.count({
-        where: { supplierId }
+        where: { supplierId },
       }),
       db.supplierResponsible.count({
-        where: { supplierId, status: true }
+        where: { supplierId, status: true },
       }),
       db.supplierResponsible.count({
-        where: { supplierId, status: false }
-      })
-    ]);
+        where: { supplierId, status: false },
+      }),
+    ])
 
     return {
       total,
       active,
-      inactive
-    };
+      inactive,
+    }
   },
 
-  async search({ supplierId, searchTerm, limit }: { supplierId: string, searchTerm: string, limit: number }) {
+  async search({
+    supplierId,
+    searchTerm,
+    limit,
+  }: { supplierId: string; searchTerm: string; limit: number }) {
     // Verificar se o supplier existe
     const supplier = await db.supplier.findUnique({
-      where: { id: supplierId }
-    });
+      where: { id: supplierId },
+    })
 
     if (!supplier) {
-      throw new Error('Supplier not found');
+      throw new Error('Supplier not found')
     }
 
     return await db.supplierResponsible.findMany({
@@ -170,43 +180,43 @@ export const SupplierResponsibleQueries = {
           { name: { contains: searchTerm, mode: 'insensitive' } },
           { email: { contains: searchTerm, mode: 'insensitive' } },
           { phone: { contains: searchTerm, mode: 'insensitive' } },
-          { cpf: { contains: searchTerm, mode: 'insensitive' } }
-        ]
+          { cpf: { contains: searchTerm, mode: 'insensitive' } },
+        ],
       },
       take: limit,
-      orderBy: { name: 'asc' }
-    });
+      orderBy: { name: 'asc' },
+    })
   },
 
   async getBySupplier({ supplierId }: { supplierId: string }) {
     // Verificar se o supplier existe
     const supplier = await db.supplier.findUnique({
-      where: { id: supplierId }
-    });
+      where: { id: supplierId },
+    })
 
     if (!supplier) {
-      throw new Error('Supplier not found');
+      throw new Error('Supplier not found')
     }
 
     return await db.supplierResponsible.findMany({
       where: { supplierId },
-      orderBy: { name: 'asc' }
-    });
+      orderBy: { name: 'asc' },
+    })
   },
 
-  async getRecent({ supplierId, limit }: { supplierId: string, limit: number }) {
+  async getRecent({ supplierId, limit }: { supplierId: string; limit: number }) {
     // Verificar se o supplier existe
     const supplier = await db.supplier.findUnique({
-      where: { id: supplierId }
-    });
+      where: { id: supplierId },
+    })
 
     if (!supplier) {
-      throw new Error('Supplier not found');
+      throw new Error('Supplier not found')
     }
 
     return await db.supplierResponsible.findMany({
       where: { supplierId },
       take: limit,
-    });
-  }
+    })
+  },
 }

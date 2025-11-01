@@ -1,5 +1,5 @@
-import { UserPreferencesFilters, UserPreferencesStats } from '../user-preferences.interfaces'
 import { db } from '@/plugins/prisma'
+import type { UserPreferencesFilters, UserPreferencesStats } from '../user-preferences.interfaces'
 // ================================
 // USER PREFERENCES QUERIES
 // ================================
@@ -18,10 +18,10 @@ export const UserPreferencesQueries = {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
-        }
+              email: true,
+            },
+          },
+        },
       })
 
       if (!preferences) {
@@ -43,10 +43,10 @@ export const UserPreferencesQueries = {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
-        }
+              email: true,
+            },
+          },
+        },
       })
 
       if (!preferences) {
@@ -64,7 +64,7 @@ export const UserPreferencesQueries = {
       // Primeiro verificar se o usuário existe
       const user = await db.user.findUnique({
         where: { id: userId },
-        select: { id: true, name: true, email: true }
+        select: { id: true, name: true, email: true },
       })
 
       if (!user) {
@@ -78,10 +78,10 @@ export const UserPreferencesQueries = {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
-        }
+              email: true,
+            },
+          },
+        },
       })
 
       // Se não existir, criar com valores padrão
@@ -101,17 +101,17 @@ export const UserPreferencesQueries = {
             smsNotifications: false,
             itemsPerPage: 20,
             autoRefresh: true,
-            refreshInterval: 30
+            refreshInterval: 30,
           },
           include: {
             user: {
               select: {
                 id: true,
                 name: true,
-                email: true
-              }
-            }
-          }
+                email: true,
+              },
+            },
+          },
         })
       }
 
@@ -136,7 +136,7 @@ export const UserPreferencesQueries = {
         currency,
         timezone,
         hasCustomSettings,
-        notificationsEnabled
+        notificationsEnabled,
       } = filters
 
       const skip = (page - 1) * limit
@@ -150,18 +150,18 @@ export const UserPreferencesQueries = {
             user: {
               name: {
                 contains: search,
-                mode: 'insensitive'
-              }
-            }
+                mode: 'insensitive',
+              },
+            },
           },
           {
             user: {
               email: {
                 contains: search,
-                mode: 'insensitive'
-              }
-            }
-          }
+                mode: 'insensitive',
+              },
+            },
+          },
         ]
       }
 
@@ -184,7 +184,7 @@ export const UserPreferencesQueries = {
       if (hasCustomSettings !== undefined) {
         if (hasCustomSettings) {
           where.customSettings = {
-            not: null
+            not: null,
           }
         } else {
           where.customSettings = null
@@ -202,19 +202,19 @@ export const UserPreferencesQueries = {
           skip,
           take: limit,
           orderBy: {
-            updatedAt: 'desc'
+            updatedAt: 'desc',
           },
           include: {
             user: {
               select: {
                 id: true,
                 name: true,
-                email: true
-              }
-            }
-          }
+                email: true,
+              },
+            },
+          },
         }),
-        db.userPreferences.count({ where })
+        db.userPreferences.count({ where }),
       ])
 
       return {
@@ -223,8 +223,8 @@ export const UserPreferencesQueries = {
           page,
           limit,
           total,
-          totalPages: Math.ceil(total / limit)
-        }
+          totalPages: Math.ceil(total / limit),
+        },
       }
     } catch (error: any) {
       throw new Error(`Failed to list user preferences: ${error.message}`)
@@ -235,7 +235,7 @@ export const UserPreferencesQueries = {
   // SEARCH OPERATIONS
   // ================================
 
-  async search(searchTerm: string, limit: number = 10) {
+  async search(searchTerm: string, limit = 10) {
     try {
       const preferences = await db.userPreferences.findMany({
         where: {
@@ -244,45 +244,45 @@ export const UserPreferencesQueries = {
               user: {
                 name: {
                   contains: searchTerm,
-                  mode: 'insensitive'
-                }
-              }
+                  mode: 'insensitive',
+                },
+              },
             },
             {
               user: {
                 email: {
                   contains: searchTerm,
-                  mode: 'insensitive'
-                }
-              }
+                  mode: 'insensitive',
+                },
+              },
             },
             {
               language: {
                 contains: searchTerm,
-                mode: 'insensitive'
-              }
+                mode: 'insensitive',
+              },
             },
             {
               currency: {
                 contains: searchTerm,
-                mode: 'insensitive'
-              }
-            }
-          ]
+                mode: 'insensitive',
+              },
+            },
+          ],
         },
         take: limit,
         orderBy: {
-          updatedAt: 'desc'
+          updatedAt: 'desc',
         },
         include: {
           user: {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
-        }
+              email: true,
+            },
+          },
+        },
       })
 
       return preferences
@@ -303,48 +303,48 @@ export const UserPreferencesQueries = {
         languageStats,
         currencyStats,
         itemsPerPageStats,
-        notificationsStats
+        notificationsStats,
       ] = await Promise.all([
         db.userPreferences.count(),
         db.userPreferences.groupBy({
           by: ['theme'],
           _count: {
-            theme: true
-          }
+            theme: true,
+          },
         }),
         db.userPreferences.groupBy({
           by: ['language'],
           _count: {
-            language: true
-          }
+            language: true,
+          },
         }),
         db.userPreferences.groupBy({
           by: ['currency'],
           _count: {
-            currency: true
-          }
+            currency: true,
+          },
         }),
         db.userPreferences.aggregate({
           _avg: {
-            itemsPerPage: true
-          }
+            itemsPerPage: true,
+          },
         }),
         db.userPreferences.groupBy({
           by: ['emailNotifications'],
           _count: {
-            emailNotifications: true
-          }
-        })
+            emailNotifications: true,
+          },
+        }),
       ])
 
       // Processar estatísticas de tema
       const themeDistribution = {
         light: 0,
         dark: 0,
-        auto: 0
+        auto: 0,
       }
 
-      themeStats.forEach(stat => {
+      themeStats.forEach((stat) => {
         if (stat.theme === 'light') themeDistribution.light = stat._count.theme
         if (stat.theme === 'dark') themeDistribution.dark = stat._count.theme
         if (stat.theme === 'auto') themeDistribution.auto = stat._count.theme
@@ -352,13 +352,13 @@ export const UserPreferencesQueries = {
 
       // Processar estatísticas de idioma
       const languageDistribution: { [key: string]: number } = {}
-      languageStats.forEach(stat => {
+      languageStats.forEach((stat) => {
         languageDistribution[stat.language] = stat._count.language
       })
 
       // Processar estatísticas de moeda
       const currencyDistribution: { [key: string]: number } = {}
-      currencyStats.forEach(stat => {
+      currencyStats.forEach((stat) => {
         currencyDistribution[stat.currency] = stat._count.currency
       })
 
@@ -366,7 +366,7 @@ export const UserPreferencesQueries = {
       let notificationsEnabled = 0
       let notificationsDisabled = 0
 
-      notificationsStats.forEach(stat => {
+      notificationsStats.forEach((stat) => {
         if (stat.emailNotifications) {
           notificationsEnabled = stat._count.emailNotifications
         } else {
@@ -381,7 +381,7 @@ export const UserPreferencesQueries = {
         currencyDistribution,
         averageItemsPerPage: Math.round(itemsPerPageStats._avg.itemsPerPage || 20),
         notificationsEnabled,
-        notificationsDisabled
+        notificationsDisabled,
       }
     } catch (error: any) {
       throw new Error(`Failed to get user preferences stats: ${error.message}`)
@@ -401,13 +401,13 @@ export const UserPreferencesQueries = {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
+              email: true,
+            },
+          },
         },
         orderBy: {
-          updatedAt: 'desc'
-        }
+          updatedAt: 'desc',
+        },
       })
 
       return preferences
@@ -425,20 +425,20 @@ export const UserPreferencesQueries = {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
+              email: true,
+            },
+          },
         },
         orderBy: {
-          updatedAt: 'desc'
-        }
+          updatedAt: 'desc',
+        },
       })
 
       return preferences
     } catch (error: any) {
       throw new Error(`Failed to get user preferences by language: ${error.message}`)
     }
-  },    
+  },
 
   async getByCurrency(currency: string) {
     try {
@@ -449,13 +449,13 @@ export const UserPreferencesQueries = {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
+              email: true,
+            },
+          },
         },
         orderBy: {
-          updatedAt: 'desc'
-        }
+          updatedAt: 'desc',
+        },
       })
 
       return preferences
@@ -469,21 +469,21 @@ export const UserPreferencesQueries = {
       const preferences = await db.userPreferences.findMany({
         where: {
           customSettings: {
-            not: null
-          }
+            not: null,
+          },
         },
         include: {
           user: {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
+              email: true,
+            },
+          },
         },
         orderBy: {
-          updatedAt: 'desc'
-        }
+          updatedAt: 'desc',
+        },
       })
 
       return preferences
@@ -507,7 +507,10 @@ export const UserPreferencesQueries = {
       }
 
       // Validar formato de data
-      if (data.dateFormat && !['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'].includes(data.dateFormat)) {
+      if (
+        data.dateFormat &&
+        !['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'].includes(data.dateFormat)
+      ) {
         errors.push('Date format must be one of: DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD')
       }
 
@@ -529,7 +532,7 @@ export const UserPreferencesQueries = {
       return {
         isValid: errors.length === 0,
         errors,
-        warnings
+        warnings,
       }
     } catch (error: any) {
       throw new Error(`Failed to validate user preferences: ${error.message}`)

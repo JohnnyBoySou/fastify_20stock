@@ -1,4 +1,4 @@
-import type { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify'
 
 const update: FastifySchema = {
   body: {
@@ -8,7 +8,7 @@ const update: FastifySchema = {
       name: { type: 'string', minLength: 1 },
       email: { type: 'string', format: 'email' },
       phone: { type: 'string', minLength: 1 },
-    }
+    },
   },
   response: {
     200: {
@@ -22,14 +22,14 @@ const update: FastifySchema = {
             email: { type: 'string' },
             phone: { type: 'string' },
           },
-          additionalProperties: false
+          additionalProperties: false,
         },
-        message: { type: 'string' }
+        message: { type: 'string' },
       },
-      additionalProperties: false
-    }
-  }
-};
+      additionalProperties: false,
+    },
+  },
+}
 
 const single: FastifySchema = {
   response: {
@@ -44,12 +44,12 @@ const single: FastifySchema = {
             email: { type: 'string' },
             phone: { type: 'string' },
           },
-          additionalProperties: false
-        }
+          additionalProperties: false,
+        },
       },
-      additionalProperties: false
-    }
-  }
+      additionalProperties: false,
+    },
+  },
 }
 
 const exclude: FastifySchema = {
@@ -65,39 +65,44 @@ const exclude: FastifySchema = {
             email: { type: 'string' },
             phone: { type: 'string' },
           },
-          additionalProperties: false
+          additionalProperties: false,
         },
-        message: { type: 'string' }
+        message: { type: 'string' },
       },
-      additionalProperties: false
-    }
-  }
+      additionalProperties: false,
+    },
+  },
 }
 
-const plan: FastifySchema = {
+const subscription: FastifySchema = {
   response: {
     200: {
       type: 'object',
       properties: {
-        plan: {
+        subscription: {
           type: ['object', 'null'],
           properties: {
             id: { type: 'string' },
-            name: { type: 'string' },
-            description: { type: 'string' },
-            price: { type: 'number' },
-            interval: { type: 'string' },
-            features: { type: 'array', items: { type: 'string' } },
+            polarProductId: { type: 'string' },
+            polarPlanName: { type: 'string' },
+            status: { type: 'string' },
+            currentPeriodEnd: { type: ['string', 'null'] },
+            trialEndsAt: { type: ['string', 'null'] },
+            cancelledAt: { type: ['string', 'null'] },
+            renewalCount: { type: 'number' },
+            priceAmount: { type: 'number' },
+            priceInterval: { type: 'string' },
+            currency: { type: 'string' },
           },
-        }
+        },
       },
-    }
-  }
+    },
+  },
 }
 
 export const ProfileSchemas = {
   update,
   single,
   exclude,
-  plan,
+  subscription,
 }

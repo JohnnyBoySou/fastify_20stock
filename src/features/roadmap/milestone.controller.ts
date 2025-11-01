@@ -1,15 +1,15 @@
-import { FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyReply, FastifyRequest } from 'fastify'
 import { MilestoneCommands } from './commands/milestone.commands'
-import { MilestoneQueries } from './queries/milestone.queries'
-import {
+import type {
   CreateMilestoneRequest,
-  GetMilestoneRequest,
-  UpdateMilestoneRequest,
   DeleteMilestoneRequest,
+  GetMilestoneRequest,
   ListMilestonesRequest,
   UpdateMilestoneProgressRequest,
-  UpdateMilestoneStatusRequest
+  UpdateMilestoneRequest,
+  UpdateMilestoneStatusRequest,
 } from './milestone.interfaces'
+import { MilestoneQueries } from './queries/milestone.queries'
 
 export const MilestoneController = {
   // === CRUD BÁSICO ===
@@ -26,21 +26,21 @@ export const MilestoneController = {
         progress,
         order,
         startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined
+        endDate: endDate ? new Date(endDate) : undefined,
       })
 
       return reply.status(201).send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Roadmap not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -54,15 +54,15 @@ export const MilestoneController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Milestone not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -80,26 +80,26 @@ export const MilestoneController = {
         updateData.endDate = new Date(updateData.endDate).toISOString()
       }
 
-      const result = await MilestoneCommands.update(id, roadmapId,  updateData as any)
+      const result = await MilestoneCommands.update(id, roadmapId, updateData as any)
 
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Milestone not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       if (error.message === 'Validation error') {
         return reply.status(400).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -113,15 +113,15 @@ export const MilestoneController = {
       return reply.status(204).send()
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Milestone not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -134,23 +134,26 @@ export const MilestoneController = {
       const result = await MilestoneQueries.listByRoadmap(roadmapId, {
         status,
         page,
-        limit
+        limit,
       })
 
       return reply.send(result)
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
   // === FUNÇÕES ADICIONAIS (QUERIES) ===
-  async getByStatus(request: FastifyRequest<{ 
-    Params: { roadmapId: string }
-    Querystring: { status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED' }
-  }>, reply: FastifyReply) {
+  async getByStatus(
+    request: FastifyRequest<{
+      Params: { roadmapId: string }
+      Querystring: { status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED' }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
       const { roadmapId } = request.params
       const { status } = request.query
@@ -161,7 +164,7 @@ export const MilestoneController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -176,15 +179,18 @@ export const MilestoneController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async getUpcoming(request: FastifyRequest<{ 
-    Params: { roadmapId: string }
-    Querystring: { limit?: number }
-  }>, reply: FastifyReply) {
+  async getUpcoming(
+    request: FastifyRequest<{
+      Params: { roadmapId: string }
+      Querystring: { limit?: number }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
       const { roadmapId } = request.params
       const { limit = 5 } = request.query
@@ -195,12 +201,15 @@ export const MilestoneController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async getOverdue(request: FastifyRequest<{ Params: { roadmapId: string } }>, reply: FastifyReply) {
+  async getOverdue(
+    request: FastifyRequest<{ Params: { roadmapId: string } }>,
+    reply: FastifyReply
+  ) {
     try {
       const { roadmapId } = request.params
 
@@ -210,12 +219,15 @@ export const MilestoneController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async getInProgress(request: FastifyRequest<{ Params: { roadmapId: string } }>, reply: FastifyReply) {
+  async getInProgress(
+    request: FastifyRequest<{ Params: { roadmapId: string } }>,
+    reply: FastifyReply
+  ) {
     try {
       const { roadmapId } = request.params
 
@@ -225,12 +237,15 @@ export const MilestoneController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async getTimeline(request: FastifyRequest<{ Params: { roadmapId: string } }>, reply: FastifyReply) {
+  async getTimeline(
+    request: FastifyRequest<{ Params: { roadmapId: string } }>,
+    reply: FastifyReply
+  ) {
     try {
       const { roadmapId } = request.params
 
@@ -240,15 +255,18 @@ export const MilestoneController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async search(request: FastifyRequest<{ 
-    Params: { roadmapId: string }
-    Querystring: { q: string; limit?: number } 
-  }>, reply: FastifyReply) {
+  async search(
+    request: FastifyRequest<{
+      Params: { roadmapId: string }
+      Querystring: { q: string; limit?: number }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
       const { roadmapId } = request.params
       const { q, limit = 10 } = request.query
@@ -259,7 +277,7 @@ export const MilestoneController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -275,21 +293,21 @@ export const MilestoneController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Milestone not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       if (error.message === 'Progress must be between 0 and 100') {
         return reply.status(400).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -304,23 +322,26 @@ export const MilestoneController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Milestone not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async reorder(request: FastifyRequest<{
-    Params: { roadmapId: string }
-    Body: { milestoneIds: string[] }
-  }>, reply: FastifyReply) {
+  async reorder(
+    request: FastifyRequest<{
+      Params: { roadmapId: string }
+      Body: { milestoneIds: string[] }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
       const { roadmapId } = request.params
       const { milestoneIds } = request.body
@@ -330,17 +351,16 @@ export const MilestoneController = {
       return reply.send({ milestones: result })
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message.includes('not found')) {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
-  }
+  },
 }
-

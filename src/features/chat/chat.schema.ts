@@ -1,49 +1,49 @@
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify'
 
 export const sendMessageSchema: FastifySchema = {
   body: {
     type: 'object',
     required: ['message'],
     properties: {
-      message: { 
-        type: 'string', 
-        minLength: 1, 
+      message: {
+        type: 'string',
+        minLength: 1,
         maxLength: 2000,
-        description: 'Mensagem do usuário para o chat'
+        description: 'Mensagem do usuário para o chat',
       },
       context: {
         type: 'object',
         properties: {
           storeId: { type: 'string' },
           userId: { type: 'string' },
-          sessionId: { type: 'string' }
+          sessionId: { type: 'string' },
         },
-        additionalProperties: true
+        additionalProperties: true,
       },
       options: {
         type: 'object',
         properties: {
-          temperature: { 
-            type: 'number', 
-            minimum: 0, 
+          temperature: {
+            type: 'number',
+            minimum: 0,
             maximum: 2,
-            default: 0.2
+            default: 0.2,
           },
-          numPredict: { 
-            type: 'number', 
-            minimum: 1, 
+          numPredict: {
+            type: 'number',
+            minimum: 1,
             maximum: 4000,
-            default: 1000
+            default: 1000,
           },
-          repeatPenalty: { 
-            type: 'number', 
-            minimum: 0.1, 
+          repeatPenalty: {
+            type: 'number',
+            minimum: 0.1,
             maximum: 2,
-            default: 1.1
-          }
-        }
-      }
-    }
+            default: 1.1,
+          },
+        },
+      },
+    },
   },
   response: {
     200: {
@@ -57,23 +57,23 @@ export const sendMessageSchema: FastifySchema = {
           properties: {
             storeId: { type: 'string', nullable: true },
             userId: { type: 'string', nullable: true },
-            sessionId: { type: 'string', nullable: true }
-          }
+            sessionId: { type: 'string', nullable: true },
+          },
         },
         options: {
           type: 'object',
           properties: {
             temperature: { type: 'number' },
             numPredict: { type: 'number' },
-            repeatPenalty: { type: 'number' }
-          }
+            repeatPenalty: { type: 'number' },
+          },
         },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
-  }
-};
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  },
+}
 
 export const getChatHistorySchema: FastifySchema = {
   querystring: {
@@ -83,8 +83,8 @@ export const getChatHistorySchema: FastifySchema = {
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       sessionId: { type: 'string' },
       userId: { type: 'string' },
-      storeId: { type: 'string' }
-    }
+      storeId: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -103,21 +103,21 @@ export const getChatHistorySchema: FastifySchema = {
                 properties: {
                   storeId: { type: 'string', nullable: true },
                   userId: { type: 'string', nullable: true },
-                  sessionId: { type: 'string', nullable: true }
-                }
+                  sessionId: { type: 'string', nullable: true },
+                },
               },
               options: {
                 type: 'object',
                 properties: {
                   temperature: { type: 'number' },
                   numPredict: { type: 'number' },
-                  repeatPenalty: { type: 'number' }
-                }
+                  repeatPenalty: { type: 'number' },
+                },
               },
               createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' }
-            }
-          }
+              updatedAt: { type: 'string', format: 'date-time' },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -125,21 +125,21 @@ export const getChatHistorySchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getChatSessionSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['sessionId'],
     properties: {
-      sessionId: { type: 'string' }
-    }
+      sessionId: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -162,41 +162,41 @@ export const getChatSessionSchema: FastifySchema = {
                 properties: {
                   storeId: { type: 'string', nullable: true },
                   userId: { type: 'string', nullable: true },
-                  sessionId: { type: 'string', nullable: true }
-                }
+                  sessionId: { type: 'string', nullable: true },
+                },
               },
               options: {
                 type: 'object',
                 properties: {
                   temperature: { type: 'number' },
                   numPredict: { type: 'number' },
-                  repeatPenalty: { type: 'number' }
-                }
+                  repeatPenalty: { type: 'number' },
+                },
               },
               createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' }
-            }
-          }
+              updatedAt: { type: 'string', format: 'date-time' },
+            },
+          },
         },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
-  }
-};
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  },
+}
 
 export const deleteChatSessionSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['sessionId'],
     properties: {
-      sessionId: { type: 'string' }
-    }
+      sessionId: { type: 'string' },
+    },
   },
   response: {
-    204: { type: 'null' }
-  }
-};
+    204: { type: 'null' },
+  },
+}
 
 export const getToolboxSchema: FastifySchema = {
   response: {
@@ -212,9 +212,9 @@ export const getToolboxSchema: FastifySchema = {
                 description: { type: 'string' },
                 methods: {
                   type: 'array',
-                  items: { type: 'string' }
-                }
-              }
+                  items: { type: 'string' },
+                },
+              },
             },
             stores: {
               type: 'object',
@@ -222,9 +222,9 @@ export const getToolboxSchema: FastifySchema = {
                 description: { type: 'string' },
                 methods: {
                   type: 'array',
-                  items: { type: 'string' }
-                }
-              }
+                  items: { type: 'string' },
+                },
+              },
             },
             categories: {
               type: 'object',
@@ -232,9 +232,9 @@ export const getToolboxSchema: FastifySchema = {
                 description: { type: 'string' },
                 methods: {
                   type: 'array',
-                  items: { type: 'string' }
-                }
-              }
+                  items: { type: 'string' },
+                },
+              },
             },
             suppliers: {
               type: 'object',
@@ -242,9 +242,9 @@ export const getToolboxSchema: FastifySchema = {
                 description: { type: 'string' },
                 methods: {
                   type: 'array',
-                  items: { type: 'string' }
-                }
-              }
+                  items: { type: 'string' },
+                },
+              },
             },
             movements: {
               type: 'object',
@@ -252,9 +252,9 @@ export const getToolboxSchema: FastifySchema = {
                 description: { type: 'string' },
                 methods: {
                   type: 'array',
-                  items: { type: 'string' }
-                }
-              }
+                  items: { type: 'string' },
+                },
+              },
             },
             reports: {
               type: 'object',
@@ -262,16 +262,16 @@ export const getToolboxSchema: FastifySchema = {
                 description: { type: 'string' },
                 methods: {
                   type: 'array',
-                  items: { type: 'string' }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+                  items: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getAnalyticsSchema: FastifySchema = {
   querystring: {
@@ -280,8 +280,8 @@ export const getAnalyticsSchema: FastifySchema = {
       startDate: { type: 'string', format: 'date' },
       endDate: { type: 'string', format: 'date' },
       userId: { type: 'string' },
-      storeId: { type: 'string' }
-    }
+      storeId: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -296,9 +296,9 @@ export const getAnalyticsSchema: FastifySchema = {
             type: 'object',
             properties: {
               service: { type: 'string' },
-              usageCount: { type: 'number' }
-            }
-          }
+              usageCount: { type: 'number' },
+            },
+          },
         },
         messagesByDay: {
           type: 'array',
@@ -306,14 +306,14 @@ export const getAnalyticsSchema: FastifySchema = {
             type: 'object',
             properties: {
               date: { type: 'string' },
-              count: { type: 'number' }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+              count: { type: 'number' },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const ChatSchemas = {
   sendMessage: sendMessageSchema,
@@ -321,5 +321,5 @@ export const ChatSchemas = {
   getSession: getChatSessionSchema,
   deleteSession: deleteChatSessionSchema,
   getToolbox: getToolboxSchema,
-  getAnalytics: getAnalyticsSchema
-};
+  getAnalytics: getAnalyticsSchema,
+}

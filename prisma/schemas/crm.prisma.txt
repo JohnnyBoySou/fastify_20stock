@@ -1,0 +1,82 @@
+/// ===============================
+///  CRM STAGE STRUCTURE
+///  - Etapa (coluna) do pipeline de CRM.
+///  - Cada loja possui seu próprio conjunto de etapas.
+/// ===============================
+
+model CrmStage {
+  id          String      @id @default(cuid())
+  storeId     String
+  name        String
+  color       String?     // cor no front-end
+  order       Int          @default(0) // posição na ordem do pipeline
+  description String?      // ex: "Clientes interessados"
+  isDefault   Boolean      @default(false) // primeira etapa padrão
+  isFinal     Boolean      @default(false) // etapa de fechamento (ganho/perda)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  store       Store        @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  clients     CrmClient[]
+
+  @@map("crm_stages")
+  @@index([storeId])
+  @@index([order])
+  @@unique([storeId, name])
+  @@schema("crm")
+}
+
+/// ===============================
+///  CRM CLIENT STRUCTURE
+///  - Representa um cliente / lead dentro do pipeline.
+///  - Pode se mover entre etapas (Kanban).
+/// ===============================
+
+model CrmClient {
+  id             String        @id @default(cuid())
+  storeId        String
+  stageId        String?
+  name           String
+  email          String?
+  phone          String?
+  cpfCnpj        String?
+  company        String?
+  position       String?       // cargo (ex: comprador, gerente)
+  source         String?       // origem do lead (ex: site, whatsapp, indicação)
+  status         CrmClientStatus @default(ACTIVE)
+  tags           Json?         // ex: ["venda recorrente", "novo cliente"]
+  notes          String?
+  lastContactAt  DateTime?
+  nextContactAt  DateTime?
+  lastInteraction Json?        // ex: { type: "call", date: "2025-10-31", userId: "..." }
+  ownerId        String?       // responsável pelo cliente
+  owner          User?         @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  archivedAt     DateTime?     // lead arquivado
+  deletedAt      DateTime?     // soft delete
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  store          Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  stage          CrmStage?     @relation(fields: [stageId], references: [id], onDelete: SetNull)
+
+  @@map("crm_clients")
+  @@index([storeId])
+  @@index([stageId])
+  @@index([ownerId])
+  @@index([status])
+  @@index([archivedAt])
+  @@schema("crm")
+}
+
+/// ===============================
+///  ENUMS
+/// ===============================
+
+enum CrmClientStatus {
+  ACTIVE       // Lead ativo no pipeline
+  WON          // Negócio fechado com sucesso
+  LOST         // Negócio perdido
+  INACTIVE     // Cliente desativado
+  ARCHIVED     // Lead arquivado manualmente
+  @@schema("crm")
+}

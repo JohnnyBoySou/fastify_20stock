@@ -1,19 +1,19 @@
-import { FastifyRequest } from "fastify";
+import type { FastifyRequest } from 'fastify'
 
 export interface PolarEvent {
-    type: string;
-    data: any;
-  }
+  type: string
+  data: any
+}
 
 export interface ListPolarRequest extends FastifyRequest {
-    query: {
-        page?: number;
-        limit?: number;
-    }
+  query: {
+    page?: number
+    limit?: number
   }
+}
 
 export interface CreateCheckoutRequest extends FastifyRequest {
-    body: {
-        productId: string;
-    }
+  body: {
+    productId: string
+  }
 }

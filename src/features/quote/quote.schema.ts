@@ -1,4 +1,4 @@
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify'
 
 export const createQuoteSchema: FastifySchema = {
   body: {
@@ -9,7 +9,7 @@ export const createQuoteSchema: FastifySchema = {
       description: { type: 'string' },
       paymentType: {
         type: 'string',
-        enum: ['UNDEFINED', 'PIX', 'BOLETO', 'CREDIT_CARD', 'CASH', 'TRANSFER']
+        enum: ['UNDEFINED', 'PIX', 'BOLETO', 'CREDIT_CARD', 'CASH', 'TRANSFER'],
       },
       paymentTerms: { type: 'string' },
       paymentDueDays: { type: 'number', minimum: 1 },
@@ -28,9 +28,9 @@ export const createQuoteSchema: FastifySchema = {
             quantity: { type: 'number', minimum: 0.01 },
             unitPrice: { type: 'number', minimum: 0.01 },
             discount: { type: 'number', minimum: 0 },
-            note: { type: 'string' }
-          }
-        }
+            note: { type: 'string' },
+          },
+        },
       },
       installments: {
         type: 'array',
@@ -41,11 +41,11 @@ export const createQuoteSchema: FastifySchema = {
             number: { type: 'number', minimum: 1 },
             dueDate: { type: 'string', format: 'date-time' },
             amount: { type: 'number', minimum: 0.01 },
-            interest: { type: 'number', minimum: 0 }
-          }
-        }
-      }
-    }
+            interest: { type: 'number', minimum: 0 },
+          },
+        },
+      },
+    },
   },
   response: {
     201: {
@@ -81,9 +81,9 @@ export const createQuoteSchema: FastifySchema = {
               subtotal: { type: 'number' },
               discount: { type: 'number', nullable: true },
               note: { type: 'string', nullable: true },
-              product: { type: 'object' }
-            }
-          }
+              product: { type: 'object' },
+            },
+          },
         },
         installments: {
           type: 'array',
@@ -94,23 +94,23 @@ export const createQuoteSchema: FastifySchema = {
               number: { type: 'number' },
               dueDate: { type: 'string', format: 'date-time' },
               amount: { type: 'number' },
-              interest: { type: 'number', nullable: true }
-            }
-          }
+              interest: { type: 'number', nullable: true },
+            },
+          },
         },
-        user: { type: 'object' }
-      }
-    }
-  }
-};
+        user: { type: 'object' },
+      },
+    },
+  },
+}
 
 export const updateQuoteSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
@@ -119,7 +119,7 @@ export const updateQuoteSchema: FastifySchema = {
       description: { type: 'string' },
       paymentType: {
         type: 'string',
-        enum: ['UNDEFINED', 'PIX', 'BOLETO', 'CREDIT_CARD', 'CASH', 'TRANSFER']
+        enum: ['UNDEFINED', 'PIX', 'BOLETO', 'CREDIT_CARD', 'CASH', 'TRANSFER'],
       },
       paymentTerms: { type: 'string' },
       paymentDueDays: { type: 'number', minimum: 1 },
@@ -139,9 +139,9 @@ export const updateQuoteSchema: FastifySchema = {
             quantity: { type: 'number', minimum: 0.01 },
             unitPrice: { type: 'number', minimum: 0.01 },
             discount: { type: 'number', minimum: 0 },
-            note: { type: 'string' }
-          }
-        }
+            note: { type: 'string' },
+          },
+        },
       },
       installments: {
         type: 'array',
@@ -153,11 +153,11 @@ export const updateQuoteSchema: FastifySchema = {
             number: { type: 'number', minimum: 1 },
             dueDate: { type: 'string', format: 'date-time' },
             amount: { type: 'number', minimum: 0.01 },
-            interest: { type: 'number', minimum: 0 }
-          }
-        }
-      }
-    }
+            interest: { type: 'number', minimum: 0 },
+          },
+        },
+      },
+    },
   },
   response: {
     200: {
@@ -192,9 +192,9 @@ export const updateQuoteSchema: FastifySchema = {
               subtotal: { type: 'number' },
               discount: { type: 'number', nullable: true },
               note: { type: 'string', nullable: true },
-              product: { type: 'object' }
-            }
-          }
+              product: { type: 'object' },
+            },
+          },
         },
         installments: {
           type: 'array',
@@ -205,23 +205,23 @@ export const updateQuoteSchema: FastifySchema = {
               number: { type: 'number' },
               dueDate: { type: 'string', format: 'date-time' },
               amount: { type: 'number' },
-              interest: { type: 'number', nullable: true }
-            }
-          }
+              interest: { type: 'number', nullable: true },
+            },
+          },
         },
-        user: { type: 'object' }
-      }
-    }
-  }
-};
+        user: { type: 'object' },
+      },
+    },
+  },
+}
 
 export const getQuoteSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -257,9 +257,9 @@ export const getQuoteSchema: FastifySchema = {
               subtotal: { type: 'number' },
               discount: { type: 'number', nullable: true },
               note: { type: 'string', nullable: true },
-              product: { type: 'object' }
-            }
-          }
+              product: { type: 'object' },
+            },
+          },
         },
         installments: {
           type: 'array',
@@ -270,30 +270,30 @@ export const getQuoteSchema: FastifySchema = {
               number: { type: 'number' },
               dueDate: { type: 'string', format: 'date-time' },
               amount: { type: 'number' },
-              interest: { type: 'number', nullable: true }
-            }
-          }
+              interest: { type: 'number', nullable: true },
+            },
+          },
         },
-        user: { type: 'object' }
-      }
-    }
-  }
-};
+        user: { type: 'object' },
+      },
+    },
+  },
+}
 
 export const getPublicQuoteSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['publicId'],
     properties: {
-      publicId: { type: 'string' }
-    }
+      publicId: { type: 'string' },
+    },
   },
   querystring: {
     type: 'object',
     required: ['authCode'],
     properties: {
-      authCode: { type: 'string', minLength: 1 }
-    }
+      authCode: { type: 'string', minLength: 1 },
+    },
   },
   response: {
     200: {
@@ -324,9 +324,9 @@ export const getPublicQuoteSchema: FastifySchema = {
               subtotal: { type: 'number' },
               discount: { type: 'number', nullable: true },
               note: { type: 'string', nullable: true },
-              product: { type: 'object' }
-            }
-          }
+              product: { type: 'object' },
+            },
+          },
         },
         installments: {
           type: 'array',
@@ -337,15 +337,15 @@ export const getPublicQuoteSchema: FastifySchema = {
               number: { type: 'number' },
               dueDate: { type: 'string', format: 'date-time' },
               amount: { type: 'number' },
-              interest: { type: 'number', nullable: true }
-            }
-          }
+              interest: { type: 'number', nullable: true },
+            },
+          },
         },
-        user: { type: 'object' }
-      }
-    }
-  }
-};
+        user: { type: 'object' },
+      },
+    },
+  },
+}
 
 export const listQuotesSchema: FastifySchema = {
   querystring: {
@@ -356,12 +356,22 @@ export const listQuotesSchema: FastifySchema = {
       search: { type: 'string' },
       status: {
         type: 'string',
-        enum: ['DRAFT', 'PUBLISHED', 'SENT', 'VIEWED', 'APPROVED', 'REJECTED', 'EXPIRED', 'CONVERTED', 'CANCELED']
+        enum: [
+          'DRAFT',
+          'PUBLISHED',
+          'SENT',
+          'VIEWED',
+          'APPROVED',
+          'REJECTED',
+          'EXPIRED',
+          'CONVERTED',
+          'CANCELED',
+        ],
       },
       userId: { type: 'string' },
       startDate: { type: 'string', format: 'date' },
-      endDate: { type: 'string', format: 'date' }
-    }
+      endDate: { type: 'string', format: 'date' },
+    },
   },
   response: {
     200: {
@@ -392,9 +402,9 @@ export const listQuotesSchema: FastifySchema = {
               updatedAt: { type: 'string', format: 'date-time' },
               items: { type: 'array' },
               installments: { type: 'array' },
-              user: { type: 'object' }
-            }
-          }
+              user: { type: 'object' },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -402,34 +412,34 @@ export const listQuotesSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const deleteQuoteSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
-    204: { type: 'null' }
-  }
-};
+    204: { type: 'null' },
+  },
+}
 
 export const updateQuoteStatusSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
@@ -437,9 +447,19 @@ export const updateQuoteStatusSchema: FastifySchema = {
     properties: {
       status: {
         type: 'string',
-        enum: ['DRAFT', 'PUBLISHED', 'SENT', 'VIEWED', 'APPROVED', 'REJECTED', 'EXPIRED', 'CONVERTED', 'CANCELED']
-      }
-    }
+        enum: [
+          'DRAFT',
+          'PUBLISHED',
+          'SENT',
+          'VIEWED',
+          'APPROVED',
+          'REJECTED',
+          'EXPIRED',
+          'CONVERTED',
+          'CANCELED',
+        ],
+      },
+    },
   },
   response: {
     200: {
@@ -447,26 +467,26 @@ export const updateQuoteStatusSchema: FastifySchema = {
       properties: {
         id: { type: 'string' },
         status: { type: 'string' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
-  }
-};
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  },
+}
 
 export const approveQuoteSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['publicId'],
     properties: {
-      publicId: { type: 'string' }
-    }
+      publicId: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     required: ['authCode'],
     properties: {
-      authCode: { type: 'string', minLength: 1 }
-    }
+      authCode: { type: 'string', minLength: 1 },
+    },
   },
   response: {
     200: {
@@ -484,30 +504,30 @@ export const approveQuoteSchema: FastifySchema = {
               productId: { type: 'string' },
               storeId: { type: 'string' },
               note: { type: 'string' },
-              createdAt: { type: 'string', format: 'date-time' }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+              createdAt: { type: 'string', format: 'date-time' },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const rejectQuoteSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['publicId'],
     properties: {
-      publicId: { type: 'string' }
-    }
+      publicId: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     required: ['authCode'],
     properties: {
       authCode: { type: 'string', minLength: 1 },
-      reason: { type: 'string' }
-    }
+      reason: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -516,19 +536,19 @@ export const rejectQuoteSchema: FastifySchema = {
         id: { type: 'string' },
         status: { type: 'string' },
         observations: { type: 'string', nullable: true },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
-  }
-};
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  },
+}
 
 export const convertToMovementSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -546,21 +566,21 @@ export const convertToMovementSchema: FastifySchema = {
               productId: { type: 'string' },
               storeId: { type: 'string' },
               note: { type: 'string' },
-              createdAt: { type: 'string', format: 'date-time' }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+              createdAt: { type: 'string', format: 'date-time' },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getQuoteStatsSchema: FastifySchema = {
   querystring: {
     type: 'object',
     properties: {
-      userId: { type: 'string' }
-    }
+      userId: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -578,16 +598,16 @@ export const getQuoteStatsSchema: FastifySchema = {
             REJECTED: { type: 'number' },
             EXPIRED: { type: 'number' },
             CONVERTED: { type: 'number' },
-            CANCELED: { type: 'number' }
-          }
+            CANCELED: { type: 'number' },
+          },
         },
         totalValue: { type: 'number' },
         averageValue: { type: 'number' },
-        recentCount: { type: 'number' }
-      }
-    }
-  }
-};
+        recentCount: { type: 'number' },
+      },
+    },
+  },
+}
 
 export const QuoteSchemas = {
   create: createQuoteSchema,
@@ -600,5 +620,5 @@ export const QuoteSchemas = {
   approve: approveQuoteSchema,
   reject: rejectQuoteSchema,
   convertToMovement: convertToMovementSchema,
-  getStats: getQuoteStatsSchema
-};
+  getStats: getQuoteStatsSchema,
+}

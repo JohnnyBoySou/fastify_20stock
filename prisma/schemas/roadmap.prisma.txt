@@ -1,0 +1,133 @@
+/// ===============================
+///  ROADMAP STRUCTURE
+///  - Representa planos, metas ou projetos.
+///  - Pode estar associado a uma loja ou usuário.
+///  - Contém milestones (etapas com progresso e status).
+/// ===============================
+
+model Roadmap {
+  id           String          @id @default(cuid())
+
+  // Associação
+  storeId      String?
+  store        Store?          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  userId       String?
+  user         User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Identificação e descrição
+  title        String
+  description  String?
+
+  // Controle e status
+  status       RoadmapStatus   @default(ACTIVE)
+  visibility   RoadmapVisibility @default(PRIVATE)
+  priority     RoadmapPriority @default(MEDIUM)
+  progress     Int             @default(0) // progresso geral (média das milestones)
+  archived     Boolean         @default(false)
+  deletedAt    DateTime?       // soft delete
+
+  // Datas
+  startDate    DateTime?
+  endDate      DateTime?
+
+  // Auditoria
+  createdById  String?
+  updatedById  String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  // Relações
+  milestones   Milestone[]
+
+  // Metadados
+  tags         Json?           // ex: ["estoque", "IA", "meta de venda"]
+  metadata     Json?           // configurações extras ou IA
+
+  @@map("roadmaps")
+
+  // Índices
+  @@index([storeId])
+  @@index([userId])
+  @@index([status])
+  @@index([archived])
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@schema("roadmap")
+}
+
+/// ===============================
+///  MILESTONE STRUCTURE
+///  - Etapas dentro de um roadmap.
+///  - Controla progresso, status e prazos.
+/// ===============================
+
+model Milestone {
+  id           String           @id @default(cuid())
+  roadmapId    String
+  roadmap      Roadmap          @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+
+  // Identificação
+  title        String
+  description  String?
+
+  // Controle
+  status       MilestoneStatus  @default(PENDING)
+  progress     Int              @default(0) // % concluída (0–100)
+  order        Int              @default(0) // posição na timeline
+  priority     RoadmapPriority  @default(MEDIUM)
+  blockedById  String?          // milestone dependente (opcional)
+  blockedBy    Milestone?       @relation("MilestoneDependency", fields: [blockedById], references: [id])
+  blocking     Milestone[]      @relation("MilestoneDependency") // milestones bloqueados por este
+
+  // Datas
+  startDate    DateTime?
+  endDate      DateTime?
+  completedAt  DateTime?
+
+  // Auditoria
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  deletedAt    DateTime?
+
+  // Metadados
+  metadata     Json?            // informações adicionais ou IA
+
+  @@map("milestones")
+
+  // Índices
+  @@index([roadmapId])
+  @@index([status])
+  @@index([priority])
+  @@index([order])
+  @@schema("roadmap")
+}
+
+enum RoadmapStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+  @@schema("roadmap")
+}
+
+enum RoadmapVisibility {
+  PRIVATE
+  PUBLIC
+  INTERNAL
+  @@schema("roadmap")
+}
+
+enum RoadmapPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+  @@schema("roadmap")
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  BLOCKED
+  @@schema("roadmap")
+}

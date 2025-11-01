@@ -1,12 +1,12 @@
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify'
 
 export const createSupplierResponsibleSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['supplierId'],
     properties: {
-      supplierId: { type: 'string' }
-    }
+      supplierId: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
@@ -15,8 +15,8 @@ export const createSupplierResponsibleSchema: FastifySchema = {
       name: { type: 'string', minLength: 1 },
       email: { type: 'string', format: 'email' },
       phone: { type: 'string' },
-      cpf: { type: 'string', minLength: 11, maxLength: 14 }
-    }
+      cpf: { type: 'string', minLength: 11, maxLength: 14 },
+    },
   },
   response: {
     201: {
@@ -30,11 +30,11 @@ export const createSupplierResponsibleSchema: FastifySchema = {
         status: { type: 'boolean' },
         supplierId: { type: 'string' },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
-  }
-};
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  },
+}
 
 export const updateSupplierResponsibleSchema: FastifySchema = {
   params: {
@@ -42,8 +42,8 @@ export const updateSupplierResponsibleSchema: FastifySchema = {
     required: ['supplierId', 'responsibleId'],
     properties: {
       supplierId: { type: 'string' },
-      responsibleId: { type: 'string' }
-    }
+      responsibleId: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
@@ -52,8 +52,8 @@ export const updateSupplierResponsibleSchema: FastifySchema = {
       email: { type: 'string', format: 'email' },
       phone: { type: 'string' },
       cpf: { type: 'string', minLength: 11, maxLength: 14 },
-      status: { type: 'boolean' }
-    }
+      status: { type: 'boolean' },
+    },
   },
   response: {
     200: {
@@ -66,11 +66,11 @@ export const updateSupplierResponsibleSchema: FastifySchema = {
         cpf: { type: 'string', nullable: true },
         status: { type: 'boolean' },
         supplierId: { type: 'string' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
-  }
-};
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  },
+}
 
 export const getSupplierResponsibleSchema: FastifySchema = {
   params: {
@@ -78,8 +78,8 @@ export const getSupplierResponsibleSchema: FastifySchema = {
     required: ['supplierId', 'responsibleId'],
     properties: {
       supplierId: { type: 'string' },
-      responsibleId: { type: 'string' }
-    }
+      responsibleId: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -93,11 +93,11 @@ export const getSupplierResponsibleSchema: FastifySchema = {
         status: { type: 'boolean' },
         supplierId: { type: 'string' },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
-  }
-};
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  },
+}
 
 export const deleteSupplierResponsibleSchema: FastifySchema = {
   params: {
@@ -105,21 +105,21 @@ export const deleteSupplierResponsibleSchema: FastifySchema = {
     required: ['supplierId', 'responsibleId'],
     properties: {
       supplierId: { type: 'string' },
-      responsibleId: { type: 'string' }
-    }
+      responsibleId: { type: 'string' },
+    },
   },
   response: {
-    204: { type: 'null' }
-  }
-};
+    204: { type: 'null' },
+  },
+}
 
 export const listSupplierResponsiblesSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['supplierId'],
     properties: {
-      supplierId: { type: 'string' }
-    }
+      supplierId: { type: 'string' },
+    },
   },
   querystring: {
     type: 'object',
@@ -127,8 +127,8 @@ export const listSupplierResponsiblesSchema: FastifySchema = {
       page: { type: 'number', minimum: 1, default: 1 },
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       search: { type: 'string' },
-      status: { type: 'boolean' }
-    }
+      status: { type: 'boolean' },
+    },
   },
   response: {
     200: {
@@ -147,9 +147,9 @@ export const listSupplierResponsiblesSchema: FastifySchema = {
               status: { type: 'boolean' },
               supplierId: { type: 'string' },
               createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' }
-            }
-          }
+              updatedAt: { type: 'string', format: 'date-time' },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -157,13 +157,13 @@ export const listSupplierResponsiblesSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getSupplierResponsibleByEmailSchema: FastifySchema = {
   params: {
@@ -171,8 +171,8 @@ export const getSupplierResponsibleByEmailSchema: FastifySchema = {
     required: ['supplierId', 'email'],
     properties: {
       supplierId: { type: 'string' },
-      email: { type: 'string', format: 'email' }
-    }
+      email: { type: 'string', format: 'email' },
+    },
   },
   response: {
     200: {
@@ -186,11 +186,11 @@ export const getSupplierResponsibleByEmailSchema: FastifySchema = {
         status: { type: 'boolean' },
         supplierId: { type: 'string' },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
-  }
-};
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  },
+}
 
 export const getSupplierResponsibleByCpfSchema: FastifySchema = {
   params: {
@@ -198,8 +198,8 @@ export const getSupplierResponsibleByCpfSchema: FastifySchema = {
     required: ['supplierId', 'cpf'],
     properties: {
       supplierId: { type: 'string' },
-      cpf: { type: 'string', minLength: 11, maxLength: 14 }
-    }
+      cpf: { type: 'string', minLength: 11, maxLength: 14 },
+    },
   },
   response: {
     200: {
@@ -213,11 +213,11 @@ export const getSupplierResponsibleByCpfSchema: FastifySchema = {
         status: { type: 'boolean' },
         supplierId: { type: 'string' },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
-  }
-};
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  },
+}
 
 export const SupplierResponsibleSchemas = {
   create: createSupplierResponsibleSchema,
@@ -226,5 +226,5 @@ export const SupplierResponsibleSchemas = {
   delete: deleteSupplierResponsibleSchema,
   list: listSupplierResponsiblesSchema,
   getByEmail: getSupplierResponsibleByEmailSchema,
-  getByCpf: getSupplierResponsibleByCpfSchema
-};
+  getByCpf: getSupplierResponsibleByCpfSchema,
+}

@@ -12,22 +12,26 @@ export const CrmStageCommands = {
         storeId: data.storeId,
         name: data.name,
         color: data.color,
-        order: data.order
-      }
+        order: data.order,
+      },
     })
   },
 
-  async update(id: string, data: {
-    name?: string
-    color?: string
-    order?: number
-  }, storeId: string) {
+  async update(
+    id: string,
+    data: {
+      name?: string
+      color?: string
+      order?: number
+    },
+    storeId: string
+  ) {
     // Verificar se stage pertence à store
     const stage = await db.crmStage.findFirst({
       where: {
         id,
-        storeId
-      }
+        storeId,
+      },
     })
 
     if (!stage) {
@@ -36,7 +40,7 @@ export const CrmStageCommands = {
 
     return await db.crmStage.update({
       where: { id },
-      data
+      data,
     })
   },
 
@@ -45,8 +49,8 @@ export const CrmStageCommands = {
     const stage = await db.crmStage.findFirst({
       where: {
         id,
-        storeId
-      }
+        storeId,
+      },
     })
 
     if (!stage) {
@@ -57,8 +61,8 @@ export const CrmStageCommands = {
     const clientsCount = await db.crmClient.count({
       where: {
         stageId: id,
-        storeId
-      }
+        storeId,
+      },
     })
 
     if (clientsCount > 0) {
@@ -66,7 +70,7 @@ export const CrmStageCommands = {
     }
 
     return await db.crmStage.delete({
-      where: { id }
+      where: { id },
     })
   },
 
@@ -75,8 +79,8 @@ export const CrmStageCommands = {
     const stage = await db.crmStage.findFirst({
       where: {
         id,
-        storeId
-      }
+        storeId,
+      },
     })
 
     if (!stage) {
@@ -86,7 +90,7 @@ export const CrmStageCommands = {
     // Atualizar ordem do stage
     return await db.crmStage.update({
       where: { id },
-      data: { order: newOrder }
+      data: { order: newOrder },
     })
-  }
+  },
 }

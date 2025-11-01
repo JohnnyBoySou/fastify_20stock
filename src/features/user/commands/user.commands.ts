@@ -1,5 +1,5 @@
-import bcrypt from 'bcryptjs';
-import { db } from '@/plugins/prisma';
+import { db } from '@/plugins/prisma'
+import bcrypt from 'bcryptjs'
 
 export const UserCommands = {
   async create(data: {
@@ -10,15 +10,15 @@ export const UserCommands = {
   }) {
     // Verificar se o usuário já existe
     const existingUser = await db.user.findUnique({
-      where: { email: data.email }
-    });
+      where: { email: data.email },
+    })
 
     if (existingUser) {
-      throw new Error('User with this email already exists');
+      throw new Error('User with this email already exists')
     }
 
     // Hash da senha
-    const hashedPassword = await bcrypt.hash(data.password, 12);
+    const hashedPassword = await bcrypt.hash(data.password, 12)
 
     // Criar usuário
     const user = await db.user.create({
@@ -26,7 +26,7 @@ export const UserCommands = {
         email: data.email,
         password: hashedPassword,
         name: data.name,
-        roles: data.roles || ['user']
+        roles: data.roles || ['user'],
       },
       select: {
         id: true,
@@ -34,45 +34,48 @@ export const UserCommands = {
         name: true,
         roles: true,
         status: true,
-        createdAt: true
-      }
-    });
+        createdAt: true,
+      },
+    })
 
-    return user;
+    return user
   },
 
-  async update(id: string, data: {
-    email?: string
-    password?: string
-    name?: string
-    roles?: string[]
-    status?: boolean
-    emailVerified?: boolean
-  }) {
+  async update(
+    id: string,
+    data: {
+      email?: string
+      password?: string
+      name?: string
+      roles?: string[]
+      status?: boolean
+      emailVerified?: boolean
+    }
+  ) {
     // Verificar se o usuário existe
     const existingUser = await db.user.findUnique({
-      where: { id }
-    });
+      where: { id },
+    })
 
     if (!existingUser) {
-      throw new Error('User not found');
+      throw new Error('User not found')
     }
 
-    const updateData = { ...data };
+    const updateData = { ...data }
 
     // Se uma nova senha foi fornecida, fazer hash
     if (updateData.password) {
-      updateData.password = await bcrypt.hash(updateData.password, 12);
+      updateData.password = await bcrypt.hash(updateData.password, 12)
     }
 
     // Se email foi alterado, verificar se já existe
     if (updateData.email && updateData.email !== existingUser.email) {
       const emailExists = await db.user.findUnique({
-        where: { email: updateData.email }
-      });
+        where: { email: updateData.email },
+      })
 
       if (emailExists) {
-        throw new Error('Email already exists');
+        throw new Error('Email already exists')
       }
     }
 
@@ -86,30 +89,30 @@ export const UserCommands = {
         roles: true,
         status: true,
         emailVerified: true,
-        updatedAt: true
-      }
-    });
+        updatedAt: true,
+      },
+    })
 
-    return user;
+    return user
   },
 
   async delete(id: string) {
     // Verificar se o usuário existe
     const existingUser = await db.user.findUnique({
-      where: { id }
-    });
+      where: { id },
+    })
 
     if (!existingUser) {
-      throw new Error('User not found');
+      throw new Error('User not found')
     }
 
     // Soft delete - apenas desativar o usuário
     await db.user.update({
       where: { id },
-      data: { status: false }
-    });
+      data: { status: false },
+    })
 
-    return { success: true };
+    return { success: true }
   },
 
   async verifyEmail(id: string) {
@@ -120,19 +123,19 @@ export const UserCommands = {
         id: true,
         email: true,
         emailVerified: true,
-        updatedAt: true
-      }
-    });
+        updatedAt: true,
+      },
+    })
 
-    return user;
+    return user
   },
 
   async updateLastLogin(id: string) {
     await db.user.update({
       where: { id },
-      data: { lastLoginAt: new Date() }
-    });
+      data: { lastLoginAt: new Date() },
+    })
 
-    return { success: true };
-  }
-};
+    return { success: true }
+  },
+}

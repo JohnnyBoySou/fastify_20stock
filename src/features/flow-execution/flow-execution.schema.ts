@@ -1,4 +1,4 @@
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify'
 
 // Get Flow Execution Schema
 export const getFlowExecutionSchema: FastifySchema = {
@@ -6,8 +6,8 @@ export const getFlowExecutionSchema: FastifySchema = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -17,7 +17,7 @@ export const getFlowExecutionSchema: FastifySchema = {
         flowId: { type: 'string' },
         status: {
           type: 'string',
-          enum: ['SUCCESS', 'FAILED', 'RUNNING', 'CANCELLED']
+          enum: ['SUCCESS', 'FAILED', 'RUNNING', 'CANCELLED'],
         },
         triggerType: { type: 'string' },
         triggerData: {},
@@ -25,23 +25,23 @@ export const getFlowExecutionSchema: FastifySchema = {
         error: { type: 'string', nullable: true },
         startedAt: { type: 'string' },
         completedAt: { type: 'string', nullable: true },
-        duration: { type: 'number', nullable: true }
-      }
+        duration: { type: 'number', nullable: true },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // List Flow Executions Schema
 export const listFlowExecutionsSchema: FastifySchema = {
@@ -53,12 +53,12 @@ export const listFlowExecutionsSchema: FastifySchema = {
       flowId: { type: 'string' },
       status: {
         type: 'string',
-        enum: ['SUCCESS', 'FAILED', 'RUNNING', 'CANCELLED']
+        enum: ['SUCCESS', 'FAILED', 'RUNNING', 'CANCELLED'],
       },
       triggerType: { type: 'string' },
       startDate: { type: 'string' },
-      endDate: { type: 'string' }
-    }
+      endDate: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -71,19 +71,19 @@ export const listFlowExecutionsSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
+            totalPages: { type: 'number' },
+          },
+        },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Get By Flow Schema
 export const getByFlowSchema: FastifySchema = {
@@ -91,8 +91,8 @@ export const getByFlowSchema: FastifySchema = {
     type: 'object',
     required: ['flowId'],
     properties: {
-      flowId: { type: 'string' }
-    }
+      flowId: { type: 'string' },
+    },
   },
   querystring: {
     type: 'object',
@@ -101,9 +101,9 @@ export const getByFlowSchema: FastifySchema = {
       limit: { type: 'number', minimum: 1, maximum: 100 },
       status: {
         type: 'string',
-        enum: ['SUCCESS', 'FAILED', 'RUNNING', 'CANCELLED']
-      }
-    }
+        enum: ['SUCCESS', 'FAILED', 'RUNNING', 'CANCELLED'],
+      },
+    },
   },
   response: {
     200: {
@@ -116,19 +116,19 @@ export const getByFlowSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
+            totalPages: { type: 'number' },
+          },
+        },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Get Stats Schema
 export const getStatsSchema: FastifySchema = {
@@ -136,8 +136,8 @@ export const getStatsSchema: FastifySchema = {
     type: 'object',
     required: ['flowId'],
     properties: {
-      flowId: { type: 'string' }
-    }
+      flowId: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -150,22 +150,22 @@ export const getStatsSchema: FastifySchema = {
             success: { type: 'number' },
             failed: { type: 'number' },
             running: { type: 'number' },
-            cancelled: { type: 'number' }
-          }
+            cancelled: { type: 'number' },
+          },
         },
         byTrigger: { type: 'object' },
         averageDuration: { type: 'number' },
-        lastExecution: {}
-      }
+        lastExecution: {},
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Cancel Execution Schema
 export const cancelExecutionSchema: FastifySchema = {
@@ -173,8 +173,8 @@ export const cancelExecutionSchema: FastifySchema = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -183,31 +183,30 @@ export const cancelExecutionSchema: FastifySchema = {
         id: { type: 'string' },
         status: {
           type: 'string',
-          enum: ['SUCCESS', 'FAILED', 'RUNNING', 'CANCELLED']
+          enum: ['SUCCESS', 'FAILED', 'RUNNING', 'CANCELLED'],
         },
-        cancelledAt: { type: 'string' }
-      }
+        cancelledAt: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const FlowExecutionSchemas = {
   get: getFlowExecutionSchema,
   list: listFlowExecutionsSchema,
   getByFlow: getByFlowSchema,
   getStats: getStatsSchema,
-  cancel: cancelExecutionSchema
-};
-
+  cancel: cancelExecutionSchema,
+}

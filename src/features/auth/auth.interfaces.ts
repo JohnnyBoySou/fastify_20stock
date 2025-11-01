@@ -1,4 +1,4 @@
-import { FastifyRequest } from 'fastify';
+import type { FastifyRequest } from 'fastify'
 
 // Register interfaces
 export interface RegisterRequest extends FastifyRequest {
@@ -135,7 +135,6 @@ export interface AuthUser {
   name: string
   emailVerified: boolean
   status: boolean
-  roles: string[]
   lastLoginAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -145,7 +144,6 @@ export interface AuthUser {
 export interface JWTPayload {
   userId: string
   email: string
-  roles: string[]
   iat?: number
   exp?: number
 }
@@ -194,7 +192,6 @@ export interface UpdateProfileResponse {
     email: string
     emailVerified: boolean
     status: boolean
-    roles: string[]
     lastLoginAt: Date | null
     createdAt: Date
     updatedAt: Date
@@ -250,7 +247,6 @@ export interface GetProfilePermissionsRequest extends FastifyRequest {
 
 export interface ProfilePermissionsResponse {
   userId: string
-  userRoles: string[]
   storeId?: string
   effectivePermissions: string[]
   customPermissions: Array<{

@@ -1,25 +1,30 @@
-import { FastifyInstance } from 'fastify'
+import type { FastifyInstance } from 'fastify'
 import { ReportController } from './report.controller'
 import {
+  exportReportSchema,
+  getCategoryReportSchema,
   getDashboardStatsSchema,
+  getFinancialReportSchema,
   getInventoryReportSchema,
   getMovementReportSchema,
-  getFinancialReportSchema,
-  getCategoryReportSchema,
+  getStockAlertReportSchema,
   getSupplierReportSchema,
   getUserActivityReportSchema,
-  getStockAlertReportSchema,
-  exportReportSchema
 } from './report.schema'
+import { Middlewares } from '@/middlewares'
 
 export async function ReportRoutes(fastify: FastifyInstance) {
+  // Middlewares para todas as rotas
+  fastify.addHook('preHandler', Middlewares.auth)
+  fastify.addHook('preHandler', Middlewares.store)
+
   // ================================
   // DASHBOARD STATS
   // ================================
-  
+
   fastify.get('/dashboard/stats', {
     schema: getDashboardStatsSchema,
-    handler: ReportController.getDashboardStats
+    handler: ReportController.getDashboardStats,
   })
 
   // ================================
@@ -29,43 +34,43 @@ export async function ReportRoutes(fastify: FastifyInstance) {
   // Inventory Report
   fastify.get('/inventory', {
     schema: getInventoryReportSchema,
-    handler: ReportController.getInventoryReport
+    handler: ReportController.getInventoryReport,
   })
 
   // Movement Report
   fastify.get('/movements', {
     schema: getMovementReportSchema,
-    handler: ReportController.getMovementReport
+    handler: ReportController.getMovementReport,
   })
 
   // Financial Report
   fastify.get('/financial', {
     schema: getFinancialReportSchema,
-    handler: ReportController.getFinancialReport
+    handler: ReportController.getFinancialReport,
   })
 
   // Category Report
   fastify.get('/categories', {
     schema: getCategoryReportSchema,
-    handler: ReportController.getCategoryReport
+    handler: ReportController.getCategoryReport,
   })
 
   // Supplier Report
   fastify.get('/suppliers', {
     schema: getSupplierReportSchema,
-    handler: ReportController.getSupplierReport
+    handler: ReportController.getSupplierReport,
   })
 
   // User Activity Report
   fastify.get('/user-activity', {
     schema: getUserActivityReportSchema,
-    handler: ReportController.getUserActivityReport
+    handler: ReportController.getUserActivityReport,
   })
 
   // Stock Alert Report
   fastify.get('/stock-alerts', {
     schema: getStockAlertReportSchema,
-    handler: ReportController.getStockAlertReport
+    handler: ReportController.getStockAlertReport,
   })
 
   // ================================
@@ -75,7 +80,7 @@ export async function ReportRoutes(fastify: FastifyInstance) {
   // Export Report
   fastify.get('/export', {
     schema: exportReportSchema,
-    handler: ReportController.exportReport
+    handler: ReportController.exportReport,
   })
 
   // ================================
@@ -91,36 +96,44 @@ export async function ReportRoutes(fastify: FastifyInstance) {
         type: 'object',
         required: ['reportType', 'schedule', 'filters', 'emailRecipients'],
         properties: {
-          reportType: { 
-            type: 'string', 
-            enum: ['inventory', 'movement', 'financial', 'category', 'supplier', 'user-activity', 'stock-alert']
+          reportType: {
+            type: 'string',
+            enum: [
+              'inventory',
+              'movement',
+              'financial',
+              'category',
+              'supplier',
+              'user-activity',
+              'stock-alert',
+            ],
           },
           schedule: {
             type: 'object',
             required: ['frequency', 'time'],
             properties: {
-              frequency: { 
-                type: 'string', 
-                enum: ['daily', 'weekly', 'monthly']
+              frequency: {
+                type: 'string',
+                enum: ['daily', 'weekly', 'monthly'],
               },
-              time: { 
-                type: 'string', 
+              time: {
+                type: 'string',
                 pattern: '^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$',
-                description: 'Time in HH:MM format'
+                description: 'Time in HH:MM format',
               },
-              dayOfWeek: { 
-                type: 'number', 
-                minimum: 0, 
+              dayOfWeek: {
+                type: 'number',
+                minimum: 0,
                 maximum: 6,
-                description: 'Day of week (0-6) for weekly frequency'
+                description: 'Day of week (0-6) for weekly frequency',
               },
-              dayOfMonth: { 
-                type: 'number', 
-                minimum: 1, 
+              dayOfMonth: {
+                type: 'number',
+                minimum: 1,
                 maximum: 31,
-                description: 'Day of month (1-31) for monthly frequency'
-              }
-            }
+                description: 'Day of month (1-31) for monthly frequency',
+              },
+            },
           },
           filters: {
             type: 'object',
@@ -133,27 +146,27 @@ export async function ReportRoutes(fastify: FastifyInstance) {
               productId: { type: 'string' },
               userId: { type: 'string' },
               status: { type: 'string' },
-              type: { type: 'string' }
-            }
+              type: { type: 'string' },
+            },
           },
           emailRecipients: {
             type: 'array',
             items: { type: 'string', format: 'email' },
-            minItems: 1
-          }
-        }
+            minItems: 1,
+          },
+        },
       },
       response: {
         200: {
           type: 'object',
           properties: {
             success: { type: 'boolean' },
-            scheduleId: { type: 'string' }
-          }
-        }
-      }
+            scheduleId: { type: 'string' },
+          },
+        },
+      },
     },
-    handler: ReportController.scheduleReport
+    handler: ReportController.scheduleReport,
   })
 
   // Cancel Scheduled Report
@@ -164,20 +177,20 @@ export async function ReportRoutes(fastify: FastifyInstance) {
       params: {
         type: 'object',
         properties: {
-          scheduleId: { type: 'string' }
+          scheduleId: { type: 'string' },
         },
-        required: ['scheduleId']
+        required: ['scheduleId'],
       },
       response: {
         200: {
           type: 'object',
           properties: {
-            success: { type: 'boolean' }
-          }
-        }
-      }
+            success: { type: 'boolean' },
+          },
+        },
+      },
     },
-    handler: ReportController.cancelScheduledReport
+    handler: ReportController.cancelScheduledReport,
   })
 
   // ================================
@@ -193,44 +206,52 @@ export async function ReportRoutes(fastify: FastifyInstance) {
         type: 'object',
         required: ['reportType', 'format', 'data', 'emailRecipients'],
         properties: {
-          reportType: { 
-            type: 'string', 
-            enum: ['inventory', 'movement', 'financial', 'category', 'supplier', 'user-activity', 'stock-alert']
+          reportType: {
+            type: 'string',
+            enum: [
+              'inventory',
+              'movement',
+              'financial',
+              'category',
+              'supplier',
+              'user-activity',
+              'stock-alert',
+            ],
           },
-          format: { 
-            type: 'string', 
-            enum: ['csv', 'xlsx', 'pdf']
+          format: {
+            type: 'string',
+            enum: ['csv', 'xlsx', 'pdf'],
           },
           data: {
             type: 'array',
-            items: { type: 'object' }
+            items: { type: 'object' },
           },
           emailRecipients: {
             type: 'array',
             items: { type: 'string', format: 'email' },
-            minItems: 1
+            minItems: 1,
           },
-          subject: { 
+          subject: {
             type: 'string',
-            description: 'Email subject (optional)'
+            description: 'Email subject (optional)',
           },
-          message: { 
+          message: {
             type: 'string',
-            description: 'Email message (optional)'
-          }
-        }
+            description: 'Email message (optional)',
+          },
+        },
       },
       response: {
         200: {
           type: 'object',
           properties: {
             success: { type: 'boolean' },
-            messageId: { type: 'string' }
-          }
-        }
-      }
+            messageId: { type: 'string' },
+          },
+        },
+      },
     },
-    handler: ReportController.sendReportViaEmail
+    handler: ReportController.sendReportViaEmail,
   })
 
   // ================================
@@ -256,16 +277,16 @@ export async function ReportRoutes(fastify: FastifyInstance) {
                   description: { type: 'string' },
                   supportedFormats: {
                     type: 'array',
-                    items: { type: 'string' }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+                    items: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     },
-    handler: ReportController.getAvailableReportTypes
+    handler: ReportController.getAvailableReportTypes,
   })
 
   // Get Report Statistics
@@ -280,12 +301,12 @@ export async function ReportRoutes(fastify: FastifyInstance) {
             totalReports: { type: 'number' },
             reportsByType: { type: 'object' },
             reportsByFormat: { type: 'object' },
-            lastGenerated: { type: 'string', nullable: true }
-          }
-        }
-      }
+            lastGenerated: { type: 'string', nullable: true },
+          },
+        },
+      },
     },
-    handler: ReportController.getReportStatistics
+    handler: ReportController.getReportStatistics,
   })
 
   // Validate Filters
@@ -310,10 +331,10 @@ export async function ReportRoutes(fastify: FastifyInstance) {
               status: { type: 'string' },
               type: { type: 'string' },
               page: { type: 'number', minimum: 1 },
-              limit: { type: 'number', minimum: 1, maximum: 1000 }
-            }
-          }
-        }
+              limit: { type: 'number', minimum: 1, maximum: 1000 },
+            },
+          },
+        },
       },
       response: {
         200: {
@@ -322,13 +343,13 @@ export async function ReportRoutes(fastify: FastifyInstance) {
             isValid: { type: 'boolean' },
             errors: {
               type: 'array',
-              items: { type: 'string' }
-            }
-          }
-        }
-      }
+              items: { type: 'string' },
+            },
+          },
+        },
+      },
     },
-    handler: ReportController.validateFilters
+    handler: ReportController.validateFilters,
   })
 
   // ================================
@@ -343,46 +364,46 @@ export async function ReportRoutes(fastify: FastifyInstance) {
       params: {
         type: 'object',
         properties: {
-          exportId: { type: 'string' }
+          exportId: { type: 'string' },
         },
-        required: ['exportId']
+        required: ['exportId'],
       },
       response: {
         200: {
           type: 'string',
-          description: 'File content'
+          description: 'File content',
         },
         500: {
           type: 'object',
           properties: {
-            error: { type: 'string' }
-          }
-        }
-      }
+            error: { type: 'string' },
+          },
+        },
+      },
     },
     handler: async (request, reply) => {
       try {
         const { exportId } = request.params as { exportId: string }
-        
+
         // In a real implementation, you would:
         // 1. Look up the export record by ID
         // 2. Check if it's still valid (not expired)
         // 3. Generate or retrieve the file
         // 4. Stream it to the client
-        
+
         // For now, return a placeholder response
         reply.type('application/json')
         return reply.send({
           message: 'Download endpoint - implementation needed',
           exportId,
-          note: 'This would return the actual file content'
+          note: 'This would return the actual file content',
         })
       } catch (error: any) {
         request.log.error(error)
         return reply.status(500).send({
-          error: 'Erro ao fazer download do relatório'
+          error: 'Erro ao fazer download do relatório',
         })
       }
-    }
+    },
   })
 }

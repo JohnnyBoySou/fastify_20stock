@@ -1,7 +1,16 @@
-import { FastifyRequest } from 'fastify';
+import type { FastifyRequest } from 'fastify'
 
-export type QuoteStatus = 'DRAFT' | 'PUBLISHED' | 'SENT' | 'VIEWED' | 'APPROVED' | 'REJECTED' | 'EXPIRED' | 'CONVERTED' | 'CANCELED';
-export type PaymentType = 'UNDEFINED' | 'PIX' | 'BOLETO' | 'CREDIT_CARD' | 'CASH' | 'TRANSFER';
+export type QuoteStatus =
+  | 'DRAFT'
+  | 'PUBLISHED'
+  | 'SENT'
+  | 'VIEWED'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'EXPIRED'
+  | 'CONVERTED'
+  | 'CANCELED'
+export type PaymentType = 'UNDEFINED' | 'PIX' | 'BOLETO' | 'CREDIT_CARD' | 'CASH' | 'TRANSFER'
 
 // Interfaces para Quote
 export interface CreateQuoteRequest extends FastifyRequest {

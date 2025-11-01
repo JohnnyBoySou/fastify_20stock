@@ -1,12 +1,8 @@
-import {
-  ExportReportResponse,
-  ReportFilters
-} from '../report.interfaces'
+import type { ExportReportResponse, ReportFilters } from '../report.interfaces'
 
-import { db } from '@/plugins/prisma';
+import { db } from '@/plugins/prisma'
 
 export const ReportCommands = {
-
   // ================================
   // EXPORT REPORTS
   // ================================
@@ -33,9 +29,9 @@ export const ReportCommands = {
             format,
             filters,
             filename,
-            generatedAt: new Date().toISOString()
-          }
-        }
+            generatedAt: new Date().toISOString(),
+          },
+        },
       })
 
       // Generate download URL (in a real implementation, this would be a signed URL)
@@ -50,10 +46,12 @@ export const ReportCommands = {
         filename,
         format,
         generatedAt: new Date().toISOString(),
-        expiresAt: expiresAt.toISOString()
+        expiresAt: expiresAt.toISOString(),
       }
     } catch (error) {
-      throw new Error(`Failed to export report: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to export report: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   },
 
@@ -61,31 +59,34 @@ export const ReportCommands = {
   // GENERATE CSV REPORT
   // ================================
 
-  async generateCsvReport(
-    reportType: string,
-    data: any[],
-    columns: string[]
-  ): Promise<string> {
+  async generateCsvReport(reportType: string, data: any[], columns: string[]): Promise<string> {
     try {
       // Create CSV header
       const header = columns.join(',')
-      
+
       // Create CSV rows
-      const rows = data.map(item => {
-        return columns.map(column => {
-          const value = ReportCommands.getNestedValue(item, column)
-          // Escape CSV values
-          if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
-            return `"${value.replace(/"/g, '""')}"`
-          }
-          return value || ''
-        }).join(',')
+      const rows = data.map((item) => {
+        return columns
+          .map((column) => {
+            const value = ReportCommands.getNestedValue(item, column)
+            // Escape CSV values
+            if (
+              typeof value === 'string' &&
+              (value.includes(',') || value.includes('"') || value.includes('\n'))
+            ) {
+              return `"${value.replace(/"/g, '""')}"`
+            }
+            return value || ''
+          })
+          .join(',')
       })
 
       // Combine header and rows
       return [header, ...rows].join('\n')
     } catch (error) {
-      throw new Error(`Failed to generate CSV report: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to generate CSV report: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   },
 
@@ -101,22 +102,24 @@ export const ReportCommands = {
     try {
       // In a real implementation, you would use a library like 'xlsx' or 'exceljs'
       // For now, we'll return a mock buffer
-      
+
       const workbook = {
         SheetNames: [reportType],
         Sheets: {
           [reportType]: {
             '!ref': 'A1',
             A1: { v: 'Report Generated', t: 's' },
-            A2: { v: new Date().toISOString(), t: 's' }
-          }
-        }
+            A2: { v: new Date().toISOString(), t: 's' },
+          },
+        },
       }
 
       // Convert to buffer (mock implementation)
       return Buffer.from(JSON.stringify(workbook))
     } catch (error) {
-      throw new Error(`Failed to generate Excel report: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to generate Excel report: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   },
 
@@ -132,19 +135,21 @@ export const ReportCommands = {
     try {
       // In a real implementation, you would use a library like 'puppeteer' or 'pdfkit'
       // For now, we'll return a mock buffer
-      
+
       const pdfContent = {
         title: `${reportType} Report`,
         generatedAt: new Date().toISOString(),
         totalRecords: data.length,
-        columns: columns.map(col => col.label),
-        data: data.slice(0, 10) // Limit for demo
+        columns: columns.map((col) => col.label),
+        data: data.slice(0, 10), // Limit for demo
       }
 
       // Convert to buffer (mock implementation)
       return Buffer.from(JSON.stringify(pdfContent))
     } catch (error) {
-      throw new Error(`Failed to generate PDF report: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to generate PDF report: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   },
 
@@ -177,17 +182,19 @@ export const ReportCommands = {
             filters,
             emailRecipients,
             isActive: true,
-            createdAt: new Date().toISOString()
-          }
-        }
+            createdAt: new Date().toISOString(),
+          },
+        },
       })
 
       return {
         success: true,
-        scheduleId: scheduledReport.id
+        scheduleId: scheduledReport.id,
       }
     } catch (error) {
-      throw new Error(`Failed to schedule report: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to schedule report: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   },
 
@@ -202,19 +209,23 @@ export const ReportCommands = {
         where: { id: scheduleId },
         data: {
           after: {
-            ...(await db.auditLog.findUnique({
-              where: { id: scheduleId },
-              select: { after: true }
-            }))?.after as any,
+            ...((
+              await db.auditLog.findUnique({
+                where: { id: scheduleId },
+                select: { after: true },
+              })
+            )?.after as any),
             isActive: false,
-            cancelledAt: new Date().toISOString()
-          }
-        }
+            cancelledAt: new Date().toISOString(),
+          },
+        },
       })
 
       return { success: true }
     } catch (error) {
-      throw new Error(`Failed to cancel scheduled report: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to cancel scheduled report: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   },
 
@@ -270,17 +281,19 @@ export const ReportCommands = {
             subject: subject || `${reportType} Report`,
             message: message || 'Please find the attached report.',
             filename,
-            sentAt: new Date().toISOString()
-          }
-        }
+            sentAt: new Date().toISOString(),
+          },
+        },
       })
 
       return {
         success: true,
-        messageId: emailLog.id
+        messageId: emailLog.id,
       }
     } catch (error) {
-      throw new Error(`Failed to send report via email: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to send report via email: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   },
 
@@ -306,21 +319,22 @@ export const ReportCommands = {
       switch (reportType) {
         case 'inventory':
           summary.totalValue = data.reduce((sum, item) => sum + (item.totalValue || 0), 0)
-          summary.lowStockItems = data.filter(item => item.alertLevel === 'low').length
-          summary.outOfStockItems = data.filter(item => item.alertLevel === 'out').length
+          summary.lowStockItems = data.filter((item) => item.alertLevel === 'low').length
+          summary.outOfStockItems = data.filter((item) => item.alertLevel === 'out').length
           break
         case 'movement':
           summary.totalMovements = data.length
           summary.totalValue = data.reduce((sum, item) => sum + (item.totalValue || 0), 0)
-          summary.entries = data.filter(item => item.type === 'ENTRADA').length
-          summary.exits = data.filter(item => item.type === 'SAIDA').length
-          summary.losses = data.filter(item => item.type === 'PERDA').length
+          summary.entries = data.filter((item) => item.type === 'ENTRADA').length
+          summary.exits = data.filter((item) => item.type === 'SAIDA').length
+          summary.losses = data.filter((item) => item.type === 'PERDA').length
           break
         case 'financial':
           summary.totalRevenue = data.reduce((sum, item) => sum + (item.revenue || 0), 0)
           summary.totalCosts = data.reduce((sum, item) => sum + (item.costs || 0), 0)
           summary.grossProfit = summary.totalRevenue - summary.totalCosts
-          summary.profitMargin = summary.totalRevenue > 0 ? (summary.grossProfit / summary.totalRevenue) * 100 : 0
+          summary.profitMargin =
+            summary.totalRevenue > 0 ? (summary.grossProfit / summary.totalRevenue) * 100 : 0
           break
         default:
           summary.totalRecords = data.length
@@ -329,15 +343,19 @@ export const ReportCommands = {
       return {
         totalRecords: data.length,
         dateRange: {
-          start: filters.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          end: filters.endDate || new Date().toISOString().split('T')[0]
+          start:
+            filters.startDate ||
+            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          end: filters.endDate || new Date().toISOString().split('T')[0],
         },
         filters,
         generatedAt: new Date().toISOString(),
-        summary
+        summary,
       }
     } catch (error) {
-      throw new Error(`Failed to generate report summary: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(
+        `Failed to generate report summary: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     }
   },
 
@@ -351,20 +369,90 @@ export const ReportCommands = {
 
   getDefaultColumns(reportType: string): string[] {
     const columnMap: Record<string, string[]> = {
-      inventory: ['id', 'name', 'description', 'category.name', 'supplier.corporateName', 'currentStock', 'stockMin', 'stockMax', 'unitPrice', 'totalValue', 'status', 'alertLevel'],
-      movement: ['id', 'type', 'quantity', 'price', 'totalValue', 'batch', 'expiration', 'note', 'product.name', 'supplier.corporateName', 'user.name', 'createdAt'],
+      inventory: [
+        'id',
+        'name',
+        'description',
+        'category.name',
+        'supplier.corporateName',
+        'currentStock',
+        'stockMin',
+        'stockMax',
+        'unitPrice',
+        'totalValue',
+        'status',
+        'alertLevel',
+      ],
+      movement: [
+        'id',
+        'type',
+        'quantity',
+        'price',
+        'totalValue',
+        'batch',
+        'expiration',
+        'note',
+        'product.name',
+        'supplier.corporateName',
+        'user.name',
+        'createdAt',
+      ],
       financial: ['period', 'revenue', 'costs', 'profit', 'movements'],
-      category: ['id', 'name', 'description', 'code', 'stats.totalProducts', 'stats.totalValue', 'stats.averagePrice', 'stats.movements'],
-      supplier: ['id', 'corporateName', 'tradeName', 'cnpj', 'status', 'stats.totalProducts', 'stats.totalValue', 'stats.totalMovements', 'stats.averageOrderValue'],
-      'user-activity': ['id', 'entity', 'entityId', 'action', 'user.name', 'user.email', 'createdAt'],
-      'stock-alert': ['id', 'productName', 'currentStock', 'stockMin', 'stockMax', 'alertType', 'severity', 'unitPrice', 'totalValue', 'category.name', 'supplier.corporateName']
+      category: [
+        'id',
+        'name',
+        'description',
+        'code',
+        'stats.totalProducts',
+        'stats.totalValue',
+        'stats.averagePrice',
+        'stats.movements',
+      ],
+      supplier: [
+        'id',
+        'corporateName',
+        'tradeName',
+        'cnpj',
+        'status',
+        'stats.totalProducts',
+        'stats.totalValue',
+        'stats.totalMovements',
+        'stats.averageOrderValue',
+      ],
+      'user-activity': [
+        'id',
+        'entity',
+        'entityId',
+        'action',
+        'user.name',
+        'user.email',
+        'createdAt',
+      ],
+      'stock-alert': [
+        'id',
+        'productName',
+        'currentStock',
+        'stockMin',
+        'stockMax',
+        'alertType',
+        'severity',
+        'unitPrice',
+        'totalValue',
+        'category.name',
+        'supplier.corporateName',
+      ],
     }
 
     return columnMap[reportType] || ['id', 'name', 'createdAt']
   },
 
-  getDefaultExcelColumns(reportType: string): { key: string; label: string; type: 'string' | 'number' | 'date' }[] {
-    const columnMap: Record<string, { key: string; label: string; type: 'string' | 'number' | 'date' }[]> = {
+  getDefaultExcelColumns(
+    reportType: string
+  ): { key: string; label: string; type: 'string' | 'number' | 'date' }[] {
+    const columnMap: Record<
+      string,
+      { key: string; label: string; type: 'string' | 'number' | 'date' }[]
+    > = {
       inventory: [
         { key: 'id', label: 'ID', type: 'string' },
         { key: 'name', label: 'Nome', type: 'string' },
@@ -377,7 +465,7 @@ export const ReportCommands = {
         { key: 'unitPrice', label: 'Preço Unitário', type: 'number' },
         { key: 'totalValue', label: 'Valor Total', type: 'number' },
         { key: 'status', label: 'Status', type: 'string' },
-        { key: 'alertLevel', label: 'Nível de Alerta', type: 'string' }
+        { key: 'alertLevel', label: 'Nível de Alerta', type: 'string' },
       ],
       movement: [
         { key: 'id', label: 'ID', type: 'string' },
@@ -391,15 +479,17 @@ export const ReportCommands = {
         { key: 'product.name', label: 'Produto', type: 'string' },
         { key: 'supplier.corporateName', label: 'Fornecedor', type: 'string' },
         { key: 'user.name', label: 'Usuário', type: 'string' },
-        { key: 'createdAt', label: 'Data', type: 'date' }
-      ]
+        { key: 'createdAt', label: 'Data', type: 'date' },
+      ],
     }
 
-    return columnMap[reportType] || [
-      { key: 'id', label: 'ID', type: 'string' },
-      { key: 'name', label: 'Nome', type: 'string' },
-      { key: 'createdAt', label: 'Data de Criação', type: 'date' }
-    ]
+    return (
+      columnMap[reportType] || [
+        { key: 'id', label: 'ID', type: 'string' },
+        { key: 'name', label: 'Nome', type: 'string' },
+        { key: 'createdAt', label: 'Data de Criação', type: 'date' },
+      ]
+    )
   },
 
   getDefaultPdfColumns(reportType: string): { key: string; label: string; width?: number }[] {
@@ -409,7 +499,7 @@ export const ReportCommands = {
         { key: 'category.name', label: 'Categoria', width: 20 },
         { key: 'currentStock', label: 'Estoque', width: 15 },
         { key: 'unitPrice', label: 'Preço', width: 15 },
-        { key: 'totalValue', label: 'Valor Total', width: 20 }
+        { key: 'totalValue', label: 'Valor Total', width: 20 },
       ],
       movement: [
         { key: 'product.name', label: 'Produto', width: 25 },
@@ -417,14 +507,16 @@ export const ReportCommands = {
         { key: 'quantity', label: 'Quantidade', width: 15 },
         { key: 'totalValue', label: 'Valor', width: 15 },
         { key: 'user.name', label: 'Usuário', width: 15 },
-        { key: 'createdAt', label: 'Data', width: 15 }
-      ]
+        { key: 'createdAt', label: 'Data', width: 15 },
+      ],
     }
 
-    return columnMap[reportType] || [
-      { key: 'name', label: 'Nome', width: 50 },
-      { key: 'createdAt', label: 'Data', width: 50 }
-    ]
+    return (
+      columnMap[reportType] || [
+        { key: 'name', label: 'Nome', width: 50 },
+        { key: 'createdAt', label: 'Data', width: 50 },
+      ]
+    )
   },
 
   // ================================
@@ -438,7 +530,7 @@ export const ReportCommands = {
     if (filters.startDate && filters.endDate) {
       const startDate = new Date(filters.startDate)
       const endDate = new Date(filters.endDate)
-      
+
       if (startDate > endDate) {
         errors.push('Start date cannot be after end date')
       }
@@ -450,26 +542,26 @@ export const ReportCommands = {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     }
   },
 
   getAvailableReportTypes(): string[] {
     return [
       'inventory',
-      'movement', 
+      'movement',
       'financial',
       'category',
       'supplier',
       'user-activity',
-      'stock-alert'
+      'stock-alert',
     ]
   },
 
   getReportStatistics(): { totalReports: number; availableTypes: string[] } {
     return {
       totalReports: 0, // This would be calculated from actual data
-      availableTypes: ReportCommands.getAvailableReportTypes()
+      availableTypes: ReportCommands.getAvailableReportTypes(),
     }
-  }
-};
+  },
+}

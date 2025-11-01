@@ -1,21 +1,22 @@
-import type { FastifyInstance } from "fastify";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '../generated/prisma'
+import type { FastifyInstance } from 'fastify'
 
-export const prisma = new PrismaClient();
-export const db = prisma;
-export async function prismaPlugin(app: FastifyInstance) {
-  app.decorate("prisma", prisma as any);
+export const prisma = new PrismaClient()
+export const db = prisma
 
-  app.addHook("onClose", async () => {
-    await prisma.$disconnect();
-  });
+export async function dbPlugin(app: FastifyInstance) {
+  app.decorate('db', db as any)
+
+  app.addHook('onClose', async () => {
+    await db.$disconnect()
+  })
 }
 
-export async function connectPrisma(app: FastifyInstance) {
+export async function connectDb() {
   try {
-    await prisma.$connect();
+    await db.$connect()
   } catch (error) {
-    console.error('Falha ao conectar com o banco de dados:', error);
-    throw error;
+    console.error('Falha ao conectar com o banco de dados:', error)
+    throw error
   }
 }

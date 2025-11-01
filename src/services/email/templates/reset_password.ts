@@ -1,4 +1,4 @@
-import { PasswordResetEmailData } from '../email.service'
+import type { PasswordResetEmailData } from '../email.service'
 
 export const generatePasswordResetEmailHTML = (data: PasswordResetEmailData): string => {
   return `

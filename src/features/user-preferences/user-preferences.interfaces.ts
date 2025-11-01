@@ -1,4 +1,4 @@
-import { FastifyRequest } from 'fastify'
+import type { FastifyRequest } from 'fastify'
 
 // ================================
 // USER PREFERENCES INTERFACES
@@ -10,7 +10,7 @@ export interface UserPreferencesData {
   primaryColor?: string
   sidebarCollapsed?: boolean
   compactMode?: boolean
-  
+
   // Language & Localization
   language?: string // pt-BR, en-US, es-ES
   currency?: string // BRL, USD, EUR
@@ -18,23 +18,23 @@ export interface UserPreferencesData {
   dateFormat?: string // DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD
   timeFormat?: '12h' | '24h'
   numberFormat?: string // pt-BR, en-US
-  
+
   // Notification Preferences
   emailNotifications?: boolean
   pushNotifications?: boolean
   smsNotifications?: boolean
   notificationTypes?: any // JSON com tipos específicos
-  
+
   // Dashboard & Layout
   dashboardLayout?: any // JSON com layout personalizado
   defaultPage?: string
   itemsPerPage?: number
-  
+
   // Business Preferences
   defaultStoreId?: string
   autoRefresh?: boolean
   refreshInterval?: number
-  
+
   // Advanced Settings
   customSettings?: any // JSON com configurações personalizadas
 }

@@ -1,16 +1,16 @@
-import { FastifyRequest, FastifyReply } from 'fastify'
-import { ReportQueries } from './queries/report.queries'
+import type { FastifyReply, FastifyRequest } from 'fastify'
 import { ReportCommands } from './commands/report.commands'
-import {
+import { ReportQueries } from './queries/report.queries'
+import type {
+  ExportReportRequest,
+  GetCategoryReportRequest,
   GetDashboardStatsRequest,
+  GetFinancialReportRequest,
   GetInventoryReportRequest,
   GetMovementReportRequest,
-  GetFinancialReportRequest,
-  GetCategoryReportRequest,
+  GetStockAlertReportRequest,
   GetSupplierReportRequest,
   GetUserActivityReportRequest,
-  GetStockAlertReportRequest,
-  ExportReportRequest
 } from './report.interfaces'
 
 export const ReportController = {
@@ -25,7 +25,7 @@ export const ReportController = {
         storeId,
         startDate,
         endDate,
-        period
+        period,
       }
 
       const result = await ReportQueries.getDashboardStats(filters)
@@ -33,15 +33,15 @@ export const ReportController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message.includes('Failed to get dashboard stats')) {
         return reply.status(500).send({
-          error: 'Erro ao obter estatísticas do dashboard'
+          error: 'Erro ao obter estatísticas do dashboard',
         })
       }
 
       return reply.status(500).send({
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       })
     }
   },
@@ -52,24 +52,24 @@ export const ReportController = {
 
   async getInventoryReport(request: GetInventoryReportRequest, reply: FastifyReply) {
     try {
-      const { 
-        storeId, 
-        categoryId, 
-        supplierId, 
-        status, 
-        lowStock, 
-        sortBy, 
-        sortOrder, 
-        page = 1, 
-        limit = 20 
+      const {
+        storeId,
+        categoryId,
+        supplierId,
+        status,
+        lowStock,
+        sortBy,
+        sortOrder,
+        page = 1,
+        limit = 20,
       } = request.query
-      
+
       const filters = {
         storeId,
         categoryId,
         supplierId,
         status,
-        lowStock
+        lowStock,
       }
 
       const pagination = { page, limit }
@@ -80,15 +80,15 @@ export const ReportController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message.includes('Failed to get inventory report')) {
         return reply.status(500).send({
-          error: 'Erro ao obter relatório de inventário'
+          error: 'Erro ao obter relatório de inventário',
         })
       }
 
       return reply.status(500).send({
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       })
     }
   },
@@ -99,24 +99,24 @@ export const ReportController = {
 
   async getMovementReport(request: GetMovementReportRequest, reply: FastifyReply) {
     try {
-      const { 
-        storeId, 
-        productId, 
-        supplierId, 
-        type, 
-        startDate, 
-        endDate, 
-        page = 1, 
-        limit = 20 
+      const {
+        storeId,
+        productId,
+        supplierId,
+        type,
+        startDate,
+        endDate,
+        page = 1,
+        limit = 20,
       } = request.query
-      
+
       const filters = {
         storeId,
         productId,
         supplierId,
         type,
         startDate,
-        endDate
+        endDate,
       }
 
       const pagination = { page, limit }
@@ -126,15 +126,15 @@ export const ReportController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message.includes('Failed to get movement report')) {
         return reply.status(500).send({
-          error: 'Erro ao obter relatório de movimentações'
+          error: 'Erro ao obter relatório de movimentações',
         })
       }
 
       return reply.status(500).send({
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       })
     }
   },
@@ -146,12 +146,12 @@ export const ReportController = {
   async getFinancialReport(request: GetFinancialReportRequest, reply: FastifyReply) {
     try {
       const { storeId, startDate, endDate, groupBy } = request.query
-      
+
       const filters = {
         storeId,
         startDate,
         endDate,
-        groupBy
+        groupBy,
       }
 
       const result = await ReportQueries.getFinancialReport(filters)
@@ -159,15 +159,15 @@ export const ReportController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message.includes('Failed to get financial report')) {
         return reply.status(500).send({
-          error: 'Erro ao obter relatório financeiro'
+          error: 'Erro ao obter relatório financeiro',
         })
       }
 
       return reply.status(500).send({
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       })
     }
   },
@@ -179,12 +179,12 @@ export const ReportController = {
   async getCategoryReport(request: GetCategoryReportRequest, reply: FastifyReply) {
     try {
       const { storeId, startDate, endDate, includeSubcategories } = request.query
-      
+
       const filters = {
         storeId,
         startDate,
         endDate,
-        includeSubcategories
+        includeSubcategories,
       }
 
       const result = await ReportQueries.getCategoryReport(filters)
@@ -192,15 +192,15 @@ export const ReportController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message.includes('Failed to get category report')) {
         return reply.status(500).send({
-          error: 'Erro ao obter relatório de categorias'
+          error: 'Erro ao obter relatório de categorias',
         })
       }
 
       return reply.status(500).send({
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       })
     }
   },
@@ -212,12 +212,12 @@ export const ReportController = {
   async getSupplierReport(request: GetSupplierReportRequest, reply: FastifyReply) {
     try {
       const { storeId, startDate, endDate, status } = request.query
-      
+
       const filters = {
         storeId,
         startDate,
         endDate,
-        status
+        status,
       }
 
       const result = await ReportQueries.getSupplierReport(filters)
@@ -225,15 +225,15 @@ export const ReportController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message.includes('Failed to get supplier report')) {
         return reply.status(500).send({
-          error: 'Erro ao obter relatório de fornecedores'
+          error: 'Erro ao obter relatório de fornecedores',
         })
       }
 
       return reply.status(500).send({
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       })
     }
   },
@@ -244,22 +244,14 @@ export const ReportController = {
 
   async getUserActivityReport(request: GetUserActivityReportRequest, reply: FastifyReply) {
     try {
-      const { 
-        storeId, 
-        userId, 
-        startDate, 
-        endDate, 
-        action, 
-        page = 1, 
-        limit = 20 
-      } = request.query
-      
+      const { storeId, userId, startDate, endDate, action, page = 1, limit = 20 } = request.query
+
       const filters = {
         storeId,
         userId,
         startDate,
         endDate,
-        action
+        action,
       }
 
       const pagination = { page, limit }
@@ -269,15 +261,15 @@ export const ReportController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message.includes('Failed to get user activity report')) {
         return reply.status(500).send({
-          error: 'Erro ao obter relatório de atividade de usuários'
+          error: 'Erro ao obter relatório de atividade de usuários',
         })
       }
 
       return reply.status(500).send({
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       })
     }
   },
@@ -289,10 +281,10 @@ export const ReportController = {
   async getStockAlertReport(request: GetStockAlertReportRequest, reply: FastifyReply) {
     try {
       const { storeId, alertType, page = 1, limit = 20 } = request.query
-      
+
       const filters = {
         storeId,
-        alertType
+        alertType,
       }
 
       const pagination = { page, limit }
@@ -302,15 +294,15 @@ export const ReportController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message.includes('Failed to get stock alert report')) {
         return reply.status(500).send({
-          error: 'Erro ao obter relatório de alertas de estoque'
+          error: 'Erro ao obter relatório de alertas de estoque',
         })
       }
 
       return reply.status(500).send({
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       })
     }
   },
@@ -322,12 +314,12 @@ export const ReportController = {
   async exportReport(request: ExportReportRequest, reply: FastifyReply) {
     try {
       const { reportType, format, storeId, startDate, endDate, filters } = request.query
-      
+
       const reportFilters = {
         storeId,
         startDate,
         endDate,
-        ...(filters ? JSON.parse(filters) : {})
+        ...(filters ? JSON.parse(filters) : {}),
       }
 
       const result = await ReportCommands.exportReport(reportType, format, reportFilters)
@@ -335,21 +327,21 @@ export const ReportController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message.includes('Failed to export report')) {
         return reply.status(500).send({
-          error: 'Erro ao exportar relatório'
+          error: 'Erro ao exportar relatório',
         })
       }
 
       if (error.message.includes('Unsupported report type')) {
         return reply.status(400).send({
-          error: 'Tipo de relatório não suportado'
+          error: 'Tipo de relatório não suportado',
         })
       }
 
       return reply.status(500).send({
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       })
     }
   },
@@ -358,60 +350,71 @@ export const ReportController = {
   // SCHEDULE REPORTS
   // ================================
 
-  async scheduleReport(request: FastifyRequest<{
-    Body: {
-      reportType: string
-      schedule: {
-        frequency: 'daily' | 'weekly' | 'monthly'
-        time: string
-        dayOfWeek?: number
-        dayOfMonth?: number
+  async scheduleReport(
+    request: FastifyRequest<{
+      Body: {
+        reportType: string
+        schedule: {
+          frequency: 'daily' | 'weekly' | 'monthly'
+          time: string
+          dayOfWeek?: number
+          dayOfMonth?: number
+        }
+        filters: any
+        emailRecipients: string[]
       }
-      filters: any
-      emailRecipients: string[]
-    }
-  }>, reply: FastifyReply) {
+    }>,
+    reply: FastifyReply
+  ) {
     try {
       const { reportType, schedule, filters, emailRecipients } = request.body
-      
-      const result = await ReportCommands.scheduleReport(reportType, schedule, filters, emailRecipients)
+
+      const result = await ReportCommands.scheduleReport(
+        reportType,
+        schedule,
+        filters,
+        emailRecipients
+      )
 
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message.includes('Failed to schedule report')) {
         return reply.status(500).send({
-          error: 'Erro ao agendar relatório'
+          error: 'Erro ao agendar relatório',
         })
       }
 
       return reply.status(500).send({
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       })
     }
   },
 
-  async cancelScheduledReport(request: FastifyRequest<{
-    Params: { scheduleId: string }
-  }>, reply: FastifyReply) {
+  async cancelScheduledReport(
+    request: FastifyRequest<{
+      Params: { scheduleId: string }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
       const { scheduleId } = request.params
-      
+
       const result = await ReportCommands.cancelScheduledReport(scheduleId)
 
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message.includes('Failed to cancel scheduled report')) {
         return reply.status(500).send({
-          error: 'Erro ao cancelar relatório agendado'
+          error: 'Erro ao cancelar relatório agendado',
         })
       }
 
       return reply.status(500).send({
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       })
     }
   },
@@ -420,19 +423,22 @@ export const ReportController = {
   // EMAIL REPORTS
   // ================================
 
-  async sendReportViaEmail(request: FastifyRequest<{
-    Body: {
-      reportType: string
-      format: 'csv' | 'xlsx' | 'pdf'
-      data: any[]
-      emailRecipients: string[]
-      subject?: string
-      message?: string
-    }
-  }>, reply: FastifyReply) {
+  async sendReportViaEmail(
+    request: FastifyRequest<{
+      Body: {
+        reportType: string
+        format: 'csv' | 'xlsx' | 'pdf'
+        data: any[]
+        emailRecipients: string[]
+        subject?: string
+        message?: string
+      }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
       const { reportType, format, data, emailRecipients, subject, message } = request.body
-      
+
       const result = await ReportCommands.sendReportViaEmail(
         reportType,
         format,
@@ -445,15 +451,15 @@ export const ReportController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message.includes('Failed to send report via email')) {
         return reply.status(500).send({
-          error: 'Erro ao enviar relatório por email'
+          error: 'Erro ao enviar relatório por email',
         })
       }
 
       return reply.status(500).send({
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       })
     }
   },
@@ -469,9 +475,9 @@ export const ReportController = {
       return reply.send({ reportTypes: result })
     } catch (error: any) {
       request.log.error(error)
-      
+
       return reply.status(500).send({
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       })
     }
   },
@@ -483,9 +489,9 @@ export const ReportController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       return reply.status(500).send({
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       })
     }
   },
@@ -494,23 +500,26 @@ export const ReportController = {
   // VALIDATION ENDPOINT
   // ================================
 
-  async validateFilters(request: FastifyRequest<{
-    Body: {
-      filters: any
-    }
-  }>, reply: FastifyReply) {
+  async validateFilters(
+    request: FastifyRequest<{
+      Body: {
+        filters: any
+      }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
       const { filters } = request.body
-      
+
       const result = ReportCommands.validateReportFilters(filters)
 
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       return reply.status(500).send({
-        error: 'Erro interno do servidor'
+        error: 'Erro interno do servidor',
       })
     }
-  }
+  },
 }

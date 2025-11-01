@@ -1,4 +1,4 @@
-import { db } from '@/plugins/prisma';
+import { db } from '@/plugins/prisma'
 
 export const NotificationQueries = {
   async getById(id: string) {
@@ -9,18 +9,26 @@ export const NotificationQueries = {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
+            email: true,
+          },
+        },
+      },
+    })
   },
 
   async list(params: {
     page?: number
     limit?: number
     search?: string
-    type?: 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR' | 'STOCK_ALERT' | 'MOVEMENT' | 'PERMISSION' | 'SYSTEM'
+    type?:
+      | 'INFO'
+      | 'SUCCESS'
+      | 'WARNING'
+      | 'ERROR'
+      | 'STOCK_ALERT'
+      | 'MOVEMENT'
+      | 'PERMISSION'
+      | 'SYSTEM'
     priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
     isRead?: boolean
     userId?: string
@@ -29,35 +37,32 @@ export const NotificationQueries = {
     const skip = (page - 1) * limit
 
     const where: any = {}
-    
+
     if (userId) {
       where.userId = userId
     }
-    
+
     if (type) {
       where.type = type
     }
-    
+
     if (priority) {
       where.priority = priority
     }
-    
+
     if (isRead !== undefined) {
       where.isRead = isRead
     }
-    
+
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
-        { message: { contains: search, mode: 'insensitive' } }
+        { message: { contains: search, mode: 'insensitive' } },
       ]
     }
 
     // Filter out expired notifications
-    where.OR = [
-      { expiresAt: null },
-      { expiresAt: { gt: new Date() } }
-    ]
+    where.OR = [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
 
     const [items, total] = await Promise.all([
       db.notification.findMany({
@@ -70,12 +75,12 @@ export const NotificationQueries = {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
-        }
+              email: true,
+            },
+          },
+        },
       }),
-      db.notification.count({ where })
+      db.notification.count({ where }),
     ])
 
     return {
@@ -84,21 +89,32 @@ export const NotificationQueries = {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
+        totalPages: Math.ceil(total / limit),
+      },
     }
   },
 
-  async getByUser(userId: string, params?: {
-    page?: number
-    limit?: number
-    isRead?: boolean
-    type?: 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR' | 'STOCK_ALERT' | 'MOVEMENT' | 'PERMISSION' | 'SYSTEM'
-  }) {
+  async getByUser(
+    userId: string,
+    params?: {
+      page?: number
+      limit?: number
+      isRead?: boolean
+      type?:
+        | 'INFO'
+        | 'SUCCESS'
+        | 'WARNING'
+        | 'ERROR'
+        | 'STOCK_ALERT'
+        | 'MOVEMENT'
+        | 'PERMISSION'
+        | 'SYSTEM'
+    }
+  ) {
     return await NotificationQueries.list({
       userId,
-      ...params
-    });
+      ...params,
+    })
   },
 
   async getUnread(userId: string, limit?: number) {
@@ -106,36 +122,38 @@ export const NotificationQueries = {
       where: {
         userId,
         isRead: false,
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } }
-        ]
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
       take: limit || 10,
-      orderBy: [
-        { priority: 'desc' },
-        { createdAt: 'desc' }
-      ],
+      orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
       include: {
         user: {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
+            email: true,
+          },
+        },
+      },
+    })
   },
 
-  async getByType(type: 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR' | 'STOCK_ALERT' | 'MOVEMENT' | 'PERMISSION' | 'SYSTEM', limit?: number) {
+  async getByType(
+    type:
+      | 'INFO'
+      | 'SUCCESS'
+      | 'WARNING'
+      | 'ERROR'
+      | 'STOCK_ALERT'
+      | 'MOVEMENT'
+      | 'PERMISSION'
+      | 'SYSTEM',
+    limit?: number
+  ) {
     return await db.notification.findMany({
       where: {
         type,
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } }
-        ]
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
       take: limit || 10,
       orderBy: { createdAt: 'desc' },
@@ -144,21 +162,18 @@ export const NotificationQueries = {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
+            email: true,
+          },
+        },
+      },
+    })
   },
 
   async getByPriority(priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT', limit?: number) {
     return await db.notification.findMany({
       where: {
         priority,
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } }
-        ]
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
       take: limit || 10,
       orderBy: { createdAt: 'desc' },
@@ -167,30 +182,27 @@ export const NotificationQueries = {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
+            email: true,
+          },
+        },
+      },
+    })
   },
 
-  async search(term: string, limit: number = 10) {
+  async search(term: string, limit = 10) {
     return await db.notification.findMany({
       where: {
         AND: [
           {
             OR: [
               { title: { contains: term, mode: 'insensitive' } },
-              { message: { contains: term, mode: 'insensitive' } }
-            ]
+              { message: { contains: term, mode: 'insensitive' } },
+            ],
           },
           {
-            OR: [
-              { expiresAt: null },
-              { expiresAt: { gt: new Date() } }
-            ]
-          }
-        ]
+            OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+          },
+        ],
       },
       take: limit,
       orderBy: { createdAt: 'desc' },
@@ -199,56 +211,59 @@ export const NotificationQueries = {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
+            email: true,
+          },
+        },
+      },
+    })
   },
 
   async getStats(userId?: string) {
     const where = userId ? { userId } : {}
-    
+
     const [total, unread, byType, byPriority] = await Promise.all([
       db.notification.count({ where }),
-      db.notification.count({ 
-        where: { 
+      db.notification.count({
+        where: {
           ...where,
           isRead: false,
-          OR: [
-            { expiresAt: null },
-            { expiresAt: { gt: new Date() } }
-          ]
-        } 
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        },
       }),
       db.notification.groupBy({
         by: ['type'],
         where,
-        _count: true
+        _count: true,
       }),
       db.notification.groupBy({
         by: ['priority'],
         where,
-        _count: true
-      })
+        _count: true,
+      }),
     ])
 
     return {
       total,
       unread,
       read: total - unread,
-      byType: byType.reduce((acc, item) => {
-        acc[item.type] = item._count
-        return acc
-      }, {} as Record<string, number>),
-      byPriority: byPriority.reduce((acc, item) => {
-        acc[item.priority] = item._count
-        return acc
-      }, {} as Record<string, number>)
+      byType: byType.reduce(
+        (acc, item) => {
+          acc[item.type] = item._count
+          return acc
+        },
+        {} as Record<string, number>
+      ),
+      byPriority: byPriority.reduce(
+        (acc, item) => {
+          acc[item.priority] = item._count
+          return acc
+        },
+        {} as Record<string, number>
+      ),
     }
   },
 
-  async getRecent(userId: string, days: number = 7, limit: number = 20) {
+  async getRecent(userId: string, days = 7, limit = 20) {
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
 
@@ -256,12 +271,9 @@ export const NotificationQueries = {
       where: {
         userId,
         createdAt: {
-          gte: startDate
+          gte: startDate,
         },
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } }
-        ]
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
       take: limit,
       orderBy: { createdAt: 'desc' },
@@ -270,11 +282,11 @@ export const NotificationQueries = {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
+            email: true,
+          },
+        },
+      },
+    })
   },
 
   // === QUERIES ESPECÍFICAS PARA ALERTAS DE ESTOQUE ===
@@ -288,10 +300,7 @@ export const NotificationQueries = {
 
     const where: any = {
       type: 'STOCK_ALERT',
-      OR: [
-        { expiresAt: null },
-        { expiresAt: { gt: new Date() } }
-      ]
+      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
     }
 
     if (userId) {
@@ -305,54 +314,45 @@ export const NotificationQueries = {
     if (storeId) {
       where.data = {
         path: ['storeId'],
-        equals: storeId
+        equals: storeId,
       }
     }
 
     return await db.notification.findMany({
       where,
       take: limit,
-      orderBy: [
-        { priority: 'desc' },
-        { createdAt: 'desc' }
-      ],
+      orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
       include: {
         user: {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
+            email: true,
+          },
+        },
+      },
     })
   },
 
-  async getUnreadStockAlerts(userId: string, limit: number = 10) {
+  async getUnreadStockAlerts(userId: string, limit = 10) {
     return await db.notification.findMany({
       where: {
         userId,
         type: 'STOCK_ALERT',
         isRead: false,
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } }
-        ]
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
       take: limit,
-      orderBy: [
-        { priority: 'desc' },
-        { createdAt: 'desc' }
-      ],
+      orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
       include: {
         user: {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
+            email: true,
+          },
+        },
+      },
     })
-  }
-};
+  },
+}

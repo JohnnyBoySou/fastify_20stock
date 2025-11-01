@@ -1,7 +1,6 @@
-import { db } from '@/plugins/prisma';  
+import { db } from '@/plugins/prisma'
 
 export const MilestoneCommands = {
-
   async create(data: {
     roadmapId: string
     title: string
@@ -14,7 +13,7 @@ export const MilestoneCommands = {
   }) {
     // Verifica se o roadmap existe
     const roadmap = await db.roadmap.findUnique({
-      where: { id: data.roadmapId }
+      where: { id: data.roadmapId },
     })
 
     if (!roadmap) {
@@ -25,7 +24,7 @@ export const MilestoneCommands = {
     if (data.order === undefined) {
       const lastMilestone = await db.milestone.findFirst({
         where: { roadmapId: data.roadmapId },
-        orderBy: { order: 'desc' }
+        orderBy: { order: 'desc' },
       })
       data.order = lastMilestone ? lastMilestone.order + 1 : 0
     }
@@ -39,34 +38,38 @@ export const MilestoneCommands = {
         progress: data.progress || 0,
         order: data.order,
         startDate: data.startDate,
-        endDate: data.endDate
+        endDate: data.endDate,
       },
       include: {
         roadmap: {
           select: {
             id: true,
-            title: true
-          }
-        }
-      }
+            title: true,
+          },
+        },
+      },
     })
-  },    
+  },
 
-  async update(id: string, roadmapId: string, data: {
-    title?: string
-    description?: string
-    status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED'
-    progress?: number
-    order?: number
-    startDate?: Date
-    endDate?: Date
-  }) {
+  async update(
+    id: string,
+    roadmapId: string,
+    data: {
+      title?: string
+      description?: string
+      status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED'
+      progress?: number
+      order?: number
+      startDate?: Date
+      endDate?: Date
+    }
+  ) {
     // Verifica se a milestone existe e pertence ao roadmap
     const milestone = await db.milestone.findFirst({
       where: {
         id,
-        roadmapId
-      }
+        roadmapId,
+      },
     })
 
     if (!milestone) {
@@ -87,10 +90,10 @@ export const MilestoneCommands = {
         roadmap: {
           select: {
             id: true,
-            title: true
-          }
-        }
-      }
+            title: true,
+          },
+        },
+      },
     })
   },
 
@@ -99,8 +102,8 @@ export const MilestoneCommands = {
     const milestone = await db.milestone.findFirst({
       where: {
         id,
-        roadmapId
-      }
+        roadmapId,
+      },
     })
 
     if (!milestone) {
@@ -108,7 +111,7 @@ export const MilestoneCommands = {
     }
 
     return await db.milestone.delete({
-      where: { id }
+      where: { id },
     })
   },
 
@@ -121,8 +124,8 @@ export const MilestoneCommands = {
     const milestone = await db.milestone.findFirst({
       where: {
         id,
-        roadmapId
-      }
+        roadmapId,
+      },
     })
 
     if (!milestone) {
@@ -145,17 +148,21 @@ export const MilestoneCommands = {
 
     return await db.milestone.update({
       where: { id },
-      data: updateData
+      data: updateData,
     })
   },
 
-  async updateStatus(id: string, roadmapId: string, status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED') {
+  async updateStatus(
+    id: string,
+    roadmapId: string,
+    status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED'
+  ) {
     // Verifica se a milestone existe e pertence ao roadmap
     const milestone = await db.milestone.findFirst({
       where: {
         id,
-        roadmapId
-      }
+        roadmapId,
+      },
     })
 
     if (!milestone) {
@@ -177,7 +184,7 @@ export const MilestoneCommands = {
 
     return await db.milestone.update({
       where: { id },
-      data: updateData
+      data: updateData,
     })
   },
 
@@ -186,8 +193,8 @@ export const MilestoneCommands = {
     const milestones = await db.milestone.findMany({
       where: {
         id: { in: milestoneIds },
-        roadmapId
-      }
+        roadmapId,
+      },
     })
 
     if (milestones.length !== milestoneIds.length) {
@@ -198,11 +205,10 @@ export const MilestoneCommands = {
     const updates = milestoneIds.map((id, index) =>
       db.milestone.update({
         where: { id },
-        data: { order: index }
+        data: { order: index },
       })
     )
 
     return await db.$transaction(updates)
   },
 }
-

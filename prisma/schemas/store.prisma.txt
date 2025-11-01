@@ -1,0 +1,69 @@
+/// ===============================
+///  STORE STRUCTURE
+///  - Cada loja tem um único dono (ownerId).
+///  - Usuários pertencem diretamente à loja.
+///  - Suporte a soft delete e auditoria.
+///  - Base pronta para IA, billing e operações.
+/// ===============================
+
+model Store {
+  id      String @id @default(cuid())
+  ownerId String? @unique
+  owner   User?   @relation("StoreOwner", fields: [ownerId], references: [id])
+
+  // Identificação e dados básicos
+  name        String
+  cnpj        String  @unique
+  email       String?
+  phone       String?
+  description String? // opcional: pode ser mostrado no dashboard
+  logoUrl     String? // opcional: imagem da loja
+  website     String? // opcional
+
+  // Endereço
+  cep     String?
+  city    String?
+  state   String?
+  address String?
+
+  // Controle e status
+  status      Boolean   @default(true)
+  deletedAt   DateTime? // soft delete (loja desativada)
+  suspendedAt DateTime? // bloqueio temporário (ex: problema no pagamento)
+  plan        String? // nome do plano atual (sincronizado com tabela de billing)
+  timezone    String?   @default("America/Sao_Paulo")
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações com módulos do sistema
+  users         User[] // todos os usuários dessa loja
+  products      Product[]
+  categories    Category[]
+  suppliers     Supplier[]
+  movements     Movement[]
+  media         StoreMedia[]
+  uploadedMedia Media[]
+  roadmaps      Roadmap[]
+  crmStages     CrmStage[]
+  crmClients    CrmClient[]
+  flows         Flow[]
+  flowExecutions FlowExecution[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
+  quotes        Quote[]
+  chatSessions  ChatSession[]
+
+  // Configurações adicionais (JSON flexível)
+  settings Json? // ex: { "autoStockAlerts": true, "defaultCurrency": "BRL" }
+
+  // Índices estratégicos
+  @@index([status])
+  @@index([deletedAt])
+  @@index([ownerId])
+  @@index([city])
+  @@index([state])
+  @@schema("store")
+  @@map("stores")
+}

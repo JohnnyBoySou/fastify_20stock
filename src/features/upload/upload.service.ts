@@ -1,13 +1,13 @@
+import { randomUUID } from 'crypto'
 import { promises as fs } from 'fs'
 import path from 'path'
-import { randomUUID } from 'crypto'
 
 // === CONFIGURAÇÕES ===
 const UPLOAD_DIR = path.join(process.cwd(), 'src', 'uploads')
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_TYPES = [
   'image/jpeg',
-  'image/png', 
+  'image/png',
   'image/gif',
   'image/webp',
   'image/svg+xml',
@@ -16,7 +16,7 @@ const ALLOWED_TYPES = [
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.ms-excel',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'text/plain'
+  'text/plain',
 ]
 
 // === INTERFACES ===
@@ -74,7 +74,7 @@ export class UploadService {
       path.join(UPLOAD_DIR, 'supplier'),
       path.join(UPLOAD_DIR, 'user'),
       path.join(UPLOAD_DIR, 'store'),
-      path.join(UPLOAD_DIR, 'general')
+      path.join(UPLOAD_DIR, 'general'),
     ]
 
     for (const dir of directories) {
@@ -122,10 +122,7 @@ export class UploadService {
   }
 
   // === UPLOAD ÚNICO ===
-  async uploadSingle(
-    file: UploadedFile, 
-    config: UploadConfig = {}
-  ): Promise<UploadResult> {
+  async uploadSingle(file: UploadedFile, config: UploadConfig = {}): Promise<UploadResult> {
     try {
       // Validar arquivo
       this.validateFile(file, config)
@@ -151,14 +148,14 @@ export class UploadService {
         // Usar estrutura organizada por usuário: uploads/users/userId/entityType/
         const userDir = await this.ensureUserDirectory(config.userId)
         destinationDir = path.join(userDir, entityType)
-        
+
         // Criar subdiretório se não existir
         try {
           await fs.access(destinationDir)
         } catch {
           await fs.mkdir(destinationDir, { recursive: true })
         }
-        
+
         publicUrl = `/uploads/users/${config.userId}/${entityType}`
       } else {
         // Estrutura tradicional: uploads/entityType/
@@ -183,7 +180,7 @@ export class UploadService {
         name: file.originalname,
         type: file.mimetype,
         size: file.size,
-        path: destination
+        path: destination,
       }
 
       return result
@@ -193,10 +190,7 @@ export class UploadService {
   }
 
   // === UPLOAD MÚLTIPLOS ===
-  async uploadMultiple(
-    files: UploadedFile[], 
-    config: UploadConfig = {}
-  ): Promise<UploadResult[]> {
+  async uploadMultiple(files: UploadedFile[], config: UploadConfig = {}): Promise<UploadResult[]> {
     const maxFiles = config.maxFiles || 10
 
     if (files.length > maxFiles) {
@@ -264,7 +258,7 @@ export class UploadService {
       return {
         exists: true,
         size: stats.size,
-        stats
+        stats,
       }
     } catch (error) {
       return { exists: false }
@@ -276,10 +270,10 @@ export class UploadService {
     try {
       const entityDir = path.join(this.uploadDir, entityType)
       const files = await fs.readdir(entityDir)
-      return files.filter(file => {
+      return files.filter((file) => {
         const filePath = path.join(entityDir, file)
         const stats = fs.stat(filePath)
-        return stats.then(s => s.isFile()).catch(() => false)
+        return stats.then((s) => s.isFile()).catch(() => false)
       })
     } catch (error) {
       return []
@@ -287,18 +281,20 @@ export class UploadService {
   }
 
   // === LIMPEZA DE ARQUIVOS ÓRFÃOS ===
-  async cleanupOrphanedFiles(usedFilePaths: string[]): Promise<{ deleted: number; failed: number }> {
+  async cleanupOrphanedFiles(
+    usedFilePaths: string[]
+  ): Promise<{ deleted: number; failed: number }> {
     const allFiles: string[] = []
 
     // Coletar todos os arquivos
     const directories = ['product', 'supplier', 'user', 'store', 'general']
     for (const dir of directories) {
       const files = await this.listEntityFiles(dir)
-      allFiles.push(...files.map(file => path.join(this.uploadDir, dir, file)))
+      allFiles.push(...files.map((file) => path.join(this.uploadDir, dir, file)))
     }
 
     // Encontrar arquivos órfãos
-    const orphanedFiles = allFiles.filter(file => !usedFilePaths.includes(file))
+    const orphanedFiles = allFiles.filter((file) => !usedFilePaths.includes(file))
 
     // Deletar arquivos órfãos
     return await this.deleteMultipleFiles(orphanedFiles)
@@ -315,7 +311,7 @@ export class UploadService {
       totalFiles: 0,
       totalSize: 0,
       byEntityType: {} as Record<string, { count: number; size: number }>,
-      byFileType: {} as Record<string, number>
+      byFileType: {} as Record<string, number>,
     }
 
     const directories = ['product', 'supplier', 'user', 'store', 'general']
@@ -327,7 +323,7 @@ export class UploadService {
       for (const file of files) {
         const filePath = path.join(this.uploadDir, dir, file)
         const fileInfo = await this.getFileInfo(filePath)
-        
+
         if (fileInfo.exists && fileInfo.size) {
           dirSize += fileInfo.size
           stats.totalSize += fileInfo.size
@@ -341,7 +337,7 @@ export class UploadService {
 
       stats.byEntityType[dir] = {
         count: files.length,
-        size: dirSize
+        size: dirSize,
       }
     }
 
@@ -349,7 +345,7 @@ export class UploadService {
   }
 
   // === UTILITÁRIOS ===
-  
+
   // Verificar se é imagem
   isImage(mimetype: string): boolean {
     return mimetype.startsWith('image/')
@@ -368,7 +364,7 @@ export class UploadService {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/vnd.ms-excel',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'text/plain'
+      'text/plain',
     ]
     return documentTypes.includes(mimetype)
   }
@@ -377,7 +373,7 @@ export class UploadService {
   formatFileSize(bytes: number): string {
     const sizes = ['B', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(1024))
-    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i]
+    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i]
   }
 
   // Obter ícone baseado no tipo

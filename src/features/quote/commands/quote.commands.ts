@@ -1,10 +1,9 @@
-import { db } from '@/plugins/prisma';
-import { MovementCommands } from '../../movement/commands/movement.commands';
-import { QuoteStatus, PaymentType } from '../quote.interfaces';
-import { Decimal } from '@prisma/client/runtime/library';
+import { db } from '@/plugins/prisma'
+import { Decimal } from '@prisma/client/runtime/library'
+import { MovementCommands } from '../../movement/commands/movement.commands'
+import type { PaymentType, QuoteStatus } from '../quote.interfaces'
 
 export const QuoteCommands = {
-
   async create(data: {
     userId: string
     title: string
@@ -30,34 +29,34 @@ export const QuoteCommands = {
       interest?: number
     }>
   }) {
-    const { items, installments, ...quoteData } = data;
+    const { items, installments, ...quoteData } = data
 
     // Verificar se os produtos existem
-    const productIds = items.map(item => item.productId);
+    const productIds = items.map((item) => item.productId)
     const existingProducts = await db.product.findMany({
       where: { id: { in: productIds } },
-      select: { id: true, name: true }
-    });
+      select: { id: true, name: true },
+    })
 
     if (existingProducts.length !== productIds.length) {
-      const foundIds = existingProducts.map(p => p.id);
-      const notFoundIds = productIds.filter(id => !foundIds.includes(id));
-      throw new Error(`Products not found: ${notFoundIds.join(', ')}`);
+      const foundIds = existingProducts.map((p) => p.id)
+      const notFoundIds = productIds.filter((id) => !foundIds.includes(id))
+      throw new Error(`Products not found: ${notFoundIds.join(', ')}`)
     }
 
     // Calcular subtotal dos items
-    let subtotal = new Decimal(0);
-    const itemsWithSubtotal = items.map(item => {
-      const itemSubtotal = new Decimal(item.quantity * item.unitPrice).minus(item.discount || 0);
-      subtotal = subtotal.plus(itemSubtotal);
+    let subtotal = new Decimal(0)
+    const itemsWithSubtotal = items.map((item) => {
+      const itemSubtotal = new Decimal(item.quantity * item.unitPrice).minus(item.discount || 0)
+      subtotal = subtotal.plus(itemSubtotal)
       return {
         ...item,
-        subtotal: itemSubtotal.toNumber()
-      };
-    });
+        subtotal: itemSubtotal.toNumber(),
+      }
+    })
 
     // Calcular total final
-    const total = subtotal.minus(quoteData.discount || 0).plus(quoteData.interest || 0);
+    const total = subtotal.minus(quoteData.discount || 0).plus(quoteData.interest || 0)
 
     // Criar quote com items e installments
     const quote = await db.quote.create({
@@ -67,25 +66,26 @@ export const QuoteCommands = {
         total: new Decimal(total),
         expiresAt: quoteData.expiresAt ? new Date(quoteData.expiresAt) : null,
         items: {
-          create: itemsWithSubtotal.map(item => ({
+          create: itemsWithSubtotal.map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
             subtotal: new Decimal(item.subtotal),
             discount: item.discount,
-            note: item.note
-          }))
+            note: item.note,
+          })),
         },
-        ...(installments && installments.length > 0 && {
-          installments: {
-            create: installments.map(installment => ({
-              number: installment.number,
-              dueDate: new Date(installment.dueDate),
-              amount: new Decimal(installment.amount),
-              interest: installment.interest ? new Decimal(installment.interest) : null
-            }))
-          }
-        })
+        ...(installments &&
+          installments.length > 0 && {
+            installments: {
+              create: installments.map((installment) => ({
+                number: installment.number,
+                dueDate: new Date(installment.dueDate),
+                amount: new Decimal(installment.amount),
+                interest: installment.interest ? new Decimal(installment.interest) : null,
+              })),
+            },
+          }),
       },
       include: {
         items: {
@@ -96,100 +96,103 @@ export const QuoteCommands = {
                 name: true,
                 description: true,
                 unitOfMeasure: true,
-                referencePrice: true
-              }
-            }
-          }
+                referencePrice: true,
+              },
+            },
+          },
         },
         installments: true,
         user: {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
+            email: true,
+          },
+        },
+      },
+    })
 
-    return quote;
+    return quote
   },
 
-  async update(id: string, data: {
-    title?: string
-    description?: string
-    paymentType?: PaymentType
-    paymentTerms?: string
-    paymentDueDays?: number
-    expiresAt?: string
-    observations?: string
-    discount?: number
-    interest?: number
-    items?: Array<{
-      id?: string
-      productId: string
-      quantity: number
-      unitPrice: number
+  async update(
+    id: string,
+    data: {
+      title?: string
+      description?: string
+      paymentType?: PaymentType
+      paymentTerms?: string
+      paymentDueDays?: number
+      expiresAt?: string
+      observations?: string
       discount?: number
-      note?: string
-    }>
-    installments?: Array<{
-      id?: string
-      number: number
-      dueDate: string
-      amount: number
       interest?: number
-    }>
-  }) {
+      items?: Array<{
+        id?: string
+        productId: string
+        quantity: number
+        unitPrice: number
+        discount?: number
+        note?: string
+      }>
+      installments?: Array<{
+        id?: string
+        number: number
+        dueDate: string
+        amount: number
+        interest?: number
+      }>
+    }
+  ) {
     // Verificar se o quote existe e está em DRAFT
     const existingQuote = await db.quote.findUnique({
       where: { id },
-      include: { items: true, installments: true }
-    });
+      include: { items: true, installments: true },
+    })
 
     if (!existingQuote) {
-      throw new Error('Quote not found');
+      throw new Error('Quote not found')
     }
 
     if (existingQuote.status !== 'DRAFT') {
-      throw new Error('Only DRAFT quotes can be updated');
+      throw new Error('Only DRAFT quotes can be updated')
     }
 
-    const { items, installments, ...updateData } = data;
+    const { items, installments, ...updateData } = data
 
     // Se items foram fornecidos, recalcular totais
-    let subtotal = existingQuote.subtotal;
-    let total = existingQuote.total;
+    let subtotal = existingQuote.subtotal
+    let total = existingQuote.total
 
     if (items) {
       // Verificar se os produtos existem
-      const productIds = items.map(item => item.productId);
+      const productIds = items.map((item) => item.productId)
       const existingProducts = await db.product.findMany({
         where: { id: { in: productIds } },
-        select: { id: true }
-      });
+        select: { id: true },
+      })
 
       if (existingProducts.length !== productIds.length) {
-        const foundIds = existingProducts.map(p => p.id);
-        const notFoundIds = productIds.filter(id => !foundIds.includes(id));
-        throw new Error(`Products not found: ${notFoundIds.join(', ')}`);
+        const foundIds = existingProducts.map((p) => p.id)
+        const notFoundIds = productIds.filter((id) => !foundIds.includes(id))
+        throw new Error(`Products not found: ${notFoundIds.join(', ')}`)
       }
 
       // Calcular novo subtotal
-      subtotal = new Decimal(0);
-      const itemsWithSubtotal = items.map(item => {
-        const itemSubtotal = new Decimal(item.quantity * item.unitPrice).minus(item.discount || 0);
-        subtotal = subtotal.plus(itemSubtotal);
+      subtotal = new Decimal(0)
+      const itemsWithSubtotal = items.map((item) => {
+        const itemSubtotal = new Decimal(item.quantity * item.unitPrice).minus(item.discount || 0)
+        subtotal = subtotal.plus(itemSubtotal)
         return {
           ...item,
-          subtotal: itemSubtotal.toNumber()
-        };
-      });
+          subtotal: itemSubtotal.toNumber(),
+        }
+      })
 
       // Calcular novo total
-      const discount = updateData.discount || existingQuote.discount || 0;
-      const interest = updateData.interest || existingQuote.interest || 0;
-      total = subtotal.minus(discount).plus(interest);
+      const discount = updateData.discount || existingQuote.discount || 0
+      const interest = updateData.interest || existingQuote.interest || 0
+      total = subtotal.minus(discount).plus(interest)
     }
 
     // Atualizar quote
@@ -203,27 +206,27 @@ export const QuoteCommands = {
         ...(items && {
           items: {
             deleteMany: {},
-            create: items.map(item => ({
+            create: items.map((item) => ({
               productId: item.productId,
               quantity: item.quantity,
               unitPrice: item.unitPrice,
-              subtotal: new Decimal((item.quantity * item.unitPrice) - (item.discount || 0)),
+              subtotal: new Decimal(item.quantity * item.unitPrice - (item.discount || 0)),
               discount: item.discount,
-              note: item.note
-            }))
-          }
+              note: item.note,
+            })),
+          },
         }),
         ...(installments && {
           installments: {
             deleteMany: {},
-            create: installments.map(installment => ({
+            create: installments.map((installment) => ({
               number: installment.number,
               dueDate: new Date(installment.dueDate),
               amount: new Decimal(installment.amount),
-              interest: installment.interest ? new Decimal(installment.interest) : null
-            }))
-          }
-        })
+              interest: installment.interest ? new Decimal(installment.interest) : null,
+            })),
+          },
+        }),
       },
       include: {
         items: {
@@ -234,52 +237,52 @@ export const QuoteCommands = {
                 name: true,
                 description: true,
                 unitOfMeasure: true,
-                referencePrice: true
-              }
-            }
-          }
+                referencePrice: true,
+              },
+            },
+          },
         },
         installments: true,
         user: {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
+            email: true,
+          },
+        },
+      },
+    })
 
-    return quote;
+    return quote
   },
 
   async delete(id: string) {
     // Verificar se o quote existe
     const quote = await db.quote.findUnique({
-      where: { id }
-    });
+      where: { id },
+    })
 
     if (!quote) {
-      throw new Error('Quote not found');
+      throw new Error('Quote not found')
     }
 
     // Apenas quotes DRAFT ou CANCELED podem ser deletados
     if (quote.status !== 'DRAFT' && quote.status !== 'CANCELED') {
-      throw new Error('Only DRAFT or CANCELED quotes can be deleted');
+      throw new Error('Only DRAFT or CANCELED quotes can be deleted')
     }
 
     return await db.quote.delete({
-      where: { id }
-    });
+      where: { id },
+    })
   },
 
   async updateStatus(id: string, status: QuoteStatus) {
     const quote = await db.quote.findUnique({
-      where: { id }
-    });
+      where: { id },
+    })
 
     if (!quote) {
-      throw new Error('Quote not found');
+      throw new Error('Quote not found')
     }
 
     return await db.quote.update({
@@ -294,21 +297,21 @@ export const QuoteCommands = {
                 name: true,
                 description: true,
                 unitOfMeasure: true,
-                referencePrice: true
-              }
-            }
-          }
+                referencePrice: true,
+              },
+            },
+          },
         },
         installments: true,
         user: {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
+            email: true,
+          },
+        },
+      },
+    })
   },
 
   async approve(publicId: string, authCode: string) {
@@ -317,7 +320,7 @@ export const QuoteCommands = {
       where: {
         publicId,
         authCode,
-        status: { in: ['PUBLISHED', 'SENT', 'VIEWED'] }
+        status: { in: ['PUBLISHED', 'SENT', 'VIEWED'] },
       },
       include: {
         items: {
@@ -326,46 +329,46 @@ export const QuoteCommands = {
               select: {
                 id: true,
                 name: true,
-                storeId: true
-              }
-            }
-          }
+                storeId: true,
+              },
+            },
+          },
         },
         user: {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
+            email: true,
+          },
+        },
+      },
+    })
 
     if (!quote) {
-      throw new Error('Quote not found or not available for approval');
+      throw new Error('Quote not found or not available for approval')
     }
 
     // Verificar se não expirou
     if (quote.expiresAt && new Date() > quote.expiresAt) {
-      throw new Error('Quote has expired');
+      throw new Error('Quote has expired')
     }
 
     // Converter para movimentações
-    const movements = await this.convertToMovements(quote.id);
+    const movements = await this.convertToMovements(quote.id)
 
     // Atualizar status para APPROVED
     await db.quote.update({
       where: { id: quote.id },
-      data: { status: 'APPROVED' }
-    });
+      data: { status: 'APPROVED' },
+    })
 
     return {
       quote: {
         ...quote,
-        status: 'APPROVED' as QuoteStatus
+        status: 'APPROVED' as QuoteStatus,
       },
-      movements
-    };
+      movements,
+    }
   },
 
   async reject(publicId: string, authCode: string, reason?: string) {
@@ -374,20 +377,22 @@ export const QuoteCommands = {
       where: {
         publicId,
         authCode,
-        status: { in: ['PUBLISHED', 'SENT', 'VIEWED'] }
-      }
-    });
+        status: { in: ['PUBLISHED', 'SENT', 'VIEWED'] },
+      },
+    })
 
     if (!quote) {
-      throw new Error('Quote not found or not available for rejection');
+      throw new Error('Quote not found or not available for rejection')
     }
 
     // Atualizar status para REJECTED
     const updatedQuote = await db.quote.update({
       where: { id: quote.id },
-      data: { 
+      data: {
         status: 'REJECTED',
-        observations: reason ? `${quote.observations || ''}\nRejection reason: ${reason}`.trim() : quote.observations
+        observations: reason
+          ? `${quote.observations || ''}\nRejection reason: ${reason}`.trim()
+          : quote.observations,
       },
       include: {
         items: {
@@ -398,23 +403,23 @@ export const QuoteCommands = {
                 name: true,
                 description: true,
                 unitOfMeasure: true,
-                referencePrice: true
-              }
-            }
-          }
+                referencePrice: true,
+              },
+            },
+          },
         },
         installments: true,
         user: {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
+            email: true,
+          },
+        },
+      },
+    })
 
-    return updatedQuote;
+    return updatedQuote
   },
 
   async convertToMovements(quoteId: string) {
@@ -427,32 +432,32 @@ export const QuoteCommands = {
               select: {
                 id: true,
                 name: true,
-                storeId: true
-              }
-            }
-          }
+                storeId: true,
+              },
+            },
+          },
         },
         user: {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
+            email: true,
+          },
+        },
+      },
+    })
 
     if (!quote) {
-      throw new Error('Quote not found');
+      throw new Error('Quote not found')
     }
 
     // Verificar se pode ser convertido
     if (!['PUBLISHED', 'SENT', 'VIEWED', 'APPROVED'].includes(quote.status)) {
-      throw new Error('Quote cannot be converted to movements');
+      throw new Error('Quote cannot be converted to movements')
     }
 
     // Criar movimentações para cada item
-    const movements = [];
+    const movements = []
 
     for (const item of quote.items) {
       try {
@@ -462,36 +467,36 @@ export const QuoteCommands = {
           storeId: item.product.storeId,
           productId: item.productId,
           note: `Quote conversion - ${quote.title} (Item: ${item.product.name})`,
-          userId: quote.userId
-        });
+          userId: quote.userId,
+        })
 
-        movements.push(movement);
+        movements.push(movement)
       } catch (error) {
-        console.error(`Error creating movement for item ${item.id}:`, error);
-        throw new Error(`Failed to create movement for product ${item.product.name}`);
+        console.error(`Error creating movement for item ${item.id}:`, error)
+        throw new Error(`Failed to create movement for product ${item.product.name}`)
       }
     }
 
     // Atualizar status do quote para CONVERTED
     await db.quote.update({
       where: { id: quoteId },
-      data: { status: 'CONVERTED' }
-    });
+      data: { status: 'CONVERTED' },
+    })
 
-    return movements;
+    return movements
   },
 
   async publish(id: string) {
     const quote = await db.quote.findUnique({
-      where: { id }
-    });
+      where: { id },
+    })
 
     if (!quote) {
-      throw new Error('Quote not found');
+      throw new Error('Quote not found')
     }
 
     if (quote.status !== 'DRAFT') {
-      throw new Error('Only DRAFT quotes can be published');
+      throw new Error('Only DRAFT quotes can be published')
     }
 
     return await db.quote.update({
@@ -506,34 +511,34 @@ export const QuoteCommands = {
                 name: true,
                 description: true,
                 unitOfMeasure: true,
-                referencePrice: true
-              }
-            }
-          }
+                referencePrice: true,
+              },
+            },
+          },
         },
         installments: true,
         user: {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
+            email: true,
+          },
+        },
+      },
+    })
   },
 
   async send(id: string) {
     const quote = await db.quote.findUnique({
-      where: { id }
-    });
+      where: { id },
+    })
 
     if (!quote) {
-      throw new Error('Quote not found');
+      throw new Error('Quote not found')
     }
 
     if (quote.status !== 'PUBLISHED') {
-      throw new Error('Only PUBLISHED quotes can be sent');
+      throw new Error('Only PUBLISHED quotes can be sent')
     }
 
     return await db.quote.update({
@@ -548,20 +553,20 @@ export const QuoteCommands = {
                 name: true,
                 description: true,
                 unitOfMeasure: true,
-                referencePrice: true
-              }
-            }
-          }
+                referencePrice: true,
+              },
+            },
+          },
         },
         installments: true,
         user: {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
-  }
+            email: true,
+          },
+        },
+      },
+    })
+  },
 }

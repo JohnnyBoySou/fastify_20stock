@@ -1,4 +1,4 @@
-import { FastifyRequest } from 'fastify'
+import type { FastifyRequest } from 'fastify'
 
 // ================================
 // INTERFACES DE REQUEST
@@ -90,7 +90,14 @@ export interface GetStockAlertReportRequest extends FastifyRequest {
 
 export interface ExportReportRequest extends FastifyRequest {
   query: {
-    reportType: 'inventory' | 'movement' | 'financial' | 'category' | 'supplier' | 'user-activity' | 'stock-alert'
+    reportType:
+      | 'inventory'
+      | 'movement'
+      | 'financial'
+      | 'category'
+      | 'supplier'
+      | 'user-activity'
+      | 'stock-alert'
     format: 'csv' | 'xlsx' | 'pdf'
     storeId?: string
     startDate?: string

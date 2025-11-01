@@ -1,13 +1,10 @@
-import {
-  ListUploadsFilters
-} from '../upload.interfaces'
 import { db } from '@/plugins/prisma'
+import type { ListUploadsFilters } from '../upload.interfaces'
 
 export const UploadQueries = {
- 
   async getById(id: string) {
     const upload = await db.media.findUnique({
-      where: { id }
+      where: { id },
     })
 
     if (!upload) {
@@ -27,7 +24,7 @@ export const UploadQueries = {
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
-        { type: { contains: search, mode: 'insensitive' } }
+        { type: { contains: search, mode: 'insensitive' } },
       ]
     }
 
@@ -36,27 +33,27 @@ export const UploadQueries = {
     }
 
     // Se filtrar por entidade, precisamos fazer join
-    let include: any = {}
+    const include: any = {}
     if (entityType && entityId) {
       switch (entityType) {
         case 'product':
           include.productMedia = {
-            where: { productId: entityId }
+            where: { productId: entityId },
           }
           break
         case 'supplier':
           include.supplierMedia = {
-            where: { supplierId: entityId }
+            where: { supplierId: entityId },
           }
           break
         case 'user':
           include.userMedia = {
-            where: { userId: entityId }
+            where: { userId: entityId },
           }
           break
         case 'store':
           include.storeMedia = {
-            where: { storeId: entityId }
+            where: { storeId: entityId },
           }
           break
       }
@@ -69,28 +66,29 @@ export const UploadQueries = {
         include,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
       }),
-      db.media.count({ where })
+      db.media.count({ where }),
     ])
 
     // Filtrar uploads que têm relação com a entidade especificada
-    const filteredUploads = entityType && entityId
-      ? uploads.filter(upload => {
-          switch (entityType) {
-            case 'product':
-              return upload.productMedia && upload.productMedia.length > 0
-            case 'supplier':
-              return upload.supplierMedia && upload.supplierMedia.length > 0
-            case 'user':
-              return upload.userMedia && upload.userMedia.length > 0
-            case 'store':
-              return upload.storeMedia && upload.storeMedia.length > 0
-            default:
-              return true
-          }
-        })
-      : uploads
+    const filteredUploads =
+      entityType && entityId
+        ? uploads.filter((upload) => {
+            switch (entityType) {
+              case 'product':
+                return upload.productMedia && upload.productMedia.length > 0
+              case 'supplier':
+                return upload.supplierMedia && upload.supplierMedia.length > 0
+              case 'user':
+                return upload.userMedia && upload.userMedia.length > 0
+              case 'store':
+                return upload.storeMedia && upload.storeMedia.length > 0
+              default:
+                return true
+            }
+          })
+        : uploads
 
     return {
       uploads: filteredUploads,
@@ -98,27 +96,27 @@ export const UploadQueries = {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
+        totalPages: Math.ceil(total / limit),
+      },
     }
   },
 
-  async getByType(type: string, limit: number = 10) {
+  async getByType(type: string, limit = 10) {
     const uploads = await db.media.findMany({
       where: {
-        type: { contains: type, mode: 'insensitive' }
+        type: { contains: type, mode: 'insensitive' },
       },
       take: limit,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     })
 
     return uploads
   },
 
-  async getRecent(limit: number = 20) {
+  async getRecent(limit = 20) {
     const uploads = await db.media.findMany({
       take: limit,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     })
 
     return uploads
@@ -132,11 +130,9 @@ export const UploadQueries = {
         media = await db.productMedia.findMany({
           where: { productId: entityId },
           include: {
-            media: true
+            media: true,
           },
-          orderBy: [
-            { isPrimary: 'desc' }
-          ]
+          orderBy: [{ isPrimary: 'desc' }],
         })
         break
 
@@ -144,9 +140,9 @@ export const UploadQueries = {
         media = await db.supplierMedia.findMany({
           where: { supplierId: entityId },
           include: {
-            media: true
+            media: true,
           },
-          orderBy: { id: 'desc' }
+          orderBy: { id: 'desc' },
         })
         break
 
@@ -154,9 +150,9 @@ export const UploadQueries = {
         media = await db.userMedia.findMany({
           where: { userId: entityId },
           include: {
-            media: true
+            media: true,
           },
-          orderBy: { id: 'desc' }
+          orderBy: { id: 'desc' },
         })
         break
 
@@ -164,9 +160,9 @@ export const UploadQueries = {
         media = await db.storeMedia.findMany({
           where: { storeId: entityId },
           include: {
-            media: true
+            media: true,
           },
-          orderBy: { id: 'desc' }
+          orderBy: { id: 'desc' },
         })
         break
 
@@ -174,14 +170,14 @@ export const UploadQueries = {
         throw new Error('Invalid entity type')
     }
 
-    return media.map(item => ({
+    return media.map((item) => ({
       id: item.id,
       mediaId: item.mediaId,
       entityType,
       entityId,
       isPrimary: 'isPrimary' in item ? item.isPrimary : null,
       createdAt: item.createdAt,
-      media: item.media
+      media: item.media,
     }))
   },
 
@@ -193,11 +189,11 @@ export const UploadQueries = {
         const productMedia = await db.productMedia.findFirst({
           where: {
             productId: entityId,
-            isPrimary: true
+            isPrimary: true,
           },
           include: {
-            media: true
-          }
+            media: true,
+          },
         })
         media = productMedia
         break
@@ -217,16 +213,16 @@ export const UploadQueries = {
     return media
   },
 
-  async search(query: string, limit: number = 10) {
+  async search(query: string, limit = 10) {
     const uploads = await db.media.findMany({
       where: {
         OR: [
           { name: { contains: query, mode: 'insensitive' } },
-          { type: { contains: query, mode: 'insensitive' } }
-        ]
+          { type: { contains: query, mode: 'insensitive' } },
+        ],
       },
       take: limit,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     })
 
     return uploads
@@ -234,32 +230,32 @@ export const UploadQueries = {
 
   async getStats() {
     const [total, byType, recentCount] = await Promise.all([
-        db.media.count(),
+      db.media.count(),
       db.media.groupBy({
         by: ['type'],
         _count: { type: true },
-        orderBy: { _count: { type: 'desc' } }
+        orderBy: { _count: { type: 'desc' } },
       }),
       db.media.count({
         where: {
           createdAt: {
-            gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Últimas 24h
-          }
-        }
-      })
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Últimas 24h
+          },
+        },
+      }),
     ])
 
     return {
       total,
-      byType: byType.map(item => ({
+      byType: byType.map((item) => ({
         type: item.type || 'unknown',
-        count: item._count.type
+        count: item._count.type,
       })),
-      recentCount
+      recentCount,
     }
   },
 
-  async getUnusedMedia(daysOld: number = 30) {
+  async getUnusedMedia(daysOld = 30) {
     const cutoffDate = new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000)
 
     // Buscar mídias antigas que não estão sendo usadas
@@ -270,10 +266,10 @@ export const UploadQueries = {
           { productMedia: { none: {} } },
           { supplierMedia: { none: {} } },
           { userMedia: { none: {} } },
-          { storeMedia: { none: {} } }
-        ]
+          { storeMedia: { none: {} } },
+        ],
       },
-      orderBy: { createdAt: 'asc' }
+      orderBy: { createdAt: 'asc' },
     })
 
     return unusedMedia
@@ -285,34 +281,34 @@ export const UploadQueries = {
         where: { mediaId },
         include: {
           product: {
-            select: { id: true, name: true }
-          }
-        }
+            select: { id: true, name: true },
+          },
+        },
       }),
       db.supplierMedia.findMany({
         where: { mediaId },
         include: {
           supplier: {
-            select: { id: true, corporateName: true }
-          }
-        }
+            select: { id: true, corporateName: true },
+          },
+        },
       }),
       db.userMedia.findMany({
         where: { mediaId },
         include: {
           user: {
-            select: { id: true, name: true, email: true }
-          }
-        }
+            select: { id: true, name: true, email: true },
+          },
+        },
       }),
       db.storeMedia.findMany({
         where: { mediaId },
         include: {
           store: {
-            select: { id: true, name: true }
-          }
-        }
-      })
+            select: { id: true, name: true },
+          },
+        },
+      }),
     ])
 
     return {
@@ -320,15 +316,15 @@ export const UploadQueries = {
       suppliers: supplierUsage,
       users: userUsage,
       stores: storeUsage,
-      totalUsage: productUsage.length + supplierUsage.length + userUsage.length + storeUsage.length
+      totalUsage: productUsage.length + supplierUsage.length + userUsage.length + storeUsage.length,
     }
   },
 
   async getAllUsedFilePaths(): Promise<string[]> {
     const media = await db.media.findMany({
-      select: { url: true }
+      select: { url: true },
     })
 
-    return media.map(m => m.url)
-  }
+    return media.map((m) => m.url)
+  },
 }

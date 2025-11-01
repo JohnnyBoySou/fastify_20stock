@@ -14,6 +14,7 @@
         "src/types": true,
         "src/uploads": true,
         "docker-compose.yml": true,
-        "src/utils": true
+        "src/utils": true,
+        "src/generated": true
     }
 }

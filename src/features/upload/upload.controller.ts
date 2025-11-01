@@ -1,17 +1,17 @@
-import { FastifyRequest, FastifyReply } from 'fastify'
 import path from 'path'
+import type { FastifyReply, FastifyRequest } from 'fastify'
 import { UploadCommands } from './commands/upload.commands'
 import { UploadQueries } from './queries/upload.queries'
-import { uploadService } from './upload.service'
-import {
-  CreateUploadRequest,
-  GetUploadRequest,
-  UpdateUploadRequest,
-  DeleteUploadRequest,
-  ListUploadsRequest,
+import type {
   AttachMediaRequest,
-  DetachMediaRequest
+  CreateUploadRequest,
+  DeleteUploadRequest,
+  DetachMediaRequest,
+  GetUploadRequest,
+  ListUploadsRequest,
+  UpdateUploadRequest,
 } from './upload.interfaces'
+import { uploadService } from './upload.service'
 
 export const UploadController = {
   // === CRUD BÁSICO ===
@@ -24,21 +24,21 @@ export const UploadController = {
         url: '', // Será preenchida pelo service
         name,
         type,
-        size
+        size,
       })
 
       return reply.status(201).send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Validation error') {
         return reply.status(400).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -52,15 +52,15 @@ export const UploadController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Media not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -69,27 +69,27 @@ export const UploadController = {
     try {
       const { id } = request.params
       const updateData = { ...request.body }
-      
+
       const result = await UploadCommands.update(id, updateData)
 
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Media not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       if (error.message === 'Validation error') {
         return reply.status(400).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -102,7 +102,7 @@ export const UploadController = {
       const media = await UploadQueries.getById(id)
       if (!media) {
         return reply.status(404).send({
-          error: 'Media not found'
+          error: 'Media not found',
         })
       }
 
@@ -111,7 +111,12 @@ export const UploadController = {
 
       // Tentar deletar o arquivo físico (não falha se não existir)
       try {
-        const filePath = path.join(process.cwd(), 'src', 'uploads', media.url.replace('/uploads/', ''))
+        const filePath = path.join(
+          process.cwd(),
+          'src',
+          'uploads',
+          media.url.replace('/uploads/', '')
+        )
         await uploadService.deleteFile(filePath)
       } catch (fileError) {
         // Log do erro mas não falha a operação
@@ -121,15 +126,15 @@ export const UploadController = {
       return reply.status(204).send()
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Media not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -144,115 +149,132 @@ export const UploadController = {
         search,
         type,
         entityType,
-        entityId
+        entityId,
       })
 
       // Gerar URL completa baseada no request
-      const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+      const protocol =
+        request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
       const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
 
       // Adicionar fullUrl para cada upload
       const responseData = {
         ...result,
-        uploads: result.uploads?.map((upload: any) => ({
-          ...upload,
-          fullUrl: `${protocol}://${host}${upload.url}`
-        })) || []
+        uploads:
+          result.uploads?.map((upload: any) => ({
+            ...upload,
+            fullUrl: `${protocol}://${host}${upload.url}`,
+          })) || [],
       }
 
       return reply.send(responseData)
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
   // === FUNÇÕES ADICIONAIS (QUERIES) ===
-  async getByType(request: FastifyRequest<{ Querystring: { type: string; limit?: number } }>, reply: FastifyReply) {
+  async getByType(
+    request: FastifyRequest<{ Querystring: { type: string; limit?: number } }>,
+    reply: FastifyReply
+  ) {
     try {
       const { type, limit = 10 } = request.query
 
       const result = await UploadQueries.getByType(type, limit)
 
       // Gerar URL completa baseada no request
-      const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+      const protocol =
+        request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
       const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
 
       // Adicionar fullUrl para cada upload
       const uploadsWithFullUrl = result.map((upload: any) => ({
         ...upload,
-        fullUrl: `${protocol}://${host}${upload.url}`
+        fullUrl: `${protocol}://${host}${upload.url}`,
       }))
 
       return reply.send({ uploads: uploadsWithFullUrl })
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async getRecent(request: FastifyRequest<{ Querystring: { limit?: number } }>, reply: FastifyReply) {
+  async getRecent(
+    request: FastifyRequest<{ Querystring: { limit?: number } }>,
+    reply: FastifyReply
+  ) {
     try {
       const { limit = 20 } = request.query
 
       const result = await UploadQueries.getRecent(limit)
 
       // Gerar URL completa baseada no request
-      const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+      const protocol =
+        request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
       const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
 
       // Adicionar fullUrl para cada upload
       const uploadsWithFullUrl = result.map((upload: any) => ({
         ...upload,
-        fullUrl: `${protocol}://${host}${upload.url}`
+        fullUrl: `${protocol}://${host}${upload.url}`,
       }))
 
       return reply.send({ uploads: uploadsWithFullUrl })
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async getEntityMedia(request: FastifyRequest<{ Params: { entityType: string; entityId: string } }>, reply: FastifyReply) {
+  async getEntityMedia(
+    request: FastifyRequest<{ Params: { entityType: string; entityId: string } }>,
+    reply: FastifyReply
+  ) {
     try {
       const { entityType, entityId } = request.params
 
       const result = await UploadQueries.getEntityMedia(entityType, entityId)
 
       // Gerar URL completa baseada no request
-      const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+      const protocol =
+        request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
       const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
 
       // Adicionar fullUrl para cada media
       const mediaWithFullUrl = result.map((media: any) => ({
         ...media,
-        fullUrl: `${protocol}://${host}${media.url}`
+        fullUrl: `${protocol}://${host}${media.url}`,
       }))
 
       return reply.send({ media: mediaWithFullUrl })
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Invalid entity type') {
         return reply.status(400).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async getPrimaryMedia(request: FastifyRequest<{ Params: { entityType: string; entityId: string } }>, reply: FastifyReply) {
+  async getPrimaryMedia(
+    request: FastifyRequest<{ Params: { entityType: string; entityId: string } }>,
+    reply: FastifyReply
+  ) {
     try {
       const { entityType, entityId } = request.params
 
@@ -260,71 +282,75 @@ export const UploadController = {
 
       if (!result) {
         return reply.status(404).send({
-          error: 'No media found'
+          error: 'No media found',
         })
       }
 
       // Gerar URL completa baseada no request
-      const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+      const protocol =
+        request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
       const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
 
       // Adicionar fullUrl ao resultado
       const resultWithFullUrl = {
         ...result,
-        fullUrl: `${protocol}://${host}${result.url}`
+        fullUrl: `${protocol}://${host}${result.url}`,
       }
 
       return reply.send(resultWithFullUrl)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Invalid entity type') {
         return reply.status(400).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
   async getStats(request: FastifyRequest, reply: FastifyReply) {
     try {
-
       const result = await UploadQueries.getStats()
 
       return reply.send(result)
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async search(request: FastifyRequest<{ Querystring: { q: string; limit?: number } }>, reply: FastifyReply) {
+  async search(
+    request: FastifyRequest<{ Querystring: { q: string; limit?: number } }>,
+    reply: FastifyReply
+  ) {
     try {
       const { q, limit = 10 } = request.query
 
       const result = await UploadQueries.search(q, limit)
 
       // Gerar URL completa baseada no request
-      const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+      const protocol =
+        request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
       const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
 
       // Adicionar fullUrl para cada upload
       const uploadsWithFullUrl = result.map((upload: any) => ({
         ...upload,
-        fullUrl: `${protocol}://${host}${upload.url}`
+        fullUrl: `${protocol}://${host}${upload.url}`,
       }))
 
       return reply.send({ uploads: uploadsWithFullUrl })
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -339,32 +365,36 @@ export const UploadController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async getUnusedMedia(request: FastifyRequest<{ Querystring: { daysOld?: number } }>, reply: FastifyReply) {
+  async getUnusedMedia(
+    request: FastifyRequest<{ Querystring: { daysOld?: number } }>,
+    reply: FastifyReply
+  ) {
     try {
       const { daysOld = 30 } = request.query
 
       const result = await UploadQueries.getUnusedMedia(daysOld)
 
       // Gerar URL completa baseada no request
-      const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+      const protocol =
+        request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
       const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
 
       // Adicionar fullUrl para cada upload
       const uploadsWithFullUrl = result.map((upload: any) => ({
         ...upload,
-        fullUrl: `${protocol}://${host}${upload.url}`
+        fullUrl: `${protocol}://${host}${upload.url}`,
       }))
 
       return reply.send({ uploads: uploadsWithFullUrl })
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -383,48 +413,48 @@ export const UploadController = {
             mediaId: id,
             entityType,
             entityId,
-            isPrimary
+            isPrimary,
           })
           break
         case 'supplier':
           result = await UploadCommands.attachToSupplier({
             mediaId: id,
             entityType,
-            entityId
+            entityId,
           })
           break
         case 'user':
           result = await UploadCommands.attachToUser({
             mediaId: id,
             entityType,
-            entityId
+            entityId,
           })
           break
         case 'store':
           result = await UploadCommands.attachToStore({
             mediaId: id,
             entityType,
-            entityId
+            entityId,
           })
           break
         default:
           return reply.status(400).send({
-            error: 'Invalid entity type'
+            error: 'Invalid entity type',
           })
       }
 
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Invalid entity type for attachment') {
         return reply.status(400).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -451,30 +481,33 @@ export const UploadController = {
           break
         default:
           return reply.status(400).send({
-            error: 'Invalid entity type'
+            error: 'Invalid entity type',
           })
       }
 
       return reply.send({ success: true })
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Media attachment not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async setPrimaryMedia(request: FastifyRequest<{ 
-    Params: { id: string }
-    Body: { entityType: string; entityId: string }
-  }>, reply: FastifyReply) {
+  async setPrimaryMedia(
+    request: FastifyRequest<{
+      Params: { id: string }
+      Body: { entityType: string; entityId: string }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
       const { id } = request.params
       const { entityType, entityId } = request.body
@@ -485,22 +518,22 @@ export const UploadController = {
         result = await UploadCommands.setPrimaryForProduct(id, entityId)
       } else {
         return reply.status(400).send({
-          error: 'Primary media is only supported for products'
+          error: 'Primary media is only supported for products',
         })
       }
 
       return reply.send({ success: true })
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Media not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -508,14 +541,14 @@ export const UploadController = {
   async bulkDelete(request: FastifyRequest<{ Body: { mediaIds: string[] } }>, reply: FastifyReply) {
     try {
       const { mediaIds } = request.body
-      
+
       const result = await UploadCommands.bulkDelete(mediaIds)
 
       return reply.send(result)
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -524,43 +557,50 @@ export const UploadController = {
   async uploadSingle(request: FastifyRequest, reply: FastifyReply) {
     try {
       const data = await (request as any).file()
-      
+
       if (!data) {
         return reply.status(400).send({
-          error: 'Nenhum arquivo enviado'
+          error: 'Nenhum arquivo enviado',
         })
       }
 
       // Debug: Log da estrutura do objeto para entender melhor
-      console.log('Estrutura do objeto data:', JSON.stringify({
-        fieldname: data.fieldname,
-        filename: data.filename,
-        mimetype: data.mimetype,
-        encoding: data.encoding,
-        hasFile: !!data.file,
-        fileKeys: data.file ? Object.keys(data.file) : 'no file object',
-        filePath: data.file?.path,
-        fileFilename: data.file?.filename,
-        // Verificar se é um stream
-        isStream: data.file?.toBuffer ? 'yes' : 'no',
-        // Verificar outras propriedades possíveis
-        allKeys: Object.keys(data)
-      }, null, 2))
+      console.log(
+        'Estrutura do objeto data:',
+        JSON.stringify(
+          {
+            fieldname: data.fieldname,
+            filename: data.filename,
+            mimetype: data.mimetype,
+            encoding: data.encoding,
+            hasFile: !!data.file,
+            fileKeys: data.file ? Object.keys(data.file) : 'no file object',
+            filePath: data.file?.path,
+            fileFilename: data.file?.filename,
+            // Verificar se é um stream
+            isStream: data.file?.toBuffer ? 'yes' : 'no',
+            // Verificar outras propriedades possíveis
+            allKeys: Object.keys(data),
+          },
+          null,
+          2
+        )
+      )
 
       // Obter configurações do body ou query
-      const { entityType = 'general' } = request.body as any || request.query as any
+      const { entityType = 'general' } = (request.body as any) || (request.query as any)
 
       // Obter userId do contexto de autenticação
       const userId = (request as any).user?.id
       if (!userId) {
         return reply.status(401).send({
-          error: 'Usuário não autenticado'
+          error: 'Usuário não autenticado',
         })
       }
 
       // Determinar o path do arquivo baseado na estrutura
       let filePath: string | undefined
-      let fileSize: number = 0
+      let fileSize = 0
 
       // O @fastify/multipart retorna streams, precisamos convertê-los para arquivos temporários
       if (data.toBuffer) {
@@ -568,24 +608,30 @@ export const UploadController = {
         console.log('Convertendo stream para buffer usando data.toBuffer...')
         const buffer = await data.toBuffer()
         fileSize = buffer.length
-        
+
         // Salvar em arquivo temporário
-        const tempPath = require('path').join(require('os').tmpdir(), `temp-${Date.now()}-${data.filename}`)
+        const tempPath = require('path').join(
+          require('os').tmpdir(),
+          `temp-${Date.now()}-${data.filename}`
+        )
         await require('fs').promises.writeFile(tempPath, buffer)
         filePath = tempPath
-        
+
         console.log(`Arquivo temporário criado: ${tempPath}`)
       } else if (data.file && data.file.toBuffer) {
         // Método 2: Usar toBuffer do data.file
         console.log('Convertendo stream para buffer usando data.file.toBuffer...')
         const buffer = await data.file.toBuffer()
         fileSize = buffer.length
-        
+
         // Salvar em arquivo temporário
-        const tempPath = require('path').join(require('os').tmpdir(), `temp-${Date.now()}-${data.filename}`)
+        const tempPath = require('path').join(
+          require('os').tmpdir(),
+          `temp-${Date.now()}-${data.filename}`
+        )
         await require('fs').promises.writeFile(tempPath, buffer)
         filePath = tempPath
-        
+
         console.log(`Arquivo temporário criado: ${tempPath}`)
       } else if (data.file && data.file.bytesRead) {
         // Método 3: Arquivo já salvo temporariamente
@@ -607,21 +653,22 @@ export const UploadController = {
         size: fileSize,
         destination: '', // Será definido pelo service
         path: filePath,
-        url: '' // Será definido pelo service
+        url: '', // Será definido pelo service
       }
 
       // Validação adicional do path
       if (!fileData.path) {
         console.error('Estrutura completa do data:', JSON.stringify(data, null, 2))
         return reply.status(400).send({
-          error: 'Não foi possível determinar o caminho do arquivo. Estrutura do objeto inesperada.'
+          error:
+            'Não foi possível determinar o caminho do arquivo. Estrutura do objeto inesperada.',
         })
       }
 
       // Upload do arquivo físico
       const uploadResult = await uploadService.uploadSingle(fileData, {
         entityType: entityType as any,
-        userId: userId
+        userId: userId,
       })
 
       // Criar registro no banco
@@ -629,7 +676,7 @@ export const UploadController = {
         url: uploadResult.url,
         name: uploadResult.name,
         type: uploadResult.type,
-        size: uploadResult.size
+        size: uploadResult.size,
       })
 
       // Limpar arquivo temporário se foi criado
@@ -643,26 +690,27 @@ export const UploadController = {
       }
 
       // Gerar URL completa baseada no request
-      const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+      const protocol =
+        request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
       const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
       const fullUrl = `${protocol}://${host}${uploadResult.url}`
 
       return reply.status(201).send({
         ...dbResult,
         path: uploadResult.path,
-        fullUrl: fullUrl
+        fullUrl: fullUrl,
       })
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message.includes('não permitido') || error.message.includes('muito grande')) {
         return reply.status(400).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -673,13 +721,14 @@ export const UploadController = {
       const uploadedFiles: any[] = []
 
       // Obter configurações do body ou query
-      const { entityType = 'general', maxFiles = 10 } = request.body as any || request.query as any
+      const { entityType = 'general', maxFiles = 10 } =
+        (request.body as any) || (request.query as any)
 
       // Obter userId do contexto de autenticação
       const userId = (request as any).user?.id
       if (!userId) {
         return reply.status(401).send({
-          error: 'Usuário não autenticado'
+          error: 'Usuário não autenticado',
         })
       }
 
@@ -696,7 +745,7 @@ export const UploadController = {
             size: file.file.bytesRead,
             destination: '', // Será definido pelo service
             path: file.file.path || file.file.filename, // Usar filename se path não estiver disponível
-            url: '' // Será definido pelo service
+            url: '', // Será definido pelo service
           }
           uploadedFiles.push(fileData)
         }
@@ -704,7 +753,7 @@ export const UploadController = {
 
       if (uploadedFiles.length === 0) {
         return reply.status(400).send({
-          error: 'Nenhum arquivo válido enviado'
+          error: 'Nenhum arquivo válido enviado',
         })
       }
 
@@ -712,7 +761,7 @@ export const UploadController = {
       const uploadResults = await uploadService.uploadMultiple(uploadedFiles, {
         entityType: entityType as any,
         userId: userId,
-        maxFiles: maxFiles as number
+        maxFiles: maxFiles as number,
       })
 
       // Criar registros no banco
@@ -722,36 +771,41 @@ export const UploadController = {
           url: uploadResult.url,
           name: uploadResult.name,
           type: uploadResult.type,
-          size: uploadResult.size
+          size: uploadResult.size,
         })
 
         // Gerar URL completa baseada no request
-        const protocol = request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
+        const protocol =
+          request.headers['x-forwarded-proto'] || (request.server as any).https ? 'https' : 'http'
         const host = request.headers['x-forwarded-host'] || request.headers.host || 'localhost:3000'
         const fullUrl = `${protocol}://${host}${uploadResult.url}`
 
         dbResults.push({
           ...dbResult,
           path: uploadResult.path,
-          fullUrl: fullUrl
+          fullUrl: fullUrl,
         })
       }
 
       return reply.status(201).send({
         uploads: dbResults,
-        count: dbResults.length
+        count: dbResults.length,
       })
     } catch (error: any) {
       request.log.error(error)
-      
-      if (error.message.includes('não permitido') || error.message.includes('muito grande') || error.message.includes('Máximo')) {
+
+      if (
+        error.message.includes('não permitido') ||
+        error.message.includes('muito grande') ||
+        error.message.includes('Máximo')
+      ) {
         return reply.status(400).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -761,18 +815,18 @@ export const UploadController = {
     try {
       // Obter todos os caminhos de arquivos usados no banco
       const usedFiles = await UploadQueries.getAllUsedFilePaths()
-      
+
       // Limpar arquivos órfãos
       const result = await uploadService.cleanupOrphanedFiles(usedFiles)
 
       return reply.send({
         message: 'Limpeza concluída',
-        ...result
+        ...result,
       })
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -784,7 +838,7 @@ export const UploadController = {
         maxFiles: 10,
         allowedTypes: [
           'image/jpeg',
-          'image/png', 
+          'image/png',
           'image/gif',
           'image/webp',
           'image/svg+xml',
@@ -793,17 +847,17 @@ export const UploadController = {
           'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
           'application/vnd.ms-excel',
           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          'text/plain'
+          'text/plain',
         ],
         uploadDir: uploadService['uploadDir'],
-        entityTypes: ['product', 'supplier', 'user', 'store', 'general']
+        entityTypes: ['product', 'supplier', 'user', 'store', 'general'],
       }
 
       return reply.send(config)
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -816,8 +870,8 @@ export const UploadController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
-  }
+  },
 }

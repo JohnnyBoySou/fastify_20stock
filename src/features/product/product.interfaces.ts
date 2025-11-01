@@ -1,11 +1,26 @@
-import { FastifyRequest } from 'fastify';
+import type { FastifyRequest } from 'fastify'
 
 // Interfaces para Product
 export interface CreateProductRequest extends FastifyRequest {
   body: {
     name: string
     description?: string
-    unitOfMeasure: 'UNIDADE' | 'KG' | 'L' | 'ML' | 'M' | 'CM' | 'MM' | 'UN' | 'DZ' | 'CX' | 'PCT' | 'KIT' | 'PAR' | 'H' | 'D'
+    unitOfMeasure:
+      | 'UNIDADE'
+      | 'KG'
+      | 'L'
+      | 'ML'
+      | 'M'
+      | 'CM'
+      | 'MM'
+      | 'UN'
+      | 'DZ'
+      | 'CX'
+      | 'PCT'
+      | 'KIT'
+      | 'PAR'
+      | 'H'
+      | 'D'
     referencePrice: number
     categoryIds?: string[]
     supplierId?: string
@@ -22,7 +37,22 @@ export interface UpdateProductRequest extends FastifyRequest {
   body: {
     name?: string
     description?: string
-    unitOfMeasure?: 'UNIDADE' | 'KG' | 'L' | 'ML' | 'M' | 'CM' | 'MM' | 'UN' | 'DZ' | 'CX' | 'PCT' | 'KIT' | 'PAR' | 'H' | 'D'
+    unitOfMeasure?:
+      | 'UNIDADE'
+      | 'KG'
+      | 'L'
+      | 'ML'
+      | 'M'
+      | 'CM'
+      | 'MM'
+      | 'UN'
+      | 'DZ'
+      | 'CX'
+      | 'PCT'
+      | 'KIT'
+      | 'PAR'
+      | 'H'
+      | 'D'
     referencePrice?: number
     categoryIds?: string[]
     supplierId?: string
@@ -217,9 +247,9 @@ export enum UnitOfMeasure {
   UN = 'UN',
   DZ = 'DZ',
   CX = 'CX',
-  PCT = 'PCT',  
+  PCT = 'PCT',
   KIT = 'KIT',
   PAR = 'PAR',
   H = 'H',
-  D = 'D'
+  D = 'D',
 }

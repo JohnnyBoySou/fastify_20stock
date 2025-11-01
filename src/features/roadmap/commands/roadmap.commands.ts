@@ -1,5 +1,5 @@
-import { db } from '@/plugins/prisma';
-import { RoadmapStatus } from '../roadmap.interfaces';
+import { db } from '@/plugins/prisma'
+import type { RoadmapStatus } from '../roadmap.interfaces'
 
 export const RoadmapCommands = {
   async create(data: any) {
@@ -9,20 +9,20 @@ export const RoadmapCommands = {
   async update(id: string, data: any) {
     return await db.roadmap.update({
       where: { id },
-      data
+      data,
     })
   },
 
   async delete(id: string) {
     return await db.roadmap.delete({
-      where: { id }
+      where: { id },
     })
   },
 
   async updateStatus(id: string, status: RoadmapStatus) {
     return await db.roadmap.update({
       where: { id },
-      data: { status }
+      data: { status },
     })
-  }
+  },
 }

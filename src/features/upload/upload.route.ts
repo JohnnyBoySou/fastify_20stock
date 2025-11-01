@@ -1,147 +1,137 @@
-import { FastifyInstance } from 'fastify'
+import type { FastifyInstance } from 'fastify'
 import { UploadController } from './upload.controller'
-import {
-  createUploadSchema,
-  listUploadsSchema,
-  getEntityMediaSchema
-} from './upload.schema'
+import { createUploadSchema, getEntityMediaSchema, listUploadsSchema } from './upload.schema'
 
-import {
-  authMiddleware,
-  storeContextMiddleware
-} from '@/middlewares';
+import { Middlewares } from '@/middlewares'
 
 export async function UploadRoutes(fastify: FastifyInstance) {
-  
   // Middlewares para todas as rotas
-  fastify.addHook('preHandler', authMiddleware)
-  fastify.addHook('preHandler', storeContextMiddleware)
+  fastify.addHook('preHandler', Middlewares.auth)
+  fastify.addHook('preHandler', Middlewares.store)
 
   // === REGISTRAR PLUGIN MULTIPART ===
   await fastify.register(require('@fastify/multipart'), {
     limits: {
       fileSize: 10 * 1024 * 1024, // 10MB
-      files: 10 // máximo 10 arquivos por request
+      files: 10, // máximo 10 arquivos por request
     },
     attachFieldsToBody: false, // Manter arquivos separados do body
-    sharedSchemaId: 'MultipartFileType' // Schema para validação
+    sharedSchemaId: 'MultipartFileType', // Schema para validação
   })
 
   // === CRUD BÁSICO ===
   fastify.post('/', {
     schema: createUploadSchema,
-    handler: UploadController.create
+    handler: UploadController.create,
   })
 
   fastify.get('/', {
     schema: listUploadsSchema,
-    handler: UploadController.list
+    handler: UploadController.list,
   })
 
   fastify.get('/:id', {
-    handler: UploadController.get
+    handler: UploadController.get,
   })
 
   fastify.put('/:id', {
-    handler: UploadController.update
+    handler: UploadController.update,
   })
 
   fastify.delete('/:id', {
-    handler: UploadController.delete
+    handler: UploadController.delete,
   })
 
   // === UPLOAD DE ARQUIVOS FÍSICOS ===
   fastify.post('/upload', {
-    handler: UploadController.uploadSingle
+    handler: UploadController.uploadSingle,
   })
 
   fastify.post('/upload-multiple', {
-    handler: UploadController.uploadMultiple
+    handler: UploadController.uploadMultiple,
   })
 
   // === FUNÇÕES ADICIONAIS ===
 
   // Buscar por tipo
   fastify.get('/type/:type', {
-    handler: UploadController.getByType
+    handler: UploadController.getByType,
   })
 
   // Buscar recentes
   fastify.get('/recent', {
-    handler: UploadController.getRecent
+    handler: UploadController.getRecent,
   })
 
   // Estatísticas
   fastify.get('/stats', {
-    handler: UploadController.getStats
+    handler: UploadController.getStats,
   })
 
   // Buscar mídia
   fastify.get('/search', {
-    handler: UploadController.search
+    handler: UploadController.search,
   })
 
   // Uso da mídia
   fastify.get('/:id/usage', {
-   
-    handler: UploadController.getMediaUsage
+    handler: UploadController.getMediaUsage,
   })
 
   // Mídias não utilizadas
   fastify.get('/unused', {
-    handler: UploadController.getUnusedMedia
+    handler: UploadController.getUnusedMedia,
   })
 
   // === GESTÃO DE ANEXOS ===
 
   // Anexar mídia a uma entidade
   fastify.post('/:id/attach', {
- 
-    handler: UploadController.attachMedia
+    handler: UploadController.attachMedia,
   })
 
   // Desanexar mídia de uma entidade
   fastify.post('/:id/detach', {
-    handler: UploadController.detachMedia
+    handler: UploadController.detachMedia,
   })
 
   // Definir mídia principal (apenas para produtos)
   fastify.patch('/:id/set-primary', {
-    handler: UploadController.setPrimaryMedia
+    handler: UploadController.setPrimaryMedia,
   })
 
   // Obter mídias de uma entidade
   fastify.get('/entity/:entityType/:entityId', {
     schema: getEntityMediaSchema,
-    handler: UploadController.getEntityMedia
+    handler: UploadController.getEntityMedia,
   })
 
   // Obter mídia principal de uma entidade
   fastify.get('/entity/:entityType/:entityId/primary', {
-    handler: UploadController.getPrimaryMedia
+    handler: UploadController.getPrimaryMedia,
   })
 
   // === OPERAÇÕES EM LOTE ===
 
   // Deletar múltiplas mídias
   fastify.post('/bulk-delete', {
-    handler: UploadController.bulkDelete
+    handler: UploadController.bulkDelete,
   })
 
-   // === SERVIÇOS DE MANUTENÇÃO ===
+  // === SERVIÇOS DE MANUTENÇÃO ===
 
   // Limpeza de arquivos órfãos
   fastify.post('/cleanup-orphaned', {
-    handler: UploadController.cleanupOrphanedFiles
+    handler: UploadController.cleanupOrphanedFiles,
   })
 
   // Configuração do serviço
   fastify.get('/service/config', {
-    handler: UploadController.getServiceConfig
+    handler: UploadController.getServiceConfig,
   })
 
   // Estatísticas do sistema de arquivos
   fastify.get('/service/stats', {
-    handler: UploadController.getFileSystemStats
+    handler: UploadController.getFileSystemStats,
   })
 }

@@ -1,0 +1,144 @@
+/// ===============================
+///  MEDIA STRUCTURE
+///  - Representa qualquer arquivo enviado (imagem, vídeo, documento).
+///  - Associável a produto, fornecedor, loja ou usuário.
+///  - Contém informações técnicas e de origem.
+/// ===============================
+
+model Media {
+  id           String   @id @default(cuid())
+
+  // Identificação básica
+  url          String   // link público (Cloudinary, S3, Supabase, etc.)
+  name         String?  // nome do arquivo original
+  type         String?  // MIME type (ex: image/png, application/pdf)
+  extension    String?  // extensão (ex: jpg, pdf)
+  size         Int?     // tamanho em bytes
+  hash         String?  // hash opcional (para evitar duplicações)
+
+  // Origem e propriedade
+  storeId      String?
+  store        Store?   @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  uploadedById String?
+  uploadedBy   User?    @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  // Armazenamento e provider
+  provider     StorageProvider @default(SYSTEM)
+  storagePath  String?  // caminho interno no provider (ex: /products/uuid.png)
+  bucket       String?  // bucket do S3 / Supabase
+  visibility   MediaVisibility @default(PRIVATE) // controle de acesso
+  status       MediaStatus @default(ACTIVE)
+
+  // Metadados
+  metadata     Json? // ex: { width, height, tags, detectedLabels, thumbnailUrl }
+
+  // Auditoria
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+
+  // Relações
+  productMedia  ProductMedia[]
+  supplierMedia SupplierMedia[]
+  userMedia     UserMedia[]
+  storeMedia    StoreMedia[]
+
+  @@map("media")
+
+  // Índices
+  @@index([storeId])
+  @@index([uploadedById])
+  @@index([status])
+  @@index([visibility])
+  @@index([deletedAt])
+  @@schema("media")
+}
+
+/// ===============================
+///  RELATION TABLES (many-to-many)
+///  - Permitem anexar múltiplos arquivos a produtos, usuários, etc.
+/// ===============================
+
+model ProductMedia {
+  id         String   @id @default(cuid())
+  productId  String
+  mediaId    String
+  isPrimary  Boolean  @default(false)
+  altText    String?  // descrição alternativa para SEO / acessibilidade
+  sortOrder  Int      @default(0)
+
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  media      Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@map("product_media")
+  @@unique([productId, mediaId])
+  @@index([productId])
+  @@schema("media")
+}
+
+model SupplierMedia {
+  id          String   @id @default(cuid())
+  supplierId  String
+  mediaId     String
+
+  supplier    Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  media       Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@map("supplier_media")
+  @@unique([supplierId, mediaId])
+  @@schema("media")
+}
+
+model UserMedia {
+  id         String   @id @default(cuid())
+  userId     String
+  mediaId    String
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media      Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@map("user_media")
+  @@unique([userId, mediaId])
+  @@schema("media")
+}
+
+model StoreMedia {
+  id         String   @id @default(cuid())
+  storeId    String
+  mediaId    String
+
+  store      Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  media      Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@map("store_media")
+  @@unique([storeId, mediaId])
+  @@schema("media")
+}
+
+/// ===============================
+///  ENUMS
+/// ===============================
+
+enum StorageProvider {
+  SYSTEM       // Armazenamento local padrão
+  S3           // Amazon S3 / R2 / Wasabi
+  SUPABASE     // Supabase Storage
+  CLOUDINARY   // Cloudinary
+  GOOGLE_DRIVE // Google Drive API
+  @@schema("media")
+}
+
+enum MediaVisibility {
+  PRIVATE // visível apenas internamente
+  PUBLIC  // acessível publicamente
+  RESTRICTED // acessível sob regra (ex: usuários logados)
+  @@schema("media")
+}
+
+enum MediaStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+  PROCESSING
+  @@schema("media")
+}

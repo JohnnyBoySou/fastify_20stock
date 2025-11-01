@@ -1,49 +1,47 @@
-import Fastify from 'fastify'
-import cors from '@fastify/cors'
 import path from 'node:path'
+import cors from '@fastify/cors'
+import Fastify from 'fastify'
 
 // Plugins
-import { prismaPlugin, connectPrisma } from './plugins/prisma'
+import { connectDb, dbPlugin } from './plugins/prisma'
 import { pushPlugin } from './plugins/push'
 
 // Bootstrap UI
 import { bootstrapUI } from './utils/bootstrap'
 
+import { AuthRoutes } from '@/features/auth/auth.routes'
+import { CategoryRoutes } from '@/features/category/category.routes'
+import { ChatRoutes } from '@/features/chat/chat.routes'
+import { CrmRoutes } from '@/features/crm/crm.routes'
+import { FlowExecutionRoutes } from '@/features/flow-execution/flow-execution.routes'
+import { FlowRoutes } from '@/features/flow/flow.routes'
+import { InvoiceRoutes } from '@/features/invoice/invoice.routes'
+import { MovementRoutes } from '@/features/movement/movement.routes'
+import { NotificationRoutes } from '@/features/notification/notification.routes'
+//import { PermissionRoutes } from '@/features/permission/permission.routes'
+import { SubscriptionRoutes } from '@/features/subscription/subscription.routes'
+import { PolarRoutes } from '@/features/polar/polar.routes'
+import { ProductRoutes } from '@/features/product/product.routes'
+import { ProfileRoutes } from '@/features/profile/profile.routes'
+import { PushSubscriptionRoutes } from '@/features/push-subscription/push-subscription.routes'
+import { QuoteRoutes } from '@/features/quote/quote.routes'
+import { ReportRoutes } from '@/features/report/report.routes'
+import { RoadmapRoutes } from '@/features/roadmap/roadmap.routes'
+import { StoreRoutes } from '@/features/store/store.routes'
+import { SupplierRoutes } from '@/features/supplier/supplier.routes'
+import { UploadRoutes } from '@/features/upload/upload.route'
+import { UserPreferencesRoutes } from '@/features/user-preferences/user-preferences.routes'
 // Features (rotas)
 import { UserRoutes } from '@/features/user/user.routes'
-import { AuthRoutes } from '@/features/auth/auth.routes'
-import { ProductRoutes } from '@/features/product/product.routes'
-import { SupplierRoutes } from '@/features/supplier/supplier.routes'
-import { StoreRoutes } from '@/features/store/store.routes'
-import { CategoryRoutes } from '@/features/category/category.routes'
-import { MovementRoutes } from '@/features/movement/movement.routes'
-import { PermissionRoutes } from '@/features/permission/permission.routes'
-import { ReportRoutes } from '@/features/report/report.routes'
-import { NotificationRoutes } from '@/features/notification/notification.routes'
-import { ChatRoutes } from '@/features/chat/chat.routes'
-import { RoadmapRoutes } from '@/features/roadmap/roadmap.routes'
-import { UploadRoutes } from '@/features/upload/upload.route'
-import { QuoteRoutes } from '@/features/quote/quote.routes'
-import { PlanRoutes } from '@/features/plan/plan.routes'
-import { CustomerRoutes } from '@/features/customer/customer.routes'
-import { InvoiceRoutes } from '@/features/invoice/invoice.routes'
-import { CrmRoutes } from '@/features/crm/crm.routes'
-import { UserPreferencesRoutes } from '@/features/user-preferences/user-preferences.routes'
-import { FlowRoutes } from '@/features/flow/flow.routes'
-import { FlowExecutionRoutes } from '@/features/flow-execution/flow-execution.routes'
-import { PushSubscriptionRoutes } from '@/features/push-subscription/push-subscription.routes'
-import { PolarRoutes } from '@/features/polar/polar.routes'
-import { ProfileRoutes } from '@/features/profile/profile.routes'
-
 
 const fastify = Fastify({
-  logger: false, // Desabilitado - usando bootstrap UI para feedback visual
+  logger: true, // Desabilitado - usando bootstrap UI para feedback visual
   requestTimeout: 60000, // 30 segundos para timeout de requisições
   keepAliveTimeout: 5000, // 5 segundos para keep-alive
   bodyLimit: 1048576, // 1MB para limite do body
   routerOptions: {
-    maxParamLength: 200 // Limite de caracteres para parâmetros de rota
-  }
+    maxParamLength: 200, // Limite de caracteres para parâmetros de rota
+  },
 })
 
 // Healthcheck route (registrada antes do bootstrap)
@@ -53,7 +51,7 @@ fastify.get('/health', async (request, reply) => {
       status: 'ok',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      database: 'connected'
+      database: 'connected',
     })
   } catch (error) {
     request.log.error(error)
@@ -62,7 +60,7 @@ fastify.get('/health', async (request, reply) => {
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       database: 'disconnected',
-      error: 'Database connection failed'
+      error: 'Database connection failed',
     })
   }
 })
@@ -73,7 +71,7 @@ const HOST = '0.0.0.0'
 // Graceful shutdown
 const closeGracefully = async (signal: string) => {
   console.log(`\n⚠️  Recebido sinal ${signal}, encerrando servidor...`)
-  
+
   try {
     await fastify.close()
     console.log('✅ Servidor encerrado com sucesso')
@@ -108,15 +106,15 @@ async function startServer() {
     {
       name: 'Conectando ao banco de dados',
       action: async () => {
-        await connectPrisma(fastify)
-      }
+        await connectDb()
+      },
     },
     {
       name: 'Registrando plugins',
       action: async () => {
-        await fastify.register(prismaPlugin)
+        await fastify.register(dbPlugin)
         await fastify.register(pushPlugin)
-      }
+      },
     },
     {
       name: 'Configurando CORS',
@@ -125,9 +123,9 @@ async function startServer() {
           origin: true,
           credentials: true,
           methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-          allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+          allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
         })
-      }
+      },
     },
     {
       name: 'Registrando raw body parser',
@@ -136,9 +134,9 @@ async function startServer() {
           field: 'rawBody',
           global: true,
           encoding: 'utf8',
-          runFirst: true
+          runFirst: true,
         })
-      }
+      },
     },
     {
       name: 'Configurando arquivos estáticos',
@@ -146,9 +144,9 @@ async function startServer() {
         await fastify.register(require('@fastify/static'), {
           root: path.join(process.cwd(), 'src', 'uploads'),
           prefix: '/uploads/',
-          decorateReply: false
+          decorateReply: false,
         })
-      }
+      },
     },
     {
       name: 'Registrando rotas',
@@ -157,34 +155,40 @@ async function startServer() {
         await fastify.register(UserRoutes, { prefix: '/users' })
         await fastify.register(ProductRoutes, { prefix: '/products' })
         await fastify.register(SupplierRoutes, { prefix: '/suppliers' })
-        await fastify.register(StoreRoutes, { prefix: '/stores' })
         await fastify.register(CategoryRoutes, { prefix: '/categories' })
         await fastify.register(MovementRoutes, { prefix: '/movements' })
-        await fastify.register(PermissionRoutes, { prefix: '/permissions' })
+        //await fastify.register(PermissionRoutes, { prefix: '/permissions' })
         await fastify.register(ReportRoutes, { prefix: '/reports' })
         await fastify.register(NotificationRoutes, { prefix: '/notifications' })
         await fastify.register(ChatRoutes, { prefix: '/chat' })
         await fastify.register(RoadmapRoutes, { prefix: '/roadmaps' })
         await fastify.register(UploadRoutes, { prefix: '/uploads' })
         await fastify.register(QuoteRoutes, { prefix: '/quotes' })
-        await fastify.register(PlanRoutes, { prefix: '/plans' })
-        await fastify.register(CustomerRoutes, { prefix: '/customers' })
         await fastify.register(InvoiceRoutes, { prefix: '/invoices' })
         await fastify.register(CrmRoutes, { prefix: '/crm' })
         await fastify.register(UserPreferencesRoutes, { prefix: '/preferences' })
-        await fastify.register(FlowRoutes, { prefix: '' })
+        await fastify.register(FlowRoutes, { prefix: '/flows' })
         await fastify.register(FlowExecutionRoutes, { prefix: '' })
         await fastify.register(PushSubscriptionRoutes, { prefix: '/push-subscriptions' })
+
         await fastify.register(PolarRoutes, { prefix: '/polar' })
+        await fastify.register(StoreRoutes, { prefix: '/store' })
         await fastify.register(ProfileRoutes, { prefix: '/profile' })
-      }
+        await fastify.register(SubscriptionRoutes, { prefix: '/subscriptions' })
+      },
+    },
+    {
+      name: 'Configurando sistema de logs',
+      action: async () => {
+        bootstrapUI.setupFastifyHooks(fastify)
+      },
     },
     {
       name: 'Iniciando servidor',
       action: async () => {
         await fastify.listen({ port: PORT, host: HOST })
-      }
-    }
+      },
+    },
   ])
 
   if (!success) {

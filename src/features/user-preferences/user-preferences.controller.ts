@@ -1,14 +1,14 @@
-import { FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyReply, FastifyRequest } from 'fastify'
 import { UserPreferencesCommands } from './commands/user-preferences.commands'
 import { UserPreferencesQueries } from './queries/user-preferences.query'
-import {
+import type {
   CreateUserPreferencesRequest,
-  GetUserPreferencesRequest,
-  UpdateUserPreferencesRequest,
   DeleteUserPreferencesRequest,
-  ListUserPreferencesRequest,
   GetUserPreferencesByUserIdRequest,
-  UserPreferencesData
+  GetUserPreferencesRequest,
+  ListUserPreferencesRequest,
+  UpdateUserPreferencesRequest,
+  UserPreferencesData,
 } from './user-preferences.interfaces'
 
 // ================================
@@ -35,18 +35,18 @@ export const UserPreferencesController = {
 
       if (error.message === 'User not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       if (error.message === 'User preferences already exist for this user') {
         return reply.status(409).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -63,12 +63,12 @@ export const UserPreferencesController = {
 
       if (error.message === 'User preferences not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -92,12 +92,12 @@ export const UserPreferencesController = {
 
       if (error.message === 'User preferences not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -114,12 +114,12 @@ export const UserPreferencesController = {
 
       if (error.message === 'User preferences not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -134,14 +134,14 @@ export const UserPreferencesController = {
         search,
         theme,
         language,
-        currency
+        currency,
       })
 
       return reply.send(result)
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -154,7 +154,7 @@ export const UserPreferencesController = {
 
       if (!userId) {
         return reply.status(401).send({
-          error: 'User not authenticated'
+          error: 'User not authenticated',
         })
       }
 
@@ -166,12 +166,12 @@ export const UserPreferencesController = {
 
       if (error.message === 'User preferences not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -183,7 +183,7 @@ export const UserPreferencesController = {
 
       if (!userId) {
         return reply.status(401).send({
-          error: 'User not authenticated'
+          error: 'User not authenticated',
         })
       }
 
@@ -195,24 +195,27 @@ export const UserPreferencesController = {
 
       if (error.message === 'User not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async updateByUserId(request: FastifyRequest<{ Params: { userId: string }; Body: any }>, reply: FastifyReply) {
+  async updateByUserId(
+    request: FastifyRequest<{ Params: { userId: string }; Body: any }>,
+    reply: FastifyReply
+  ) {
     try {
       // Usar o ID do usuário autenticado em vez do parâmetro da URL
       const userId = request.user?.id
 
       if (!userId) {
         return reply.status(401).send({
-          error: 'User not authenticated'
+          error: 'User not authenticated',
         })
       }
 
@@ -232,24 +235,27 @@ export const UserPreferencesController = {
 
       if (error.message === 'User not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async deleteByUserId(request: FastifyRequest<{ Params: { userId: string } }>, reply: FastifyReply) {
+  async deleteByUserId(
+    request: FastifyRequest<{ Params: { userId: string } }>,
+    reply: FastifyReply
+  ) {
     try {
       // Usar o ID do usuário autenticado em vez do parâmetro da URL
       const userId = request.user?.id
 
       if (!userId) {
         return reply.status(401).send({
-          error: 'User not authenticated'
+          error: 'User not authenticated',
         })
       }
 
@@ -261,17 +267,20 @@ export const UserPreferencesController = {
 
       if (error.message === 'User not found' || error.message === 'User preferences not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async getByTheme(request: FastifyRequest<{ Querystring: { theme: string } }>, reply: FastifyReply) {
+  async getByTheme(
+    request: FastifyRequest<{ Querystring: { theme: string } }>,
+    reply: FastifyReply
+  ) {
     try {
       const { theme } = request.query
 
@@ -281,12 +290,15 @@ export const UserPreferencesController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async getByLanguage(request: FastifyRequest<{ Querystring: { language: string } }>, reply: FastifyReply) {
+  async getByLanguage(
+    request: FastifyRequest<{ Querystring: { language: string } }>,
+    reply: FastifyReply
+  ) {
     try {
       const { language } = request.query
 
@@ -296,12 +308,15 @@ export const UserPreferencesController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async getByCurrency(request: FastifyRequest<{ Querystring: { currency: string } }>, reply: FastifyReply) {
+  async getByCurrency(
+    request: FastifyRequest<{ Querystring: { currency: string } }>,
+    reply: FastifyReply
+  ) {
     try {
       const { currency } = request.query
 
@@ -311,40 +326,41 @@ export const UserPreferencesController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
   async getWithCustomSettings(request: FastifyRequest, reply: FastifyReply) {
     try {
-
       const result = await UserPreferencesQueries.getWithCustomSettings()
 
       return reply.send({ preferences: result })
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
   async getStats(request: FastifyRequest, reply: FastifyReply) {
     try {
-
       const result = await UserPreferencesQueries.getStats()
 
       return reply.send(result)
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async search(request: FastifyRequest<{ Querystring: { q: string; limit?: number } }>, reply: FastifyReply) {
+  async search(
+    request: FastifyRequest<{ Querystring: { q: string; limit?: number } }>,
+    reply: FastifyReply
+  ) {
     try {
       const { q, limit = 10 } = request.query
 
@@ -354,7 +370,7 @@ export const UserPreferencesController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -372,24 +388,27 @@ export const UserPreferencesController = {
 
       if (error.message === 'User preferences not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async resetToDefaultsByUserId(request: FastifyRequest<{ Params: { userId: string } }>, reply: FastifyReply) {
+  async resetToDefaultsByUserId(
+    request: FastifyRequest<{ Params: { userId: string } }>,
+    reply: FastifyReply
+  ) {
     try {
       // Usar o ID do usuário autenticado em vez do parâmetro da URL
       const userId = request.user?.id
 
       if (!userId) {
         return reply.status(401).send({
-          error: 'User not authenticated'
+          error: 'User not authenticated',
         })
       }
 
@@ -401,12 +420,12 @@ export const UserPreferencesController = {
 
       if (error.message === 'User not found' || error.message === 'User preferences not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -421,8 +440,8 @@ export const UserPreferencesController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
-  }
+  },
 }

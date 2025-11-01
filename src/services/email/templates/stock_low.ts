@@ -1,4 +1,4 @@
-import { NotificationEmailData } from '../email.service'
+import type { NotificationEmailData } from '../email.service'
 
 export const generateStockLowEmailHTML = (data: NotificationEmailData): string => {
   return `

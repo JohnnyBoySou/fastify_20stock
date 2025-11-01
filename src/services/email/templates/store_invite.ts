@@ -1,4 +1,4 @@
-import { StoreInviteEmailData } from '../email.service'
+import type { StoreInviteEmailData } from '../email.service'
 
 export const generateStoreInviteEmailHTML = (data: StoreInviteEmailData): string => {
   return `

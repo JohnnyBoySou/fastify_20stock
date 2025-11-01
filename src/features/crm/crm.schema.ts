@@ -1,4 +1,4 @@
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify'
 
 // Schemas para CrmClient
 export const createCrmClientSchema: FastifySchema = {
@@ -12,8 +12,8 @@ export const createCrmClientSchema: FastifySchema = {
       cpfCnpj: { type: 'string' },
       company: { type: 'string' },
       notes: { type: 'string' },
-      stageId: { type: 'string' }
-    }
+      stageId: { type: 'string' },
+    },
   },
   response: {
     201: {
@@ -36,27 +36,27 @@ export const createCrmClientSchema: FastifySchema = {
             id: { type: 'string' },
             name: { type: 'string' },
             color: { type: 'string' },
-            order: { type: 'number' }
-          }
-        }
-      }
+            order: { type: 'number' },
+          },
+        },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const updateCrmClientSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
@@ -67,8 +67,8 @@ export const updateCrmClientSchema: FastifySchema = {
       cpfCnpj: { type: 'string' },
       company: { type: 'string' },
       notes: { type: 'string' },
-      stageId: { type: 'string' }
-    }
+      stageId: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -91,33 +91,33 @@ export const updateCrmClientSchema: FastifySchema = {
             id: { type: 'string' },
             name: { type: 'string' },
             color: { type: 'string' },
-            order: { type: 'number' }
-          }
-        }
-      }
+            order: { type: 'number' },
+          },
+        },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const getCrmClientSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -140,19 +140,19 @@ export const getCrmClientSchema: FastifySchema = {
             id: { type: 'string' },
             name: { type: 'string' },
             color: { type: 'string' },
-            order: { type: 'number' }
-          }
-        }
-      }
+            order: { type: 'number' },
+          },
+        },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const listCrmClientsSchema: FastifySchema = {
   querystring: {
@@ -162,8 +162,8 @@ export const listCrmClientsSchema: FastifySchema = {
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       search: { type: 'string' },
       stageId: { type: 'string' },
-      grouped: { type: 'boolean' }
-    }
+      grouped: { type: 'boolean' },
+    },
   },
   response: {
     200: {
@@ -191,15 +191,15 @@ export const listCrmClientsSchema: FastifySchema = {
                         email: { type: 'string' },
                         phone: { type: 'string' },
                         company: { type: 'string' },
-                        createdAt: { type: 'string', format: 'date-time' }
-                      }
-                    }
-                  }
-                }
-              }
+                        createdAt: { type: 'string', format: 'date-time' },
+                      },
+                    },
+                  },
+                },
+              },
             },
-            totalClients: { type: 'number' }
-          }
+            totalClients: { type: 'number' },
+          },
         },
         {
           // Schema para grouped=false (padrão)
@@ -226,11 +226,11 @@ export const listCrmClientsSchema: FastifySchema = {
                       id: { type: 'string' },
                       name: { type: 'string' },
                       color: { type: 'string' },
-                      order: { type: 'number' }
-                    }
-                  }
-                }
-              }
+                      order: { type: 'number' },
+                    },
+                  },
+                },
+              },
             },
             pagination: {
               type: 'object',
@@ -238,22 +238,22 @@ export const listCrmClientsSchema: FastifySchema = {
                 page: { type: 'number' },
                 limit: { type: 'number' },
                 total: { type: 'number' },
-                totalPages: { type: 'number' }
-              }
-            }
-          }
-        }
-      ]
-    }
-  }
-};
+                totalPages: { type: 'number' },
+              },
+            },
+          },
+        },
+      ],
+    },
+  },
+}
 
 export const listCrmClientsGroupedSchema: FastifySchema = {
   querystring: {
     type: 'object',
     properties: {
-      grouped: { type: 'boolean', default: true }
-    }
+      grouped: { type: 'boolean', default: true },
+    },
   },
   response: {
     200: {
@@ -278,52 +278,52 @@ export const listCrmClientsGroupedSchema: FastifySchema = {
                     email: { type: 'string' },
                     phone: { type: 'string' },
                     company: { type: 'string' },
-                    createdAt: { type: 'string', format: 'date-time' }
-                  }
-                }
-              }
-            }
-          }
+                    createdAt: { type: 'string', format: 'date-time' },
+                  },
+                },
+              },
+            },
+          },
         },
-        totalClients: { type: 'number' }
-      }
-    }
-  }
-};
+        totalClients: { type: 'number' },
+      },
+    },
+  },
+}
 
 export const deleteCrmClientSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     204: { type: 'null' },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const transitionStageSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     required: ['stageId'],
     properties: {
-      stageId: { type: ['string', 'null'] }
-    }
+      stageId: { type: ['string', 'null'] },
+    },
   },
   response: {
     200: {
@@ -339,25 +339,25 @@ export const transitionStageSchema: FastifySchema = {
             id: { type: 'string' },
             name: { type: 'string' },
             color: { type: 'string' },
-            order: { type: 'number' }
-          }
-        }
-      }
+            order: { type: 'number' },
+          },
+        },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schemas para CrmStage
 export const createCrmStageSchema: FastifySchema = {
@@ -367,8 +367,8 @@ export const createCrmStageSchema: FastifySchema = {
     properties: {
       name: { type: 'string', minLength: 1 },
       color: { type: 'string' },
-      order: { type: 'number', minimum: 1 }
-    }
+      order: { type: 'number', minimum: 1 },
+    },
   },
   response: {
     201: {
@@ -379,33 +379,33 @@ export const createCrmStageSchema: FastifySchema = {
         name: { type: 'string' },
         color: { type: 'string' },
         order: { type: 'number' },
-        createdAt: { type: 'string', format: 'date-time' }
-      }
+        createdAt: { type: 'string', format: 'date-time' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const updateCrmStageSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     properties: {
       name: { type: 'string', minLength: 1 },
       color: { type: 'string' },
-      order: { type: 'number', minimum: 1 }
-    }
+      order: { type: 'number', minimum: 1 },
+    },
   },
   response: {
     200: {
@@ -416,31 +416,31 @@ export const updateCrmStageSchema: FastifySchema = {
         name: { type: 'string' },
         color: { type: 'string' },
         order: { type: 'number' },
-        createdAt: { type: 'string', format: 'date-time' }
-      }
+        createdAt: { type: 'string', format: 'date-time' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const getCrmStageSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -455,27 +455,27 @@ export const getCrmStageSchema: FastifySchema = {
         _count: {
           type: 'object',
           properties: {
-            clients: { type: 'number' }
-          }
-        }
-      }
+            clients: { type: 'number' },
+          },
+        },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const listCrmStagesSchema: FastifySchema = {
   querystring: {
     type: 'object',
     properties: {
       page: { type: 'number', minimum: 1, default: 1 },
-      limit: { type: 'number', minimum: 1, maximum: 100, default: 10 }
-    }
+      limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
+    },
   },
   response: {
     200: {
@@ -495,11 +495,11 @@ export const listCrmStagesSchema: FastifySchema = {
               _count: {
                 type: 'object',
                 properties: {
-                  clients: { type: 'number' }
-                }
-              }
-            }
-          }
+                  clients: { type: 'number' },
+                },
+              },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -507,53 +507,53 @@ export const listCrmStagesSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const deleteCrmStageSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     204: { type: 'null' },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const reorderCrmStageSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     required: ['order'],
     properties: {
-      order: { type: 'number', minimum: 1 }
-    }
+      order: { type: 'number', minimum: 1 },
+    },
   },
   response: {
     200: {
@@ -563,23 +563,23 @@ export const reorderCrmStageSchema: FastifySchema = {
         storeId: { type: 'string' },
         name: { type: 'string' },
         color: { type: 'string' },
-        order: { type: 'number' }
-      }
+        order: { type: 'number' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const CrmSchemas = {
   // Client schemas
@@ -590,12 +590,12 @@ export const CrmSchemas = {
   listClients: listCrmClientsSchema,
   listClientsGrouped: listCrmClientsGroupedSchema,
   transitionStage: transitionStageSchema,
-  
+
   // Stage schemas
   createStage: createCrmStageSchema,
   updateStage: updateCrmStageSchema,
   getStage: getCrmStageSchema,
   deleteStage: deleteCrmStageSchema,
   listStages: listCrmStagesSchema,
-  reorderStage: reorderCrmStageSchema
-};
+  reorderStage: reorderCrmStageSchema,
+}

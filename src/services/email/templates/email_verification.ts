@@ -1,4 +1,4 @@
-import { EmailVerificationData } from '../email.service'
+import type { EmailVerificationData } from '../email.service'
 
 export const generateEmailVerificationHTML = (data: EmailVerificationData): string => {
   return `

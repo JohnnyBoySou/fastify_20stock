@@ -5,50 +5,50 @@ export class PushSubscriptionQueries {
     const subscription = await this.prisma.pushSubscription.findFirst({
       where: {
         id,
-        userId
-      }
-    });
+        userId,
+      },
+    })
 
     if (!subscription) {
-      throw new Error('Push subscription not found');
+      throw new Error('Push subscription not found')
     }
 
-    return subscription;
+    return subscription
   }
 
   async listByUser(userId: string) {
     return await this.prisma.pushSubscription.findMany({
       where: {
-        userId
+        userId,
       },
       orderBy: {
-        createdAt: 'desc'
-      }
-    });
+        createdAt: 'desc',
+      },
+    })
   }
 
-  async list(page: number = 1, limit: number = 10) {
-    const skip = (page - 1) * limit;
+  async list(page = 1, limit = 10) {
+    const skip = (page - 1) * limit
 
     const [items, total] = await Promise.all([
       this.prisma.pushSubscription.findMany({
         skip,
         take: limit,
         orderBy: {
-          createdAt: 'desc'
+          createdAt: 'desc',
         },
         include: {
           user: {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
-        }
+              email: true,
+            },
+          },
+        },
       }),
-      this.prisma.pushSubscription.count()
-    ]);
+      this.prisma.pushSubscription.count(),
+    ])
 
     return {
       items,
@@ -56,9 +56,8 @@ export class PushSubscriptionQueries {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
-    };
+        totalPages: Math.ceil(total / limit),
+      },
+    }
   }
 }
-

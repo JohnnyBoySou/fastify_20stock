@@ -1,4 +1,4 @@
-import { FastifySchema } from 'fastify'
+import type { FastifySchema } from 'fastify'
 
 // ================================
 // SCHEMAS DE QUERY PARAMETERS
@@ -9,14 +9,14 @@ export const getDashboardStatsSchema: FastifySchema = {
     type: 'object',
     properties: {
       storeId: { type: 'string' },
-      period: { 
-        type: 'string', 
+      period: {
+        type: 'string',
         enum: ['day', 'week', 'month', 'year'],
-        default: 'month'
+        default: 'month',
       },
       startDate: { type: 'string', format: 'date' },
-      endDate: { type: 'string', format: 'date' }
-    }
+      endDate: { type: 'string', format: 'date' },
+    },
   },
   response: {
     200: {
@@ -29,8 +29,8 @@ export const getDashboardStatsSchema: FastifySchema = {
             totalCategories: { type: 'number' },
             totalSuppliers: { type: 'number' },
             totalStores: { type: 'number' },
-            totalUsers: { type: 'number' }
-          }
+            totalUsers: { type: 'number' },
+          },
         },
         inventory: {
           type: 'object',
@@ -38,8 +38,8 @@ export const getDashboardStatsSchema: FastifySchema = {
             totalValue: { type: 'number' },
             lowStockItems: { type: 'number' },
             outOfStockItems: { type: 'number' },
-            averageStockValue: { type: 'number' }
-          }
+            averageStockValue: { type: 'number' },
+          },
         },
         movements: {
           type: 'object',
@@ -48,8 +48,8 @@ export const getDashboardStatsSchema: FastifySchema = {
             entries: { type: 'number' },
             exits: { type: 'number' },
             losses: { type: 'number' },
-            totalValue: { type: 'number' }
-          }
+            totalValue: { type: 'number' },
+          },
         },
         recentActivity: {
           type: 'object',
@@ -63,9 +63,9 @@ export const getDashboardStatsSchema: FastifySchema = {
                   type: { type: 'string' },
                   productName: { type: 'string' },
                   quantity: { type: 'number' },
-                  createdAt: { type: 'string' }
-                }
-              }
+                  createdAt: { type: 'string' },
+                },
+              },
             },
             recentProducts: {
               type: 'array',
@@ -74,11 +74,11 @@ export const getDashboardStatsSchema: FastifySchema = {
                 properties: {
                   id: { type: 'string' },
                   name: { type: 'string' },
-                  createdAt: { type: 'string' }
-                }
-              }
-            }
-          }
+                  createdAt: { type: 'string' },
+                },
+              },
+            },
+          },
         },
         charts: {
           type: 'object',
@@ -90,9 +90,9 @@ export const getDashboardStatsSchema: FastifySchema = {
                 properties: {
                   type: { type: 'string' },
                   count: { type: 'number' },
-                  value: { type: 'number' }
-                }
-              }
+                  value: { type: 'number' },
+                },
+              },
             },
             topProducts: {
               type: 'array',
@@ -102,9 +102,9 @@ export const getDashboardStatsSchema: FastifySchema = {
                   productId: { type: 'string' },
                   productName: { type: 'string' },
                   movements: { type: 'number' },
-                  value: { type: 'number' }
-                }
-              }
+                  value: { type: 'number' },
+                },
+              },
             },
             movementsByDay: {
               type: 'array',
@@ -114,15 +114,15 @@ export const getDashboardStatsSchema: FastifySchema = {
                   date: { type: 'string' },
                   entries: { type: 'number' },
                   exits: { type: 'number' },
-                  losses: { type: 'number' }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+                  losses: { type: 'number' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 }
 
 export const getInventoryReportSchema: FastifySchema = {
@@ -132,25 +132,25 @@ export const getInventoryReportSchema: FastifySchema = {
       storeId: { type: 'string' },
       categoryId: { type: 'string' },
       supplierId: { type: 'string' },
-      status: { 
-        type: 'string', 
+      status: {
+        type: 'string',
         enum: ['all', 'active', 'inactive'],
-        default: 'all'
+        default: 'all',
       },
       lowStock: { type: 'boolean' },
-      sortBy: { 
-        type: 'string', 
+      sortBy: {
+        type: 'string',
         enum: ['name', 'stock', 'value', 'category'],
-        default: 'name'
+        default: 'name',
       },
-      sortOrder: { 
-        type: 'string', 
+      sortOrder: {
+        type: 'string',
         enum: ['asc', 'desc'],
-        default: 'asc'
+        default: 'asc',
       },
       page: { type: 'number', minimum: 1, default: 1 },
-      limit: { type: 'number', minimum: 1, maximum: 100, default: 20 }
-    }
+      limit: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+    },
   },
   response: {
     200: {
@@ -168,15 +168,15 @@ export const getInventoryReportSchema: FastifySchema = {
                 type: 'object',
                 properties: {
                   id: { type: 'string' },
-                  name: { type: 'string' }
-                }
+                  name: { type: 'string' },
+                },
               },
               supplier: {
                 type: 'object',
                 properties: {
                   id: { type: 'string' },
-                  corporateName: { type: 'string' }
-                }
+                  corporateName: { type: 'string' },
+                },
               },
               currentStock: { type: 'number' },
               stockMin: { type: 'number' },
@@ -184,13 +184,13 @@ export const getInventoryReportSchema: FastifySchema = {
               unitPrice: { type: 'number' },
               totalValue: { type: 'number' },
               status: { type: 'boolean' },
-              alertLevel: { 
-                type: 'string', 
-                enum: ['normal', 'low', 'high', 'out'] 
+              alertLevel: {
+                type: 'string',
+                enum: ['normal', 'low', 'high', 'out'],
               },
-              lastMovement: { type: 'string' }
-            }
-          }
+              lastMovement: { type: 'string' },
+            },
+          },
         },
         summary: {
           type: 'object',
@@ -199,8 +199,8 @@ export const getInventoryReportSchema: FastifySchema = {
             totalValue: { type: 'number' },
             lowStockCount: { type: 'number' },
             outOfStockCount: { type: 'number' },
-            averageStockValue: { type: 'number' }
-          }
+            averageStockValue: { type: 'number' },
+          },
         },
         pagination: {
           type: 'object',
@@ -208,12 +208,12 @@ export const getInventoryReportSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
 }
 
 export const getMovementReportSchema: FastifySchema = {
@@ -223,15 +223,15 @@ export const getMovementReportSchema: FastifySchema = {
       storeId: { type: 'string' },
       productId: { type: 'string' },
       supplierId: { type: 'string' },
-      type: { 
-        type: 'string', 
-        enum: ['ENTRADA', 'SAIDA', 'PERDA']
+      type: {
+        type: 'string',
+        enum: ['ENTRADA', 'SAIDA', 'PERDA'],
       },
       startDate: { type: 'string', format: 'date' },
       endDate: { type: 'string', format: 'date' },
       page: { type: 'number', minimum: 1, default: 1 },
-      limit: { type: 'number', minimum: 1, maximum: 100, default: 20 }
-    }
+      limit: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+    },
   },
   response: {
     200: {
@@ -256,26 +256,26 @@ export const getMovementReportSchema: FastifySchema = {
                 properties: {
                   id: { type: 'string' },
                   name: { type: 'string' },
-                  unitOfMeasure: { type: 'string' }
-                }
+                  unitOfMeasure: { type: 'string' },
+                },
               },
               supplier: {
                 type: 'object',
                 properties: {
                   id: { type: 'string' },
-                  corporateName: { type: 'string' }
-                }
+                  corporateName: { type: 'string' },
+                },
               },
               user: {
                 type: 'object',
                 properties: {
                   id: { type: 'string' },
-                  name: { type: 'string' }
-                }
+                  name: { type: 'string' },
+                },
               },
-              createdAt: { type: 'string' }
-            }
-          }
+              createdAt: { type: 'string' },
+            },
+          },
         },
         summary: {
           type: 'object',
@@ -285,8 +285,8 @@ export const getMovementReportSchema: FastifySchema = {
             totalExits: { type: 'number' },
             totalLosses: { type: 'number' },
             totalValue: { type: 'number' },
-            averageValue: { type: 'number' }
-          }
+            averageValue: { type: 'number' },
+          },
         },
         pagination: {
           type: 'object',
@@ -294,12 +294,12 @@ export const getMovementReportSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
 }
 
 export const getFinancialReportSchema: FastifySchema = {
@@ -309,12 +309,12 @@ export const getFinancialReportSchema: FastifySchema = {
       storeId: { type: 'string' },
       startDate: { type: 'string', format: 'date' },
       endDate: { type: 'string', format: 'date' },
-      groupBy: { 
-        type: 'string', 
+      groupBy: {
+        type: 'string',
         enum: ['day', 'week', 'month', 'year'],
-        default: 'month'
-      }
-    }
+        default: 'month',
+      },
+    },
   },
   response: {
     200: {
@@ -325,8 +325,8 @@ export const getFinancialReportSchema: FastifySchema = {
           properties: {
             startDate: { type: 'string' },
             endDate: { type: 'string' },
-            groupBy: { type: 'string' }
-          }
+            groupBy: { type: 'string' },
+          },
         },
         summary: {
           type: 'object',
@@ -335,8 +335,8 @@ export const getFinancialReportSchema: FastifySchema = {
             totalCosts: { type: 'number' },
             grossProfit: { type: 'number' },
             profitMargin: { type: 'number' },
-            totalMovements: { type: 'number' }
-          }
+            totalMovements: { type: 'number' },
+          },
         },
         data: {
           type: 'array',
@@ -347,9 +347,9 @@ export const getFinancialReportSchema: FastifySchema = {
               revenue: { type: 'number' },
               costs: { type: 'number' },
               profit: { type: 'number' },
-              movements: { type: 'number' }
-            }
-          }
+              movements: { type: 'number' },
+            },
+          },
         },
         breakdown: {
           type: 'object',
@@ -364,9 +364,9 @@ export const getFinancialReportSchema: FastifySchema = {
                   revenue: { type: 'number' },
                   costs: { type: 'number' },
                   profit: { type: 'number' },
-                  movements: { type: 'number' }
-                }
-              }
+                  movements: { type: 'number' },
+                },
+              },
             },
             byCategory: {
               type: 'array',
@@ -378,9 +378,9 @@ export const getFinancialReportSchema: FastifySchema = {
                   revenue: { type: 'number' },
                   costs: { type: 'number' },
                   profit: { type: 'number' },
-                  movements: { type: 'number' }
-                }
-              }
+                  movements: { type: 'number' },
+                },
+              },
             },
             bySupplier: {
               type: 'array',
@@ -392,15 +392,15 @@ export const getFinancialReportSchema: FastifySchema = {
                   revenue: { type: 'number' },
                   costs: { type: 'number' },
                   profit: { type: 'number' },
-                  movements: { type: 'number' }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+                  movements: { type: 'number' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 }
 
 export const getCategoryReportSchema: FastifySchema = {
@@ -410,8 +410,8 @@ export const getCategoryReportSchema: FastifySchema = {
       storeId: { type: 'string' },
       startDate: { type: 'string', format: 'date' },
       endDate: { type: 'string', format: 'date' },
-      includeSubcategories: { type: 'boolean', default: true }
-    }
+      includeSubcategories: { type: 'boolean', default: true },
+    },
   },
   response: {
     200: {
@@ -433,8 +433,8 @@ export const getCategoryReportSchema: FastifySchema = {
                 type: 'object',
                 properties: {
                   id: { type: 'string' },
-                  name: { type: 'string' }
-                }
+                  name: { type: 'string' },
+                },
               },
               children: {
                 type: 'array',
@@ -442,9 +442,9 @@ export const getCategoryReportSchema: FastifySchema = {
                   type: 'object',
                   properties: {
                     id: { type: 'string' },
-                    name: { type: 'string' }
-                  }
-                }
+                    name: { type: 'string' },
+                  },
+                },
               },
               stats: {
                 type: 'object',
@@ -453,11 +453,11 @@ export const getCategoryReportSchema: FastifySchema = {
                   totalValue: { type: 'number' },
                   averagePrice: { type: 'number' },
                   movements: { type: 'number' },
-                  lastMovement: { type: 'string' }
-                }
-              }
-            }
-          }
+                  lastMovement: { type: 'string' },
+                },
+              },
+            },
+          },
         },
         summary: {
           type: 'object',
@@ -465,12 +465,12 @@ export const getCategoryReportSchema: FastifySchema = {
             totalCategories: { type: 'number' },
             totalProducts: { type: 'number' },
             totalValue: { type: 'number' },
-            averageProductsPerCategory: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
+            averageProductsPerCategory: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
 }
 
 export const getSupplierReportSchema: FastifySchema = {
@@ -480,12 +480,12 @@ export const getSupplierReportSchema: FastifySchema = {
       storeId: { type: 'string' },
       startDate: { type: 'string', format: 'date' },
       endDate: { type: 'string', format: 'date' },
-      status: { 
-        type: 'string', 
+      status: {
+        type: 'string',
         enum: ['all', 'active', 'inactive'],
-        default: 'all'
-      }
-    }
+        default: 'all',
+      },
+    },
   },
   response: {
     200: {
@@ -507,8 +507,8 @@ export const getSupplierReportSchema: FastifySchema = {
                   cep: { type: 'string' },
                   city: { type: 'string' },
                   state: { type: 'string' },
-                  address: { type: 'string' }
-                }
+                  address: { type: 'string' },
+                },
               },
               stats: {
                 type: 'object',
@@ -517,8 +517,8 @@ export const getSupplierReportSchema: FastifySchema = {
                   totalValue: { type: 'number' },
                   totalMovements: { type: 'number' },
                   lastMovement: { type: 'string' },
-                  averageOrderValue: { type: 'number' }
-                }
+                  averageOrderValue: { type: 'number' },
+                },
               },
               responsibles: {
                 type: 'array',
@@ -528,12 +528,12 @@ export const getSupplierReportSchema: FastifySchema = {
                     id: { type: 'string' },
                     name: { type: 'string' },
                     phone: { type: 'string' },
-                    email: { type: 'string' }
-                  }
-                }
-              }
-            }
-          }
+                    email: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
         },
         summary: {
           type: 'object',
@@ -542,12 +542,12 @@ export const getSupplierReportSchema: FastifySchema = {
             activeSuppliers: { type: 'number' },
             totalProducts: { type: 'number' },
             totalValue: { type: 'number' },
-            averageProductsPerSupplier: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
+            averageProductsPerSupplier: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
 }
 
 export const getUserActivityReportSchema: FastifySchema = {
@@ -558,13 +558,13 @@ export const getUserActivityReportSchema: FastifySchema = {
       userId: { type: 'string' },
       startDate: { type: 'string', format: 'date' },
       endDate: { type: 'string', format: 'date' },
-      action: { 
-        type: 'string', 
-        enum: ['CREATE', 'UPDATE', 'DELETE']
+      action: {
+        type: 'string',
+        enum: ['CREATE', 'UPDATE', 'DELETE'],
       },
       page: { type: 'number', minimum: 1, default: 1 },
-      limit: { type: 'number', minimum: 1, maximum: 100, default: 20 }
-    }
+      limit: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+    },
   },
   response: {
     200: {
@@ -586,12 +586,12 @@ export const getUserActivityReportSchema: FastifySchema = {
                 properties: {
                   id: { type: 'string' },
                   name: { type: 'string' },
-                  email: { type: 'string' }
-                }
+                  email: { type: 'string' },
+                },
               },
-              createdAt: { type: 'string' }
-            }
-          }
+              createdAt: { type: 'string' },
+            },
+          },
         },
         summary: {
           type: 'object',
@@ -603,8 +603,8 @@ export const getUserActivityReportSchema: FastifySchema = {
               properties: {
                 id: { type: 'string' },
                 name: { type: 'string' },
-                activities: { type: 'number' }
-              }
+                activities: { type: 'number' },
+              },
             },
             activitiesByType: {
               type: 'array',
@@ -612,11 +612,11 @@ export const getUserActivityReportSchema: FastifySchema = {
                 type: 'object',
                 properties: {
                   action: { type: 'string' },
-                  count: { type: 'number' }
-                }
-              }
-            }
-          }
+                  count: { type: 'number' },
+                },
+              },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -624,12 +624,12 @@ export const getUserActivityReportSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
 }
 
 export const getStockAlertReportSchema: FastifySchema = {
@@ -637,14 +637,14 @@ export const getStockAlertReportSchema: FastifySchema = {
     type: 'object',
     properties: {
       storeId: { type: 'string' },
-      alertType: { 
-        type: 'string', 
+      alertType: {
+        type: 'string',
         enum: ['low', 'high', 'expired', 'all'],
-        default: 'all'
+        default: 'all',
       },
       page: { type: 'number', minimum: 1, default: 1 },
-      limit: { type: 'number', minimum: 1, maximum: 100, default: 20 }
-    }
+      limit: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+    },
   },
   response: {
     200: {
@@ -661,13 +661,13 @@ export const getStockAlertReportSchema: FastifySchema = {
               currentStock: { type: 'number' },
               stockMin: { type: 'number' },
               stockMax: { type: 'number' },
-              alertType: { 
-                type: 'string', 
-                enum: ['low', 'high', 'expired', 'out'] 
+              alertType: {
+                type: 'string',
+                enum: ['low', 'high', 'expired', 'out'],
               },
-              severity: { 
-                type: 'string', 
-                enum: ['low', 'medium', 'high', 'critical'] 
+              severity: {
+                type: 'string',
+                enum: ['low', 'medium', 'high', 'critical'],
               },
               unitPrice: { type: 'number' },
               totalValue: { type: 'number' },
@@ -676,18 +676,18 @@ export const getStockAlertReportSchema: FastifySchema = {
                 type: 'object',
                 properties: {
                   id: { type: 'string' },
-                  name: { type: 'string' }
-                }
+                  name: { type: 'string' },
+                },
               },
               supplier: {
                 type: 'object',
                 properties: {
                   id: { type: 'string' },
-                  corporateName: { type: 'string' }
-                }
-              }
-            }
-          }
+                  corporateName: { type: 'string' },
+                },
+              },
+            },
+          },
         },
         summary: {
           type: 'object',
@@ -697,8 +697,8 @@ export const getStockAlertReportSchema: FastifySchema = {
             highStockAlerts: { type: 'number' },
             expiredAlerts: { type: 'number' },
             outOfStockAlerts: { type: 'number' },
-            totalValue: { type: 'number' }
-          }
+            totalValue: { type: 'number' },
+          },
         },
         pagination: {
           type: 'object',
@@ -706,12 +706,12 @@ export const getStockAlertReportSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
 }
 
 export const exportReportSchema: FastifySchema = {
@@ -719,19 +719,27 @@ export const exportReportSchema: FastifySchema = {
     type: 'object',
     required: ['reportType', 'format'],
     properties: {
-      reportType: { 
-        type: 'string', 
-        enum: ['inventory', 'movement', 'financial', 'category', 'supplier', 'user-activity', 'stock-alert']
+      reportType: {
+        type: 'string',
+        enum: [
+          'inventory',
+          'movement',
+          'financial',
+          'category',
+          'supplier',
+          'user-activity',
+          'stock-alert',
+        ],
       },
-      format: { 
-        type: 'string', 
-        enum: ['csv', 'xlsx', 'pdf']
+      format: {
+        type: 'string',
+        enum: ['csv', 'xlsx', 'pdf'],
       },
       storeId: { type: 'string' },
       startDate: { type: 'string', format: 'date' },
       endDate: { type: 'string', format: 'date' },
-      filters: { type: 'string' }
-    }
+      filters: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -742,8 +750,8 @@ export const exportReportSchema: FastifySchema = {
         filename: { type: 'string' },
         format: { type: 'string' },
         generatedAt: { type: 'string' },
-        expiresAt: { type: 'string' }
-      }
-    }
-  }
+        expiresAt: { type: 'string' },
+      },
+    },
+  },
 }

@@ -1,12 +1,12 @@
-import { FastifySchema } from 'fastify'
+import type { FastifySchema } from 'fastify'
 
 export const createMilestoneSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['roadmapId'],
     properties: {
-      roadmapId: { type: 'string' }
-    }
+      roadmapId: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
@@ -14,16 +14,16 @@ export const createMilestoneSchema: FastifySchema = {
     properties: {
       title: { type: 'string', minLength: 1, maxLength: 200 },
       description: { type: 'string', maxLength: 1000 },
-      status: { 
-        type: 'string', 
+      status: {
+        type: 'string',
         enum: ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED'],
-        default: 'PENDING'
+        default: 'PENDING',
       },
       progress: { type: 'number', minimum: 0, maximum: 100, default: 0 },
       order: { type: 'number', minimum: 0 },
       startDate: { type: 'string', format: 'date-time' },
-      endDate: { type: 'string', format: 'date-time' }
-    }
+      endDate: { type: 'string', format: 'date-time' },
+    },
   },
   response: {
     201: {
@@ -40,22 +40,22 @@ export const createMilestoneSchema: FastifySchema = {
         endDate: { type: ['string', 'null'], format: 'date-time' },
         completedAt: { type: ['string', 'null'], format: 'date-time' },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
+        error: { type: 'string' },
+      },
+    },
+  },
 }
 
 export const updateMilestoneSchema: FastifySchema = {
@@ -64,23 +64,23 @@ export const updateMilestoneSchema: FastifySchema = {
     required: ['roadmapId', 'id'],
     properties: {
       roadmapId: { type: 'string' },
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     properties: {
       title: { type: 'string', minLength: 1, maxLength: 200 },
       description: { type: 'string', maxLength: 1000 },
-      status: { 
-        type: 'string', 
-        enum: ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED']
+      status: {
+        type: 'string',
+        enum: ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED'],
       },
       progress: { type: 'number', minimum: 0, maximum: 100 },
       order: { type: 'number', minimum: 0 },
       startDate: { type: 'string', format: 'date-time' },
-      endDate: { type: 'string', format: 'date-time' }
-    }
+      endDate: { type: 'string', format: 'date-time' },
+    },
   },
   response: {
     200: {
@@ -96,22 +96,22 @@ export const updateMilestoneSchema: FastifySchema = {
         startDate: { type: ['string', 'null'], format: 'date-time' },
         endDate: { type: ['string', 'null'], format: 'date-time' },
         completedAt: { type: ['string', 'null'], format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
+        error: { type: 'string' },
+      },
+    },
+  },
 }
 
 export const getMilestoneSchema: FastifySchema = {
@@ -120,8 +120,8 @@ export const getMilestoneSchema: FastifySchema = {
     required: ['roadmapId', 'id'],
     properties: {
       roadmapId: { type: 'string' },
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -138,16 +138,16 @@ export const getMilestoneSchema: FastifySchema = {
         endDate: { type: ['string', 'null'], format: 'date-time' },
         completedAt: { type: ['string', 'null'], format: 'date-time' },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
+        error: { type: 'string' },
+      },
+    },
+  },
 }
 
 export const listMilestonesSchema: FastifySchema = {
@@ -155,19 +155,19 @@ export const listMilestonesSchema: FastifySchema = {
     type: 'object',
     required: ['roadmapId'],
     properties: {
-      roadmapId: { type: 'string' }
-    }
+      roadmapId: { type: 'string' },
+    },
   },
   querystring: {
     type: 'object',
     properties: {
-      status: { 
-        type: 'string', 
-        enum: ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED']
+      status: {
+        type: 'string',
+        enum: ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED'],
       },
       page: { type: 'number', minimum: 1, default: 1 },
-      limit: { type: 'number', minimum: 1, maximum: 100, default: 50 }
-    }
+      limit: { type: 'number', minimum: 1, maximum: 100, default: 50 },
+    },
   },
   response: {
     200: {
@@ -189,9 +189,9 @@ export const listMilestonesSchema: FastifySchema = {
               endDate: { type: ['string', 'null'], format: 'date-time' },
               completedAt: { type: ['string', 'null'], format: 'date-time' },
               createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' }
-            }
-          }
+              updatedAt: { type: 'string', format: 'date-time' },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -199,12 +199,12 @@ export const listMilestonesSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
 }
 
 export const deleteMilestoneSchema: FastifySchema = {
@@ -213,18 +213,18 @@ export const deleteMilestoneSchema: FastifySchema = {
     required: ['roadmapId', 'id'],
     properties: {
       roadmapId: { type: 'string' },
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     204: { type: 'null' },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
+        error: { type: 'string' },
+      },
+    },
+  },
 }
 
 export const updateMilestoneProgressSchema: FastifySchema = {
@@ -233,15 +233,15 @@ export const updateMilestoneProgressSchema: FastifySchema = {
     required: ['roadmapId', 'id'],
     properties: {
       roadmapId: { type: 'string' },
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     required: ['progress'],
     properties: {
-      progress: { type: 'number', minimum: 0, maximum: 100 }
-    }
+      progress: { type: 'number', minimum: 0, maximum: 100 },
+    },
   },
   response: {
     200: {
@@ -250,22 +250,22 @@ export const updateMilestoneProgressSchema: FastifySchema = {
         id: { type: 'string' },
         progress: { type: 'number' },
         status: { type: 'string' },
-        completedAt: { type: ['string', 'null'], format: 'date-time' }
-      }
+        completedAt: { type: ['string', 'null'], format: 'date-time' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
+        error: { type: 'string' },
+      },
+    },
+  },
 }
 
 export const updateMilestoneStatusSchema: FastifySchema = {
@@ -274,18 +274,18 @@ export const updateMilestoneStatusSchema: FastifySchema = {
     required: ['roadmapId', 'id'],
     properties: {
       roadmapId: { type: 'string' },
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     required: ['status'],
     properties: {
-      status: { 
-        type: 'string', 
-        enum: ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED']
-      }
-    }
+      status: {
+        type: 'string',
+        enum: ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED'],
+      },
+    },
   },
   response: {
     200: {
@@ -293,16 +293,16 @@ export const updateMilestoneStatusSchema: FastifySchema = {
       properties: {
         id: { type: 'string' },
         status: { type: 'string' },
-        completedAt: { type: ['string', 'null'], format: 'date-time' }
-      }
+        completedAt: { type: ['string', 'null'], format: 'date-time' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
+        error: { type: 'string' },
+      },
+    },
+  },
 }
 
 export const reorderMilestonesSchema: FastifySchema = {
@@ -310,8 +310,8 @@ export const reorderMilestonesSchema: FastifySchema = {
     type: 'object',
     required: ['roadmapId'],
     properties: {
-      roadmapId: { type: 'string' }
-    }
+      roadmapId: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
@@ -320,9 +320,9 @@ export const reorderMilestonesSchema: FastifySchema = {
       milestoneIds: {
         type: 'array',
         items: { type: 'string' },
-        minItems: 1
-      }
-    }
+        minItems: 1,
+      },
+    },
   },
   response: {
     200: {
@@ -334,19 +334,19 @@ export const reorderMilestonesSchema: FastifySchema = {
             type: 'object',
             properties: {
               id: { type: 'string' },
-              order: { type: 'number' }
-            }
-          }
-        }
-      }
+              order: { type: 'number' },
+            },
+          },
+        },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
+        error: { type: 'string' },
+      },
+    },
+  },
 }
 
 export const MilestoneSchemas = {
@@ -357,6 +357,5 @@ export const MilestoneSchemas = {
   list: listMilestonesSchema,
   updateProgress: updateMilestoneProgressSchema,
   updateStatus: updateMilestoneStatusSchema,
-  reorder: reorderMilestonesSchema
+  reorder: reorderMilestonesSchema,
 }
-

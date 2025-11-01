@@ -1,27 +1,27 @@
-import { db } from '@/plugins/prisma';
-import { NotificationCommands } from '@/features/notification/commands/notification.commands';
-import { TriggerHandler } from '@/services/workflow-engine/trigger-handler.service';
+import { NotificationCommands } from '@/features/notification/commands/notification.commands'
+import { db } from '@/plugins/prisma'
+import { TriggerHandler } from '@/services/workflow-engine/trigger-handler.service'
 
 export interface StockAlertData {
-  productId: string;
-  productName: string;
-  storeId: string;
-  storeName: string;
-  currentStock: number;
-  stockMin: number;
-  stockMax: number;
-  alertPercentage: number;
-  previousStock: number;
-  movementType: 'ENTRADA' | 'SAIDA' | 'PERDA';
-  movementQuantity: number;
-  movementId: string;
+  productId: string
+  productName: string
+  storeId: string
+  storeName: string
+  currentStock: number
+  stockMin: number
+  stockMax: number
+  alertPercentage: number
+  previousStock: number
+  movementType: 'ENTRADA' | 'SAIDA' | 'PERDA'
+  movementQuantity: number
+  movementId: string
 }
 
 export interface StockAlertResult {
-  alertTriggered: boolean;
-  alertType: 'LOW_STOCK' | 'CRITICAL_STOCK' | 'OVERSTOCK' | 'STOCK_RECOVERED' | null;
-  notification?: any;
-  message?: string;
+  alertTriggered: boolean
+  alertType: 'LOW_STOCK' | 'CRITICAL_STOCK' | 'OVERSTOCK' | 'STOCK_RECOVERED' | null
+  notification?: any
+  message?: string
 }
 
 export class StockAlertService {
@@ -41,7 +41,7 @@ export class StockAlertService {
         where: {
           id: productId,
           storeId: storeId,
-          status: true
+          status: true,
         },
         include: {
           store: {
@@ -56,45 +56,46 @@ export class StockAlertService {
                     select: {
                       id: true,
                       name: true,
-                      email: true
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      });
+                      email: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
 
       if (!product) {
-        throw new Error('Product not found');
+        throw new Error('Product not found')
       }
 
       // Calcular estoque atual baseado nas movimentações
       const movements = await db.movement.findMany({
-        where: { 
+        where: {
           productId,
-          cancelled: false
+          cancelled: false,
         },
         select: {
           type: true,
-          quantity: true
-        }
-      });
+          quantity: true,
+        },
+      })
 
-      let currentStock = 0;
-      movements.forEach(movement => {
+      let currentStock = 0
+      movements.forEach((movement) => {
         if (movement.type === 'ENTRADA') {
-          currentStock += movement.quantity;
+          currentStock += movement.quantity
         } else {
-          currentStock -= movement.quantity;
+          currentStock -= movement.quantity
         }
-      });
+      })
 
       // Calcular estoque anterior (antes desta movimentação)
-      const previousStock = movementType === 'ENTRADA' 
-        ? currentStock - movementQuantity 
-        : currentStock + movementQuantity;
+      const previousStock =
+        movementType === 'ENTRADA'
+          ? currentStock - movementQuantity
+          : currentStock + movementQuantity
 
       // Determinar tipo de alerta
       const alertType = this.determineAlertType(
@@ -103,13 +104,13 @@ export class StockAlertService {
         product.stockMin,
         product.stockMax,
         product.alertPercentage
-      );
+      )
 
       if (!alertType) {
         return {
           alertTriggered: false,
-          alertType: null
-        };
+          alertType: null,
+        }
       }
 
       // Criar dados do alerta
@@ -125,21 +126,25 @@ export class StockAlertService {
         previousStock,
         movementType,
         movementQuantity,
-        movementId
-      };
+        movementId,
+      }
 
       // Criar notificações para usuários da loja
-      const notifications = await this.createStockAlertNotifications(alertData, alertType, product.store);
+      const notifications = await this.createStockAlertNotifications(
+        alertData,
+        alertType,
+        product.store
+      )
 
       // Disparar workflows baseados em alertas de estoque
       try {
         if (alertType === 'LOW_STOCK' || alertType === 'CRITICAL_STOCK') {
-          await TriggerHandler.handleStockBelowMin(product);
+          await TriggerHandler.handleStockBelowMin(product)
         } else if (alertType === 'OVERSTOCK') {
-          await TriggerHandler.handleStockAboveMax(product);
+          await TriggerHandler.handleStockAboveMax(product)
         }
       } catch (error) {
-        console.error('Error triggering workflows for stock alert:', error);
+        console.error('Error triggering workflows for stock alert:', error)
         // Não falhar o alerta se houver erro nos workflows
       }
 
@@ -147,15 +152,14 @@ export class StockAlertService {
         alertTriggered: true,
         alertType,
         notification: notifications[0], // Retorna a primeira notificação como exemplo
-        message: this.generateAlertMessage(alertData, alertType)
-      };
-
+        message: this.generateAlertMessage(alertData, alertType),
+      }
     } catch (error) {
-      console.error('Error checking stock alerts:', error);
+      console.error('Error checking stock alerts:', error)
       return {
         alertTriggered: false,
-        alertType: null
-      };
+        alertType: null,
+      }
     }
   }
 
@@ -169,31 +173,30 @@ export class StockAlertService {
     stockMax: number,
     alertPercentage: number
   ): 'LOW_STOCK' | 'CRITICAL_STOCK' | 'OVERSTOCK' | 'STOCK_RECOVERED' | null {
-    
     // Calcular limite de alerta baseado na porcentagem
-    const alertThreshold = Math.round(stockMin * (alertPercentage / 100));
-    
+    const alertThreshold = Math.round(stockMin * (alertPercentage / 100))
+
     // Estoque crítico (zero ou negativo)
     if (currentStock <= 0) {
-      return 'CRITICAL_STOCK';
+      return 'CRITICAL_STOCK'
     }
-    
+
     // Estoque baixo (abaixo do limite de alerta)
     if (currentStock <= alertThreshold && currentStock > 0) {
-      return 'LOW_STOCK';
+      return 'LOW_STOCK'
     }
-    
+
     // Estoque recuperado (voltou acima do limite de alerta)
     if (currentStock > alertThreshold && previousStock <= alertThreshold) {
-      return 'STOCK_RECOVERED';
+      return 'STOCK_RECOVERED'
     }
-    
+
     // Estoque excessivo (acima do máximo)
     if (currentStock > stockMax && previousStock <= stockMax) {
-      return 'OVERSTOCK';
+      return 'OVERSTOCK'
     }
-    
-    return null;
+
+    return null
   }
 
   /**
@@ -204,11 +207,11 @@ export class StockAlertService {
     alertType: 'LOW_STOCK' | 'CRITICAL_STOCK' | 'OVERSTOCK' | 'STOCK_RECOVERED',
     store: any
   ): Promise<any[]> {
-    const notifications = [];
-    
+    const notifications = []
+
     // Determinar prioridade e tipo da notificação
-    const { priority, notificationType } = this.getNotificationConfig(alertType);
-    
+    const { priority, notificationType } = this.getNotificationConfig(alertType)
+
     // Criar notificação para o dono da loja
     const ownerNotification = await NotificationCommands.create({
       userId: store.ownerId,
@@ -227,17 +230,17 @@ export class StockAlertService {
         movementType: alertData.movementType,
         movementQuantity: alertData.movementQuantity,
         movementId: alertData.movementId,
-        alertType
+        alertType,
       },
       actionUrl: `/products/${alertData.productId}`,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 dias
-    });
-    
-    notifications.push(ownerNotification);
-    
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 dias
+    })
+
+    notifications.push(ownerNotification)
+
     // Criar notificações para usuários da loja (exceto o dono)
-    const storeUsers = store.users.filter((su: any) => su.userId !== store.ownerId);
-    
+    const storeUsers = store.users.filter((su: any) => su.userId !== store.ownerId)
+
     for (const storeUser of storeUsers) {
       const userNotification = await NotificationCommands.create({
         userId: storeUser.userId,
@@ -256,33 +259,36 @@ export class StockAlertService {
           movementType: alertData.movementType,
           movementQuantity: alertData.movementQuantity,
           movementId: alertData.movementId,
-          alertType
+          alertType,
         },
         actionUrl: `/products/${alertData.productId}`,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 dias
-      });
-      
-      notifications.push(userNotification);
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 dias
+      })
+
+      notifications.push(userNotification)
     }
-    
-    return notifications;
+
+    return notifications
   }
 
   /**
    * Obtém configuração de notificação baseada no tipo de alerta
    */
-  private static getNotificationConfig(alertType: string): { priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT', notificationType: 'STOCK_ALERT' | 'WARNING' | 'ERROR' } {
+  private static getNotificationConfig(alertType: string): {
+    priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
+    notificationType: 'STOCK_ALERT' | 'WARNING' | 'ERROR'
+  } {
     switch (alertType) {
       case 'CRITICAL_STOCK':
-        return { priority: 'URGENT', notificationType: 'ERROR' };
+        return { priority: 'URGENT', notificationType: 'ERROR' }
       case 'LOW_STOCK':
-        return { priority: 'HIGH', notificationType: 'WARNING' };
+        return { priority: 'HIGH', notificationType: 'WARNING' }
       case 'OVERSTOCK':
-        return { priority: 'MEDIUM', notificationType: 'WARNING' };
+        return { priority: 'MEDIUM', notificationType: 'WARNING' }
       case 'STOCK_RECOVERED':
-        return { priority: 'LOW', notificationType: 'STOCK_ALERT' };
+        return { priority: 'LOW', notificationType: 'STOCK_ALERT' }
       default:
-        return { priority: 'MEDIUM', notificationType: 'STOCK_ALERT' };
+        return { priority: 'MEDIUM', notificationType: 'STOCK_ALERT' }
     }
   }
 
@@ -292,15 +298,15 @@ export class StockAlertService {
   private static getAlertTitle(alertType: string): string {
     switch (alertType) {
       case 'CRITICAL_STOCK':
-        return '🚨 Estoque Crítico';
+        return '🚨 Estoque Crítico'
       case 'LOW_STOCK':
-        return '⚠️ Estoque Baixo';
+        return '⚠️ Estoque Baixo'
       case 'OVERSTOCK':
-        return '📦 Estoque Excessivo';
+        return '📦 Estoque Excessivo'
       case 'STOCK_RECOVERED':
-        return '✅ Estoque Recuperado';
+        return '✅ Estoque Recuperado'
       default:
-        return '📊 Alerta de Estoque';
+        return '📊 Alerta de Estoque'
     }
   }
 
@@ -308,23 +314,24 @@ export class StockAlertService {
    * Gera mensagem do alerta
    */
   private static generateAlertMessage(alertData: StockAlertData, alertType: string): string {
-    const { productName, currentStock, stockMin, stockMax, movementType, movementQuantity } = alertData;
-    
+    const { productName, currentStock, stockMin, stockMax, movementType, movementQuantity } =
+      alertData
+
     switch (alertType) {
       case 'CRITICAL_STOCK':
-        return `Produto "${productName}" está com estoque crítico (${currentStock} unidades). Movimentação de ${movementType.toLowerCase()} de ${movementQuantity} unidades realizada.`;
-      
+        return `Produto "${productName}" está com estoque crítico (${currentStock} unidades). Movimentação de ${movementType.toLowerCase()} de ${movementQuantity} unidades realizada.`
+
       case 'LOW_STOCK':
-        return `Produto "${productName}" está com estoque baixo (${currentStock} unidades). Estoque mínimo: ${stockMin} unidades. Movimentação de ${movementType.toLowerCase()} de ${movementQuantity} unidades realizada.`;
-      
+        return `Produto "${productName}" está com estoque baixo (${currentStock} unidades). Estoque mínimo: ${stockMin} unidades. Movimentação de ${movementType.toLowerCase()} de ${movementQuantity} unidades realizada.`
+
       case 'OVERSTOCK':
-        return `Produto "${productName}" está com estoque excessivo (${currentStock} unidades). Estoque máximo: ${stockMax} unidades. Movimentação de ${movementType.toLowerCase()} de ${movementQuantity} unidades realizada.`;
-      
+        return `Produto "${productName}" está com estoque excessivo (${currentStock} unidades). Estoque máximo: ${stockMax} unidades. Movimentação de ${movementType.toLowerCase()} de ${movementQuantity} unidades realizada.`
+
       case 'STOCK_RECOVERED':
-        return `Produto "${productName}" recuperou o estoque (${currentStock} unidades). Estoque mínimo: ${stockMin} unidades. Movimentação de ${movementType.toLowerCase()} de ${movementQuantity} unidades realizada.`;
-      
+        return `Produto "${productName}" recuperou o estoque (${currentStock} unidades). Estoque mínimo: ${stockMin} unidades. Movimentação de ${movementType.toLowerCase()} de ${movementQuantity} unidades realizada.`
+
       default:
-        return `Alerta de estoque para o produto "${productName}" (${currentStock} unidades).`;
+        return `Alerta de estoque para o produto "${productName}" (${currentStock} unidades).`
     }
   }
 
@@ -336,45 +343,45 @@ export class StockAlertService {
       const products = await db.product.findMany({
         where: {
           storeId,
-          status: true
+          status: true,
         },
         include: {
           store: {
             select: {
               id: true,
-              name: true
-            }
-          }
-        }
-      });
+              name: true,
+            },
+          },
+        },
+      })
 
-      const lowStockProducts = [];
+      const lowStockProducts = []
 
       for (const product of products) {
         // Calcular estoque atual
         const movements = await db.movement.findMany({
-          where: { 
+          where: {
             productId: product.id,
-            cancelled: false
+            cancelled: false,
           },
           select: {
             type: true,
-            quantity: true
-          }
-        });
+            quantity: true,
+          },
+        })
 
-        let currentStock = 0;
-        movements.forEach(movement => {
+        let currentStock = 0
+        movements.forEach((movement) => {
           if (movement.type === 'ENTRADA') {
-            currentStock += movement.quantity;
+            currentStock += movement.quantity
           } else {
-            currentStock -= movement.quantity;
+            currentStock -= movement.quantity
           }
-        });
+        })
 
         // Calcular limite de alerta
-        const alertThreshold = Math.round(product.stockMin * (product.alertPercentage / 100));
-        
+        const alertThreshold = Math.round(product.stockMin * (product.alertPercentage / 100))
+
         if (currentStock <= alertThreshold) {
           lowStockProducts.push({
             productId: product.id,
@@ -385,15 +392,15 @@ export class StockAlertService {
             alertPercentage: product.alertPercentage,
             alertThreshold,
             storeId: product.store.id,
-            storeName: product.store.name
-          });
+            storeName: product.store.name,
+          })
         }
       }
 
-      return lowStockProducts;
+      return lowStockProducts
     } catch (error) {
-      console.error('Error checking low stock products:', error);
-      return [];
+      console.error('Error checking low stock products:', error)
+      return []
     }
   }
 
@@ -402,10 +409,10 @@ export class StockAlertService {
    */
   static async createLowStockSummaryNotification(storeId: string): Promise<any> {
     try {
-      const lowStockProducts = await this.checkLowStockProducts(storeId);
-      
+      const lowStockProducts = await this.checkLowStockProducts(storeId)
+
       if (lowStockProducts.length === 0) {
-        return null;
+        return null
       }
 
       const store = await db.store.findUnique({
@@ -416,24 +423,25 @@ export class StockAlertService {
           ownerId: true,
           users: {
             select: {
-              userId: true
-            }
-          }
-        }
-      });
+              userId: true,
+            },
+          },
+        },
+      })
 
       if (!store) {
-        throw new Error('Store not found');
+        throw new Error('Store not found')
       }
 
-      const criticalProducts = lowStockProducts.filter(p => p.currentStock <= 0);
-      const lowProducts = lowStockProducts.filter(p => p.currentStock > 0);
+      const criticalProducts = lowStockProducts.filter((p) => p.currentStock <= 0)
+      const lowProducts = lowStockProducts.filter((p) => p.currentStock > 0)
 
-      const title = `📊 Resumo de Estoque - ${store.name}`;
-      const message = `Encontrados ${lowStockProducts.length} produtos com estoque baixo:\n` +
+      const title = `📊 Resumo de Estoque - ${store.name}`
+      const message =
+        `Encontrados ${lowStockProducts.length} produtos com estoque baixo:\n` +
         `• ${criticalProducts.length} produtos críticos (estoque zero)\n` +
         `• ${lowProducts.length} produtos com estoque baixo\n\n` +
-        `Produtos críticos: ${criticalProducts.map(p => p.productName).join(', ')}`;
+        `Produtos críticos: ${criticalProducts.map((p) => p.productName).join(', ')}`
 
       return await NotificationCommands.create({
         userId: store.ownerId,
@@ -446,15 +454,14 @@ export class StockAlertService {
           storeName: store.name,
           lowStockProducts,
           criticalCount: criticalProducts.length,
-          lowCount: lowProducts.length
+          lowCount: lowProducts.length,
         },
         actionUrl: `/reports/low-stock?storeId=${storeId}`,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 horas
-      });
-
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 horas
+      })
     } catch (error) {
-      console.error('Error creating low stock summary notification:', error);
-      return null;
+      console.error('Error creating low stock summary notification:', error)
+      return null
     }
   }
 }

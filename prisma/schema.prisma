@@ -1,10 +1,1485 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../node_modules/.prisma/client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
- 
+
+// ========== user.prisma ==========
+/// ===============================
+///  USER & STORE STRUCTURE
+///  - Cada usuário pertence a uma única loja.
+///  - Dono (isOwner = true) é o criador da loja.
+///  - Permissões são granulares (ACL).
+///  - Soft delete com deletedAt.
+/// ===============================
+
+model User {
+  id String @id @default(cuid())
+
+  // Identificação
+  email    String  @unique
+  password String
+  name     String?
+  phone    String?
+
+  // Associação direta com a loja
+  storeId String?
+  store   Store?  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  // Controle de status e hierarquia
+  isOwner     Boolean   @default(false)
+  status      Boolean   @default(true)
+  deletedAt   DateTime?
+  deletedById String?
+  deletedBy   User?     @relation("UserDeleted", fields: [deletedById], references: [id])
+  suspendedAt DateTime? // bloqueio temporário
+
+  invitedById       String?
+  invitedBy         User?     @relation("UserInviter", fields: [invitedById], references: [id])
+  acceptedAt        DateTime?
+  inviteCode        String?   @unique
+  pendingInvitation Boolean   @default(false)
+
+  ownedStore Store? @relation("StoreOwner")
+
+  // Auditoria e segurança
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastLoginAt  DateTime?
+  lastActiveAt DateTime?
+
+  emailVerified        Boolean   @default(false)
+  emailVerificationToken String?
+  emailVerificationCode  String?
+  emailVerificationCodeExpires DateTime?
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+
+  // Relações
+  permissions   UserPermission[]
+  preferences   UserPreferences?
+  notifications Notification[]
+  media         UserMedia[]
+  uploadedMedia Media[]
+  quotes        Quote[]
+
+  subscription Subscription?
+
+  auditLogs         AuditLog[]
+  movements         Movement[]
+  roadmaps          Roadmap[] 
+  createdFlows      Flow[]
+  flowExecutions    FlowExecution[]
+  crmClients        CrmClient[]
+  chatSessions      ChatSession[]
+
+  // Relações auto-referenciais
+  invitedUsers User[] @relation("UserInviter")
+  deletedUsers User[] @relation("UserDeleted")
+
+  // Índices estratégicos
+  @@index([storeId])
+  @@index([storeId, isOwner])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model UserPermission {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  action     String // Ex: "create", "update", "delete"
+  resource   String // Ex: "product", "supplier"
+  scope      String? // módulo lógico ex: "inventory", "crm"
+  grant      Boolean   @default(true)
+  expiresAt  DateTime? // expiração da permissão (temporária)
+  conditions Json? // Ex: { "category": "Bebidas" }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, action, resource])
+  @@index([userId])
+  @@index([resource])
+  @@index([scope])
+  @@map("user_permissions")
+}
+
+model UserPreferences {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // ===== THEME & UI =====
+  theme            String  @default("light")
+  primaryColor     String?
+  sidebarCollapsed Boolean @default(false)
+  compactMode      Boolean @default(false)
+  uiScale          Float   @default(1.0) // escala visual (zoom/acessibilidade)
+
+  // ===== LANGUAGE & LOCALIZATION =====
+  language     String @default("pt-BR")
+  currency     String @default("BRL")
+  timezone     String @default("America/Sao_Paulo")
+  dateFormat   String @default("DD/MM/YYYY")
+  timeFormat   String @default("24h")
+  numberFormat String @default("pt-BR")
+
+  // ===== NOTIFICATION PREFERENCES =====
+  emailNotifications Boolean @default(true)
+  pushNotifications  Boolean @default(true)
+  smsNotifications   Boolean @default(false)
+  notificationTypes  Json?
+
+  // ===== DASHBOARD & LAYOUT =====
+  dashboardLayout Json?
+  defaultPage     String?
+  itemsPerPage    Int     @default(20)
+
+  // ===== BEHAVIOR =====
+  autoRefresh     Boolean @default(true)
+  refreshInterval Int     @default(30)
+
+  // ===== ADVANCED =====
+  customSettings      Json?
+  aiAssistantSettings Json? // IA / LLM settings por usuário
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("user_preferences")
+}
+
+
+// ========== store.prisma ==========
+/// ===============================
+///  STORE STRUCTURE
+///  - Cada loja tem um único dono (ownerId).
+///  - Usuários pertencem diretamente à loja.
+///  - Suporte a soft delete e auditoria.
+///  - Base pronta para IA, billing e operações.
+/// ===============================
+
+model Store {
+  id      String @id @default(cuid())
+  ownerId String? @unique
+  owner   User?   @relation("StoreOwner", fields: [ownerId], references: [id])
+
+  // Identificação e dados básicos
+  name        String
+  cnpj        String  @unique
+  email       String?
+  phone       String?
+  description String? // opcional: pode ser mostrado no dashboard
+  logoUrl     String? // opcional: imagem da loja
+  website     String? // opcional
+
+  // Endereço
+  cep     String?
+  city    String?
+  state   String?
+  address String?
+
+  // Controle e status
+  status      Boolean   @default(true)
+  deletedAt   DateTime? // soft delete (loja desativada)
+  suspendedAt DateTime? // bloqueio temporário (ex: problema no pagamento)
+  plan        String? // nome do plano atual (sincronizado com tabela de billing)
+  timezone    String?   @default("America/Sao_Paulo")
+
+  // Auditoria
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações com módulos do sistema
+  users         User[] // todos os usuários dessa loja
+  products      Product[]
+  categories    Category[]
+  suppliers     Supplier[]
+  movements     Movement[]
+  media         StoreMedia[]
+  uploadedMedia Media[]
+  roadmaps      Roadmap[]
+  crmStages     CrmStage[]
+  crmClients    CrmClient[]
+  flows         Flow[]
+  flowExecutions FlowExecution[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
+  quotes        Quote[]
+  chatSessions  ChatSession[]
+
+  // Configurações adicionais (JSON flexível)
+  settings Json? // ex: { "autoStockAlerts": true, "defaultCurrency": "BRL" }
+
+  // Índices estratégicos
+  @@index([status])
+  @@index([deletedAt])
+  @@index([ownerId])
+  @@index([city])
+  @@index([state])  
+}
+
+
+// ========== product.prisma ==========
+/// ===============================
+///  PRODUCT STRUCTURE
+///  - Cada produto pertence a uma loja.
+///  - Pode ter um fornecedor vinculado.
+///  - Suporte a categorias, mídia, controle de estoque e rastreabilidade.
+///  - Soft delete e campos para IA e relatórios.
+/// ===============================
+
+model Product {
+  id              String          @id @default(cuid())
+
+  // Identificação
+  name            String
+  sku             String?         @unique // SKU interno (opcional)
+  barcode         String?         @unique // EAN/UPC opcional
+  referenceCode   String?         // código interno curto (ex: "PRD-001")
+  description     String?
+
+  // Unidade e precificação
+  unitOfMeasure   UnitOfMeasure
+  referencePrice  Decimal         @db.Decimal(10, 2) // preço de referência
+  costPrice       Decimal?        @db.Decimal(10, 2) // custo médio
+  markupPercent   Decimal?        @db.Decimal(5, 2)  // margem sobre o custo (%)
+  currency        String          @default("BRL")
+
+  // Estoque
+  stockCurrent    Int             @default(0)
+  stockMin        Int             @default(0)
+  stockMax        Int             @default(0)
+  alertPercentage Int             @default(20) @db.SmallInt
+  allowNegative   Boolean         @default(false)
+
+  // Controle de lote / validade (para alimentos, medicamentos etc.)
+  batchTracked    Boolean         @default(false)
+  expirationDate  DateTime?       // validade do produto principal (se aplicável)
+
+  // Associação
+  storeId         String
+  supplierId      String?
+  store           Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  supplier        Supplier?       @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+
+  // Status e auditoria
+  status          Boolean         @default(true)
+  deletedAt       DateTime?       // soft delete
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relações
+  movements       Movement[]
+  categories      ProductCategory[]
+  media           ProductMedia[]
+  quotes          QuoteItem[]
+
+  // Extensões e metadados
+  tags            Json?           // ex: ["bebida", "perecível"]
+  metadata        Json?           // ex: { "ncm": "2202.10.00", "origem": "nacional" }
+
+
+  // Índices e constraints
+  @@index([storeId])
+  @@index([supplierId])
+  @@index([status])
+  @@index([deletedAt])
+  @@index([name])
+  @@index([sku])
+}
+
+
+enum UnitOfMeasure {
+  UNIDADE
+  KG
+  L
+  ML
+  M
+  CM
+  MM
+  UN
+  DZ
+  CX
+  PCT
+  KIT
+  PAR
+  H
+  D
+}
+
+
+// ========== category.prisma ==========
+/// ===============================
+///  CATEGORY STRUCTURE
+///  - Cada loja possui suas próprias categorias.
+///  - Suporte a subcategorias (hierarquia).
+///  - Soft delete, cor, ícone e metadados.
+///  - Associada a produtos via tabela ProductCategory.
+/// ===============================
+
+model Category {
+  id            String     @id @default(cuid())
+
+  // Identificação e exibição
+  name          String
+  description   String?
+  code          String?    // código interno (opcional, ex: CAT-001)
+  color         String?    // cor no painel ex: "#3B82F6"
+  icon          String?    // ícone do front ex: "box", "truck", "chart"
+
+  // Hierarquia
+  parentId      String?
+  parent        Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children      Category[] @relation("CategoryHierarchy")
+
+  // Loja
+  storeId       String
+  store         Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  // Status e controle
+  status        Boolean    @default(true)
+  deletedAt     DateTime?  // soft delete
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // Relacionamentos
+  products      ProductCategory[]
+
+  // Extensões e metadados
+  tags          Json?      // ex: ["perecível", "embalagem"]
+  metadata      Json?      // ex: { "priority": 1, "visibleInMenu": true }
+
+
+  // Restrições e índices
+  @@unique([code, storeId])
+  @@index([storeId])
+  @@index([status])
+  @@index([deletedAt])
+  @@index([name])
+}
+
+model ProductCategory {
+  id          String   @id @default(cuid())
+  productId   String
+  categoryId  String
+  createdAt   DateTime @default(now())
+
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, categoryId])
+  @@index([categoryId])
+  @@index([productId])
+}
+
+
+// ========== supplier.prisma ==========
+/// ===============================
+///  SUPPLIER STRUCTURE
+///  - Fornecedor pertence a uma loja.
+///  - Pode ter vários responsáveis (SupplierResponsible).
+///  - Suporte a mídia, auditoria e soft delete.
+/// ===============================
+
+model Supplier {
+  id              String     @id @default(cuid())
+  
+  // Identificação básica
+  corporateName   String     // Razão social
+  tradeName       String?    // Nome fantasia
+  cnpj            String
+  ie              String?    // Inscrição estadual opcional
+  email           String?
+  phone           String?
+  website         String?
+  description     String?    // Observação interna
+
+  // Localização
+  cep             String?
+  city            String?
+  state           String?
+  address         String?
+  complement      String?
+
+  // Relacionamento com a loja
+  storeId         String
+  store           Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  // Status e auditoria
+  status          Boolean     @default(true)
+  deletedAt       DateTime?   // soft delete
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relacionamentos
+  products        Product[]
+  movements       Movement[]
+  responsibles    SupplierResponsible[]
+  media           SupplierMedia[]
+
+  // Configurações / metadados (extensível)
+  tags            Json?       // Ex: ["distribuidor", "nacional"]
+  metadata        Json?       // Ex: { "frete": "próprio", "tempoEntrega": "48h" }
+
+  @@unique([cnpj, storeId])
+  @@index([storeId])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+model SupplierResponsible {
+  id           String    @id @default(cuid())
+  supplierId   String
+  supplier     Supplier  @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  name         String
+  role         String?   // cargo ex: "Vendas", "Financeiro", "Logística"
+  phone        String?
+  email        String?
+  cpf          String?
+  whatsapp     Boolean   @default(false) // se esse contato é via WhatsApp
+  mainContact  Boolean   @default(false) // define se é o contato principal
+  notes        String?   // observações internas
+  status       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime? // soft delete
+
+  @@index([supplierId])
+  @@index([status])
+  @@index([mainContact])
+}
+
+
+// ========== movement.prisma ==========
+/// ===============================
+///  MOVEMENT STRUCTURE
+///  - Registra qualquer entrada, saída ou perda de produto.
+///  - Controla saldo, custo e origem.
+///  - É base para relatórios, IA e auditoria de estoque.
+/// ===============================
+
+model Movement {
+    id String @id @default(cuid())
+
+    // Identificação e contexto
+    type          MovementType // ENTRADA, SAIDA, PERDA
+    origin        MovementOrigin? // motivo ou contexto da movimentação
+    referenceCode String? // código externo opcional (nota, pedido, etc.)
+    note          String? // observações gerais
+
+    // Estoque e valores
+    quantity      Int
+    price         Decimal?  @db.Decimal(10, 2) // valor unitário da movimentação
+    totalValue    Decimal?  @db.Decimal(10, 2) // quantity * price
+    balanceBefore Int? // estoque antes da movimentação
+    balanceAfter  Int? // estoque após a movimentação
+    batch         String? // lote
+    expiration    DateTime? // validade (se aplicável)
+
+    // Relacionamentos
+    storeId String
+    store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+    productId String
+    product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+    supplierId String?
+    supplier   Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+
+    userId String? // quem registrou
+    user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+    // Verificação e controle
+    verified         Boolean   @default(false)
+    verifiedAt       DateTime?
+    verifiedBy       String?
+    verificationNote String?
+
+    // Cancelamento
+    cancelled          Boolean   @default(false)
+    cancelledAt        DateTime?
+    cancelledBy        String?
+    cancellationReason String?
+
+    // Auditoria e status
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime? // soft delete, se precisar reverter algo manualmente
+
+    // Metadados e IA
+    metadata Json? // dados extras: { "source": "import", "autoGenerated": true }
+
+    // Índices e otimizações
+    @@index([storeId])
+    @@index([productId])
+    @@index([type])
+    @@index([createdAt])
+    @@index([cancelled])
+    @@index([verified])   
+}
+
+/// ===============================
+///  MOVEMENT ENUMS
+///  - Type = direção da movimentação (entrada/saída/perda)
+///  - Origin = motivo ou contexto da movimentação
+/// ===============================
+
+enum MovementType {
+    INBOUND // Entrada de produtos no estoque
+    OUTBOUND // Saída de produtos
+    LOSS // Perda ou descarte
+}
+
+enum MovementOrigin {
+    PURCHASE // Compra de fornecedor
+    SALE // Venda a cliente
+    RETURN // Devolução de cliente
+    SUPPLIER_RETURN // Devolução ao fornecedor
+    ADJUSTMENT // Ajuste manual de estoque
+    TRANSFER // Transferência entre locais
+    INVENTORY // Ajuste por contagem/inventário
+    DAMAGE // Quebra ou dano
+    EXPIRATION // Produto vencido
+    OTHER // Outro motivo não especificado  
+}
+
+
+// ========== billing.prisma ==========
+/// ===============================
+///  BILLING (Polar.sh Integration)
+///  - Polar é o sistema de cobrança principal.
+///  - O backend apenas espelha status e referências.
+/// ===============================
+
+model Subscription {
+  id                   String          @id @default(cuid())
+  userId               String          @unique
+  user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Polar references
+  polarCustomerId      String?         @unique
+  polarSubscriptionId  String?         @unique
+  polarProductId       String?         // plano ativo no Polar
+  polarPlanName        String?         // redundância para exibição rápida no painel
+
+  // Status tracking
+  status               SubscriptionStatus @default(ACTIVE)
+  currentPeriodEnd     DateTime?        // data de renovação ou expiração
+  trialEndsAt          DateTime?
+  cancelledAt          DateTime?
+  renewalCount         Int              @default(0)
+
+  // Dados financeiros básicos
+  priceAmount          Decimal?         @db.Decimal(10, 2)
+  priceInterval        PlanInterval?    // MONTHLY, YEARLY (espelhado do Polar)
+  currency             String?          @default("BRL")
+
+  // Auditoria
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  invoices             Invoice[]
+
+  @@index([status])
+  @@index([polarSubscriptionId])
+  @@index([userId])
+}
+
+model Invoice {
+  id               String          @id @default(cuid())
+  subscriptionId   String
+  subscription     Subscription    @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  // Dados do Polar
+  polarInvoiceId   String?         @unique
+  amount           Decimal         @db.Decimal(10, 2)
+  currency         String?         @default("BRL")
+  status           InvoiceStatus   @default(PENDING)
+  paymentDate      DateTime?
+  dueDate          DateTime?
+  createdAt        DateTime        @default(now())
+
+  @@index([status])
+  @@index([subscriptionId])
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  CANCELLED
+  TRIAL
+  EXPIRED
+  PAST_DUE
+}
+
+enum PlanInterval {
+  MONTHLY
+  YEARLY
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+
+// ========== quote.prisma ==========
+/// ===============================
+///  QUOTATION (QUOTE) STRUCTURE
+///  - Orçamentos criados pelos usuários.
+///  - Possuem link público seguro (publicId + authCode).
+///  - Base para aprovações, conversões e vendas.
+/// ===============================
+
+model Quote {
+  id              String        @id @default(cuid())
+
+  // Associação principal
+  storeId         String
+  store           Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customerId      String?       // futuro: cliente vinculado (CRM)
+  customerName    String?       // nome do cliente externo (sem login)
+
+  // Identificação
+  title           String
+  description     String?
+  publicId        String        @unique @default(uuid())   // usado no link público
+  authCode        String        @default(uuid())           // valida acesso sem login
+
+  // Status e controle
+  status          QuoteStatus   @default(DRAFT)
+  expiresAt       DateTime?
+  viewedAt        DateTime?
+  approvedAt      DateTime?
+  rejectedAt      DateTime?
+  convertedAt     DateTime?
+  canceledAt      DateTime?
+  approvalNote    String?       // observação do cliente (motivo ou comentário)
+  ipAddress       String?       // IP de quem visualizou/aprovou
+  viewedBy        String?       // email ou nome informado ao visualizar
+
+  // Valores
+  subtotal        Decimal       @db.Decimal(10, 2)
+  discount        Decimal?      @db.Decimal(10, 2)
+  interest        Decimal?      @db.Decimal(10, 2)
+  total           Decimal       @db.Decimal(10, 2)
+  currency        String        @default("BRL")
+
+  // Pagamento
+  paymentType     PaymentType   @default(UNDEFINED)
+  paymentTerms    String?       // ex: "6x sem juros"
+  paymentDueDays  Int?          // ex: 15 dias no boleto
+
+  // Observações e anotações
+  observations    String?
+  notesInternal   String?       // observação visível apenas internamente (não pública)
+
+  // Auditoria
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  deletedAt       DateTime?     // soft delete
+
+  // Relações
+  items           QuoteItem[]
+  installments    QuoteInstallment[]
+
+
+  // Índices
+  @@index([storeId])
+  @@index([userId])
+  @@index([status])
+  @@index([publicId])
+  @@index([createdAt])
+}
+
+/// ===============================
+///  QUOTE ITEM
+///  - Produtos incluídos no orçamento.
+/// ===============================
+
+model QuoteItem {
+  id          String   @id @default(cuid())
+  quoteId     String
+  productId   String
+  quantity    Int
+  unitPrice   Decimal  @db.Decimal(10, 2)
+  subtotal    Decimal  @db.Decimal(10, 2)
+  discount    Decimal? @db.Decimal(10, 2)
+  note        String?
+
+  quote       Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([quoteId, productId])
+  @@index([quoteId])
+}
+
+/// ===============================
+///  QUOTE INSTALLMENTS
+///  - Parcelas de pagamento do orçamento.
+/// ===============================
+
+model QuoteInstallment {
+  id          String   @id @default(cuid())
+  quoteId     String
+  number      Int          // número da parcela
+  dueDate     DateTime
+  amount      Decimal      @db.Decimal(10, 2)
+  interest    Decimal?     @db.Decimal(10, 2)
+  paidAt      DateTime?
+
+  quote       Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  @@map("quote_installments")
+  @@index([quoteId])
+}
+
+/// ===============================
+///  ENUMS
+/// ===============================
+
+enum PaymentType {
+  UNDEFINED
+  PIX
+  BOLETO
+  CREDIT_CARD
+  CASH
+  TRANSFER
+}
+
+enum QuoteStatus {
+  DRAFT        // Em edição
+  PUBLISHED    // Link público ativo
+  SENT         // Enviado ao cliente
+  VIEWED       // Cliente visualizou
+  APPROVED     // Cliente aprovou
+  REJECTED     // Cliente recusou
+  EXPIRED      // Passou da validade
+  CONVERTED    // Virou venda
+  CANCELED     // Cancelado
+}
+
+
+// ========== notification.prisma ==========
+/// ===============================
+///  NOTIFICATION STRUCTURE
+///  - Sistema unificado de notificações.
+///  - Cada notificação pertence a um usuário e loja.
+///  - Pode ser enviada via vários canais (push, email, sms).
+///  - Base para alertas automáticos, workflows e IA.
+/// ===============================
+
+model Notification {
+  id           String               @id @default(cuid())
+
+  // Associação principal
+  userId       String
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeId      String?
+  store        Store?               @relation(fields: [storeId], references: [id], onDelete: SetNull)
+
+  // Conteúdo
+  title        String
+  message      String
+  type         NotificationType     @default(INFO)
+  priority     NotificationPriority @default(MEDIUM)
+
+  // Estado de leitura
+  isRead       Boolean              @default(false)
+  readAt       DateTime?
+
+  // Entrega e canais
+  channel      NotificationChannel  @default(IN_APP)
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  deliveryError String?
+
+  // Expiração e ação
+  actionUrl    String?
+  expiresAt    DateTime?
+  data         Json? // dados adicionais (ex: { productId, movementId, severity })
+
+  // Auditoria e controle
+  deletedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("notifications")
+
+  // Índices
+  @@index([userId])
+  @@index([storeId])
+  @@index([type])
+  @@index([isRead])
+  @@index([priority])
+  @@index([createdAt])
+}
+
+enum NotificationType {
+  INFO          // Informação geral
+  SUCCESS       // Sucesso/confirmação
+  WARNING       // Aviso ou atenção
+  ERROR         // Erro ou falha
+  STOCK_ALERT   // Alerta de estoque baixo
+  MOVEMENT      // Movimentação de estoque
+  PERMISSION    // Permissão / acesso
+  SYSTEM        // Sistema / manutenção
+  BILLING       // Assinatura, cobrança, pagamento
+  WORKFLOW      // Fluxo automatizado
+}
+
+enum NotificationPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum NotificationChannel {
+  IN_APP     // Notificação interna do app
+  PUSH       // Push Notification
+  EMAIL      // E-mail
+  SMS        // SMS
+  SYSTEM     // Notificação do sistema
+  }
+
+
+// ========== audit.prisma ==========
+/// ===============================
+///  AUDIT LOG STRUCTURE
+///  - Rastreia todas as ações importantes do sistema.
+///  - Cada log registra o que mudou, quem fez e onde.
+///  - Base para auditorias, relatórios e segurança.
+/// ===============================
+
+model AuditLog {
+  id             String     @id @default(cuid())
+
+  // Entidade e ação auditada
+  entity         AuditEntity
+  entityId       String?
+  action         AuditAction
+
+  // Contexto e origem
+  userId         String?
+  user           User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  storeId        String?     // para rastrear logs por loja
+  store          Store?      @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  ipAddress      String?     // IP de origem da ação
+  userAgent      String?     // navegador / dispositivo
+  source         String?     // origem da ação: "web", "mobile", "api", "system"
+
+  // Dados de mudança
+  before         Json?       // estado anterior do registro
+  after          Json?       // estado após a mudança
+  metadata       Json?       // informações adicionais (ex: rota, payload, headers)
+
+  // Auditoria temporal
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@map("audit_logs")
+
+  // Índices e otimização
+  @@index([entity])
+  @@index([storeId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  VERIFY
+  RESTORE
+}
+
+enum AuditEntity {
+  USER
+  STORE
+  PRODUCT
+  SUPPLIER
+  MOVEMENT
+  CATEGORY
+  QUOTE
+  FLOW
+  SYSTEM
+}
+
+
+// ========== media.prisma ==========
+/// ===============================
+///  MEDIA STRUCTURE
+///  - Representa qualquer arquivo enviado (imagem, vídeo, documento).
+///  - Associável a produto, fornecedor, loja ou usuário.
+///  - Contém informações técnicas e de origem.
+/// ===============================
+
+model Media {
+  id           String   @id @default(cuid())
+
+  // Identificação básica
+  url          String   // link público (Cloudinary, S3, Supabase, etc.)
+  name         String?  // nome do arquivo original
+  type         String?  // MIME type (ex: image/png, application/pdf)
+  extension    String?  // extensão (ex: jpg, pdf)
+  size         Int?     // tamanho em bytes
+  hash         String?  // hash opcional (para evitar duplicações)
+
+  // Origem e propriedade
+  storeId      String?
+  store        Store?   @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  uploadedById String?
+  uploadedBy   User?    @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  // Armazenamento e provider
+  provider     StorageProvider @default(SYSTEM)
+  storagePath  String?  // caminho interno no provider (ex: /products/uuid.png)
+  bucket       String?  // bucket do S3 / Supabase
+  visibility   MediaVisibility @default(PRIVATE) // controle de acesso
+  status       MediaStatus @default(ACTIVE)
+
+  // Metadados
+  metadata     Json? // ex: { width, height, tags, detectedLabels, thumbnailUrl }
+
+  // Auditoria
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+
+  // Relações
+  productMedia  ProductMedia[]
+  supplierMedia SupplierMedia[]
+  userMedia     UserMedia[]
+  storeMedia    StoreMedia[]
+
+  @@map("media")
+
+  // Índices
+  @@index([storeId])
+  @@index([uploadedById])
+  @@index([status])
+  @@index([visibility])
+  @@index([deletedAt])
+}
+
+/// ===============================
+///  RELATION TABLES (many-to-many)
+///  - Permitem anexar múltiplos arquivos a produtos, usuários, etc.
+/// ===============================
+
+model ProductMedia {
+  id         String   @id @default(cuid())
+  productId  String
+  mediaId    String
+  isPrimary  Boolean  @default(false)
+  altText    String?  // descrição alternativa para SEO / acessibilidade
+  sortOrder  Int      @default(0)
+
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  media      Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@map("product_media")
+  @@unique([productId, mediaId])
+  @@index([productId])
+}
+
+model SupplierMedia {
+  id          String   @id @default(cuid())
+  supplierId  String
+  mediaId     String
+
+  supplier    Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  media       Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@map("supplier_media")
+  @@unique([supplierId, mediaId])
+}
+
+model UserMedia {
+  id         String   @id @default(cuid())
+  userId     String
+  mediaId    String
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media      Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@map("user_media")
+  @@unique([userId, mediaId])
+}
+
+model StoreMedia {
+  id         String   @id @default(cuid())
+  storeId    String
+  mediaId    String
+
+  store      Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  media      Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@map("store_media")
+  @@unique([storeId, mediaId])
+}
+
+/// ===============================
+///  ENUMS
+/// ===============================
+
+enum StorageProvider {
+  SYSTEM       // Armazenamento local padrão
+  S3           // Amazon S3 / R2 / Wasabi
+  SUPABASE     // Supabase Storage
+  CLOUDINARY   // Cloudinary
+  GOOGLE_DRIVE // Google Drive API
+}
+
+enum MediaVisibility {
+  PRIVATE // visível apenas internamente
+  PUBLIC  // acessível publicamente
+  RESTRICTED // acessível sob regra (ex: usuários logados)
+}
+
+enum MediaStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+  PROCESSING
+}
+
+
+// ========== roadmap.prisma ==========
+/// ===============================
+///  ROADMAP STRUCTURE
+///  - Representa planos, metas ou projetos.
+///  - Pode estar associado a uma loja ou usuário.
+///  - Contém milestones (etapas com progresso e status).
+/// ===============================
+
+model Roadmap {
+  id           String          @id @default(cuid())
+
+  // Associação
+  storeId      String?
+  store        Store?          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  userId       String?
+  user         User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Identificação e descrição
+  title        String
+  description  String?
+
+  // Controle e status
+  status       RoadmapStatus   @default(ACTIVE)
+  visibility   RoadmapVisibility @default(PRIVATE)
+  priority     RoadmapPriority @default(MEDIUM)
+  progress     Int             @default(0) // progresso geral (média das milestones)
+  archived     Boolean         @default(false)
+  deletedAt    DateTime?       // soft delete
+
+  // Datas
+  startDate    DateTime?
+  endDate      DateTime?
+
+  // Auditoria
+  createdById  String?
+  updatedById  String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  // Relações
+  milestones   Milestone[]
+
+  // Metadados
+  tags         Json?           // ex: ["estoque", "IA", "meta de venda"]
+  metadata     Json?           // configurações extras ou IA
+
+  @@map("roadmaps")
+
+  // Índices
+  @@index([storeId])
+  @@index([userId])
+  @@index([status])
+  @@index([archived])
+  @@index([deletedAt])
+  @@index([createdAt])
+}
+
+/// ===============================
+///  MILESTONE STRUCTURE
+///  - Etapas dentro de um roadmap.
+///  - Controla progresso, status e prazos.
+/// ===============================
+
+model Milestone {
+  id           String           @id @default(cuid())
+  roadmapId    String
+  roadmap      Roadmap          @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+
+  // Identificação
+  title        String
+  description  String?
+
+  // Controle
+  status       MilestoneStatus  @default(PENDING)
+  progress     Int              @default(0) // % concluída (0–100)
+  order        Int              @default(0) // posição na timeline
+  priority     RoadmapPriority  @default(MEDIUM)
+  blockedById  String?          // milestone dependente (opcional)
+  blockedBy    Milestone?       @relation("MilestoneDependency", fields: [blockedById], references: [id])
+  blocking     Milestone[]      @relation("MilestoneDependency") // milestones bloqueados por este
+
+  // Datas
+  startDate    DateTime?
+  endDate      DateTime?
+  completedAt  DateTime?
+
+  // Auditoria
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  deletedAt    DateTime?
+
+  // Metadados
+  metadata     Json?            // informações adicionais ou IA
+
+  @@map("milestones")
+
+  // Índices
+  @@index([roadmapId])
+  @@index([status])
+  @@index([priority])
+  @@index([order])
+  }
+
+enum RoadmapStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum RoadmapVisibility {
+  PRIVATE
+  PUBLIC
+  INTERNAL
+}
+
+enum RoadmapPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  BLOCKED
+}
+
+
+// ========== crm.prisma ==========
+/// ===============================
+///  CRM STAGE STRUCTURE
+///  - Etapa (coluna) do pipeline de CRM.
+///  - Cada loja possui seu próprio conjunto de etapas.
+/// ===============================
+
+model CrmStage {
+  id          String      @id @default(cuid())
+  storeId     String
+  name        String
+  color       String?     // cor no front-end
+  order       Int          @default(0) // posição na ordem do pipeline
+  description String?      // ex: "Clientes interessados"
+  isDefault   Boolean      @default(false) // primeira etapa padrão
+  isFinal     Boolean      @default(false) // etapa de fechamento (ganho/perda)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  store       Store        @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  clients     CrmClient[]
+
+  @@map("crm_stages")
+  @@index([storeId])
+  @@index([order])
+  @@unique([storeId, name])
+}
+
+/// ===============================
+///  CRM CLIENT STRUCTURE
+///  - Representa um cliente / lead dentro do pipeline.
+///  - Pode se mover entre etapas (Kanban).
+/// ===============================
+
+model CrmClient {
+  id             String        @id @default(cuid())
+  storeId        String
+  stageId        String?
+  name           String
+  email          String?
+  phone          String?
+  cpfCnpj        String?
+  company        String?
+  position       String?       // cargo (ex: comprador, gerente)
+  source         String?       // origem do lead (ex: site, whatsapp, indicação)
+  status         CrmClientStatus @default(ACTIVE)
+  tags           Json?         // ex: ["venda recorrente", "novo cliente"]
+  notes          String?
+  lastContactAt  DateTime?
+  nextContactAt  DateTime?
+  lastInteraction Json?        // ex: { type: "call", date: "2025-10-31", userId: "..." }
+  ownerId        String?       // responsável pelo cliente
+  owner          User?         @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  archivedAt     DateTime?     // lead arquivado
+  deletedAt      DateTime?     // soft delete
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  store          Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  stage          CrmStage?     @relation(fields: [stageId], references: [id], onDelete: SetNull)
+
+  @@map("crm_clients")
+  @@index([storeId])
+  @@index([stageId])
+  @@index([ownerId])
+  @@index([status])
+  @@index([archivedAt])
+}
+
+/// ===============================
+///  ENUMS
+/// ===============================
+
+enum CrmClientStatus {
+  ACTIVE       // Lead ativo no pipeline
+  WON          // Negócio fechado com sucesso
+  LOST         // Negócio perdido
+  INACTIVE     // Cliente desativado
+  ARCHIVED     // Lead arquivado manualmente
+}
+
+
+// ========== flow.prisma ==========
+/// ===============================
+///  FLOW AUTOMATION STRUCTURE
+///  - Sistema de automação baseado em nodes.
+///  - Cada flow pertence a uma loja e a um usuário.
+///  - Pode conter triggers, conditions, actions e notifications.
+///  - Base para IA, notificações automáticas e rotinas.
+/// ===============================
+
+model Flow {
+  id            String          @id @default(cuid())
+
+  // Identificação
+  name          String
+  description   String?
+  version       Int             @default(1) // para controle de versões
+  category      String?         // ex: "notificação", "estoque", "CRM"
+
+  // Estrutura do workflow (ReactFlow)
+  nodes         Json            // array de nodes
+  edges         Json            // conexões entre nodes
+  metadata      Json?           // metadados do flow (layout, variáveis globais, etc.)
+
+  // Controle de status
+  status        FlowStatus      @default(DRAFT)
+  isPublic      Boolean         @default(false)
+  deletedAt     DateTime?       // soft delete
+
+  // Associação
+  storeId       String
+  store         Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  createdBy     String
+  creator       User            @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  // Auditoria
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  lastRunAt     DateTime?
+  lastStatus    FlowExecutionStatus?
+
+  // Relações
+  flowNodes     FlowNode[]
+  executions    FlowExecution[]
+
+  @@map("flows")
+
+  // Índices
+  @@index([storeId])
+  @@index([status])
+  @@index([deletedAt])
+  @@index([createdAt])
+}
+
+model FlowNode {
+  id            String       @id @default(cuid())
+  flowId        String
+  nodeId        String       // ID do node (ReactFlow ID)
+  type          FlowNodeType
+  name          String?      // nome visível no editor
+  config        Json         // configuração do node (ex: { "trigger": "stock_low" })
+  order         Int          @default(0)
+  parentNodeId  String?      // para nodes agrupados
+  position      Json?        // posição no editor (x, y)
+  metadata      Json?        // metadados adicionais
+
+  // Auditoria
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  flow          Flow         @relation(fields: [flowId], references: [id], onDelete: Cascade)
+
+  @@map("flow_nodes")
+  @@unique([flowId, nodeId])
+  @@index([type])
+  @@index([order])
+}
+
+model FlowExecution {
+  id             String              @id @default(cuid())
+  flowId         String
+  flow           Flow                @relation(fields: [flowId], references: [id], onDelete: Cascade)
+
+  // Execução
+  status         FlowExecutionStatus @default(RUNNING)
+  triggerType    String              // ex: "stock_alert", "manual", "schedule"
+  triggerData    Json                // payload do evento disparador
+  context        Json?               // contexto adicional (ex: { "productId": "...", "userId": "..." })
+  executionLog   Json?               // logs detalhados (por node)
+  error          String?
+  durationMs     Int?                // duração total
+  startedAt      DateTime            @default(now())
+  completedAt    DateTime?
+
+  // Auditoria
+  executedById   String?
+  executedBy     User?               @relation(fields: [executedById], references: [id], onDelete: SetNull)
+  storeId        String?
+  store          Store?              @relation(fields: [storeId], references: [id], onDelete: SetNull)
+
+  @@map("flow_executions")
+  @@index([flowId])
+  @@index([status])
+  @@index([startedAt])
+  @@index([storeId])
+}
+
+/// ===============================
+///  ENUMS
+/// ===============================
+
+enum FlowStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+}
+
+enum FlowNodeType {
+  TRIGGER
+  CONDITION
+  ACTION
+  NOTIFICATION
+}
+
+enum FlowExecutionStatus {
+  SUCCESS
+  FAILED
+  RUNNING
+  CANCELLED
+    }
+
+
+// ========== chat.prisma ==========
+/// ===============================
+///  CHAT FEATURE (AI ASSISTANT)
+///  - Sistema de chat com IA integrado ao 25Stock.
+///  - Cada sessão pertence a um usuário (e opcionalmente a uma loja).
+///  - Permite múltiplas sessões simultâneas.
+/// ===============================
+
+model ChatSession {
+  id              String         @id @default(cuid())
+  userId          String
+  storeId         String?
+  title           String?        // título exibido no histórico (ex: "Reajuste de preços")
+  model           String?        // modelo usado (ex: gpt-4-turbo)
+  temperature     Float?         // temperatura padrão da sessão
+  context         Json?          // contexto global da sessão (loja, user, histórico)
+  metadata        Json?          // dados adicionais (ex: tags, origem)
+  active          Boolean        @default(true)
+  isPinned        Boolean        @default(false) // fixado no topo
+  deletedAt       DateTime?      // soft delete
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  lastActivityAt  DateTime?      // última mensagem trocada
+
+  // Relações
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store           Store?         @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  messages        ChatMessage[]
+
+  @@map("chat_sessions")
+  @@index([userId])
+  @@index([storeId])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
+/// ===============================
+///  CHAT MESSAGE
+///  - Cada mensagem trocada (usuário ↔ IA)
+/// ===============================
+
+model ChatMessage {
+  id              String          @id @default(cuid())
+  sessionId       String
+  role            ChatMessageRole @default(USER)
+  content         String
+  tokens          Int?            // número de tokens consumidos
+  model           String?         // modelo usado nessa resposta (pode mudar)
+  context         Json?           // contexto adicional (dados da loja, produto, etc.)
+  options         Json?           // parâmetros de geração (temperature, top_p, etc.)
+  error           String?         // erro da geração (se houver)
+  cost            Decimal?        @db.Decimal(10, 4) // custo da requisição
+  latencyMs       Int?            // duração da requisição
+  isFinal         Boolean         @default(false) // resposta finalizada
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  session         ChatSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+  @@index([sessionId])
+  @@index([role])
+  @@index([createdAt])
+}
+
+/// ===============================
+///  ENUMS
+/// ===============================
+
+enum ChatMessageRole {
+  USER       // Usuário humano
+  ASSISTANT  // Resposta da IA
+  SYSTEM     // Mensagem de sistema ou contexto
+  TOOL       // Execução de ferramenta (ex: busca, ação)
+}
+

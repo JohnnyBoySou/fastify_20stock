@@ -1,4 +1,4 @@
-import { FastifyRequest } from 'fastify';
+import type { FastifyRequest } from 'fastify'
 
 // Interfaces para Category
 export interface CreateCategoryRequest extends FastifyRequest {

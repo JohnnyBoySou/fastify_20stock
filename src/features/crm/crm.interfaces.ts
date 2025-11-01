@@ -1,4 +1,4 @@
-import { FastifyRequest } from 'fastify'
+import type { FastifyRequest } from 'fastify'
 
 // Interfaces para CrmClient
 export interface CreateCrmClientRequest extends FastifyRequest {

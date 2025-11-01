@@ -1,4 +1,4 @@
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify'
 
 // Create Flow Schema
 export const createFlowSchema: FastifySchema = {
@@ -21,9 +21,9 @@ export const createFlowSchema: FastifySchema = {
               required: ['x', 'y'],
               properties: {
                 x: { type: 'number' },
-                y: { type: 'number' }
+                y: { type: 'number' },
               },
-              additionalProperties: true
+              additionalProperties: true,
             },
             data: {
               type: 'object',
@@ -32,9 +32,9 @@ export const createFlowSchema: FastifySchema = {
                 label: { type: 'string' },
                 description: { type: 'string' },
                 color: { type: 'string' },
-                config: {}
+                config: {},
               },
-              additionalProperties: true
+              additionalProperties: true,
             },
             width: { type: 'number' },
             height: { type: 'number' },
@@ -43,14 +43,14 @@ export const createFlowSchema: FastifySchema = {
               type: 'object',
               properties: {
                 x: { type: 'number' },
-                y: { type: 'number' }
+                y: { type: 'number' },
               },
-              additionalProperties: true
+              additionalProperties: true,
             },
-            dragging: { type: 'boolean' }
+            dragging: { type: 'boolean' },
           },
-          additionalProperties: true
-        }
+          additionalProperties: true,
+        },
       },
       edges: {
         type: 'array',
@@ -65,22 +65,22 @@ export const createFlowSchema: FastifySchema = {
             animated: { type: 'boolean' },
             style: {
               type: 'object',
-              additionalProperties: true
+              additionalProperties: true,
             },
             markerEnd: {
-              oneOf: [{ type: 'string' }, { type: 'object', additionalProperties: true }]
+              oneOf: [{ type: 'string' }, { type: 'object', additionalProperties: true }],
             },
-            label: { type: 'string' }
+            label: { type: 'string' },
           },
-          additionalProperties: true
-        }
+          additionalProperties: true,
+        },
       },
       status: {
         type: 'string',
         enum: ['ACTIVE', 'INACTIVE', 'DRAFT'],
-        default: 'DRAFT'
-      }
-    }
+        default: 'DRAFT',
+      },
+    },
   },
   response: {
     201: {
@@ -95,23 +95,23 @@ export const createFlowSchema: FastifySchema = {
         storeId: { type: 'string' },
         createdBy: { type: 'string' },
         createdAt: { type: 'string' },
-        updatedAt: { type: 'string' }
-      }
+        updatedAt: { type: 'string' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Update Flow Schema
 export const updateFlowSchema: FastifySchema = {
@@ -119,8 +119,8 @@ export const updateFlowSchema: FastifySchema = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
@@ -140,9 +140,9 @@ export const updateFlowSchema: FastifySchema = {
               required: ['x', 'y'],
               properties: {
                 x: { type: 'number' },
-                y: { type: 'number' }
+                y: { type: 'number' },
               },
-              additionalProperties: true
+              additionalProperties: true,
             },
             data: {
               type: 'object',
@@ -151,9 +151,9 @@ export const updateFlowSchema: FastifySchema = {
                 label: { type: 'string' },
                 description: { type: 'string' },
                 color: { type: 'string' },
-                config: {}
+                config: {},
               },
-              additionalProperties: true
+              additionalProperties: true,
             },
             width: { type: 'number' },
             height: { type: 'number' },
@@ -162,14 +162,14 @@ export const updateFlowSchema: FastifySchema = {
               type: 'object',
               properties: {
                 x: { type: 'number' },
-                y: { type: 'number' }
+                y: { type: 'number' },
               },
-              additionalProperties: true
+              additionalProperties: true,
             },
-            dragging: { type: 'boolean' }
+            dragging: { type: 'boolean' },
           },
-          additionalProperties: true
-        }
+          additionalProperties: true,
+        },
       },
       edges: {
         type: 'array',
@@ -184,21 +184,21 @@ export const updateFlowSchema: FastifySchema = {
             animated: { type: 'boolean' },
             style: {
               type: 'object',
-              additionalProperties: true
+              additionalProperties: true,
             },
             markerEnd: {
-              oneOf: [{ type: 'string' }, { type: 'object', additionalProperties: true }]
+              oneOf: [{ type: 'string' }, { type: 'object', additionalProperties: true }],
             },
-            label: { type: 'string' }
+            label: { type: 'string' },
           },
-          additionalProperties: true
-        }
+          additionalProperties: true,
+        },
       },
       status: {
         type: 'string',
-        enum: ['ACTIVE', 'INACTIVE', 'DRAFT']
-      }
-    }
+        enum: ['ACTIVE', 'INACTIVE', 'DRAFT'],
+      },
+    },
   },
   response: {
     200: {
@@ -213,23 +213,23 @@ export const updateFlowSchema: FastifySchema = {
         storeId: { type: 'string' },
         createdBy: { type: 'string' },
         createdAt: { type: 'string' },
-        updatedAt: { type: 'string' }
-      }
+        updatedAt: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Get Flow Schema
 export const getFlowSchema: FastifySchema = {
@@ -237,8 +237,8 @@ export const getFlowSchema: FastifySchema = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -253,23 +253,23 @@ export const getFlowSchema: FastifySchema = {
         storeId: { type: 'string' },
         createdBy: { type: 'string' },
         createdAt: { type: 'string' },
-        updatedAt: { type: 'string' }
-      }
+        updatedAt: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Delete Flow Schema
 export const deleteFlowSchema: FastifySchema = {
@@ -277,25 +277,25 @@ export const deleteFlowSchema: FastifySchema = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     204: { type: 'null' },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // List Flows Schema
 export const listFlowsSchema: FastifySchema = {
@@ -307,9 +307,9 @@ export const listFlowsSchema: FastifySchema = {
       search: { type: 'string' },
       status: {
         type: 'string',
-        enum: ['ACTIVE', 'INACTIVE', 'DRAFT']
-      }
-    }
+        enum: ['ACTIVE', 'INACTIVE', 'DRAFT'],
+      },
+    },
   },
   response: {
     200: {
@@ -322,19 +322,19 @@ export const listFlowsSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
+            totalPages: { type: 'number' },
+          },
+        },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Update Flow Status Schema
 export const updateFlowStatusSchema: FastifySchema = {
@@ -342,8 +342,8 @@ export const updateFlowStatusSchema: FastifySchema = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
@@ -351,9 +351,9 @@ export const updateFlowStatusSchema: FastifySchema = {
     properties: {
       status: {
         type: 'string',
-        enum: ['ACTIVE', 'INACTIVE', 'DRAFT']
-      }
-    }
+        enum: ['ACTIVE', 'INACTIVE', 'DRAFT'],
+      },
+    },
   },
   response: {
     200: {
@@ -368,23 +368,23 @@ export const updateFlowStatusSchema: FastifySchema = {
         storeId: { type: 'string' },
         createdBy: { type: 'string' },
         createdAt: { type: 'string' },
-        updatedAt: { type: 'string' }
-      }
+        updatedAt: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Duplicate Flow Schema
 export const duplicateFlowSchema: FastifySchema = {
@@ -392,14 +392,14 @@ export const duplicateFlowSchema: FastifySchema = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     properties: {
-      name: { type: 'string', minLength: 1 }
-    }
+      name: { type: 'string', minLength: 1 },
+    },
   },
   response: {
     201: {
@@ -414,23 +414,23 @@ export const duplicateFlowSchema: FastifySchema = {
         storeId: { type: 'string' },
         createdBy: { type: 'string' },
         createdAt: { type: 'string' },
-        updatedAt: { type: 'string' }
-      }
+        updatedAt: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Test Flow Schema
 export const testFlowSchema: FastifySchema = {
@@ -438,14 +438,14 @@ export const testFlowSchema: FastifySchema = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     properties: {
-      triggerData: {}
-    }
+      triggerData: {},
+    },
   },
   response: {
     200: {
@@ -453,24 +453,23 @@ export const testFlowSchema: FastifySchema = {
       properties: {
         executionId: { type: 'string' },
         status: { type: 'string' },
-        executionLog: { type: 'array' }
-      }
+        executionLog: { type: 'array' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
-
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const FlowSchemas = {
   create: createFlowSchema,
@@ -480,5 +479,5 @@ export const FlowSchemas = {
   list: listFlowsSchema,
   updateStatus: updateFlowStatusSchema,
   duplicate: duplicateFlowSchema,
-  test: testFlowSchema
+  test: testFlowSchema,
 }

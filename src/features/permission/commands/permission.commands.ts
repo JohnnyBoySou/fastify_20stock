@@ -1,21 +1,24 @@
-import { Action, UserRole, StoreRole } from '@/middlewares/authorization.middleware';
-import { PermissionConditions } from '@/middlewares/granular-permissions.middleware';
+import { type Action, type StoreRole, UserRole } from '@/middlewares/authorization.middleware'
+import type { PermissionConditions } from '@/middlewares/granular-permissions.middleware'
 
 // ================================
 // GESTÃO DE PERMISSÕES CUSTOMIZADAS
 // ================================
 
-export const createUserPermission = async (prisma: any, data: {
-  userId: string;
-  action: Action;
-  resource?: string;
-  storeId?: string;
-  grant: boolean;
-  conditions?: PermissionConditions;
-  expiresAt?: string;
-  reason?: string;
-  createdBy: string;
-}) => {
+export const createUserPermission = async (
+  prisma: any,
+  data: {
+    userId: string
+    action: Action
+    resource?: string
+    storeId?: string
+    grant: boolean
+    conditions?: PermissionConditions
+    expiresAt?: string
+    reason?: string
+    createdBy: string
+  }
+) => {
   return await prisma.userPermission.create({
     data: {
       userId: data.userId,
@@ -26,62 +29,69 @@ export const createUserPermission = async (prisma: any, data: {
       conditions: data.conditions ? JSON.stringify(data.conditions) : null,
       expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
       reason: data.reason,
-      createdBy: data.createdBy
-    }
-  });
-};
+      createdBy: data.createdBy,
+    },
+  })
+}
 
-export const updateUserPermission = async (prisma: any, id: string, data: {
-  action?: Action;
-  resource?: string;
-  storeId?: string;
-  grant?: boolean;
-  conditions?: PermissionConditions;
-  expiresAt?: string;
-  reason?: string;
-}) => {
+export const updateUserPermission = async (
+  prisma: any,
+  id: string,
+  data: {
+    action?: Action
+    resource?: string
+    storeId?: string
+    grant?: boolean
+    conditions?: PermissionConditions
+    expiresAt?: string
+    reason?: string
+  }
+) => {
   return await prisma.userPermission.update({
     where: { id },
     data: {
       ...data,
       conditions: data.conditions ? JSON.stringify(data.conditions) : undefined,
-      expiresAt: data.expiresAt ? new Date(data.expiresAt) : undefined
-    }
-  });
-};
+      expiresAt: data.expiresAt ? new Date(data.expiresAt) : undefined,
+    },
+  })
+}
 
 export const deleteUserPermission = async (prisma: any, id: string) => {
   return await prisma.userPermission.delete({
-    where: { id }
-  });
-};
+    where: { id },
+  })
+}
 
 // ================================
 // GESTÃO DE PERMISSÕES POR LOJA
 // ================================
 
-export const setStoreUserPermissions = async (prisma: any, data: {
-  userId: string;
-  storeId: string;
-  storeRole: StoreRole;
-  permissions: Action[];
-  conditions?: PermissionConditions;
-  expiresAt?: string;
-  createdBy: string;
-}) => {
+export const setStoreUserPermissions = async (
+  prisma: any,
+  data: {
+    userId: string
+    storeId: string
+    storeRole: StoreRole
+    permissions: Action[]
+    conditions?: PermissionConditions
+    expiresAt?: string
+    createdBy: string
+  }
+) => {
   return await prisma.storePermission.upsert({
     where: {
       userId_storeId: {
         userId: data.userId,
-        storeId: data.storeId
-      }
+        storeId: data.storeId,
+      },
     },
     update: {
       storeRole: data.storeRole,
       permissions: JSON.stringify(data.permissions),
       conditions: data.conditions ? JSON.stringify(data.conditions) : null,
       expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
-      createdBy: data.createdBy
+      createdBy: data.createdBy,
     },
     create: {
       userId: data.userId,
@@ -90,109 +100,120 @@ export const setStoreUserPermissions = async (prisma: any, data: {
       permissions: JSON.stringify(data.permissions),
       conditions: data.conditions ? JSON.stringify(data.conditions) : null,
       expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
-      createdBy: data.createdBy
-    }
-  });
-};
+      createdBy: data.createdBy,
+    },
+  })
+}
 
 export const deleteStoreUserPermissions = async (prisma: any, userId: string, storeId: string) => {
   return await prisma.storePermission.delete({
     where: {
       userId_storeId: {
         userId,
-        storeId
-      }
-    }
-  });
-};
+        storeId,
+      },
+    },
+  })
+}
 
 // ================================
 // OPERAÇÕES ESPECIAIS
 // ================================
 
-export const bulkCreateUserPermissions = async (prisma: any, permissions: Array<{
-  userId: string;
-  action: Action;
-  resource?: string;
-  storeId?: string;
-  grant: boolean;
-  conditions?: PermissionConditions;
-  expiresAt?: string;
-  reason?: string;
-  createdBy: string;
-}>) => {
+export const bulkCreateUserPermissions = async (
+  prisma: any,
+  permissions: Array<{
+    userId: string
+    action: Action
+    resource?: string
+    storeId?: string
+    grant: boolean
+    conditions?: PermissionConditions
+    expiresAt?: string
+    reason?: string
+    createdBy: string
+  }>
+) => {
   return await prisma.userPermission.createMany({
-    data: permissions.map(permission => ({
+    data: permissions.map((permission) => ({
       ...permission,
       conditions: permission.conditions ? JSON.stringify(permission.conditions) : null,
-      expiresAt: permission.expiresAt ? new Date(permission.expiresAt) : null
-    }))
-  });
-};
+      expiresAt: permission.expiresAt ? new Date(permission.expiresAt) : null,
+    })),
+  })
+}
 
-export const bulkUpdateUserPermissions = async (prisma: any, updates: Array<{
-  id: string;
-  data: {
-    action?: Action;
-    resource?: string;
-    storeId?: string;
-    grant?: boolean;
-    conditions?: PermissionConditions;
-    expiresAt?: string;
-    reason?: string;
-  };
-}>) => {
-  const transactions = updates.map(update => 
+export const bulkUpdateUserPermissions = async (
+  prisma: any,
+  updates: Array<{
+    id: string
+    data: {
+      action?: Action
+      resource?: string
+      storeId?: string
+      grant?: boolean
+      conditions?: PermissionConditions
+      expiresAt?: string
+      reason?: string
+    }
+  }>
+) => {
+  const transactions = updates.map((update) =>
     prisma.userPermission.update({
       where: { id: update.id },
       data: {
         ...update.data,
         conditions: update.data.conditions ? JSON.stringify(update.data.conditions) : undefined,
-        expiresAt: update.data.expiresAt ? new Date(update.data.expiresAt) : undefined
-      }
+        expiresAt: update.data.expiresAt ? new Date(update.data.expiresAt) : undefined,
+      },
     })
-  );
+  )
 
-  return await prisma.$transaction(transactions);
-};
+  return await prisma.$transaction(transactions)
+}
 
 export const bulkDeleteUserPermissions = async (prisma: any, ids: string[]) => {
   return await prisma.userPermission.deleteMany({
     where: {
       id: {
-        in: ids
-      }
-    }
-  });
-};
+        in: ids,
+      },
+    },
+  })
+}
 
 export const expireUserPermissions = async (prisma: any, userIds: string[], reason?: string) => {
   return await prisma.userPermission.updateMany({
     where: {
       userId: {
-        in: userIds
+        in: userIds,
       },
       expiresAt: {
-        gt: new Date()
-      }
+        gt: new Date(),
+      },
     },
     data: {
       expiresAt: new Date(),
-      reason: reason || 'Bulk expiration'
-    }
-  });
-};
+      reason: reason || 'Bulk expiration',
+    },
+  })
+}
 
-export const extendUserPermissions = async (prisma: any, userIds: string[], newExpiryDate: string, reason?: string) => {
+export const extendUserPermissions = async (
+  prisma: any,
+  userIds: string[],
+  newExpiryDate: string,
+  reason?: string
+) => {
   return await prisma.userPermission.updateMany({
     where: {
       userId: {
-        in: userIds
-      }
+        in: userIds,
+      },
     },
     data: {
       expiresAt: new Date(newExpiryDate),
-      reason: reason || 'Bulk extension'
-    }
-  });
-};
+      reason: reason || 'Bulk extension',
+    },
+  })
+}

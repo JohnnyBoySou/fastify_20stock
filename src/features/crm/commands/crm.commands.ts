@@ -16,8 +16,8 @@ export const CrmCommands = {
       const stage = await db.crmStage.findFirst({
         where: {
           id: data.stageId,
-          storeId: data.storeId
-        }
+          storeId: data.storeId,
+        },
       })
 
       if (!stage) {
@@ -34,29 +34,33 @@ export const CrmCommands = {
         cpfCnpj: data.cpfCnpj,
         company: data.company,
         notes: data.notes,
-        stageId: data.stageId
+        stageId: data.stageId,
       },
       include: {
-        stage: true
-      }
+        stage: true,
+      },
     })
   },
 
-  async update(id: string, data: {
-    name?: string
-    email?: string
-    phone?: string
-    cpfCnpj?: string
-    company?: string
-    notes?: string
-    stageId?: string
-  }, storeId: string) {
+  async update(
+    id: string,
+    data: {
+      name?: string
+      email?: string
+      phone?: string
+      cpfCnpj?: string
+      company?: string
+      notes?: string
+      stageId?: string
+    },
+    storeId: string
+  ) {
     // Verificar se cliente pertence à store
     const client = await db.crmClient.findFirst({
       where: {
         id,
-        storeId
-      }
+        storeId,
+      },
     })
 
     if (!client) {
@@ -68,8 +72,8 @@ export const CrmCommands = {
       const stage = await db.crmStage.findFirst({
         where: {
           id: data.stageId,
-          storeId
-        }
+          storeId,
+        },
       })
 
       if (!stage) {
@@ -81,8 +85,8 @@ export const CrmCommands = {
       where: { id },
       data,
       include: {
-        stage: true
-      }
+        stage: true,
+      },
     })
   },
 
@@ -91,8 +95,8 @@ export const CrmCommands = {
     const client = await db.crmClient.findFirst({
       where: {
         id,
-        storeId
-      }
+        storeId,
+      },
     })
 
     if (!client) {
@@ -100,7 +104,7 @@ export const CrmCommands = {
     }
 
     return await db.crmClient.delete({
-      where: { id }
+      where: { id },
     })
   },
 
@@ -109,8 +113,8 @@ export const CrmCommands = {
     const client = await db.crmClient.findFirst({
       where: {
         id: clientId,
-        storeId
-      }
+        storeId,
+      },
     })
 
     if (!client) {
@@ -122,8 +126,8 @@ export const CrmCommands = {
       const stage = await db.crmStage.findFirst({
         where: {
           id: stageId,
-          storeId
-        }
+          storeId,
+        },
       })
 
       if (!stage) {
@@ -135,8 +139,8 @@ export const CrmCommands = {
       where: { id: clientId },
       data: { stageId },
       include: {
-        stage: true
-      }
+        stage: true,
+      },
     })
-  }
+  },
 }

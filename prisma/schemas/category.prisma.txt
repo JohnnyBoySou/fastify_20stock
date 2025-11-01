@@ -1,0 +1,66 @@
+/// ===============================
+///  CATEGORY STRUCTURE
+///  - Cada loja possui suas próprias categorias.
+///  - Suporte a subcategorias (hierarquia).
+///  - Soft delete, cor, ícone e metadados.
+///  - Associada a produtos via tabela ProductCategory.
+/// ===============================
+
+model Category {
+  id            String     @id @default(cuid())
+
+  // Identificação e exibição
+  name          String
+  description   String?
+  code          String?    // código interno (opcional, ex: CAT-001)
+  color         String?    // cor no painel ex: "#3B82F6"
+  icon          String?    // ícone do front ex: "box", "truck", "chart"
+
+  // Hierarquia
+  parentId      String?
+  parent        Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children      Category[] @relation("CategoryHierarchy")
+
+  // Loja
+  storeId       String
+  store         Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  // Status e controle
+  status        Boolean    @default(true)
+  deletedAt     DateTime?  // soft delete
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // Relacionamentos
+  products      ProductCategory[]
+
+  // Extensões e metadados
+  tags          Json?      // ex: ["perecível", "embalagem"]
+  metadata      Json?      // ex: { "priority": 1, "visibleInMenu": true }
+
+  @@map("categories")
+
+  // Restrições e índices
+  @@unique([code, storeId])
+  @@index([storeId])
+  @@index([status])
+  @@index([deletedAt])
+  @@index([name])
+  @@schema("category")
+}
+
+model ProductCategory {
+  id          String   @id @default(cuid())
+  productId   String
+  categoryId  String
+  createdAt   DateTime @default(now())
+
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("product_categories")
+  @@unique([productId, categoryId])
+  @@index([categoryId])
+  @@index([productId])
+  @@schema("category")
+}

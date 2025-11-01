@@ -1,4 +1,4 @@
-import { FastifyRequest } from 'fastify'
+import type { FastifyRequest } from 'fastify'
 
 // Tipos de request para Milestone
 export type CreateMilestoneRequest = FastifyRequest<{
@@ -72,4 +72,3 @@ export type UpdateMilestoneStatusRequest = FastifyRequest<{
     status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED'
   }
 }>
-

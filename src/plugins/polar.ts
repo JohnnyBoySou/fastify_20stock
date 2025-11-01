@@ -8,10 +8,9 @@ const config = new Configuration({
 //export const Polar = new PolarAPI(config);
 */
 
-import { Polar } from "@polar-sh/sdk";
+import { Polar } from '@polar-sh/sdk'
 
 export const polar = new Polar({
-    accessToken: process.env.POLAR_ACCESS_KEY as string,
-    server:  "sandbox" //"sandbox") as "production" | "sandbox"
-});
-
+  accessToken: process.env.POLAR_ACCESS_KEY as string,
+  server: 'sandbox', //"sandbox") as "production" | "sandbox"
+})

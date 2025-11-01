@@ -5,13 +5,13 @@ export const CrmStageQueries = {
     return await db.crmStage.findFirst({
       where: {
         id,
-        storeId
+        storeId,
       },
       include: {
         _count: {
-          select: { clients: true }
-        }
-      }
+          select: { clients: true },
+        },
+      },
     })
   },
 
@@ -27,13 +27,13 @@ export const CrmStageQueries = {
         orderBy: { order: 'asc' },
         include: {
           _count: {
-            select: { clients: true }
-          }
-        }
+            select: { clients: true },
+          },
+        },
       }),
       db.crmStage.count({
-        where: { storeId }
-      })
+        where: { storeId },
+      }),
     ])
 
     return {
@@ -42,15 +42,15 @@ export const CrmStageQueries = {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
+        totalPages: Math.ceil(total / limit),
+      },
     }
   },
 
   async getNextOrder(storeId: string) {
     const lastStage = await db.crmStage.findFirst({
       where: { storeId },
-      orderBy: { order: 'desc' }
+      orderBy: { order: 'desc' },
     })
 
     return lastStage ? lastStage.order + 1 : 1
@@ -59,17 +59,17 @@ export const CrmStageQueries = {
   async getStats(storeId: string) {
     const [totalStages, stagesWithClients] = await Promise.all([
       db.crmStage.count({
-        where: { storeId }
+        where: { storeId },
       }),
       db.crmStage.findMany({
         where: { storeId },
         include: {
           _count: {
-            select: { clients: true }
-          }
+            select: { clients: true },
+          },
         },
-        orderBy: { order: 'asc' }
-      })
+        orderBy: { order: 'asc' },
+      }),
     ])
 
     const totalClients = stagesWithClients.reduce((sum, stage) => sum + stage._count.clients, 0)
@@ -77,13 +77,13 @@ export const CrmStageQueries = {
     return {
       totalStages,
       totalClients,
-      stagesWithClients: stagesWithClients.map(stage => ({
+      stagesWithClients: stagesWithClients.map((stage) => ({
         id: stage.id,
         name: stage.name,
         color: stage.color,
         order: stage.order,
-        clientsCount: stage._count.clients
-      }))
+        clientsCount: stage._count.clients,
+      })),
     }
-  }
+  },
 }

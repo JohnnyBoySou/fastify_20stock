@@ -1,4 +1,4 @@
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify'
 
 export const createMovementSchema: FastifySchema = {
   body: {
@@ -7,7 +7,7 @@ export const createMovementSchema: FastifySchema = {
     properties: {
       type: {
         type: 'string',
-        enum: ['ENTRADA', 'SAIDA', 'PERDA']
+        enum: ['ENTRADA', 'SAIDA', 'PERDA'],
       },
       quantity: { type: 'number', minimum: 1 },
       storeId: { type: 'string', minLength: 1 }, // Obrigatório, vem do middleware
@@ -17,8 +17,8 @@ export const createMovementSchema: FastifySchema = {
       expiration: { type: 'string', format: 'date' }, // Formato de data simples YYYY-MM-DD
       price: { type: 'number', minimum: 0.01 },
       note: { type: 'string', maxLength: 500 },
-      userId: { type: 'string' }
-    }
+      userId: { type: 'string' },
+    },
   },
   response: {
     201: {
@@ -40,34 +40,34 @@ export const createMovementSchema: FastifySchema = {
         store: { type: 'object' },
         product: { type: 'object' },
         supplier: { type: 'object', nullable: true },
-        user: { type: 'object', nullable: true }
-      }
-    }
-  }
-};
+        user: { type: 'object', nullable: true },
+      },
+    },
+  },
+}
 
 export const updateMovementSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     properties: {
       type: {
         type: 'string',
-        enum: ['ENTRADA', 'SAIDA', 'PERDA']
+        enum: ['ENTRADA', 'SAIDA', 'PERDA'],
       },
       quantity: { type: 'number', minimum: 1 },
       supplierId: { type: 'string' },
       batch: { type: 'string' },
       expiration: { type: 'string', format: 'date' }, // Formato de data simples YYYY-MM-DD
       price: { type: 'number', minimum: 0.01 },
-      note: { type: 'string', maxLength: 500 }
-    }
+      note: { type: 'string', maxLength: 500 },
+    },
   },
   response: {
     200: {
@@ -88,19 +88,19 @@ export const updateMovementSchema: FastifySchema = {
         store: { type: 'object' },
         product: { type: 'object' },
         supplier: { type: 'object', nullable: true },
-        user: { type: 'object', nullable: true }
-      }
-    }
-  }
-};
+        user: { type: 'object', nullable: true },
+      },
+    },
+  },
+}
 
 export const getMovementSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -122,11 +122,11 @@ export const getMovementSchema: FastifySchema = {
         store: { type: 'object' },
         product: { type: 'object' },
         supplier: { type: 'object', nullable: true },
-        user: { type: 'object', nullable: true }
-      }
-    }
-  }
-};
+        user: { type: 'object', nullable: true },
+      },
+    },
+  },
+}
 
 export const listMovementsSchema: FastifySchema = {
   querystring: {
@@ -137,14 +137,14 @@ export const listMovementsSchema: FastifySchema = {
       search: { type: 'string' },
       type: {
         type: 'string',
-        enum: ['ENTRADA', 'SAIDA', 'PERDA']
+        enum: ['ENTRADA', 'SAIDA', 'PERDA'],
       },
       storeId: { type: 'string' },
       productId: { type: 'string' },
       supplierId: { type: 'string' },
       startDate: { type: 'string', format: 'date-time' },
-      endDate: { type: 'string', format: 'date-time' }
-    }
+      endDate: { type: 'string', format: 'date-time' },
+    },
   },
   response: {
     200: {
@@ -171,9 +171,9 @@ export const listMovementsSchema: FastifySchema = {
               store: { type: 'object' },
               product: { type: 'object' },
               supplier: { type: 'object', nullable: true },
-              user: { type: 'object', nullable: true }
-            }
-          }
+              user: { type: 'object', nullable: true },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -181,34 +181,34 @@ export const listMovementsSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const deleteMovementSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
-    204: { type: 'null' }
-  }
-};
+    204: { type: 'null' },
+  },
+}
 
 export const getByStoreSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['storeId'],
     properties: {
-      storeId: { type: 'string' }
-    }
+      storeId: { type: 'string' },
+    },
   },
   querystring: {
     type: 'object',
@@ -217,11 +217,11 @@ export const getByStoreSchema: FastifySchema = {
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       type: {
         type: 'string',
-        enum: ['ENTRADA', 'SAIDA', 'PERDA']
+        enum: ['ENTRADA', 'SAIDA', 'PERDA'],
       },
       startDate: { type: 'string', format: 'date-time' },
-      endDate: { type: 'string', format: 'date-time' }
-    }
+      endDate: { type: 'string', format: 'date-time' },
+    },
   },
   response: {
     200: {
@@ -247,9 +247,9 @@ export const getByStoreSchema: FastifySchema = {
               store: { type: 'object' },
               product: { type: 'object' },
               supplier: { type: 'object', nullable: true },
-              user: { type: 'object', nullable: true }
-            }
-          }
+              user: { type: 'object', nullable: true },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -257,21 +257,21 @@ export const getByStoreSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getByProductSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['productId'],
     properties: {
-      productId: { type: 'string' }
-    }
+      productId: { type: 'string' },
+    },
   },
   querystring: {
     type: 'object',
@@ -280,11 +280,11 @@ export const getByProductSchema: FastifySchema = {
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       type: {
         type: 'string',
-        enum: ['ENTRADA', 'SAIDA', 'PERDA']
+        enum: ['ENTRADA', 'SAIDA', 'PERDA'],
       },
       startDate: { type: 'string', format: 'date-time' },
-      endDate: { type: 'string', format: 'date-time' }
-    }
+      endDate: { type: 'string', format: 'date-time' },
+    },
   },
   response: {
     200: {
@@ -310,9 +310,9 @@ export const getByProductSchema: FastifySchema = {
               store: { type: 'object' },
               product: { type: 'object' },
               supplier: { type: 'object', nullable: true },
-              user: { type: 'object', nullable: true }
-            }
-          }
+              user: { type: 'object', nullable: true },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -320,21 +320,21 @@ export const getByProductSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getBySupplierSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['supplierId'],
     properties: {
-      supplierId: { type: 'string' }
-    }
+      supplierId: { type: 'string' },
+    },
   },
   querystring: {
     type: 'object',
@@ -343,11 +343,11 @@ export const getBySupplierSchema: FastifySchema = {
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       type: {
         type: 'string',
-        enum: ['ENTRADA', 'SAIDA', 'PERDA']
+        enum: ['ENTRADA', 'SAIDA', 'PERDA'],
       },
       startDate: { type: 'string', format: 'date-time' },
-      endDate: { type: 'string', format: 'date-time' }
-    }
+      endDate: { type: 'string', format: 'date-time' },
+    },
   },
   response: {
     200: {
@@ -373,9 +373,9 @@ export const getBySupplierSchema: FastifySchema = {
               store: { type: 'object' },
               product: { type: 'object' },
               supplier: { type: 'object', nullable: true },
-              user: { type: 'object', nullable: true }
-            }
-          }
+              user: { type: 'object', nullable: true },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -383,13 +383,13 @@ export const getBySupplierSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getStockHistorySchema: FastifySchema = {
   params: {
@@ -397,15 +397,15 @@ export const getStockHistorySchema: FastifySchema = {
     required: ['productId', 'storeId'],
     properties: {
       productId: { type: 'string' },
-      storeId: { type: 'string' }
-    }
+      storeId: { type: 'string' },
+    },
   },
   querystring: {
     type: 'object',
     properties: {
       startDate: { type: 'string', format: 'date-time' },
-      endDate: { type: 'string', format: 'date-time' }
-    }
+      endDate: { type: 'string', format: 'date-time' },
+    },
   },
   response: {
     200: {
@@ -428,9 +428,9 @@ export const getStockHistorySchema: FastifySchema = {
               note: { type: 'string', nullable: true },
               createdAt: { type: 'string', format: 'date-time' },
               supplier: { type: 'object', nullable: true },
-              user: { type: 'object', nullable: true }
-            }
-          }
+              user: { type: 'object', nullable: true },
+            },
+          },
         },
         summary: {
           type: 'object',
@@ -438,13 +438,13 @@ export const getStockHistorySchema: FastifySchema = {
             totalEntries: { type: 'number' },
             totalExits: { type: 'number' },
             totalLosses: { type: 'number' },
-            netMovement: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            netMovement: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 // === SCHEMAS PARA FUNÇÕES ADICIONAIS DE MOVIMENTAÇÃO ===
 
@@ -455,23 +455,23 @@ export const getMovementReportSchema: FastifySchema = {
       storeId: { type: 'string' },
       productId: { type: 'string' },
       supplierId: { type: 'string' },
-      type: { 
-        type: 'string', 
-        enum: ['ENTRADA', 'SAIDA', 'PERDA'] 
+      type: {
+        type: 'string',
+        enum: ['ENTRADA', 'SAIDA', 'PERDA'],
       },
       startDate: { type: 'string', format: 'date' },
       endDate: { type: 'string', format: 'date' },
-      groupBy: { 
-        type: 'string', 
+      groupBy: {
+        type: 'string',
         enum: ['day', 'week', 'month', 'year'],
-        default: 'day'
+        default: 'day',
       },
-      format: { 
-        type: 'string', 
+      format: {
+        type: 'string',
         enum: ['json', 'csv', 'pdf'],
-        default: 'json'
-      }
-    }
+        default: 'json',
+      },
+    },
   },
   response: {
     200: {
@@ -486,10 +486,10 @@ export const getMovementReportSchema: FastifySchema = {
               type: 'object',
               properties: {
                 startDate: { type: 'string' },
-                endDate: { type: 'string' }
-              }
-            }
-          }
+                endDate: { type: 'string' },
+              },
+            },
+          },
         },
         data: {
           type: 'array',
@@ -501,9 +501,9 @@ export const getMovementReportSchema: FastifySchema = {
               value: { type: 'number' },
               entrada: { type: 'number' },
               saida: { type: 'number' },
-              perda: { type: 'number' }
-            }
-          }
+              perda: { type: 'number' },
+            },
+          },
         },
         byType: {
           type: 'object',
@@ -513,26 +513,26 @@ export const getMovementReportSchema: FastifySchema = {
               properties: {
                 count: { type: 'number' },
                 value: { type: 'number' },
-                quantity: { type: 'number' }
-              }
+                quantity: { type: 'number' },
+              },
             },
             SAIDA: {
               type: 'object',
               properties: {
                 count: { type: 'number' },
                 value: { type: 'number' },
-                quantity: { type: 'number' }
-              }
+                quantity: { type: 'number' },
+              },
             },
             PERDA: {
               type: 'object',
               properties: {
                 count: { type: 'number' },
                 value: { type: 'number' },
-                quantity: { type: 'number' }
-              }
-            }
-          }
+                quantity: { type: 'number' },
+              },
+            },
+          },
         },
         byStore: {
           type: 'array',
@@ -542,9 +542,9 @@ export const getMovementReportSchema: FastifySchema = {
               storeId: { type: 'string' },
               storeName: { type: 'string' },
               movements: { type: 'number' },
-              value: { type: 'number' }
-            }
-          }
+              value: { type: 'number' },
+            },
+          },
         },
         byProduct: {
           type: 'array',
@@ -554,9 +554,9 @@ export const getMovementReportSchema: FastifySchema = {
               productId: { type: 'string' },
               productName: { type: 'string' },
               movements: { type: 'number' },
-              quantity: { type: 'number' }
-            }
-          }
+              quantity: { type: 'number' },
+            },
+          },
         },
         bySupplier: {
           type: 'array',
@@ -566,14 +566,14 @@ export const getMovementReportSchema: FastifySchema = {
               supplierId: { type: 'string' },
               supplierName: { type: 'string' },
               movements: { type: 'number' },
-              value: { type: 'number' }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+              value: { type: 'number' },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const createBulkMovementSchema: FastifySchema = {
   body: {
@@ -590,7 +590,7 @@ export const createBulkMovementSchema: FastifySchema = {
           properties: {
             type: {
               type: 'string',
-              enum: ['ENTRADA', 'SAIDA', 'PERDA']
+              enum: ['ENTRADA', 'SAIDA', 'PERDA'],
             },
             quantity: { type: 'number', minimum: 1 },
             storeId: { type: 'string', minLength: 1 },
@@ -599,11 +599,11 @@ export const createBulkMovementSchema: FastifySchema = {
             batch: { type: 'string' },
             expiration: { type: 'string', format: 'date' },
             price: { type: 'number', minimum: 0 },
-            note: { type: 'string', maxLength: 500 }
-          }
-        }
-      }
-    }
+            note: { type: 'string', maxLength: 500 },
+          },
+        },
+      },
+    },
   },
   response: {
     201: {
@@ -619,30 +619,30 @@ export const createBulkMovementSchema: FastifySchema = {
               index: { type: 'number' },
               success: { type: 'boolean' },
               movement: { type: 'object', nullable: true },
-              error: { type: 'string', nullable: true }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+              error: { type: 'string', nullable: true },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const verifyMovementSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     required: ['verified'],
     properties: {
       verified: { type: 'boolean' },
-      note: { type: 'string', maxLength: 500 }
-    }
+      note: { type: 'string', maxLength: 500 },
+    },
   },
   response: {
     200: {
@@ -657,26 +657,26 @@ export const verifyMovementSchema: FastifySchema = {
         store: { type: 'object' },
         product: { type: 'object' },
         supplier: { type: 'object', nullable: true },
-        user: { type: 'object', nullable: true }
-      }
-    }
-  }
-};
+        user: { type: 'object', nullable: true },
+      },
+    },
+  },
+}
 
 export const cancelMovementSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     required: ['reason'],
     properties: {
-      reason: { type: 'string', minLength: 1, maxLength: 500 }
-    }
+      reason: { type: 'string', minLength: 1, maxLength: 500 },
+    },
   },
   response: {
     200: {
@@ -691,11 +691,11 @@ export const cancelMovementSchema: FastifySchema = {
         store: { type: 'object' },
         product: { type: 'object' },
         supplier: { type: 'object', nullable: true },
-        user: { type: 'object', nullable: true }
-      }
-    }
-  }
-};
+        user: { type: 'object', nullable: true },
+      },
+    },
+  },
+}
 
 export const getVerifiedMovementsSchema: FastifySchema = {
   querystring: {
@@ -706,8 +706,8 @@ export const getVerifiedMovementsSchema: FastifySchema = {
       storeId: { type: 'string' },
       verified: { type: 'boolean' },
       startDate: { type: 'string', format: 'date' },
-      endDate: { type: 'string', format: 'date' }
-    }
+      endDate: { type: 'string', format: 'date' },
+    },
   },
   response: {
     200: {
@@ -728,9 +728,9 @@ export const getVerifiedMovementsSchema: FastifySchema = {
               store: { type: 'object' },
               product: { type: 'object' },
               supplier: { type: 'object', nullable: true },
-              user: { type: 'object', nullable: true }
-            }
-          }
+              user: { type: 'object', nullable: true },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -738,13 +738,13 @@ export const getVerifiedMovementsSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getCancelledMovementsSchema: FastifySchema = {
   querystring: {
@@ -754,8 +754,8 @@ export const getCancelledMovementsSchema: FastifySchema = {
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       storeId: { type: 'string' },
       startDate: { type: 'string', format: 'date' },
-      endDate: { type: 'string', format: 'date' }
-    }
+      endDate: { type: 'string', format: 'date' },
+    },
   },
   response: {
     200: {
@@ -777,9 +777,9 @@ export const getCancelledMovementsSchema: FastifySchema = {
               store: { type: 'object' },
               product: { type: 'object' },
               supplier: { type: 'object', nullable: true },
-              user: { type: 'object', nullable: true }
-            }
-          }
+              user: { type: 'object', nullable: true },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -787,13 +787,13 @@ export const getCancelledMovementsSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getMovementAnalyticsSchema: FastifySchema = {
   querystring: {
@@ -803,8 +803,8 @@ export const getMovementAnalyticsSchema: FastifySchema = {
       productId: { type: 'string' },
       supplierId: { type: 'string' },
       startDate: { type: 'string', format: 'date' },
-      endDate: { type: 'string', format: 'date' }
-    }
+      endDate: { type: 'string', format: 'date' },
+    },
   },
   response: {
     200: {
@@ -819,8 +819,8 @@ export const getMovementAnalyticsSchema: FastifySchema = {
             verifiedCount: { type: 'number' },
             cancelledCount: { type: 'number' },
             verificationRate: { type: 'number' },
-            cancellationRate: { type: 'number' }
-          }
+            cancellationRate: { type: 'number' },
+          },
         },
         byType: {
           type: 'array',
@@ -830,9 +830,9 @@ export const getMovementAnalyticsSchema: FastifySchema = {
               type: { type: 'string' },
               count: { type: 'number' },
               quantity: { type: 'number' },
-              value: { type: 'number' }
-            }
-          }
+              value: { type: 'number' },
+            },
+          },
         },
         byMonth: {
           type: 'array',
@@ -841,9 +841,9 @@ export const getMovementAnalyticsSchema: FastifySchema = {
             properties: {
               month: { type: 'string' },
               count: { type: 'number' },
-              value: { type: 'number' }
-            }
-          }
+              value: { type: 'number' },
+            },
+          },
         },
         byStore: {
           type: 'array',
@@ -853,9 +853,9 @@ export const getMovementAnalyticsSchema: FastifySchema = {
               storeId: { type: 'string' },
               storeName: { type: 'string' },
               count: { type: 'number' },
-              value: { type: 'number' }
-            }
-          }
+              value: { type: 'number' },
+            },
+          },
         },
         byProduct: {
           type: 'array',
@@ -866,9 +866,9 @@ export const getMovementAnalyticsSchema: FastifySchema = {
               productName: { type: 'string' },
               count: { type: 'number' },
               quantity: { type: 'number' },
-              value: { type: 'number' }
-            }
-          }
+              value: { type: 'number' },
+            },
+          },
         },
         bySupplier: {
           type: 'array',
@@ -878,14 +878,14 @@ export const getMovementAnalyticsSchema: FastifySchema = {
               supplierId: { type: 'string' },
               supplierName: { type: 'string' },
               count: { type: 'number' },
-              value: { type: 'number' }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+              value: { type: 'number' },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const MovementSchemas = {
   create: createMovementSchema,
@@ -904,5 +904,5 @@ export const MovementSchemas = {
   cancel: cancelMovementSchema,
   getVerifiedMovements: getVerifiedMovementsSchema,
   getCancelledMovements: getCancelledMovementsSchema,
-  getAnalytics: getMovementAnalyticsSchema
-};
+  getAnalytics: getMovementAnalyticsSchema,
+}

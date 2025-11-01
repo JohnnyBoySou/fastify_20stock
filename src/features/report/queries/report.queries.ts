@@ -1,21 +1,20 @@
 import { db } from '@/plugins/prisma'
 
-import {
+import type {
+  CategoryReportResponse,
   DashboardStatsResponse,
+  FinancialReportResponse,
   InventoryReportResponse,
   MovementReportResponse,
-  FinancialReportResponse,
-  CategoryReportResponse,
+  PaginationOptions,
+  ReportFilters,
+  SortOptions,
+  StockAlertReportResponse,
   SupplierReportResponse,
   UserActivityReportResponse,
-  StockAlertReportResponse,
-  ReportFilters,
-  PaginationOptions,
-  SortOptions
 } from '../report.interfaces'
 
 export const ReportQueries = {
-
   // ================================
   // DASHBOARD STATS
   // ================================
@@ -27,31 +26,26 @@ export const ReportQueries = {
     const dateFilter = ReportQueries.buildDateFilter(startDate, endDate)
 
     // Overview stats
-    const [
-      totalProducts,
-      totalCategories,
-      totalSuppliers,
-      totalStores,
-      totalUsers
-    ] = await Promise.all([
-      db.product.count({
-        where: storeId ? { storeId } : {}
-      }),
-      db.category.count(),
-      db.supplier.count(),
-      db.store.count(),
-      db.user.count()
-    ])
+    const [totalProducts, totalCategories, totalSuppliers, totalStores, totalUsers] =
+      await Promise.all([
+        db.product.count({
+          where: storeId ? { storeId } : {},
+        }),
+        db.category.count(),
+        db.supplier.count(),
+        db.store.count(),
+        db.user.count(),
+      ])
 
     // Inventory stats
     const inventoryStats = await ReportQueries.getInventoryStats(storeId)
-    
+
     // Movement stats
     const movementStats = await ReportQueries.getMovementStats(storeId, dateFilter)
-    
+
     // Recent activity
     const recentActivity = await ReportQueries.getRecentActivity(storeId, dateFilter)
-    
+
     // Chart data
     const charts = await ReportQueries.getChartData(storeId, dateFilter)
 
@@ -61,12 +55,12 @@ export const ReportQueries = {
         totalCategories,
         totalSuppliers,
         totalStores,
-        totalUsers
+        totalUsers,
       },
       inventory: inventoryStats,
       movements: movementStats,
       recentActivity,
-      charts
+      charts,
     }
   },
 
@@ -85,7 +79,7 @@ export const ReportQueries = {
 
     // Build where clause
     const where: any = {}
-    
+
     if (storeId) where.storeId = storeId
     if (categoryId) where.categoryId = categoryId
     if (supplierId) where.supplierId = supplierId
@@ -93,12 +87,9 @@ export const ReportQueries = {
     if (lowStock) {
       where.AND = [
         { stockMin: { gt: 0 } },
-        { 
-          OR: [
-            { stockMin: { gt: 0 } },
-            { currentStock: { lte: 0 } }
-          ]
-        }
+        {
+          OR: [{ stockMin: { gt: 0 } }, { currentStock: { lte: 0 } }],
+        },
       ]
     }
 
@@ -132,28 +123,28 @@ export const ReportQueries = {
           categories: {
             select: {
               category: {
-                select: { id: true, name: true }
-              }
-            }
+                select: { id: true, name: true },
+              },
+            },
           },
           supplier: {
-            select: { id: true, corporateName: true }
+            select: { id: true, corporateName: true },
           },
           movements: {
             orderBy: { createdAt: 'desc' },
             take: 1,
-            select: { createdAt: true }
-          }
-        }
+            select: { createdAt: true },
+          },
+        },
       }),
-      db.product.count({ where })
+      db.product.count({ where }),
     ])
 
     // Calculate product values and alert levels
-    const productsWithStats = products.map(product => {
+    const productsWithStats = products.map((product) => {
       const currentStock = ReportQueries.calculateCurrentStock(product.movements || [])
       const totalValue = Number(product.referencePrice) * currentStock
-      
+
       let alertLevel: 'normal' | 'low' | 'high' | 'out' = 'normal'
       if (currentStock <= 0) alertLevel = 'out'
       else if (currentStock <= product.stockMin) alertLevel = 'low'
@@ -172,7 +163,7 @@ export const ReportQueries = {
         totalValue,
         status: product.status,
         alertLevel,
-        lastMovement: product.movements?.[0]?.createdAt?.toISOString()
+        lastMovement: product.movements?.[0]?.createdAt?.toISOString(),
       }
     })
 
@@ -186,8 +177,8 @@ export const ReportQueries = {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
+        totalPages: Math.ceil(total / limit),
+      },
     }
   },
 
@@ -204,7 +195,7 @@ export const ReportQueries = {
 
     // Build where clause
     const where: any = {}
-    
+
     if (storeId) where.storeId = storeId
     if (productId) where.productId = productId
     if (supplierId) where.supplierId = supplierId
@@ -222,24 +213,24 @@ export const ReportQueries = {
         take: limit,
         include: {
           product: {
-            select: { id: true, name: true, unitOfMeasure: true }
+            select: { id: true, name: true, unitOfMeasure: true },
           },
           supplier: {
-            select: { id: true, corporateName: true }
+            select: { id: true, corporateName: true },
           },
           user: {
-            select: { id: true, name: true }
-          }
-        }
+            select: { id: true, name: true },
+          },
+        },
       }),
-      db.movement.count({ where })
+      db.movement.count({ where }),
     ])
 
     // Calculate summary
     const summary = await ReportQueries.calculateMovementSummary(where)
 
     return {
-      movements: movements.map(movement => ({
+      movements: movements.map((movement) => ({
         id: movement.id,
         type: movement.type,
         quantity: movement.quantity,
@@ -252,15 +243,15 @@ export const ReportQueries = {
         product: movement.product,
         supplier: movement.supplier,
         user: movement.user,
-        createdAt: movement.createdAt.toISOString()
+        createdAt: movement.createdAt.toISOString(),
       })),
       summary,
       pagination: {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
+        totalPages: Math.ceil(total / limit),
+      },
     }
   },
 
@@ -279,33 +270,34 @@ export const ReportQueries = {
     const movements = await db.movement.findMany({
       where: {
         ...where,
-        price: { not: null }
+        price: { not: null },
       },
       include: {
         product: {
-          select: { id: true, name: true, categories: true }
+          select: { id: true, name: true, categories: true },
         },
         supplier: {
-          select: { id: true, corporateName: true }
-        }
-      }
+          select: { id: true, corporateName: true },
+        },
+      },
     })
 
     // Calculate financial data
     const financialData = ReportQueries.calculateFinancialData(movements, groupBy)
-    
+
     // Calculate breakdowns
     const breakdown = await ReportQueries.calculateFinancialBreakdown(movements)
 
     return {
       period: {
-        startDate: startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        startDate:
+          startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         endDate: endDate || new Date().toISOString().split('T')[0],
-        groupBy
+        groupBy,
       },
       summary: financialData.summary,
       data: financialData.timeSeries,
-      breakdown
+      breakdown,
     }
   },
 
@@ -330,44 +322,50 @@ export const ReportQueries = {
                 movements: {
                   orderBy: { createdAt: 'desc' },
                   take: 1,
-                  select: { createdAt: true }
-                }
-              }
-            }
-          }
+                  select: { createdAt: true },
+                },
+              },
+            },
+          },
         },
-        children: includeSubcategories ? {
-          include: {
-            products: {
-              where,
+        children: includeSubcategories
+          ? {
               include: {
-                product: {
+                products: {
+                  where,
                   include: {
-                    movements: {
-                      orderBy: { createdAt: 'desc' },
-                      take: 1,
-                      select: { createdAt: true }
-                    }
-                  }
-                }
-              }
+                    product: {
+                      include: {
+                        movements: {
+                          orderBy: { createdAt: 'desc' },
+                          take: 1,
+                          select: { createdAt: true },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             }
-          }
-        } : false,
-        parent: true
-      }
+          : false,
+        parent: true,
+      },
     })
 
     // Calculate category stats
-    const categoriesWithStats = categories.map(category => {
-      const allProducts = includeSubcategories && category.children
-        ? [...category.products, ...category.children.flatMap(child => (child as any).products || [])]
-        : category.products
+    const categoriesWithStats = categories.map((category) => {
+      const allProducts =
+        includeSubcategories && category.children
+          ? [
+              ...category.products,
+              ...category.children.flatMap((child) => (child as any).products || []),
+            ]
+          : category.products
 
       const totalValue = allProducts.reduce((sum, productCategory) => {
         const product = productCategory.product
         const currentStock = ReportQueries.calculateCurrentStock(product.movements || [])
-        return sum + (Number(product.referencePrice) * currentStock)
+        return sum + Number(product.referencePrice) * currentStock
       }, 0)
 
       const totalMovements = allProducts.reduce((sum, productCategory) => {
@@ -375,7 +373,7 @@ export const ReportQueries = {
       }, 0)
 
       const lastMovement = allProducts
-        .flatMap(productCategory => productCategory.product.movements || [])
+        .flatMap((productCategory) => productCategory.product.movements || [])
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]
 
       return {
@@ -387,17 +385,17 @@ export const ReportQueries = {
         icon: category.icon,
         parentId: category.parentId,
         parent: category.parent,
-        children: category.children?.map(child => ({
+        children: category.children?.map((child) => ({
           id: child.id,
-          name: child.name
+          name: child.name,
         })),
         stats: {
           totalProducts: allProducts.length,
           totalValue,
           averagePrice: allProducts.length > 0 ? totalValue / allProducts.length : 0,
           movements: totalMovements,
-          lastMovement: lastMovement?.createdAt.toISOString()
-        }
+          lastMovement: lastMovement?.createdAt.toISOString(),
+        },
       }
     })
 
@@ -411,8 +409,8 @@ export const ReportQueries = {
         totalCategories: categories.length,
         totalProducts,
         totalValue,
-        averageProductsPerCategory: categories.length > 0 ? totalProducts / categories.length : 0
-      }
+        averageProductsPerCategory: categories.length > 0 ? totalProducts / categories.length : 0,
+      },
     }
   },
 
@@ -436,25 +434,25 @@ export const ReportQueries = {
             movements: {
               orderBy: { createdAt: 'desc' },
               take: 1,
-              select: { createdAt: true }
-            }
-          }
+              select: { createdAt: true },
+            },
+          },
         },
         movements: {
           where: storeId ? { storeId } : {},
           orderBy: { createdAt: 'desc' },
           take: 1,
-          select: { createdAt: true }
+          select: { createdAt: true },
         },
-        responsibles: true
-      }
+        responsibles: true,
+      },
     })
 
     // Calculate supplier stats
-    const suppliersWithStats = suppliers.map(supplier => {
+    const suppliersWithStats = suppliers.map((supplier) => {
       const totalValue = supplier.products.reduce((sum, product) => {
         const currentStock = ReportQueries.calculateCurrentStock(product.movements || [])
-        return sum + (Number(product.referencePrice) * currentStock)
+        return sum + Number(product.referencePrice) * currentStock
       }, 0)
 
       const totalMovements = supplier.movements.length
@@ -470,28 +468,28 @@ export const ReportQueries = {
           cep: supplier.cep,
           city: supplier.city,
           state: supplier.state,
-          address: supplier.address
+          address: supplier.address,
         },
         stats: {
           totalProducts: supplier.products.length,
           totalValue,
           totalMovements,
           lastMovement: lastMovement?.createdAt.toISOString(),
-          averageOrderValue: totalMovements > 0 ? totalValue / totalMovements : 0
+          averageOrderValue: totalMovements > 0 ? totalValue / totalMovements : 0,
         },
-        responsibles: supplier.responsibles.map(resp => ({
+        responsibles: supplier.responsibles.map((resp) => ({
           id: resp.id,
           name: resp.name,
           phone: resp.phone,
-          email: resp.email
-        }))
+          email: resp.email,
+        })),
       }
     })
 
     // Calculate summary
     const totalProducts = suppliersWithStats.reduce((sum, sup) => sum + sup.stats.totalProducts, 0)
     const totalValue = suppliersWithStats.reduce((sum, sup) => sum + sup.stats.totalValue, 0)
-    const activeSuppliers = suppliersWithStats.filter(sup => sup.status).length
+    const activeSuppliers = suppliersWithStats.filter((sup) => sup.status).length
 
     return {
       suppliers: suppliersWithStats,
@@ -500,8 +498,8 @@ export const ReportQueries = {
         activeSuppliers,
         totalProducts,
         totalValue,
-        averageProductsPerSupplier: suppliers.length > 0 ? totalProducts / suppliers.length : 0
-      }
+        averageProductsPerSupplier: suppliers.length > 0 ? totalProducts / suppliers.length : 0,
+      },
     }
   },
 
@@ -532,18 +530,18 @@ export const ReportQueries = {
         take: limit,
         include: {
           user: {
-            select: { id: true, name: true, email: true }
-          }
-        }
+            select: { id: true, name: true, email: true },
+          },
+        },
       }),
-      db.auditLog.count({ where })
+      db.auditLog.count({ where }),
     ])
 
     // Calculate summary
     const summary = await ReportQueries.calculateUserActivitySummary(where)
 
     return {
-      activities: activities.map(activity => ({
+      activities: activities.map((activity) => ({
         id: activity.id,
         entity: activity.entity,
         entityId: activity.entityId,
@@ -551,15 +549,15 @@ export const ReportQueries = {
         before: activity.before,
         after: activity.after,
         user: activity.user,
-        createdAt: activity.createdAt.toISOString()
+        createdAt: activity.createdAt.toISOString(),
       })),
       summary,
       pagination: {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
+        totalPages: Math.ceil(total / limit),
+      },
     }
   },
 
@@ -584,24 +582,24 @@ export const ReportQueries = {
         categories: {
           select: {
             category: {
-              select: { id: true, name: true }
-            }
-          }
+              select: { id: true, name: true },
+            },
+          },
         },
         supplier: {
-          select: { id: true, corporateName: true }
+          select: { id: true, corporateName: true },
         },
         movements: {
           orderBy: { createdAt: 'desc' },
           take: 1,
-          select: { createdAt: true }
-        }
-      }
+          select: { createdAt: true },
+        },
+      },
     })
 
     // Calculate alerts
     const alerts = products
-      .map(product => {
+      .map((product) => {
         const currentStock = ReportQueries.calculateCurrentStock(product.movements || [])
         const unitPrice = Number(product.referencePrice)
         const totalValue = unitPrice * currentStock
@@ -633,10 +631,10 @@ export const ReportQueries = {
           totalValue,
           lastMovement: product.movements?.[0]?.createdAt.toISOString(),
           category: product.categories[0]?.category,
-          supplier: product.supplier
+          supplier: product.supplier,
         }
       })
-      .filter(alert => {
+      .filter((alert) => {
         if (alertType === 'all') return alert.alertType !== null
         return alert.alertType === alertType
       })
@@ -651,11 +649,11 @@ export const ReportQueries = {
     // Calculate summary
     const summary = {
       totalAlerts: alerts.length,
-      lowStockAlerts: alerts.filter(a => a.alertType === 'low').length,
-      highStockAlerts: alerts.filter(a => a.alertType === 'high').length,
-      expiredAlerts: alerts.filter(a => a.alertType === 'expired').length,
-      outOfStockAlerts: alerts.filter(a => a.alertType === 'out').length,
-      totalValue: alerts.reduce((sum, alert) => sum + alert.totalValue, 0)
+      lowStockAlerts: alerts.filter((a) => a.alertType === 'low').length,
+      highStockAlerts: alerts.filter((a) => a.alertType === 'high').length,
+      expiredAlerts: alerts.filter((a) => a.alertType === 'expired').length,
+      outOfStockAlerts: alerts.filter((a) => a.alertType === 'out').length,
+      totalValue: alerts.reduce((sum, alert) => sum + alert.totalValue, 0),
     }
 
     return {
@@ -665,8 +663,8 @@ export const ReportQueries = {
         page,
         limit,
         total: alerts.length,
-        totalPages: Math.ceil(alerts.length / limit)
-      }
+        totalPages: Math.ceil(alerts.length / limit),
+      },
     }
   },
 
@@ -676,15 +674,15 @@ export const ReportQueries = {
 
   buildDateFilter(startDate?: string, endDate?: string) {
     const filter: any = {}
-    
+
     if (startDate) {
       filter.gte = new Date(startDate)
     }
-    
+
     if (endDate) {
       filter.lte = new Date(endDate)
     }
-    
+
     return Object.keys(filter).length > 0 ? filter : undefined
   },
 
@@ -704,34 +702,31 @@ export const ReportQueries = {
 
   async getInventoryStats(storeId?: string) {
     const where = storeId ? { storeId } : {}
-    
+
     const [totalValue, lowStockCount, outOfStockCount] = await Promise.all([
       db.product.aggregate({
         where,
-        _sum: { referencePrice: true }
+        _sum: { referencePrice: true },
       }),
       db.product.count({
         where: {
           ...where,
-          AND: [
-            { stockMin: { gt: 0 } },
-            { stockMin: { gt: 0 } }
-          ]
-        }
+          AND: [{ stockMin: { gt: 0 } }, { stockMin: { gt: 0 } }],
+        },
       }),
       db.product.count({
         where: {
           ...where,
-          stockMin: { gt: 0 }
-        }
-      })
+          stockMin: { gt: 0 },
+        },
+      }),
     ])
 
     return {
       totalValue: Number(totalValue._sum.referencePrice || 0),
       lowStockItems: lowStockCount,
       outOfStockItems: outOfStockCount,
-      averageStockValue: 0 // Will be calculated based on actual stock
+      averageStockValue: 0, // Will be calculated based on actual stock
     }
   },
 
@@ -746,8 +741,8 @@ export const ReportQueries = {
       db.movement.count({ where: { ...where, type: 'PERDA' } }),
       db.movement.aggregate({
         where: { ...where, price: { not: null } },
-        _sum: { price: true }
-      })
+        _sum: { price: true },
+      }),
     ])
 
     return {
@@ -755,7 +750,7 @@ export const ReportQueries = {
       entries,
       exits,
       losses,
-      totalValue: Number(totalValue._sum.price || 0)
+      totalValue: Number(totalValue._sum.price || 0),
     }
   },
 
@@ -770,31 +765,31 @@ export const ReportQueries = {
         take: 5,
         include: {
           product: {
-            select: { name: true }
-          }
-        }
+            select: { name: true },
+          },
+        },
       }),
       db.product.findMany({
         where: storeId ? { storeId } : {},
         orderBy: { createdAt: 'desc' },
         take: 5,
-        select: { id: true, name: true, createdAt: true }
-      })
+        select: { id: true, name: true, createdAt: true },
+      }),
     ])
 
     return {
-      lastMovements: lastMovements.map(movement => ({
+      lastMovements: lastMovements.map((movement) => ({
         id: movement.id,
         type: movement.type,
         productName: movement.product.name,
         quantity: movement.quantity,
-        createdAt: movement.createdAt.toISOString()
+        createdAt: movement.createdAt.toISOString(),
       })),
-      recentProducts: recentProducts.map(product => ({
+      recentProducts: recentProducts.map((product) => ({
         id: product.id,
         name: product.name,
-        createdAt: product.createdAt.toISOString()
-      }))
+        createdAt: product.createdAt.toISOString(),
+      })),
     }
   },
 
@@ -807,7 +802,7 @@ export const ReportQueries = {
       by: ['type'],
       where,
       _count: { type: true },
-      _sum: { price: true }
+      _sum: { price: true },
     })
 
     // Top products by movements
@@ -817,31 +812,31 @@ export const ReportQueries = {
       _count: { productId: true },
       _sum: { price: true },
       orderBy: { _count: { productId: 'desc' } },
-      take: 5
+      take: 5,
     })
 
     // Get product names for top products
-    const productIds = topProducts.map(p => p.productId)
+    const productIds = topProducts.map((p) => p.productId)
     const products = await db.product.findMany({
       where: { id: { in: productIds } },
-      select: { id: true, name: true }
+      select: { id: true, name: true },
     })
 
-    const productMap = new Map(products.map(p => [p.id, p.name]))
+    const productMap = new Map(products.map((p) => [p.id, p.name]))
 
     return {
-      movementsByType: movementsByType.map(m => ({
+      movementsByType: movementsByType.map((m) => ({
         type: m.type,
         count: m._count.type,
-        value: Number(m._sum.price || 0)
+        value: Number(m._sum.price || 0),
       })),
-      topProducts: topProducts.map(p => ({
+      topProducts: topProducts.map((p) => ({
         productId: p.productId,
         productName: productMap.get(p.productId) || 'Unknown',
         movements: p._count.productId,
-        value: Number(p._sum.price || 0)
+        value: Number(p._sum.price || 0),
       })),
-      movementsByDay: [] // Will be implemented with proper date grouping
+      movementsByDay: [], // Will be implemented with proper date grouping
     }
   },
 
@@ -850,23 +845,20 @@ export const ReportQueries = {
       db.product.count({ where }),
       db.product.aggregate({
         where,
-        _sum: { referencePrice: true }
+        _sum: { referencePrice: true },
       }),
       db.product.count({
         where: {
           ...where,
-          AND: [
-            { stockMin: { gt: 0 } },
-            { stockMin: { gt: 0 } }
-          ]
-        }
+          AND: [{ stockMin: { gt: 0 } }, { stockMin: { gt: 0 } }],
+        },
       }),
       db.product.count({
         where: {
           ...where,
-          stockMin: { gt: 0 }
-        }
-      })
+          stockMin: { gt: 0 },
+        },
+      }),
     ])
 
     return {
@@ -874,7 +866,8 @@ export const ReportQueries = {
       totalValue: Number(totalValue._sum.referencePrice || 0),
       lowStockCount,
       outOfStockCount,
-      averageStockValue: totalProducts > 0 ? Number(totalValue._sum.referencePrice || 0) / totalProducts : 0
+      averageStockValue:
+        totalProducts > 0 ? Number(totalValue._sum.referencePrice || 0) / totalProducts : 0,
     }
   },
 
@@ -886,8 +879,8 @@ export const ReportQueries = {
       db.movement.count({ where: { ...where, type: 'PERDA' } }),
       db.movement.aggregate({
         where: { ...where, price: { not: null } },
-        _sum: { price: true }
-      })
+        _sum: { price: true },
+      }),
     ])
 
     return {
@@ -896,7 +889,7 @@ export const ReportQueries = {
       totalExits,
       totalLosses,
       totalValue: Number(totalValue._sum.price || 0),
-      averageValue: totalMovements > 0 ? Number(totalValue._sum.price || 0) / totalMovements : 0
+      averageValue: totalMovements > 0 ? Number(totalValue._sum.price || 0) / totalMovements : 0,
     }
   },
 
@@ -904,12 +897,12 @@ export const ReportQueries = {
     // This is a simplified implementation
     // In a real scenario, you'd want to group by date periods
     const totalRevenue = movements
-      .filter(m => m.type === 'ENTRADA' && m.price)
-      .reduce((sum, m) => sum + (Number(m.price) * m.quantity), 0)
+      .filter((m) => m.type === 'ENTRADA' && m.price)
+      .reduce((sum, m) => sum + Number(m.price) * m.quantity, 0)
 
     const totalCosts = movements
-      .filter(m => m.type === 'SAIDA' && m.price)
-      .reduce((sum, m) => sum + (Number(m.price) * m.quantity), 0)
+      .filter((m) => m.type === 'SAIDA' && m.price)
+      .reduce((sum, m) => sum + Number(m.price) * m.quantity, 0)
 
     const grossProfit = totalRevenue - totalCosts
     const profitMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0
@@ -920,9 +913,9 @@ export const ReportQueries = {
         totalCosts,
         grossProfit,
         profitMargin,
-        totalMovements: movements.length
+        totalMovements: movements.length,
       },
-      timeSeries: [] // Would be implemented with proper date grouping
+      timeSeries: [], // Would be implemented with proper date grouping
     }
   },
 
@@ -932,7 +925,7 @@ export const ReportQueries = {
     const byCategory = new Map()
     const bySupplier = new Map()
 
-    movements.forEach(movement => {
+    movements.forEach((movement) => {
       const value = Number(movement.price || 0) * movement.quantity
       const isRevenue = movement.type === 'ENTRADA'
       const isCost = movement.type === 'SAIDA'
@@ -945,7 +938,7 @@ export const ReportQueries = {
           revenue: 0,
           costs: 0,
           profit: 0,
-          movements: 0
+          movements: 0,
         })
       }
       const productData = byProduct.get(movement.product.id)
@@ -960,7 +953,7 @@ export const ReportQueries = {
     return {
       byProduct: Array.from(byProduct.values()),
       byCategory: Array.from(byCategory.values()),
-      bySupplier: Array.from(bySupplier.values())
+      bySupplier: Array.from(bySupplier.values()),
     }
   },
 
@@ -970,31 +963,34 @@ export const ReportQueries = {
       db.auditLog.groupBy({
         by: ['userId'],
         where,
-        _count: { userId: true }
+        _count: { userId: true },
       }),
       db.auditLog.groupBy({
         by: ['action'],
         where,
-        _count: { action: true }
-      })
+        _count: { action: true },
+      }),
     ])
 
-    const mostActiveUser = uniqueUsers.length > 0 
-      ? uniqueUsers.reduce((max, user) => user._count.userId > max._count.userId ? user : max)
-      : null
+    const mostActiveUser =
+      uniqueUsers.length > 0
+        ? uniqueUsers.reduce((max, user) => (user._count.userId > max._count.userId ? user : max))
+        : null
 
     return {
       totalActivities,
       uniqueUsers: uniqueUsers.length,
-      mostActiveUser: mostActiveUser ? {
-        id: mostActiveUser.userId,
-        name: 'Unknown', // Would need to join with user table
-        activities: mostActiveUser._count.userId
-      } : null,
-      activitiesByType: activitiesByType.map(activity => ({
+      mostActiveUser: mostActiveUser
+        ? {
+            id: mostActiveUser.userId,
+            name: 'Unknown', // Would need to join with user table
+            activities: mostActiveUser._count.userId,
+          }
+        : null,
+      activitiesByType: activitiesByType.map((activity) => ({
         action: activity.action,
-        count: activity._count.action
-      }))
+        count: activity._count.action,
+      })),
     }
-  }
-};
+  },
+}

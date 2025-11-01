@@ -1,4 +1,4 @@
-import { PushSubscriptionBody } from '../push-subscription.interfaces';
+import type { PushSubscriptionBody } from '../push-subscription.interfaces'
 
 export class PushSubscriptionCommands {
   constructor(private prisma: any) {}
@@ -8,9 +8,9 @@ export class PushSubscriptionCommands {
     const existing = await this.prisma.pushSubscription.findFirst({
       where: {
         userId,
-        endpoint: data.endpoint
-      }
-    });
+        endpoint: data.endpoint,
+      },
+    })
 
     if (existing) {
       // Atualizar subscription existente
@@ -22,9 +22,9 @@ export class PushSubscriptionCommands {
           auth: data.keys.auth,
           userAgent: data.userAgent,
           deviceInfo: data.deviceInfo,
-          updatedAt: new Date()
-        }
-      });
+          updatedAt: new Date(),
+        },
+      })
     }
 
     // Criar nova subscription
@@ -35,9 +35,9 @@ export class PushSubscriptionCommands {
         p256dh: data.keys.p256dh,
         auth: data.keys.auth,
         userAgent: data.userAgent,
-        deviceInfo: data.deviceInfo
-      }
-    });
+        deviceInfo: data.deviceInfo,
+      },
+    })
   }
 
   async delete(id: string, userId: string) {
@@ -45,34 +45,33 @@ export class PushSubscriptionCommands {
     const subscription = await this.prisma.pushSubscription.findFirst({
       where: {
         id,
-        userId
-      }
-    });
+        userId,
+      },
+    })
 
     if (!subscription) {
-      throw new Error('Push subscription not found');
+      throw new Error('Push subscription not found')
     }
 
     return await this.prisma.pushSubscription.delete({
-      where: { id }
-    });
+      where: { id },
+    })
   }
 
   async deleteByEndpoint(endpoint: string, userId: string) {
     return await this.prisma.pushSubscription.deleteMany({
       where: {
         endpoint,
-        userId
-      }
-    });
+        userId,
+      },
+    })
   }
 
   async deleteByUser(userId: string) {
     return await this.prisma.pushSubscription.deleteMany({
       where: {
-        userId
-      }
-    });
+        userId,
+      },
+    })
   }
 }
-

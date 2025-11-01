@@ -1,14 +1,13 @@
-import { db } from '@/plugins/prisma';
-import { FlowExecutionStatus } from '../../flow/flow.interfaces';
+import { db } from '@/plugins/prisma'
+import type { FlowExecutionStatus } from '../../flow/flow.interfaces'
 
 export const FlowExecutionCommands = {
-  
   async create(data: {
-    flowId: string;
-    status: FlowExecutionStatus;
-    triggerType: string;
-    triggerData: any;
-    executionLog: any[];
+    flowId: string
+    status: FlowExecutionStatus
+    triggerType: string
+    triggerData: any
+    executionLog: any[]
   }) {
     try {
       const execution = await db.flowExecution.create({
@@ -17,37 +16,40 @@ export const FlowExecutionCommands = {
           status: data.status,
           triggerType: data.triggerType,
           triggerData: data.triggerData as any,
-          executionLog: data.executionLog as any
-        }
-      });
+          executionLog: data.executionLog as any,
+        },
+      })
 
-      return execution;
+      return execution
     } catch (error: any) {
-      console.error('Error creating flow execution:', error);
-      throw error;
+      console.error('Error creating flow execution:', error)
+      throw error
     }
   },
 
-  async update(executionId: string, data: {
-    status?: FlowExecutionStatus;
-    executionLog?: any[];
-    error?: string;
-    completedAt?: Date;
-    duration?: number;
-  }) {
+  async update(
+    executionId: string,
+    data: {
+      status?: FlowExecutionStatus
+      executionLog?: any[]
+      error?: string
+      completedAt?: Date
+      duration?: number
+    }
+  ) {
     try {
       const execution = await db.flowExecution.update({
         where: { id: executionId },
         data: {
           ...data,
-          executionLog: data.executionLog as any
-        }
-      });
+          executionLog: data.executionLog as any,
+        },
+      })
 
-      return execution;
+      return execution
     } catch (error: any) {
-      console.error('Error updating flow execution:', error);
-      throw error;
+      console.error('Error updating flow execution:', error)
+      throw error
     }
   },
 
@@ -57,14 +59,14 @@ export const FlowExecutionCommands = {
         where: { id: executionId },
         data: {
           status: 'CANCELLED',
-          completedAt: new Date()
-        }
-      });
+          completedAt: new Date(),
+        },
+      })
 
-      return execution;
+      return execution
     } catch (error: any) {
-      console.error('Error cancelling flow execution:', error);
-      throw error;
+      console.error('Error cancelling flow execution:', error)
+      throw error
     }
   },
 
@@ -72,12 +74,10 @@ export const FlowExecutionCommands = {
     try {
       const startTime = await db.flowExecution.findUnique({
         where: { id: executionId },
-        select: { startedAt: true }
-      });
+        select: { startedAt: true },
+      })
 
-      const duration = startTime 
-        ? Date.now() - startTime.startedAt.getTime()
-        : undefined;
+      const duration = startTime ? Date.now() - startTime.startedAt.getTime() : undefined
 
       const execution = await db.flowExecution.update({
         where: { id: executionId },
@@ -85,15 +85,14 @@ export const FlowExecutionCommands = {
           status: success ? 'SUCCESS' : 'FAILED',
           error,
           completedAt: new Date(),
-          duration
-        }
-      });
+          duration,
+        },
+      })
 
-      return execution;
+      return execution
     } catch (error: any) {
-      console.error('Error finalizing flow execution:', error);
-      throw error;
+      console.error('Error finalizing flow execution:', error)
+      throw error
     }
   },
 }
-

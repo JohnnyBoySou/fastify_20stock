@@ -1,20 +1,16 @@
-import {
-  CreateUploadData,
-  AttachMediaData
-} from '../upload.interfaces'
+import type { AttachMediaData, CreateUploadData } from '../upload.interfaces'
 
 import { db } from '@/plugins/prisma'
 
 export const UploadCommands = {
-
   async create(data: CreateUploadData) {
     const upload = await db.media.create({
       data: {
         url: data.url,
         name: data.name,
         type: data.type,
-        size: data.size
-      }
+        size: data.size,
+      },
     })
 
     return upload
@@ -27,8 +23,8 @@ export const UploadCommands = {
         ...(data.url && { url: data.url }),
         ...(data.name && { name: data.name }),
         ...(data.type && { type: data.type }),
-        ...(data.size && { size: data.size })
-      }
+        ...(data.size && { size: data.size }),
+      },
     })
 
     return upload
@@ -37,24 +33,24 @@ export const UploadCommands = {
   async delete(id: string) {
     // Primeiro, deletar todas as relações de mídia
     await db.productMedia.deleteMany({
-      where: { mediaId: id }
+      where: { mediaId: id },
     })
 
     await db.supplierMedia.deleteMany({
-      where: { mediaId: id }
+      where: { mediaId: id },
     })
 
     await db.userMedia.deleteMany({
-      where: { mediaId: id }
+      where: { mediaId: id },
     })
 
     await db.storeMedia.deleteMany({
-      where: { mediaId: id }
+      where: { mediaId: id },
     })
 
     // Depois deletar a mídia
     await db.media.delete({
-      where: { id }
+      where: { id },
     })
   },
 
@@ -67,8 +63,8 @@ export const UploadCommands = {
       data: {
         productId: data.entityId,
         mediaId: data.mediaId,
-        isPrimary: data.isPrimary || false
-      }
+        isPrimary: data.isPrimary || false,
+      },
     })
 
     // Se esta é a imagem principal, remover a flag de principal das outras
@@ -76,9 +72,9 @@ export const UploadCommands = {
       await db.productMedia.updateMany({
         where: {
           productId: data.entityId,
-          id: { not: attachment.id }
+          id: { not: attachment.id },
         },
-        data: { isPrimary: false }
+        data: { isPrimary: false },
       })
     }
 
@@ -93,8 +89,8 @@ export const UploadCommands = {
     const attachment = await db.supplierMedia.create({
       data: {
         supplierId: data.entityId,
-        mediaId: data.mediaId
-      }
+        mediaId: data.mediaId,
+      },
     })
 
     return attachment
@@ -108,8 +104,8 @@ export const UploadCommands = {
     const attachment = await db.userMedia.create({
       data: {
         userId: data.entityId,
-        mediaId: data.mediaId
-      }
+        mediaId: data.mediaId,
+      },
     })
 
     return attachment
@@ -123,8 +119,8 @@ export const UploadCommands = {
     const attachment = await db.storeMedia.create({
       data: {
         storeId: data.entityId,
-        mediaId: data.mediaId
-      }
+        mediaId: data.mediaId,
+      },
     })
 
     return attachment
@@ -134,8 +130,8 @@ export const UploadCommands = {
     const attachment = await db.productMedia.findFirst({
       where: {
         mediaId,
-        productId: entityId
-      }
+        productId: entityId,
+      },
     })
 
     if (!attachment) {
@@ -143,7 +139,7 @@ export const UploadCommands = {
     }
 
     await db.productMedia.delete({
-      where: { id: attachment.id }
+      where: { id: attachment.id },
     })
 
     return attachment
@@ -153,8 +149,8 @@ export const UploadCommands = {
     const attachment = await db.supplierMedia.findFirst({
       where: {
         mediaId,
-        supplierId: entityId
-      }
+        supplierId: entityId,
+      },
     })
 
     if (!attachment) {
@@ -162,7 +158,7 @@ export const UploadCommands = {
     }
 
     await db.supplierMedia.delete({
-      where: { id: attachment.id }
+      where: { id: attachment.id },
     })
 
     return attachment
@@ -172,8 +168,8 @@ export const UploadCommands = {
     const attachment = await db.userMedia.findFirst({
       where: {
         mediaId,
-        userId: entityId
-      }
+        userId: entityId,
+      },
     })
 
     if (!attachment) {
@@ -181,7 +177,7 @@ export const UploadCommands = {
     }
 
     await db.userMedia.delete({
-      where: { id: attachment.id }
+      where: { id: attachment.id },
     })
 
     return attachment
@@ -191,8 +187,8 @@ export const UploadCommands = {
     const attachment = await db.storeMedia.findFirst({
       where: {
         mediaId,
-        storeId: entityId
-      }
+        storeId: entityId,
+      },
     })
 
     if (!attachment) {
@@ -200,7 +196,7 @@ export const UploadCommands = {
     }
 
     await db.storeMedia.delete({
-      where: { id: attachment.id }
+      where: { id: attachment.id },
     })
 
     return attachment
@@ -211,18 +207,18 @@ export const UploadCommands = {
     await db.productMedia.updateMany({
       where: {
         productId,
-        mediaId: { not: mediaId }
+        mediaId: { not: mediaId },
       },
-      data: { isPrimary: false }
+      data: { isPrimary: false },
     })
 
     // Depois, definir esta como principal
     const attachment = await db.productMedia.updateMany({
       where: {
         mediaId,
-        productId
+        productId,
       },
-      data: { isPrimary: true }
+      data: { isPrimary: true },
     })
 
     return attachment
@@ -232,22 +228,22 @@ export const UploadCommands = {
     // Deletar todas as relações primeiro
     await Promise.all([
       db.productMedia.deleteMany({
-        where: { mediaId: { in: mediaIds } }
+        where: { mediaId: { in: mediaIds } },
       }),
       db.supplierMedia.deleteMany({
-        where: { mediaId: { in: mediaIds } }
+        where: { mediaId: { in: mediaIds } },
       }),
       db.userMedia.deleteMany({
-        where: { mediaId: { in: mediaIds } }
+        where: { mediaId: { in: mediaIds } },
       }),
       db.storeMedia.deleteMany({
-        where: { mediaId: { in: mediaIds } }
-      })
+        where: { mediaId: { in: mediaIds } },
+      }),
     ])
 
     // Depois deletar as mídias
     await db.media.deleteMany({
-      where: { id: { in: mediaIds } }
+      where: { id: { in: mediaIds } },
     })
 
     return { deletedCount: mediaIds.length }

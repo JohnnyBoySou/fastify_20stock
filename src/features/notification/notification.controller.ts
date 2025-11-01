@@ -1,22 +1,22 @@
-import { FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyReply, FastifyRequest } from 'fastify'
 import { NotificationCommands } from './commands/notification.commands'
-import { NotificationQueries } from './queries/notification.queries'
-import {
+import type {
   CreateNotificationRequest,
-  GetNotificationRequest,
-  UpdateNotificationRequest,
   DeleteNotificationRequest,
-  ListNotificationsRequest,
-  MarkAsReadRequest,
-  MarkAllAsReadRequest,
-  GetByUserRequest,
-  GetUnreadRequest,
-  GetByTypeRequest,
   GetByPriorityRequest,
+  GetByTypeRequest,
+  GetByUserRequest,
+  GetNotificationRequest,
   GetRecentRequest,
   GetStatsRequest,
-  SearchRequest
+  GetUnreadRequest,
+  ListNotificationsRequest,
+  MarkAllAsReadRequest,
+  MarkAsReadRequest,
+  SearchRequest,
+  UpdateNotificationRequest,
 } from './notification.interfaces'
+import { NotificationQueries } from './queries/notification.queries'
 
 export const NotificationController = {
   // === CRUD BÁSICO ===
@@ -32,21 +32,21 @@ export const NotificationController = {
         priority,
         data,
         actionUrl,
-        expiresAt: expiresAt ? new Date(expiresAt) : undefined
+        expiresAt: expiresAt ? new Date(expiresAt) : undefined,
       })
 
       return reply.status(201).send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'User not found') {
         return reply.status(400).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -59,22 +59,22 @@ export const NotificationController = {
 
       if (!result) {
         return reply.status(404).send({
-          error: 'Notification not found'
+          error: 'Notification not found',
         })
       }
 
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Notification not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -94,21 +94,21 @@ export const NotificationController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Notification not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       if (error.message === 'Validation error') {
         return reply.status(400).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -122,15 +122,15 @@ export const NotificationController = {
       return reply.status(204).send()
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Notification not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -146,14 +146,14 @@ export const NotificationController = {
         type,
         priority,
         isRead,
-        userId
+        userId,
       })
 
       return reply.send(result)
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -168,14 +168,14 @@ export const NotificationController = {
         page,
         limit,
         isRead,
-        type
+        type,
       })
 
       return reply.send(result)
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -191,7 +191,7 @@ export const NotificationController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -207,7 +207,7 @@ export const NotificationController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -223,7 +223,7 @@ export const NotificationController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -239,7 +239,7 @@ export const NotificationController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -254,7 +254,7 @@ export const NotificationController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -269,7 +269,7 @@ export const NotificationController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -284,15 +284,15 @@ export const NotificationController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Notification not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -306,15 +306,15 @@ export const NotificationController = {
       return reply.send(result)
     } catch (error: any) {
       request.log.error(error)
-      
+
       if (error.message === 'Notification not found') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -325,14 +325,14 @@ export const NotificationController = {
 
       const result = await NotificationCommands.markAllAsRead(userId)
 
-      return reply.send({ 
-        success: true, 
-        count: result.count 
+      return reply.send({
+        success: true,
+        count: result.count,
       })
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -341,14 +341,14 @@ export const NotificationController = {
     try {
       const result = await NotificationCommands.deleteExpired()
 
-      return reply.send({ 
-        success: true, 
-        count: result.count 
+      return reply.send({
+        success: true,
+        count: result.count,
       })
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -359,27 +359,30 @@ export const NotificationController = {
 
       const result = await NotificationCommands.deleteByUser(userId)
 
-      return reply.send({ 
-        success: true, 
-        count: result.count 
+      return reply.send({
+        success: true,
+        count: result.count,
       })
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
   // === ENDPOINTS ESPECÍFICOS PARA ALERTAS DE ESTOQUE ===
-  async getStockAlerts(request: FastifyRequest<{ 
-    Querystring: { 
-      userId?: string
-      storeId?: string
-      isRead?: boolean
-      limit?: number
-    }
-  }>, reply: FastifyReply) {
+  async getStockAlerts(
+    request: FastifyRequest<{
+      Querystring: {
+        userId?: string
+        storeId?: string
+        isRead?: boolean
+        limit?: number
+      }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
       const { userId, storeId, isRead, limit = 20 } = request.query
 
@@ -387,22 +390,25 @@ export const NotificationController = {
         userId,
         storeId,
         isRead,
-        limit
+        limit,
       })
 
       return reply.send({ notifications: result })
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async getUnreadStockAlerts(request: FastifyRequest<{ 
-    Params: { userId: string }
-    Querystring: { limit?: number }
-  }>, reply: FastifyReply) {
+  async getUnreadStockAlerts(
+    request: FastifyRequest<{
+      Params: { userId: string }
+      Querystring: { limit?: number }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
       const { userId } = request.params
       const { limit = 10 } = request.query
@@ -413,28 +419,31 @@ export const NotificationController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
 
-  async markStockAlertsAsRead(request: FastifyRequest<{ 
-    Body: { userId: string; storeId?: string }
-  }>, reply: FastifyReply) {
+  async markStockAlertsAsRead(
+    request: FastifyRequest<{
+      Body: { userId: string; storeId?: string }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
       const { userId, storeId } = request.body
 
       const result = await NotificationCommands.markStockAlertsAsRead(userId, storeId)
 
-      return reply.send({ 
-        success: true, 
-        count: result.count 
+      return reply.send({
+        success: true,
+        count: result.count,
       })
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
-  }
+  },
 }

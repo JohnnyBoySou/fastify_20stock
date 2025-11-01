@@ -1,4 +1,4 @@
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify'
 
 export const createRoadmapSchema: FastifySchema = {
   body: {
@@ -11,8 +11,8 @@ export const createRoadmapSchema: FastifySchema = {
       description: { type: 'string' },
       status: { type: 'string', enum: ['ACTIVE', 'COMPLETED', 'ARCHIVED'] },
       startDate: { type: 'string', format: 'date-time' },
-      endDate: { type: 'string', format: 'date-time' }
-    }
+      endDate: { type: 'string', format: 'date-time' },
+    },
   },
   response: {
     201: {
@@ -27,25 +27,25 @@ export const createRoadmapSchema: FastifySchema = {
         startDate: { type: ['string', 'null'] },
         endDate: { type: ['string', 'null'] },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const updateRoadmapSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
@@ -56,8 +56,8 @@ export const updateRoadmapSchema: FastifySchema = {
       description: { type: 'string' },
       status: { type: 'string', enum: ['ACTIVE', 'COMPLETED', 'ARCHIVED'] },
       startDate: { type: 'string', format: 'date-time' },
-      endDate: { type: 'string', format: 'date-time' }
-    }
+      endDate: { type: 'string', format: 'date-time' },
+    },
   },
   response: {
     200: {
@@ -72,31 +72,31 @@ export const updateRoadmapSchema: FastifySchema = {
         startDate: { type: ['string', 'null'] },
         endDate: { type: ['string', 'null'] },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const getRoadmapSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -111,17 +111,17 @@ export const getRoadmapSchema: FastifySchema = {
         startDate: { type: ['string', 'null'] },
         endDate: { type: ['string', 'null'] },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const listRoadmapsSchema: FastifySchema = {
   querystring: {
@@ -130,8 +130,8 @@ export const listRoadmapsSchema: FastifySchema = {
       page: { type: 'number', minimum: 1, default: 1 },
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       search: { type: 'string' },
-      status: { type: 'string', enum: ['ACTIVE', 'COMPLETED', 'ARCHIVED'] }
-    }
+      status: { type: 'string', enum: ['ACTIVE', 'COMPLETED', 'ARCHIVED'] },
+    },
   },
   response: {
     200: {
@@ -151,9 +151,9 @@ export const listRoadmapsSchema: FastifySchema = {
               startDate: { type: ['string', 'null'] },
               endDate: { type: ['string', 'null'] },
               createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' }
-            }
-          }
+              updatedAt: { type: 'string', format: 'date-time' },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -161,37 +161,37 @@ export const listRoadmapsSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
-export const  deleteRoadmapSchema: FastifySchema = {
+export const deleteRoadmapSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     204: { type: 'null' },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const RoadmapSchemas = {
   create: createRoadmapSchema,
   update: updateRoadmapSchema,
   get: getRoadmapSchema,
   delete: deleteRoadmapSchema,
-  list: listRoadmapsSchema
-};
+  list: listRoadmapsSchema,
+}

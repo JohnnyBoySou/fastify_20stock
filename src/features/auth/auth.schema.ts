@@ -1,4 +1,4 @@
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify'
 
 // Register schema
 export const registerSchema: FastifySchema = {
@@ -10,20 +10,20 @@ export const registerSchema: FastifySchema = {
         type: 'string',
         minLength: 2,
         maxLength: 100,
-        description: 'User full name'
+        description: 'User full name',
       },
       email: {
         type: 'string',
         format: 'email',
-        description: 'User email address'
+        description: 'User email address',
       },
       password: {
         type: 'string',
         minLength: 6,
         maxLength: 100,
-        description: 'User password (minimum 6 characters)'
-      }
-    }
+        description: 'User password (minimum 6 characters)',
+      },
+    },
   },
   response: {
     201: {
@@ -36,26 +36,26 @@ export const registerSchema: FastifySchema = {
             name: { type: 'string' },
             email: { type: 'string' },
             emailVerified: { type: 'boolean' },
-            createdAt: { type: 'string', format: 'date-time' }
-          }
+            createdAt: { type: 'string', format: 'date-time' },
+          },
         },
-        message: { type: 'string' }
-      }
+        message: { type: 'string' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     409: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Login schema
 export const loginSchema: FastifySchema = {
@@ -66,13 +66,13 @@ export const loginSchema: FastifySchema = {
       email: {
         type: 'string',
         format: 'email',
-        description: 'User email address'
+        description: 'User email address',
       },
       password: {
         type: 'string',
-        description: 'User password'
-      }
-    }
+        description: 'User password',
+      },
+    },
   },
   response: {
     200: {
@@ -85,27 +85,27 @@ export const loginSchema: FastifySchema = {
             name: { type: 'string' },
             email: { type: 'string' },
             emailVerified: { type: 'boolean' },
-            lastLoginAt: { type: 'string', format: 'date-time' }
-          }
+            lastLoginAt: { type: 'string', format: 'date-time' },
+          },
         },
         token: { type: 'string' },
-        message: { type: 'string' }
-      }
+        message: { type: 'string' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     401: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Forgot Password schema
 export const forgotPasswordSchema: FastifySchema = {
@@ -116,31 +116,31 @@ export const forgotPasswordSchema: FastifySchema = {
       email: {
         type: 'string',
         format: 'email',
-        description: 'User email address'
-      }
-    }
+        description: 'User email address',
+      },
+    },
   },
   response: {
     200: {
       type: 'object',
       properties: {
-        message: { type: 'string' }
-      }
+        message: { type: 'string' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Verify Reset Code schema
 export const verifyResetCodeSchema: FastifySchema = {
@@ -151,42 +151,42 @@ export const verifyResetCodeSchema: FastifySchema = {
       email: {
         type: 'string',
         format: 'email',
-        description: 'User email address'
+        description: 'User email address',
       },
       code: {
         type: 'string',
         pattern: '^[0-9]{6}$',
-        description: '6-digit reset code'
-      }
-    }
+        description: '6-digit reset code',
+      },
+    },
   },
   response: {
     200: {
       type: 'object',
       properties: {
-        message: { type: 'string' }
-      }
+        message: { type: 'string' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     401: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Reset Password schema
 export const resetPasswordSchema: FastifySchema = {
@@ -197,42 +197,42 @@ export const resetPasswordSchema: FastifySchema = {
       email: {
         type: 'string',
         format: 'email',
-        description: 'User email address'
+        description: 'User email address',
       },
       code: {
         type: 'string',
         pattern: '^[0-9]{6}$',
-        description: '6-digit reset code'
+        description: '6-digit reset code',
       },
       password: {
         type: 'string',
         minLength: 6,
         maxLength: 100,
-        description: 'New password (minimum 6 characters)'
-      }
-    }
+        description: 'New password (minimum 6 characters)',
+      },
+    },
   },
   response: {
     200: {
       type: 'object',
       properties: {
-        message: { type: 'string' }
-      }
+        message: { type: 'string' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     401: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Verify Email schema
 export const verifyEmailSchema: FastifySchema = {
@@ -242,31 +242,31 @@ export const verifyEmailSchema: FastifySchema = {
     properties: {
       token: {
         type: 'string',
-        description: 'Email verification token'
-      }
-    }
+        description: 'Email verification token',
+      },
+    },
   },
   response: {
     200: {
       type: 'object',
       properties: {
-        message: { type: 'string' }
-      }
+        message: { type: 'string' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     401: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Verify Email Code schema
 export const verifyEmailCodeSchema: FastifySchema = {
@@ -277,14 +277,14 @@ export const verifyEmailCodeSchema: FastifySchema = {
       email: {
         type: 'string',
         format: 'email',
-        description: 'User email address'
+        description: 'User email address',
       },
       code: {
         type: 'string',
         pattern: '^[0-9]{6}$',
-        description: '6-digit verification code'
-      }
-    }
+        description: '6-digit verification code',
+      },
+    },
   },
   response: {
     200: {
@@ -297,31 +297,31 @@ export const verifyEmailCodeSchema: FastifySchema = {
             id: { type: 'string' },
             name: { type: 'string' },
             email: { type: 'string' },
-            emailVerified: { type: 'boolean' }
-          }
-        }
-      }
+            emailVerified: { type: 'boolean' },
+          },
+        },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     401: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Resend Verification schema
 export const resendVerificationSchema: FastifySchema = {
@@ -332,31 +332,31 @@ export const resendVerificationSchema: FastifySchema = {
       email: {
         type: 'string',
         format: 'email',
-        description: 'User email address'
-      }
-    }
+        description: 'User email address',
+      },
+    },
   },
   response: {
     200: {
       type: 'object',
       properties: {
-        message: { type: 'string' }
-      }
+        message: { type: 'string' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Refresh Token schema
 export const refreshTokenSchema: FastifySchema = {
@@ -365,26 +365,26 @@ export const refreshTokenSchema: FastifySchema = {
     properties: {
       authorization: {
         type: 'string',
-        description: 'Bearer token'
-      }
-    }
+        description: 'Bearer token',
+      },
+    },
   },
   response: {
     200: {
       type: 'object',
       properties: {
         token: { type: 'string' },
-        message: { type: 'string' }
-      }
+        message: { type: 'string' },
+      },
     },
     401: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Logout schema
 export const logoutSchema: FastifySchema = {
@@ -393,25 +393,25 @@ export const logoutSchema: FastifySchema = {
     properties: {
       authorization: {
         type: 'string',
-        description: 'Bearer token'
-      }
-    }
+        description: 'Bearer token',
+      },
+    },
   },
   response: {
     200: {
       type: 'object',
       properties: {
-        message: { type: 'string' }
-      }
+        message: { type: 'string' },
+      },
     },
     401: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Update Profile schema
 export const updateProfileSchema: FastifySchema = {
@@ -420,9 +420,9 @@ export const updateProfileSchema: FastifySchema = {
     properties: {
       authorization: {
         type: 'string',
-        description: 'Bearer token'
-      }
-    }
+        description: 'Bearer token',
+      },
+    },
   },
   body: {
     type: 'object',
@@ -431,15 +431,15 @@ export const updateProfileSchema: FastifySchema = {
         type: 'string',
         minLength: 2,
         maxLength: 100,
-        description: 'User full name'
+        description: 'User full name',
       },
       email: {
         type: 'string',
         format: 'email',
-        description: 'User email address'
-      }
+        description: 'User email address',
+      },
     },
-    additionalProperties: false
+    additionalProperties: false,
   },
   response: {
     200: {
@@ -453,38 +453,38 @@ export const updateProfileSchema: FastifySchema = {
             email: { type: 'string' },
             emailVerified: { type: 'boolean' },
             status: { type: 'boolean' },
-            roles: { 
+            roles: {
               type: 'array',
-              items: { type: 'string' }
+              items: { type: 'string' },
             },
             lastLoginAt: { type: ['string', 'null'], format: 'date-time' },
             createdAt: { type: 'string', format: 'date-time' },
-            updatedAt: { type: 'string', format: 'date-time' }
-          }
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
         },
-        message: { type: 'string' }
-      }
+        message: { type: 'string' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     401: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     409: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Google Login schema
 export const googleLoginSchema: FastifySchema = {
@@ -494,9 +494,9 @@ export const googleLoginSchema: FastifySchema = {
     properties: {
       id_token: {
         type: 'string',
-        description: 'Google ID token from client-side authentication'
-      }
-    }
+        description: 'Google ID token from client-side authentication',
+      },
+    },
   },
   response: {
     200: {
@@ -509,8 +509,8 @@ export const googleLoginSchema: FastifySchema = {
             name: { type: 'string' },
             email: { type: 'string' },
             emailVerified: { type: 'boolean' },
-            lastLoginAt: { type: ['string', 'null'], format: 'date-time' }
-          }
+            lastLoginAt: { type: ['string', 'null'], format: 'date-time' },
+          },
         },
         store: {
           type: ['object', 'null'],
@@ -526,33 +526,33 @@ export const googleLoginSchema: FastifySchema = {
             state: { type: ['string', 'null'] },
             address: { type: ['string', 'null'] },
             createdAt: { type: 'string', format: 'date-time' },
-            updatedAt: { type: 'string', format: 'date-time' }
-          }
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
         },
         token: { type: 'string' },
-        message: { type: 'string' }
-      }
+        message: { type: 'string' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     401: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Get Profile Permissions schema
 export const getProfilePermissionsSchema: FastifySchema = {
@@ -561,35 +561,35 @@ export const getProfilePermissionsSchema: FastifySchema = {
     properties: {
       authorization: {
         type: 'string',
-        description: 'Bearer token'
-      }
-    }
+        description: 'Bearer token',
+      },
+    },
   },
   querystring: {
     type: 'object',
     properties: {
       storeId: {
         type: 'string',
-        description: 'Store ID to filter permissions'
+        description: 'Store ID to filter permissions',
       },
       active: {
         type: 'boolean',
-        description: 'Filter active permissions only'
+        description: 'Filter active permissions only',
       },
       page: {
         type: 'number',
         minimum: 1,
         default: 1,
-        description: 'Page number for pagination'
+        description: 'Page number for pagination',
       },
       limit: {
         type: 'number',
         minimum: 1,
         maximum: 100,
         default: 10,
-        description: 'Number of items per page'
-      }
-    }
+        description: 'Number of items per page',
+      },
+    },
   },
   response: {
     200: {
@@ -598,12 +598,12 @@ export const getProfilePermissionsSchema: FastifySchema = {
         userId: { type: 'string' },
         userRoles: {
           type: 'array',
-          items: { type: 'string' }
+          items: { type: 'string' },
         },
         storeId: { type: ['string', 'null'] },
         effectivePermissions: {
           type: 'array',
-          items: { type: 'string' }
+          items: { type: 'string' },
         },
         customPermissions: {
           type: 'array',
@@ -625,11 +625,11 @@ export const getProfilePermissionsSchema: FastifySchema = {
                 properties: {
                   id: { type: 'string' },
                   name: { type: 'string' },
-                  email: { type: 'string' }
-                }
-              }
-            }
-          }
+                  email: { type: 'string' },
+                },
+              },
+            },
+          },
         },
         storePermissions: {
           type: 'array',
@@ -641,7 +641,7 @@ export const getProfilePermissionsSchema: FastifySchema = {
               storeRole: { type: 'string' },
               permissions: {
                 type: 'array',
-                items: { type: 'string' }
+                items: { type: 'string' },
               },
               conditions: { type: ['object', 'null'] },
               expiresAt: { type: ['string', 'null'], format: 'date-time' },
@@ -651,19 +651,19 @@ export const getProfilePermissionsSchema: FastifySchema = {
                 type: ['object', 'null'],
                 properties: {
                   id: { type: 'string' },
-                  name: { type: 'string' }
-                }
+                  name: { type: 'string' },
+                },
               },
               creator: {
                 type: ['object', 'null'],
                 properties: {
                   id: { type: 'string' },
                   name: { type: 'string' },
-                  email: { type: 'string' }
-                }
-              }
-            }
-          }
+                  email: { type: 'string' },
+                },
+              },
+            },
+          },
         },
         pagination: {
           type: ['object', 'null'],
@@ -671,22 +671,22 @@ export const getProfilePermissionsSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            pages: { type: 'number' }
-          }
-        }
-      }
+            pages: { type: 'number' },
+          },
+        },
+      },
     },
     401: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}

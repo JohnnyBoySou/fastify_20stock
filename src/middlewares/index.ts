@@ -1,56 +1,9 @@
-import { authMiddleware } from './auth.middleware';
-import { requireGranularPermission } from './granular-permissions.middleware';
-import { requireStoreAccess } from './store-access.middleware';
-import { storeContextMiddleware } from './store-context.middleware';
-
-// Auth middlewares
-export { authMiddleware, optionalAuthMiddleware } from './auth.middleware';
-
-// Store context middlewares
-export { storeContextMiddleware, optionalStoreContextMiddleware } from './store-context.middleware';
-
-// Authorization middlewares
-export {
-  UserRole,
-  StoreRole,
-  Action,
-  hasPermission,
-  hasRole,
-  hasStoreRole,
-  requireRole,
-  requirePermission,
-  requireAllPermissions,
-  requireAnyPermission,
-  requireStoreRole,
-  requireOwnership
-} from './authorization.middleware';
-
-// Store access middlewares
-export {
-  requireStoreAccess,
-  requireStoreRoleAccess,
-  requireStoreUserManagement,
-  requireStoreResourceAccess
-} from './store-access.middleware';
-
-export type {
-  UserPermission,
-  StorePermission,
-  PermissionConditions,
-  PermissionContext
-} from './granular-permissions.middleware';
-
-export {
-  GranularPermissionService,
-  requireGranularPermission,
-  requireResourcePermission,
-  requireTimeBasedPermission
-} from './granular-permissions.middleware';
-
+import { Auth } from "./auth.middleware";
+import { Permission } from "./permission.middleware";
+import { Store } from "./store.middleware";
 
 export const Middlewares = {
-  auth: authMiddleware,
-  store: storeContextMiddleware,
-  storeAccess: requireStoreAccess,
-  granularPermissions: requireGranularPermission
+  auth: Auth,
+  store: Store,
+  permission: Permission,
 }

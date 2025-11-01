@@ -1,4 +1,4 @@
-import { db } from '@/plugins/prisma';
+import { db } from '@/plugins/prisma'
 export const SupplierCommands = {
   async create(data: {
     corporateName: string
@@ -18,26 +18,27 @@ export const SupplierCommands = {
   }) {
     // Verificar se CNPJ já existe para esta store
     const existingSupplier = await db.supplier.findUnique({
-      where: { 
+      where: {
         cnpj_storeId: {
           cnpj: data.cnpj,
-          storeId: data.storeId || null
-        }
-      }
-    });
+          storeId: data.storeId || null,
+        },
+      },
+    })
 
     if (existingSupplier) {
-      throw new Error('CNPJ already exists');
+      throw new Error('CNPJ already exists')
     }
 
     // Preparar dados dos responsáveis se fornecidos
-    const responsiblesData = data.responsibles?.map(responsible => ({
-      name: responsible.name,
-      phone: responsible.phone,
-      email: responsible.email,
-      cpf: responsible.cpf,
-      status: true
-    })) || [];
+    const responsiblesData =
+      data.responsibles?.map((responsible) => ({
+        name: responsible.name,
+        phone: responsible.phone,
+        email: responsible.email,
+        cpf: responsible.cpf,
+        status: true,
+      })) || []
 
     return await db.supplier.create({
       data: {
@@ -51,8 +52,8 @@ export const SupplierCommands = {
         storeId: data.storeId,
         status: true,
         responsibles: {
-          create: responsiblesData
-        }
+          create: responsiblesData,
+        },
       },
       include: {
         responsibles: true,
@@ -60,45 +61,48 @@ export const SupplierCommands = {
           select: {
             id: true,
             name: true,
-            status: true
-          }
-        }
-      }
-    });
+            status: true,
+          },
+        },
+      },
+    })
   },
 
-  async update(id: string, data: {
-    corporateName?: string
-    cnpj?: string
-    tradeName?: string
-    status?: boolean
-    cep?: string
-    city?: string
-    state?: string
-    address?: string
-  }) {
+  async update(
+    id: string,
+    data: {
+      corporateName?: string
+      cnpj?: string
+      tradeName?: string
+      status?: boolean
+      cep?: string
+      city?: string
+      state?: string
+      address?: string
+    }
+  ) {
     // Verificar se supplier existe
     const existingSupplier = await db.supplier.findUnique({
-      where: { id }
-    });
+      where: { id },
+    })
 
     if (!existingSupplier) {
-      throw new Error('Supplier not found');
+      throw new Error('Supplier not found')
     }
 
     // Se CNPJ está sendo alterado, verificar se já existe para esta store
     if (data.cnpj && data.cnpj !== existingSupplier.cnpj) {
       const cnpjExists = await db.supplier.findUnique({
-        where: { 
+        where: {
           cnpj_storeId: {
             cnpj: data.cnpj,
-            storeId: existingSupplier.storeId
-          }
-        }
-      });
+            storeId: existingSupplier.storeId,
+          },
+        },
+      })
 
       if (cnpjExists) {
-        throw new Error('CNPJ already exists');
+        throw new Error('CNPJ already exists')
       }
     }
 
@@ -111,44 +115,44 @@ export const SupplierCommands = {
           select: {
             id: true,
             name: true,
-            status: true
-          }
-        }
-      }
-    });
+            status: true,
+          },
+        },
+      },
+    })
   },
 
   async delete(id: string) {
     // Verificar se supplier existe
     const existingSupplier = await db.supplier.findUnique({
-      where: { id }
-    });
+      where: { id },
+    })
 
     if (!existingSupplier) {
-      throw new Error('Supplier not found');
+      throw new Error('Supplier not found')
     }
 
     // Verificar se tem produtos associados
     const productsCount = await db.product.count({
-      where: { supplierId: id }
-    });
+      where: { supplierId: id },
+    })
 
     if (productsCount > 0) {
-      throw new Error('Cannot delete supplier with associated products');
+      throw new Error('Cannot delete supplier with associated products')
     }
 
     return await db.supplier.delete({
-      where: { id }
-    });
+      where: { id },
+    })
   },
 
   async toggleStatus(id: string) {
     const supplier = await db.supplier.findUnique({
-      where: { id }
-    });
+      where: { id },
+    })
 
     if (!supplier) {
-      throw new Error('Supplier not found');
+      throw new Error('Supplier not found')
     }
 
     return await db.supplier.update({
@@ -160,10 +164,10 @@ export const SupplierCommands = {
           select: {
             id: true,
             name: true,
-            status: true
-          }
-        }
-      }
-    });
-  }
-};
+            status: true,
+          },
+        },
+      },
+    })
+  },
+}

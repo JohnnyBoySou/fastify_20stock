@@ -1,4 +1,4 @@
-import { db } from '@/plugins/prisma';
+import { db } from '@/plugins/prisma'
 
 // Função auxiliar para calcular o estoque atual de um produto
 async function calculateCurrentStock(productId: string): Promise<number> {
@@ -6,20 +6,20 @@ async function calculateCurrentStock(productId: string): Promise<number> {
     where: { productId },
     select: {
       type: true,
-      quantity: true
-    }
-  });
+      quantity: true,
+    },
+  })
 
-  let currentStock = 0;
-  movements.forEach(movement => {
+  let currentStock = 0
+  movements.forEach((movement) => {
     if (movement.type === 'ENTRADA') {
-      currentStock += movement.quantity;
+      currentStock += movement.quantity
     } else {
-      currentStock -= movement.quantity;
+      currentStock -= movement.quantity
     }
-  });
+  })
 
-  return currentStock;
+  return currentStock
 }
 
 export const ProductQueries = {
@@ -36,44 +36,44 @@ export const ProductQueries = {
                 description: true,
                 code: true,
                 color: true,
-                icon: true
-              }
-            }
-          }
+                icon: true,
+              },
+            },
+          },
         },
         supplier: {
           select: {
             id: true,
             corporateName: true,
             cnpj: true,
-            tradeName: true
-          }
+            tradeName: true,
+          },
         },
         store: {
           select: {
             id: true,
             name: true,
-            cnpj: true
-          }
-        }
-      }
-    });
+            cnpj: true,
+          },
+        },
+      },
+    })
 
     if (!product) {
-      return null;
+      return null
     }
 
     // Calcular estoque atual
-    const currentStock = await calculateCurrentStock(product.id);
+    const currentStock = await calculateCurrentStock(product.id)
 
     // Transformar o formato das categorias
     const transformedProduct = {
       ...product,
-      categories: product.categories.map(pc => pc.category),
-      currentStock
-    };
+      categories: product.categories.map((pc) => pc.category),
+      currentStock,
+    }
 
-    return transformedProduct;
+    return transformedProduct
   },
 
   async list(params: {
@@ -85,36 +85,36 @@ export const ProductQueries = {
     supplierId?: string
     storeId?: string
   }) {
-    const { page = 1, limit = 10, search, status, categoryIds, supplierId, storeId } = params;
-    const skip = (page - 1) * limit;
+    const { page = 1, limit = 10, search, status, categoryIds, supplierId, storeId } = params
+    const skip = (page - 1) * limit
 
-    const where: any = {};
+    const where: any = {}
 
     if (status !== undefined) {
-      where.status = status;
+      where.status = status
     }
 
     if (categoryIds && categoryIds.length > 0) {
       where.categories = {
         some: {
-          categoryId: { in: categoryIds }
-        }
-      };
+          categoryId: { in: categoryIds },
+        },
+      }
     }
 
     if (supplierId) {
-      where.supplierId = supplierId;
+      where.supplierId = supplierId
     }
 
     if (storeId) {
-      where.storeId = storeId;
+      where.storeId = storeId
     }
 
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } }
-      ];
+        { description: { contains: search, mode: 'insensitive' } },
+      ]
     }
 
     const [products, total] = await Promise.all([
@@ -133,42 +133,42 @@ export const ProductQueries = {
                   description: true,
                   code: true,
                   color: true,
-                  icon: true
-                }
-              }
-            }
+                  icon: true,
+                },
+              },
+            },
           },
           supplier: {
             select: {
               id: true,
               corporateName: true,
               cnpj: true,
-              tradeName: true
-            }
+              tradeName: true,
+            },
           },
           store: {
             select: {
               id: true,
               name: true,
-              cnpj: true
-            }
-          }
-        }
+              cnpj: true,
+            },
+          },
+        },
       }),
-      db.product.count({ where })
-    ]);
+      db.product.count({ where }),
+    ])
 
     // Calcular estoque atual para todos os produtos
     const itemsWithStock = await Promise.all(
       products.map(async (product) => {
-        const currentStock = await calculateCurrentStock(product.id);
+        const currentStock = await calculateCurrentStock(product.id)
         return {
           ...product,
-          categories: product.categories.map(pc => pc.category),
-          currentStock
-        };
+          categories: product.categories.map((pc) => pc.category),
+          currentStock,
+        }
       })
-    );
+    )
 
     return {
       items: itemsWithStock,
@@ -176,18 +176,21 @@ export const ProductQueries = {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
-    };
+        totalPages: Math.ceil(total / limit),
+      },
+    }
   },
 
-  async search(term: string, params: {
-    page?: number
-    limit?: number
-    storeId?: string
-  } = {}) {
-    const { page = 1, limit = 10, storeId } = params;
-    const skip = (page - 1) * limit;
+  async search(
+    term: string,
+    params: {
+      page?: number
+      limit?: number
+      storeId?: string
+    } = {}
+  ) {
+    const { page = 1, limit = 10, storeId } = params
+    const skip = (page - 1) * limit
 
     const where: any = {
       OR: [
@@ -195,12 +198,12 @@ export const ProductQueries = {
         { description: { contains: term, mode: 'insensitive' } },
         { categories: { some: { category: { name: { contains: term, mode: 'insensitive' } } } } },
         { supplier: { corporateName: { contains: term, mode: 'insensitive' } } },
-        { supplier: { tradeName: { contains: term, mode: 'insensitive' } } }
-      ]
-    };
+        { supplier: { tradeName: { contains: term, mode: 'insensitive' } } },
+      ],
+    }
 
     if (storeId) {
-      where.storeId = storeId;
+      where.storeId = storeId
     }
 
     const [products, total] = await Promise.all([
@@ -219,42 +222,42 @@ export const ProductQueries = {
                   description: true,
                   code: true,
                   color: true,
-                  icon: true
-                }
-              }
-            }
+                  icon: true,
+                },
+              },
+            },
           },
           supplier: {
             select: {
               id: true,
               corporateName: true,
               cnpj: true,
-              tradeName: true
-            }
+              tradeName: true,
+            },
           },
           store: {
             select: {
               id: true,
               name: true,
-              cnpj: true
-            }
-          }
-        }
+              cnpj: true,
+            },
+          },
+        },
       }),
-      db.product.count({ where })
-    ]);
+      db.product.count({ where }),
+    ])
 
     // Calcular estoque atual para todos os produtos
     const productsWithStock = await Promise.all(
       products.map(async (product) => {
-        const currentStock = await calculateCurrentStock(product.id);
+        const currentStock = await calculateCurrentStock(product.id)
         return {
           ...product,
-          categories: product.categories.map(pc => pc.category),
-          currentStock
-        };
+          categories: product.categories.map((pc) => pc.category),
+          currentStock,
+        }
       })
-    );
+    )
 
     return {
       items: productsWithStock,
@@ -262,16 +265,16 @@ export const ProductQueries = {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
-    };
+        totalPages: Math.ceil(total / limit),
+      },
+    }
   },
 
   async getActive(storeId: string) {
     const products = await db.product.findMany({
-      where: { 
+      where: {
         status: true,
-        storeId
+        storeId,
       },
       orderBy: { createdAt: 'desc' },
       include: {
@@ -284,66 +287,66 @@ export const ProductQueries = {
                 description: true,
                 code: true,
                 color: true,
-                icon: true
-              }
-            }
-          }
+                icon: true,
+              },
+            },
+          },
         },
         supplier: {
           select: {
             id: true,
             corporateName: true,
             cnpj: true,
-            tradeName: true
-          }
+            tradeName: true,
+          },
         },
         store: {
           select: {
             id: true,
             name: true,
-            cnpj: true
-          }
-        }
-      }
-    });
+            cnpj: true,
+          },
+        },
+      },
+    })
 
     // Calcular estoque atual para todos os produtos
     const productsWithStock = await Promise.all(
       products.map(async (product) => {
-        const currentStock = await calculateCurrentStock(product.id);
+        const currentStock = await calculateCurrentStock(product.id)
         return {
           ...product,
-          categories: product.categories.map(pc => pc.category),
-          currentStock
-        };
+          categories: product.categories.map((pc) => pc.category),
+          currentStock,
+        }
       })
-    );
+    )
 
-    return productsWithStock;
+    return productsWithStock
   },
 
   async getStats(storeId: string) {
     const [total, active, inactive] = await Promise.all([
       db.product.count({ where: { storeId } }),
       db.product.count({ where: { status: true, storeId } }),
-      db.product.count({ where: { status: false, storeId } })
-    ]);
+      db.product.count({ where: { status: false, storeId } }),
+    ])
 
     return {
       total,
       active,
-      inactive
-    };
+      inactive,
+    }
   },
 
   async getByCategory(categoryId: string, storeId: string) {
     const products = await db.product.findMany({
-      where: { 
+      where: {
         categories: {
           some: {
-            categoryId
-          }
-        }
+            categoryId,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
       include: {
@@ -356,42 +359,42 @@ export const ProductQueries = {
                 description: true,
                 code: true,
                 color: true,
-                icon: true
-              }
-            }
-          }
+                icon: true,
+              },
+            },
+          },
         },
         supplier: {
           select: {
             id: true,
             corporateName: true,
             cnpj: true,
-            tradeName: true
-          }
+            tradeName: true,
+          },
         },
         store: {
           select: {
             id: true,
             name: true,
-            cnpj: true
-          }
-        }
-      }
-    });
+            cnpj: true,
+          },
+        },
+      },
+    })
 
     // Calcular estoque atual para todos os produtos
     const productsWithStock = await Promise.all(
       products.map(async (product) => {
-        const currentStock = await calculateCurrentStock(product.id);
+        const currentStock = await calculateCurrentStock(product.id)
         return {
           ...product,
-          categories: product.categories.map(pc => pc.category),
-          currentStock
-        };
+          categories: product.categories.map((pc) => pc.category),
+          currentStock,
+        }
       })
-    );
+    )
 
-    return productsWithStock;
+    return productsWithStock
   },
 
   async getBySupplier(supplierId: string, storeId: string) {
@@ -408,41 +411,41 @@ export const ProductQueries = {
                 description: true,
                 code: true,
                 color: true,
-                icon: true
-              }
-            }
-          }
+                icon: true,
+              },
+            },
+          },
         },
         supplier: {
           select: {
             id: true,
             corporateName: true,
             cnpj: true,
-            tradeName: true
-          }
+            tradeName: true,
+          },
         },
         store: {
           select: {
             id: true,
             name: true,
-            cnpj: true
-          }
-        }
-      }
-    });
+            cnpj: true,
+          },
+        },
+      },
+    })
 
     // Calcular estoque atual para todos os produtos
     const productsWithStock = await Promise.all(
       products.map(async (product) => {
-        const currentStock = await calculateCurrentStock(product.id);
+        const currentStock = await calculateCurrentStock(product.id)
         return {
           ...product,
-          currentStock
-        };
+          currentStock,
+        }
       })
-    );
+    )
 
-    return productsWithStock;
+    return productsWithStock
   },
 
   async getByStore(storeId: string) {
@@ -459,80 +462,83 @@ export const ProductQueries = {
                 description: true,
                 code: true,
                 color: true,
-                icon: true
-              }
-            }
-          }
+                icon: true,
+              },
+            },
+          },
         },
         supplier: {
           select: {
             id: true,
             corporateName: true,
             cnpj: true,
-            tradeName: true
-          }
+            tradeName: true,
+          },
         },
         store: {
           select: {
             id: true,
             name: true,
-            cnpj: true
-          }
-        }
-      }
-    });
+            cnpj: true,
+          },
+        },
+      },
+    })
 
     // Calcular estoque atual para todos os produtos
     const productsWithStock = await Promise.all(
       products.map(async (product) => {
-        const currentStock = await calculateCurrentStock(product.id);
+        const currentStock = await calculateCurrentStock(product.id)
         return {
           ...product,
-          categories: product.categories.map(pc => pc.category),
-          currentStock
-        };
+          categories: product.categories.map((pc) => pc.category),
+          currentStock,
+        }
       })
-    );
+    )
 
-    return productsWithStock;
+    return productsWithStock
   },
 
   // === FUNÇÕES ADICIONAIS DE PRODUTO ===
-  async getProductMovements(productId: string, params: {
-    page?: number
-    limit?: number
-    type?: 'ENTRADA' | 'SAIDA' | 'PERDA'
-    startDate?: string
-    endDate?: string
-  }) {
-    const { page = 1, limit = 10, type, startDate, endDate } = params;
-    const skip = (page - 1) * limit;
+  async getProductMovements(
+    productId: string,
+    params: {
+      page?: number
+      limit?: number
+      type?: 'ENTRADA' | 'SAIDA' | 'PERDA'
+      startDate?: string
+      endDate?: string
+    }
+  ) {
+    const { page = 1, limit = 10, type, startDate, endDate } = params
+    const skip = (page - 1) * limit
 
     // Verificar se o produto existe
     const product = await db.product.findUnique({
-      where: { id: productId }
-    });
+      where: { id: productId },
+    })
 
     if (!product) {
-      throw new Error('Product not found');
+      throw new Error('Product not found')
     }
 
     // Construir filtros
     const where: any = {
-      productId
-    };
+      productId,
+    }
 
     if (type) {
-      where.type = type;
+      where.type = type
     }
 
     if (startDate || endDate) {
-      where.createdAt = {};
+      where.createdAt = {}
       if (startDate) {
-        where.createdAt.gte = new Date(startDate);
+        where.createdAt.gte = new Date(startDate)
       }
       if (endDate) {
-        where.createdAt.lte = new Date(endDate);
+        where.createdAt.lte = new Date(endDate)
       }
     }
 
@@ -547,34 +553,34 @@ export const ProductQueries = {
             select: {
               id: true,
               name: true,
-              unitOfMeasure: true
-            }
+              unitOfMeasure: true,
+            },
           },
           supplier: {
             select: {
               id: true,
               corporateName: true,
-              cnpj: true
-            }
+              cnpj: true,
+            },
           },
           user: {
             select: {
               id: true,
               name: true,
-              email: true
-            }
+              email: true,
+            },
           },
           store: {
             select: {
               id: true,
               name: true,
-              cnpj: true
-            }
-          }
-        }
+              cnpj: true,
+            },
+          },
+        },
       }),
-      db.movement.count({ where })
-    ]);
+      db.movement.count({ where }),
+    ])
 
     return {
       items,
@@ -582,19 +588,19 @@ export const ProductQueries = {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
-    };
+        totalPages: Math.ceil(total / limit),
+      },
+    }
   },
 
-  async getProductStockHistory(productId: string, limit: number = 30) {
+  async getProductStockHistory(productId: string, limit = 30) {
     // Verificar se o produto existe
     const product = await db.product.findUnique({
-      where: { id: productId }
-    });
+      where: { id: productId },
+    })
 
     if (!product) {
-      throw new Error('Product not found');
+      throw new Error('Product not found')
     }
 
     // Buscar histórico de movimentações
@@ -607,33 +613,35 @@ export const ProductQueries = {
           select: {
             id: true,
             corporateName: true,
-            cnpj: true
-          }
+            cnpj: true,
+          },
         },
         user: {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
+            email: true,
+          },
+        },
+      },
+    })
 
     // Calcular estoque atual
-    let currentStock = 0;
-    const stockHistory = movements.map(movement => {
-      if (movement.type === 'ENTRADA') {
-        currentStock += movement.quantity;
-      } else {
-        currentStock -= movement.quantity;
-      }
+    let currentStock = 0
+    const stockHistory = movements
+      .map((movement) => {
+        if (movement.type === 'ENTRADA') {
+          currentStock += movement.quantity
+        } else {
+          currentStock -= movement.quantity
+        }
 
-      return {
-        ...movement,
-        balanceAfter: currentStock
-      };
-    }).reverse(); // Reverter para ordem cronológica
+        return {
+          ...movement,
+          balanceAfter: currentStock,
+        }
+      })
+      .reverse() // Reverter para ordem cronológica
 
     return {
       product: {
@@ -641,20 +649,20 @@ export const ProductQueries = {
         name: product.name,
         stockMin: product.stockMin,
         stockMax: product.stockMax,
-        alertPercentage: product.alertPercentage
+        alertPercentage: product.alertPercentage,
       },
       currentStock,
-      history: stockHistory
-    };
+      history: stockHistory,
+    }
   },
 
   async getLowStockProducts(storeId?: string) {
     const where: any = {
-      status: true
-    };
+      status: true,
+    }
 
     if (storeId) {
-      where.storeId = storeId;
+      where.storeId = storeId
     }
 
     const products = await db.product.findMany({
@@ -663,75 +671,77 @@ export const ProductQueries = {
         movements: {
           select: {
             type: true,
-            quantity: true
-          }
+            quantity: true,
+          },
         },
         categories: {
           select: {
             category: {
               select: {
                 id: true,
-                name: true
-              }
-            }
-          }
+                name: true,
+              },
+            },
+          },
         },
         supplier: {
           select: {
             id: true,
-            corporateName: true
-          }
+            corporateName: true,
+          },
         },
         store: {
           select: {
             id: true,
-            name: true
-          }
-        }
-      }
-    });
+            name: true,
+          },
+        },
+      },
+    })
 
     // Calcular estoque atual e filtrar produtos com estoque baixo
-    const lowStockProducts = products.filter(product => {
-      let currentStock = 0;
-      product.movements.forEach(movement => {
-        if (movement.type === 'ENTRADA') {
-          currentStock += movement.quantity;
-        } else {
-          currentStock -= movement.quantity;
+    const lowStockProducts = products
+      .filter((product) => {
+        let currentStock = 0
+        product.movements.forEach((movement) => {
+          if (movement.type === 'ENTRADA') {
+            currentStock += movement.quantity
+          } else {
+            currentStock -= movement.quantity
+          }
+        })
+
+        return currentStock <= product.stockMin
+      })
+      .map((product) => {
+        let currentStock = 0
+        product.movements.forEach((movement) => {
+          if (movement.type === 'ENTRADA') {
+            currentStock += movement.quantity
+          } else {
+            currentStock -= movement.quantity
+          }
+        })
+
+        return {
+          ...product,
+          categories: product.categories.map((pc) => pc.category),
+          currentStock,
+          stockStatus: currentStock <= 0 ? 'CRITICAL' : 'LOW',
         }
-      });
+      })
 
-      return currentStock <= product.stockMin;
-    }).map(product => {
-      let currentStock = 0;
-      product.movements.forEach(movement => {
-        if (movement.type === 'ENTRADA') {
-          currentStock += movement.quantity;
-        } else {
-          currentStock -= movement.quantity;
-        }
-      });
-
-      return {
-        ...product,
-        categories: product.categories.map(pc => pc.category),
-        currentStock,
-        stockStatus: currentStock <= 0 ? 'CRITICAL' : 'LOW'
-      };
-    });
-
-    return lowStockProducts;
+    return lowStockProducts
   },
 
   async getProductAnalytics(productId: string) {
     // Verificar se o produto existe
     const product = await db.product.findUnique({
-      where: { id: productId }
-    });
+      where: { id: productId },
+    })
 
     if (!product) {
-      throw new Error('Product not found');
+      throw new Error('Product not found')
     }
 
     // Buscar todas as movimentações do produto
@@ -741,50 +751,56 @@ export const ProductQueries = {
         supplier: {
           select: {
             id: true,
-            corporateName: true
-          }
-        }
-      }
-    });
+            corporateName: true,
+          },
+        },
+      },
+    })
 
     // Calcular estatísticas
-    const totalMovements = movements.length;
-    const entradaMovements = movements.filter(m => m.type === 'ENTRADA');
-    const saidaMovements = movements.filter(m => m.type === 'SAIDA');
-    const perdaMovements = movements.filter(m => m.type === 'PERDA');
+    const totalMovements = movements.length
+    const entradaMovements = movements.filter((m) => m.type === 'ENTRADA')
+    const saidaMovements = movements.filter((m) => m.type === 'SAIDA')
+    const perdaMovements = movements.filter((m) => m.type === 'PERDA')
 
-    const totalEntrada = entradaMovements.reduce((sum, m) => sum + m.quantity, 0);
-    const totalSaida = saidaMovements.reduce((sum, m) => sum + m.quantity, 0);
-    const totalPerda = perdaMovements.reduce((sum, m) => sum + m.quantity, 0);
+    const totalEntrada = entradaMovements.reduce((sum, m) => sum + m.quantity, 0)
+    const totalSaida = saidaMovements.reduce((sum, m) => sum + m.quantity, 0)
+    const totalPerda = perdaMovements.reduce((sum, m) => sum + m.quantity, 0)
 
-    const currentStock = totalEntrada - totalSaida - totalPerda;
+    const currentStock = totalEntrada - totalSaida - totalPerda
 
     // Movimentações por mês (últimos 12 meses)
-    const monthlyMovements = movements.reduce((acc, movement) => {
-      const month = movement.createdAt.toISOString().substring(0, 7); // YYYY-MM
-      if (!acc[month]) {
-        acc[month] = { entrada: 0, saida: 0, perda: 0 };
-      }
-      acc[month][movement.type.toLowerCase()] += movement.quantity;
-      return acc;
-    }, {} as Record<string, { entrada: number; saida: number; perda: number }>);
+    const monthlyMovements = movements.reduce(
+      (acc, movement) => {
+        const month = movement.createdAt.toISOString().substring(0, 7) // YYYY-MM
+        if (!acc[month]) {
+          acc[month] = { entrada: 0, saida: 0, perda: 0 }
+        }
+        acc[month][movement.type.toLowerCase()] += movement.quantity
+        return acc
+      },
+      {} as Record<string, { entrada: number; saida: number; perda: number }>
+    )
 
     // Fornecedores mais utilizados
     const supplierStats = movements
-      .filter(m => m.supplierId)
-      .reduce((acc, movement) => {
-        const supplierId = movement.supplierId!;
-        if (!acc[supplierId]) {
-          acc[supplierId] = {
-            supplier: movement.supplier!,
-            totalMovements: 0,
-            totalQuantity: 0
-          };
-        }
-        acc[supplierId].totalMovements++;
-        acc[supplierId].totalQuantity += movement.quantity;
-        return acc;
-      }, {} as Record<string, { supplier: any; totalMovements: number; totalQuantity: number }>);
+      .filter((m) => m.supplierId)
+      .reduce(
+        (acc, movement) => {
+          const supplierId = movement.supplierId!
+          if (!acc[supplierId]) {
+            acc[supplierId] = {
+              supplier: movement.supplier!,
+              totalMovements: 0,
+              totalQuantity: 0,
+            }
+          }
+          acc[supplierId].totalMovements++
+          acc[supplierId].totalQuantity += movement.quantity
+          return acc
+        },
+        {} as Record<string, { supplier: any; totalMovements: number; totalQuantity: number }>
+      )
 
     return {
       product: {
@@ -792,7 +808,7 @@ export const ProductQueries = {
         name: product.name,
         stockMin: product.stockMin,
         stockMax: product.stockMax,
-        alertPercentage: product.alertPercentage
+        alertPercentage: product.alertPercentage,
       },
       currentStock,
       statistics: {
@@ -801,19 +817,19 @@ export const ProductQueries = {
         totalSaida,
         totalPerda,
         monthlyMovements,
-        supplierStats: Object.values(supplierStats)
-      }
-    };
+        supplierStats: Object.values(supplierStats),
+      },
+    }
   },
 
   // === MÉTODOS PARA GERENCIAR CATEGORIAS DO PRODUTO ===
   async getCategories(productId: string) {
     const product = await db.product.findUnique({
-      where: { id: productId }
-    });
+      where: { id: productId },
+    })
 
     if (!product) {
-      throw new Error('Product not found');
+      throw new Error('Product not found')
     }
 
     const categories = await db.productCategory.findMany({
@@ -826,43 +842,47 @@ export const ProductQueries = {
             description: true,
             code: true,
             color: true,
-            icon: true
-          }
-        }
-      }
-    });
+            icon: true,
+          },
+        },
+      },
+    })
 
     return {
-      categories: categories.map(pc => pc.category)
-    };
+      categories: categories.map((pc) => pc.category),
+    }
   },
 
-  async getProductsByCategories(categoryIds: string[], storeId: string, params: {
-    page?: number
-    limit?: number
-    search?: string
-    status?: boolean
-  }) {
-    const { page = 1, limit = 10, search, status } = params;
-    const skip = (page - 1) * limit;
+  async getProductsByCategories(
+    categoryIds: string[],
+    storeId: string,
+    params: {
+      page?: number
+      limit?: number
+      search?: string
+      status?: boolean
+    }
+  ) {
+    const { page = 1, limit = 10, search, status } = params
+    const skip = (page - 1) * limit
 
     const where: any = {
       categories: {
         some: {
-          categoryId: { in: categoryIds }
-        }
-      }
-    };
+          categoryId: { in: categoryIds },
+        },
+      },
+    }
 
     if (status !== undefined) {
-      where.status = status;
+      where.status = status
     }
 
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } }
-      ];
+        { description: { contains: search, mode: 'insensitive' } },
+      ]
     }
 
     const [products, total] = await Promise.all([
@@ -881,38 +901,38 @@ export const ProductQueries = {
                   description: true,
                   code: true,
                   color: true,
-                  icon: true
-                }
-              }
-            }
+                  icon: true,
+                },
+              },
+            },
           },
           supplier: {
             select: {
               id: true,
               corporateName: true,
               cnpj: true,
-              tradeName: true
-            }
+              tradeName: true,
+            },
           },
           store: {
             select: {
               id: true,
               name: true,
-              cnpj: true
-            }
-          }
-        }
+              cnpj: true,
+            },
+          },
+        },
       }),
-      db.product.count({ where })
-    ]);
+      db.product.count({ where }),
+    ])
 
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit)
 
     // Transformar categorias para todos os produtos
-    const transformedProducts = products.map(product => ({
+    const transformedProducts = products.map((product) => ({
       ...product,
-      categories: product.categories.map(pc => pc.category)
-    }));
+      categories: product.categories.map((pc) => pc.category),
+    }))
 
     return {
       products: transformedProducts,
@@ -920,8 +940,8 @@ export const ProductQueries = {
         page,
         limit,
         total,
-        totalPages
-      }
-    };
-  }
-};
+        totalPages,
+      },
+    }
+  },
+}

@@ -1,5 +1,5 @@
-import { FastifySchema } from 'fastify';
-import { Action, StoreRole } from '@/middlewares/authorization.middleware';
+import { Action, StoreRole } from '@/middlewares/authorization.middleware'
+import type { FastifySchema } from 'fastify'
 
 // ================================
 // SCHEMAS PARA PERMISSÕES CUSTOMIZADAS
@@ -26,23 +26,23 @@ export const PermissionSchemas = {
               type: 'object',
               properties: {
                 start: { type: 'string', format: 'date' },
-                end: { type: 'string', format: 'date' }
+                end: { type: 'string', format: 'date' },
               },
-              required: ['start', 'end']
+              required: ['start', 'end'],
             },
             amountLimit: { type: 'number', minimum: 0 },
             custom: { type: 'string', maxLength: 500 },
             ipWhitelist: {
               type: 'array',
-              items: { type: 'string', format: 'ipv4' }
+              items: { type: 'string', format: 'ipv4' },
             },
-            userAgent: { type: 'string', maxLength: 200 }
-          }
+            userAgent: { type: 'string', maxLength: 200 },
+          },
         },
         expiresAt: { type: 'string', format: 'date-time' },
-        reason: { type: 'string', maxLength: 500 }
-      }
-    }
+        reason: { type: 'string', maxLength: 500 },
+      },
+    },
   } as FastifySchema,
 
   // Listar permissões de usuário
@@ -51,8 +51,8 @@ export const PermissionSchemas = {
       type: 'object',
       required: ['userId'],
       properties: {
-        userId: { type: 'string', minLength: 1 }
-      }
+        userId: { type: 'string', minLength: 1 },
+      },
     },
     querystring: {
       type: 'object',
@@ -61,9 +61,9 @@ export const PermissionSchemas = {
         action: { type: 'string', enum: Object.values(Action) },
         active: { type: 'boolean' },
         page: { type: 'integer', minimum: 1, default: 1 },
-        limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 }
-      }
-    }
+        limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
+      },
+    },
   } as FastifySchema,
 
   // Atualizar permissão customizada
@@ -72,8 +72,8 @@ export const PermissionSchemas = {
       type: 'object',
       required: ['id'],
       properties: {
-        id: { type: 'string', minLength: 1 }
-      }
+        id: { type: 'string', minLength: 1 },
+      },
     },
     body: {
       type: 'object',
@@ -91,23 +91,23 @@ export const PermissionSchemas = {
               type: 'object',
               properties: {
                 start: { type: 'string', format: 'date' },
-                end: { type: 'string', format: 'date' }
+                end: { type: 'string', format: 'date' },
               },
-              required: ['start', 'end']
+              required: ['start', 'end'],
             },
             amountLimit: { type: 'number', minimum: 0 },
             custom: { type: 'string', maxLength: 500 },
             ipWhitelist: {
               type: 'array',
-              items: { type: 'string', format: 'ipv4' }
+              items: { type: 'string', format: 'ipv4' },
             },
-            userAgent: { type: 'string', maxLength: 200 }
-          }
+            userAgent: { type: 'string', maxLength: 200 },
+          },
         },
         expiresAt: { type: 'string', format: 'date-time' },
-        reason: { type: 'string', maxLength: 500 }
-      }
-    }
+        reason: { type: 'string', maxLength: 500 },
+      },
+    },
   } as FastifySchema,
 
   // Deletar permissão customizada
@@ -116,9 +116,9 @@ export const PermissionSchemas = {
       type: 'object',
       required: ['id'],
       properties: {
-        id: { type: 'string', minLength: 1 }
-      }
-    }
+        id: { type: 'string', minLength: 1 },
+      },
+    },
   } as FastifySchema,
 
   // ================================
@@ -137,7 +137,7 @@ export const PermissionSchemas = {
         permissions: {
           type: 'array',
           items: { type: 'string', enum: Object.values(Action) },
-          minItems: 1
+          minItems: 1,
         },
         conditions: {
           type: 'object',
@@ -148,22 +148,22 @@ export const PermissionSchemas = {
               type: 'object',
               properties: {
                 start: { type: 'string', format: 'date' },
-                end: { type: 'string', format: 'date' }
+                end: { type: 'string', format: 'date' },
               },
-              required: ['start', 'end']
+              required: ['start', 'end'],
             },
             amountLimit: { type: 'number', minimum: 0 },
             custom: { type: 'string', maxLength: 500 },
             ipWhitelist: {
               type: 'array',
-              items: { type: 'string', format: 'ipv4' }
+              items: { type: 'string', format: 'ipv4' },
             },
-            userAgent: { type: 'string', maxLength: 200 }
-          }
+            userAgent: { type: 'string', maxLength: 200 },
+          },
         },
-        expiresAt: { type: 'string', format: 'date-time' }
-      }
-    }
+        expiresAt: { type: 'string', format: 'date-time' },
+      },
+    },
   } as FastifySchema,
 
   // Listar permissões de loja
@@ -172,16 +172,16 @@ export const PermissionSchemas = {
       type: 'object',
       required: ['storeId'],
       properties: {
-        storeId: { type: 'string', minLength: 1 }
-      }
+        storeId: { type: 'string', minLength: 1 },
+      },
     },
     querystring: {
       type: 'object',
       properties: {
         page: { type: 'integer', minimum: 1, default: 1 },
-        limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 }
-      }
-    }
+        limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
+      },
+    },
   } as FastifySchema,
 
   // ================================
@@ -194,15 +194,15 @@ export const PermissionSchemas = {
       type: 'object',
       required: ['userId'],
       properties: {
-        userId: { type: 'string', minLength: 1 }
-      }
+        userId: { type: 'string', minLength: 1 },
+      },
     },
     querystring: {
       type: 'object',
       properties: {
-        storeId: { type: 'string', minLength: 1 }
-      }
-    }
+        storeId: { type: 'string', minLength: 1 },
+      },
+    },
   } as FastifySchema,
 
   // Testar permissão
@@ -215,9 +215,9 @@ export const PermissionSchemas = {
         action: { type: 'string', enum: Object.values(Action) },
         resource: { type: 'string', maxLength: 100 },
         storeId: { type: 'string', minLength: 1 },
-        context: { type: 'object' }
-      }
-    }
+        context: { type: 'object' },
+      },
+    },
   } as FastifySchema,
 
   // Obter estatísticas
@@ -227,9 +227,9 @@ export const PermissionSchemas = {
       properties: {
         storeId: { type: 'string', minLength: 1 },
         dateFrom: { type: 'string', format: 'date' },
-        dateTo: { type: 'string', format: 'date' }
-      }
-    }
+        dateTo: { type: 'string', format: 'date' },
+      },
+    },
   } as FastifySchema,
 
   // ================================
@@ -262,28 +262,28 @@ export const PermissionSchemas = {
                     type: 'object',
                     properties: {
                       start: { type: 'string', format: 'date' },
-                      end: { type: 'string', format: 'date' }
+                      end: { type: 'string', format: 'date' },
                     },
-                    required: ['start', 'end']
+                    required: ['start', 'end'],
                   },
                   amountLimit: { type: 'number', minimum: 0 },
                   custom: { type: 'string', maxLength: 500 },
                   ipWhitelist: {
                     type: 'array',
-                    items: { type: 'string', format: 'ipv4' }
+                    items: { type: 'string', format: 'ipv4' },
                   },
-                  userAgent: { type: 'string', maxLength: 200 }
-                }
+                  userAgent: { type: 'string', maxLength: 200 },
+                },
               },
               expiresAt: { type: 'string', format: 'date-time' },
-              reason: { type: 'string', maxLength: 500 }
-            }
+              reason: { type: 'string', maxLength: 500 },
+            },
           },
           minItems: 1,
-          maxItems: 100
-        }
-      }
-    }
+          maxItems: 100,
+        },
+      },
+    },
   } as FastifySchema,
 
   // Atualizar múltiplas permissões
@@ -312,28 +312,28 @@ export const PermissionSchemas = {
                     type: 'object',
                     properties: {
                       start: { type: 'string', format: 'date' },
-                      end: { type: 'string', format: 'date' }
+                      end: { type: 'string', format: 'date' },
                     },
-                    required: ['start', 'end']
+                    required: ['start', 'end'],
                   },
                   amountLimit: { type: 'number', minimum: 0 },
                   custom: { type: 'string', maxLength: 500 },
                   ipWhitelist: {
                     type: 'array',
-                    items: { type: 'string', format: 'ipv4' }
+                    items: { type: 'string', format: 'ipv4' },
                   },
-                  userAgent: { type: 'string', maxLength: 200 }
-                }
+                  userAgent: { type: 'string', maxLength: 200 },
+                },
               },
               expiresAt: { type: 'string', format: 'date-time' },
-              reason: { type: 'string', maxLength: 500 }
-            }
+              reason: { type: 'string', maxLength: 500 },
+            },
           },
           minItems: 1,
-          maxItems: 100
-        }
-      }
-    }
+          maxItems: 100,
+        },
+      },
+    },
   } as FastifySchema,
 
   // Deletar múltiplas permissões
@@ -346,10 +346,10 @@ export const PermissionSchemas = {
           type: 'array',
           items: { type: 'string', minLength: 1 },
           minItems: 1,
-          maxItems: 100
-        }
-      }
-    }
+          maxItems: 100,
+        },
+      },
+    },
   } as FastifySchema,
 
   // ================================
@@ -367,7 +367,7 @@ export const PermissionSchemas = {
         permissions: {
           type: 'array',
           items: { type: 'string', enum: Object.values(Action) },
-          minItems: 1
+          minItems: 1,
         },
         conditions: {
           type: 'object',
@@ -378,21 +378,21 @@ export const PermissionSchemas = {
               type: 'object',
               properties: {
                 start: { type: 'string', format: 'date' },
-                end: { type: 'string', format: 'date' }
+                end: { type: 'string', format: 'date' },
               },
-              required: ['start', 'end']
+              required: ['start', 'end'],
             },
             amountLimit: { type: 'number', minimum: 0 },
             custom: { type: 'string', maxLength: 500 },
             ipWhitelist: {
               type: 'array',
-              items: { type: 'string', format: 'ipv4' }
+              items: { type: 'string', format: 'ipv4' },
             },
-            userAgent: { type: 'string', maxLength: 200 }
-          }
-        }
-      }
-    }
+            userAgent: { type: 'string', maxLength: 200 },
+          },
+        },
+      },
+    },
   } as FastifySchema,
 
   // Aplicar template de permissão
@@ -404,9 +404,9 @@ export const PermissionSchemas = {
         userId: { type: 'string', minLength: 1 },
         templateId: { type: 'string', minLength: 1 },
         storeId: { type: 'string', minLength: 1 },
-        expiresAt: { type: 'string', format: 'date-time' }
-      }
-    }
+        expiresAt: { type: 'string', format: 'date-time' },
+      },
+    },
   } as FastifySchema,
 
   // ================================
@@ -419,8 +419,8 @@ export const PermissionSchemas = {
       type: 'object',
       required: ['permissionId'],
       properties: {
-        permissionId: { type: 'string', minLength: 1 }
-      }
+        permissionId: { type: 'string', minLength: 1 },
+      },
     },
     querystring: {
       type: 'object',
@@ -429,8 +429,8 @@ export const PermissionSchemas = {
         limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
         action: { type: 'string', enum: ['created', 'updated', 'deleted', 'expired'] },
         dateFrom: { type: 'string', format: 'date' },
-        dateTo: { type: 'string', format: 'date' }
-      }
-    }
-  } as FastifySchema
-};
+        dateTo: { type: 'string', format: 'date' },
+      },
+    },
+  } as FastifySchema,
+}

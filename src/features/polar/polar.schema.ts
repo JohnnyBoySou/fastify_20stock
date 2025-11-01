@@ -1,4 +1,4 @@
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify'
 
 export const CreateCheckoutSchema: FastifySchema = {
   body: {
@@ -7,9 +7,9 @@ export const CreateCheckoutSchema: FastifySchema = {
     properties: {
       productId: {
         type: 'string',
-        description: 'ID do produto Polar'
-      }
-    }
+        description: 'ID do produto Polar',
+      },
+    },
   },
   response: {
     201: {
@@ -18,29 +18,29 @@ export const CreateCheckoutSchema: FastifySchema = {
         id: { type: 'string' },
         url: { type: 'string' },
         product_id: { type: 'string' },
-        customer_id: { type: 'string', nullable: true }
-      }
+        customer_id: { type: 'string', nullable: true },
+      },
     },
     401: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const ListPolarSchema: FastifySchema = {
   querystring: {
@@ -49,15 +49,15 @@ export const ListPolarSchema: FastifySchema = {
       page: {
         type: 'number',
         minimum: 1,
-        default: 1
+        default: 1,
       },
       limit: {
         type: 'number',
         minimum: 1,
         maximum: 100,
-        default: 10
-      }
-    }
+        default: 10,
+      },
+    },
   },
   response: {
     200: {
@@ -70,19 +70,19 @@ export const ListPolarSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
           },
-        }
+        },
       },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const PolarSchemas = {
   createCheckout: CreateCheckoutSchema,
-  list: ListPolarSchema
-};
+  list: ListPolarSchema,
+}

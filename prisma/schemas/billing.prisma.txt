@@ -1,0 +1,84 @@
+/// ===============================
+///  BILLING (Polar.sh Integration)
+///  - Polar é o sistema de cobrança principal.
+///  - O backend apenas espelha status e referências.
+/// ===============================
+
+model Subscription {
+  id                   String          @id @default(cuid())
+  userId               String          @unique
+  user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Polar references
+  polarCustomerId      String?         @unique
+  polarSubscriptionId  String?         @unique
+  polarProductId       String?         // plano ativo no Polar
+  polarPlanName        String?         // redundância para exibição rápida no painel
+
+  // Status tracking
+  status               SubscriptionStatus @default(ACTIVE)
+  currentPeriodEnd     DateTime?        // data de renovação ou expiração
+  trialEndsAt          DateTime?
+  cancelledAt          DateTime?
+  renewalCount         Int              @default(0)
+
+  // Dados financeiros básicos
+  priceAmount          Decimal?         @db.Decimal(10, 2)
+  priceInterval        PlanInterval?    // MONTHLY, YEARLY (espelhado do Polar)
+  currency             String?          @default("BRL")
+
+  // Auditoria
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  invoices             Invoice[]
+
+  @@map("subscriptions")
+  @@index([status])
+  @@index([polarSubscriptionId])
+  @@index([userId])
+  @@schema("billing")
+}
+
+model Invoice {
+  id               String          @id @default(cuid())
+  subscriptionId   String
+  subscription     Subscription    @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  // Dados do Polar
+  polarInvoiceId   String?         @unique
+  amount           Decimal         @db.Decimal(10, 2)
+  currency         String?         @default("BRL")
+  status           InvoiceStatus   @default(PENDING)
+  paymentDate      DateTime?
+  dueDate          DateTime?
+  createdAt        DateTime        @default(now())
+
+  @@map("invoices")
+  @@index([status])
+  @@index([subscriptionId])
+  @@schema("billing")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  CANCELLED
+  TRIAL
+  EXPIRED
+  PAST_DUE
+  @@schema("billing")
+}
+
+enum PlanInterval {
+  MONTHLY
+  YEARLY
+  @@schema("billing")
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  @@schema("billing")
+}

@@ -1,5 +1,5 @@
-import { db } from '@/plugins/prisma';
-import { FlowEntity, FlowStatus } from '../flow.interfaces';
+import { db } from '@/plugins/prisma'
+import { FlowEntity, type FlowStatus } from '../flow.interfaces'
 
 export const FlowCommands = {
   async create(data: {
@@ -14,20 +14,20 @@ export const FlowCommands = {
     try {
       // Validar se a loja existe
       const store = await db.store.findUnique({
-        where: { id: data.storeId }
-      });
+        where: { id: data.storeId },
+      })
 
       if (!store) {
-        throw new Error('Store not found');
+        throw new Error('Store not found')
       }
 
       // Validar se o usuário criador existe
       const user = await db.user.findUnique({
-        where: { id: data.createdBy }
-      });
+        where: { id: data.createdBy },
+      })
 
       if (!user) {
-        throw new Error('User not found');
+        throw new Error('User not found')
       }
 
       // Criar flow
@@ -39,40 +39,43 @@ export const FlowCommands = {
           edges: data.edges as any,
           status: data.status,
           storeId: data.storeId,
-          createdBy: data.createdBy
+          createdBy: data.createdBy,
         },
         include: {
           store: {
             select: {
               id: true,
-              name: true
-            }
-          }
-        }
-      });
+              name: true,
+            },
+          },
+        },
+      })
 
-      return flow;
+      return flow
     } catch (error: any) {
-      console.error('Error creating flow:', error);
-      throw error;
+      console.error('Error creating flow:', error)
+      throw error
     }
   },
 
-  async update(id: string, data: {
-    name?: string;
-    description?: string;
-    nodes?: any[];
-    edges?: any[];
-    status?: FlowStatus;
-  }) {
+  async update(
+    id: string,
+    data: {
+      name?: string
+      description?: string
+      nodes?: any[]
+      edges?: any[]
+      status?: FlowStatus
+    }
+  ) {
     try {
       // Verificar se o flow existe
       const existingFlow = await db.flow.findUnique({
-        where: { id }
-      });
+        where: { id },
+      })
 
       if (!existingFlow) {
-        throw new Error('Flow not found');
+        throw new Error('Flow not found')
       }
 
       // Atualizar flow
@@ -81,22 +84,22 @@ export const FlowCommands = {
         data: {
           ...data,
           nodes: data.nodes as any,
-          edges: data.edges as any
+          edges: data.edges as any,
         },
         include: {
           store: {
             select: {
               id: true,
-              name: true
-            }
-          }
-        }
-      });
+              name: true,
+            },
+          },
+        },
+      })
 
-      return flow;
+      return flow
     } catch (error: any) {
-      console.error('Error updating flow:', error);
-      throw error;
+      console.error('Error updating flow:', error)
+      throw error
     }
   },
 
@@ -104,34 +107,34 @@ export const FlowCommands = {
     try {
       // Verificar se o flow existe
       const existingFlow = await db.flow.findUnique({
-        where: { id }
-      });
+        where: { id },
+      })
 
       if (!existingFlow) {
-        throw new Error('Flow not found');
+        throw new Error('Flow not found')
       }
 
       // Deletar flow (o Prisma vai deletar em cascata os flowNodes)
       await db.flow.delete({
-        where: { id }
-      });
+        where: { id },
+      })
 
-      return { id };
+      return { id }
     } catch (error: any) {
-      console.error('Error deleting flow:', error);
-      throw error;
+      console.error('Error deleting flow:', error)
+      throw error
     }
-  },  
+  },
 
   async updateStatus(id: string, status: FlowStatus) {
     try {
       // Verificar se o flow existe
       const existingFlow = await db.flow.findUnique({
-        where: { id }
-      });
+        where: { id },
+      })
 
       if (!existingFlow) {
-        throw new Error('Flow not found');
+        throw new Error('Flow not found')
       }
 
       // Atualizar apenas o status
@@ -142,16 +145,16 @@ export const FlowCommands = {
           store: {
             select: {
               id: true,
-              name: true
-            }
-          }
-        }
-      });
+              name: true,
+            },
+          },
+        },
+      })
 
-      return flow;
+      return flow
     } catch (error: any) {
-      console.error('Error updating flow status:', error);
-      throw error;
+      console.error('Error updating flow status:', error)
+      throw error
     }
   },
 
@@ -159,11 +162,11 @@ export const FlowCommands = {
     try {
       // Buscar flow original
       const originalFlow = await db.flow.findUnique({
-        where: { id }
-      });
+        where: { id },
+      })
 
       if (!originalFlow) {
-        throw new Error('Flow not found');
+        throw new Error('Flow not found')
       }
 
       // Criar flow duplicado
@@ -175,23 +178,22 @@ export const FlowCommands = {
           edges: originalFlow.edges as any,
           status: 'DRAFT', // Sempre DRAFT ao duplicar
           storeId: originalFlow.storeId,
-          createdBy: originalFlow.createdBy
+          createdBy: originalFlow.createdBy,
         },
         include: {
           store: {
             select: {
               id: true,
-              name: true
-            }
-          }
-        }
-      });
+              name: true,
+            },
+          },
+        },
+      })
 
-      return duplicatedFlow;
+      return duplicatedFlow
     } catch (error: any) {
-      console.error('Error duplicating flow:', error);
-      throw error;
+      console.error('Error duplicating flow:', error)
+      throw error
     }
   },
 }
-

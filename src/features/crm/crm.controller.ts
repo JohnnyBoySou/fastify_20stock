@@ -1,52 +1,52 @@
-import { FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyReply, FastifyRequest } from 'fastify'
 import { CrmCommands } from './commands/crm.commands'
-import { CrmQueries } from './queries/crm.queries'
 import { CrmStageCommands } from './commands/crm.stage.commands'
-import { CrmStageQueries } from './queries/crm.stage.queries'
 import {
-  CreateCrmClientRequest,
-  GetCrmClientRequest,
-  UpdateCrmClientRequest,
-  DeleteCrmClientRequest,
-  ListCrmClientsRequest,
-  SearchCrmClientsRequest,
-  TransitionStageRequest,
+  type CreateCrmClientRequest,
+  type CreateCrmStageRequest,
+  type DeleteCrmClientRequest,
+  type DeleteCrmStageRequest,
+  type GetCrmClientRequest,
+  type GetCrmStageRequest,
   ListCrmClientsGroupedRequest,
-  CreateCrmStageRequest,
-  GetCrmStageRequest,
-  UpdateCrmStageRequest,
-  DeleteCrmStageRequest,
-  ListCrmStagesRequest,
-  ReorderCrmStageRequest
+  type ListCrmClientsRequest,
+  type ListCrmStagesRequest,
+  type ReorderCrmStageRequest,
+  type SearchCrmClientsRequest,
+  type TransitionStageRequest,
+  type UpdateCrmClientRequest,
+  type UpdateCrmStageRequest,
 } from './crm.interfaces'
+import { CrmQueries } from './queries/crm.queries'
+import { CrmStageQueries } from './queries/crm.stage.queries'
 
 export const CrmController = {
   // === ENDPOINT DE TESTE TEMPORÁRIO ===
   async testGrouped(request: FastifyRequest, reply: FastifyReply) {
     try {
       const storeId = (request as any).store?.id
-      
-      console.log('🧪 TEST: storeId:', storeId);
-      
+
+      console.log('🧪 TEST: storeId:', storeId)
+
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
+          error: 'Store context required',
         })
       }
 
       // Teste direto da função
       const result = await CrmQueries.listGroupedByStage(storeId)
-      
+
       return reply.send({
         success: true,
         storeId,
-        result
+        result,
       })
     } catch (error) {
-      console.error('❌ TEST Error:', error);
+      console.error('❌ TEST Error:', error)
       return reply.status(500).send({
         error: 'Test failed',
-        details: error.message
+        details: error.message,
       })
     }
   },
@@ -59,7 +59,7 @@ export const CrmController = {
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
+          error: 'Store context required',
         })
       }
 
@@ -71,7 +71,7 @@ export const CrmController = {
         cpfCnpj,
         company,
         notes,
-        stageId
+        stageId,
       })
 
       return reply.status(201).send(result)
@@ -80,12 +80,12 @@ export const CrmController = {
 
       if (error.message === 'Stage not found or does not belong to the same store') {
         return reply.status(400).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -97,7 +97,7 @@ export const CrmController = {
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
+          error: 'Store context required',
         })
       }
 
@@ -105,7 +105,7 @@ export const CrmController = {
 
       if (!result) {
         return reply.status(404).send({
-          error: 'Client not found'
+          error: 'Client not found',
         })
       }
 
@@ -113,7 +113,7 @@ export const CrmController = {
     } catch (error: any) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -126,7 +126,7 @@ export const CrmController = {
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
+          error: 'Store context required',
         })
       }
 
@@ -138,18 +138,18 @@ export const CrmController = {
 
       if (error.message === 'Client not found or does not belong to the store') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       if (error.message === 'Stage not found or does not belong to the same store') {
         return reply.status(400).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -161,7 +161,7 @@ export const CrmController = {
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
+          error: 'Store context required',
         })
       }
 
@@ -173,12 +173,12 @@ export const CrmController = {
 
       if (error.message === 'Client not found or does not belong to the store') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -188,39 +188,42 @@ export const CrmController = {
       const { page = 1, limit = 10, search, stageId, grouped } = request.query as any
       const storeId = (request as any).store?.id
 
-      console.log('🔍 DEBUG listClients:');
-      console.log('- Query params:', { page, limit, search, stageId, grouped });
-      console.log('- StoreId:', storeId);
-      console.log('- Request user:', (request as any).user);
-      console.log('- Request store:', (request as any).store);
+      console.log('🔍 DEBUG listClients:')
+      console.log('- Query params:', { page, limit, search, stageId, grouped })
+      console.log('- StoreId:', storeId)
+      console.log('- Request user:', (request as any).user)
+      console.log('- Request store:', (request as any).store)
 
       if (!storeId) {
-        console.log('❌ No storeId found');
+        console.log('❌ No storeId found')
         return reply.status(400).send({
-          error: 'Store context required'
+          error: 'Store context required',
         })
       }
 
       if (grouped) {
-        console.log('📊 Calling listGroupedByStage...');
+        console.log('📊 Calling listGroupedByStage...')
         const result = await CrmQueries.listGroupedByStage(storeId)
-        console.log('✅ listGroupedByStage result:', JSON.stringify(result, null, 2));
+        console.log('✅ listGroupedByStage result:', JSON.stringify(result, null, 2))
         return reply.send(result)
       }
 
-      const result = await CrmQueries.list({
-        page: Number(page),
-        limit: Number(limit),
-        search,
-        stageId
-      }, storeId)
+      const result = await CrmQueries.list(
+        {
+          page: Number(page),
+          limit: Number(limit),
+          search,
+          stageId,
+        },
+        storeId
+      )
 
       return reply.send(result)
     } catch (error) {
-      console.error('❌ Error in listClients:', error);
+      console.error('❌ Error in listClients:', error)
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -232,7 +235,7 @@ export const CrmController = {
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
+          error: 'Store context required',
         })
       }
 
@@ -242,7 +245,7 @@ export const CrmController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -255,7 +258,7 @@ export const CrmController = {
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
+          error: 'Store context required',
         })
       }
 
@@ -267,18 +270,18 @@ export const CrmController = {
 
       if (error.message === 'Client not found or does not belong to the store') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       if (error.message === 'Stage not found or does not belong to the same store') {
         return reply.status(400).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -289,7 +292,7 @@ export const CrmController = {
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
+          error: 'Store context required',
         })
       }
 
@@ -299,7 +302,7 @@ export const CrmController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -312,25 +315,25 @@ export const CrmController = {
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
+          error: 'Store context required',
         })
       }
 
       // Se não fornecido, obter próxima ordem
-      const finalOrder = order || await CrmStageQueries.getNextOrder(storeId)
+      const finalOrder = order || (await CrmStageQueries.getNextOrder(storeId))
 
       const result = await CrmStageCommands.create({
         storeId,
         name,
         color,
-        order: finalOrder
+        order: finalOrder,
       })
 
       return reply.status(201).send(result)
     } catch (error: any) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -342,7 +345,7 @@ export const CrmController = {
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
+          error: 'Store context required',
         })
       }
 
@@ -350,7 +353,7 @@ export const CrmController = {
 
       if (!result) {
         return reply.status(404).send({
-          error: 'Stage not found'
+          error: 'Stage not found',
         })
       }
 
@@ -358,7 +361,7 @@ export const CrmController = {
     } catch (error: any) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -371,7 +374,7 @@ export const CrmController = {
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
+          error: 'Store context required',
         })
       }
 
@@ -383,12 +386,12 @@ export const CrmController = {
 
       if (error.message === 'Stage not found or does not belong to the store') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -400,7 +403,7 @@ export const CrmController = {
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
+          error: 'Store context required',
         })
       }
 
@@ -412,18 +415,20 @@ export const CrmController = {
 
       if (error.message === 'Stage not found or does not belong to the store') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
-      if (error.message === 'Cannot delete stage with clients. Move clients to another stage first.') {
+      if (
+        error.message === 'Cannot delete stage with clients. Move clients to another stage first.'
+      ) {
         return reply.status(400).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -435,7 +440,7 @@ export const CrmController = {
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
+          error: 'Store context required',
         })
       }
 
@@ -445,7 +450,7 @@ export const CrmController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -458,7 +463,7 @@ export const CrmController = {
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
+          error: 'Store context required',
         })
       }
 
@@ -470,12 +475,12 @@ export const CrmController = {
 
       if (error.message === 'Stage not found or does not belong to the store') {
         return reply.status(404).send({
-          error: error.message
+          error: error.message,
         })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
   },
@@ -486,7 +491,7 @@ export const CrmController = {
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
+          error: 'Store context required',
         })
       }
 
@@ -496,8 +501,8 @@ export const CrmController = {
     } catch (error) {
       request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
+        error: 'Internal server error',
       })
     }
-  }
+  },
 }

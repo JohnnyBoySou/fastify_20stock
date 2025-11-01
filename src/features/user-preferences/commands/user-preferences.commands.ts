@@ -1,5 +1,5 @@
-import { UserPreferencesData } from '../user-preferences.interfaces'
-import {db} from '@/plugins/prisma'
+import { db } from '@/plugins/prisma'
+import type { UserPreferencesData } from '../user-preferences.interfaces'
 // ================================
 // USER PREFERENCES COMMANDS
 // ================================
@@ -9,7 +9,7 @@ export const UserPreferencesCommands = {
     try {
       // Verificar se o usuário existe
       const user = await db.user.findUnique({
-        where: { id: data.userId }
+        where: { id: data.userId },
       })
 
       if (!user) {
@@ -18,7 +18,7 @@ export const UserPreferencesCommands = {
 
       // Verificar se já existe preferências para este usuário
       const existingPreferences = await db.userPreferences.findUnique({
-        where: { userId: data.userId }
+        where: { userId: data.userId },
       })
 
       if (existingPreferences) {
@@ -39,7 +39,8 @@ export const UserPreferencesCommands = {
           dateFormat: data.dateFormat || 'DD/MM/YYYY',
           timeFormat: data.timeFormat || '24h',
           numberFormat: data.numberFormat || 'pt-BR',
-          emailNotifications: data.emailNotifications !== undefined ? data.emailNotifications : true,
+          emailNotifications:
+            data.emailNotifications !== undefined ? data.emailNotifications : true,
           pushNotifications: data.pushNotifications !== undefined ? data.pushNotifications : true,
           smsNotifications: data.smsNotifications || false,
           notificationTypes: data.notificationTypes,
@@ -49,17 +50,17 @@ export const UserPreferencesCommands = {
           defaultStoreId: data.defaultStoreId,
           autoRefresh: data.autoRefresh !== undefined ? data.autoRefresh : true,
           refreshInterval: data.refreshInterval || 30,
-          customSettings: data.customSettings
+          customSettings: data.customSettings,
         },
         include: {
           user: {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
-        }
+              email: true,
+            },
+          },
+        },
       })
 
       return preferences
@@ -76,7 +77,7 @@ export const UserPreferencesCommands = {
     try {
       // Verificar se as preferências existem
       const existingPreferences = await db.userPreferences.findUnique({
-        where: { id }
+        where: { id },
       })
 
       if (!existingPreferences) {
@@ -88,30 +89,30 @@ export const UserPreferencesCommands = {
         where: { id },
         data: {
           ...data,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
         include: {
           user: {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
-        }
+              email: true,
+            },
+          },
+        },
       })
 
       return updatedPreferences
     } catch (error: any) {
       throw new Error(`Failed to update user preferences: ${error.message}`)
     }
-  },        
+  },
 
   async updateByUserId(userId: string, data: Partial<UserPreferencesData>) {
     try {
       // Verificar se o usuário existe
       const user = await db.user.findUnique({
-        where: { id: userId }
+        where: { id: userId },
       })
 
       if (!user) {
@@ -120,7 +121,7 @@ export const UserPreferencesCommands = {
 
       // Verificar se as preferências existem
       const existingPreferences = await db.userPreferences.findUnique({
-        where: { userId }
+        where: { userId },
       })
 
       if (!existingPreferences) {
@@ -133,17 +134,17 @@ export const UserPreferencesCommands = {
         where: { userId },
         data: {
           ...data,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
         include: {
           user: {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
-        }
+              email: true,
+            },
+          },
+        },
       })
 
       return updatedPreferences
@@ -160,7 +161,7 @@ export const UserPreferencesCommands = {
     try {
       // Verificar se as preferências existem
       const existingPreferences = await db.userPreferences.findUnique({
-        where: { id }
+        where: { id },
       })
 
       if (!existingPreferences) {
@@ -169,7 +170,7 @@ export const UserPreferencesCommands = {
 
       // Deletar as preferências
       await db.userPreferences.delete({
-        where: { id }
+        where: { id },
       })
 
       return { success: true, message: 'User preferences deleted successfully' }
@@ -182,7 +183,7 @@ export const UserPreferencesCommands = {
     try {
       // Verificar se o usuário existe
       const user = await db.user.findUnique({
-        where: { id: userId }
+        where: { id: userId },
       })
 
       if (!user) {
@@ -191,7 +192,7 @@ export const UserPreferencesCommands = {
 
       // Verificar se as preferências existem
       const existingPreferences = await db.userPreferences.findUnique({
-        where: { userId }
+        where: { userId },
       })
 
       if (!existingPreferences) {
@@ -200,7 +201,7 @@ export const UserPreferencesCommands = {
 
       // Deletar as preferências
       await db.userPreferences.delete({
-        where: { userId }
+        where: { userId },
       })
 
       return { success: true, message: 'User preferences deleted successfully' }
@@ -217,7 +218,7 @@ export const UserPreferencesCommands = {
     try {
       // Verificar se as preferências existem
       const existingPreferences = await db.userPreferences.findUnique({
-        where: { id }
+        where: { id },
       })
 
       if (!existingPreferences) {
@@ -249,17 +250,17 @@ export const UserPreferencesCommands = {
           autoRefresh: true,
           refreshInterval: 30,
           customSettings: null,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
         include: {
           user: {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
-        }
+              email: true,
+            },
+          },
+        },
       })
 
       return resetPreferences
@@ -272,7 +273,7 @@ export const UserPreferencesCommands = {
     try {
       // Verificar se o usuário existe
       const user = await db.user.findUnique({
-        where: { id: userId }
+        where: { id: userId },
       })
 
       if (!user) {
@@ -281,7 +282,7 @@ export const UserPreferencesCommands = {
 
       // Verificar se as preferências existem
       const existingPreferences = await db.userPreferences.findUnique({
-        where: { userId }
+        where: { userId },
       })
 
       if (!existingPreferences) {
@@ -313,17 +314,17 @@ export const UserPreferencesCommands = {
           autoRefresh: true,
           refreshInterval: 30,
           customSettings: null,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
         include: {
           user: {
             select: {
               id: true,
               name: true,
-              email: true
-            }
-          }
-        }
+              email: true,
+            },
+          },
+        },
       })
 
       return resetPreferences
@@ -342,14 +343,14 @@ export const UserPreferencesCommands = {
         where: filters,
         data: {
           ...data,
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       })
 
       return {
         success: true,
         count: result.count,
-        message: `${result.count} user preferences updated successfully`
+        message: `${result.count} user preferences updated successfully`,
       }
     } catch (error: any) {
       throw new Error(`Failed to bulk update user preferences: ${error.message}`)
@@ -359,13 +360,13 @@ export const UserPreferencesCommands = {
   async bulkDelete(filters: any) {
     try {
       const result = await db.userPreferences.deleteMany({
-        where: filters
+        where: filters,
       })
 
       return {
         success: true,
         count: result.count,
-        message: `${result.count} user preferences deleted successfully`
+        message: `${result.count} user preferences deleted successfully`,
       }
     } catch (error: any) {
       throw new Error(`Failed to bulk delete user preferences: ${error.message}`)

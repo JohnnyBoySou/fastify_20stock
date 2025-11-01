@@ -1,4 +1,4 @@
-import { db } from '@/plugins/prisma';
+import { db } from '@/plugins/prisma'
 
 export const SupplierQueries = {
   async getById(id: string) {
@@ -13,17 +13,17 @@ export const SupplierQueries = {
             status: true,
             referencePrice: true,
             stockMin: true,
-            stockMax: true
-          }
-        }
-      }
-    });
+            stockMax: true,
+          },
+        },
+      },
+    })
 
     if (!supplier) {
-      throw new Error('Supplier not found');
+      throw new Error('Supplier not found')
     }
 
-    return supplier;
+    return supplier
   },
 
   async list(params: {
@@ -33,10 +33,10 @@ export const SupplierQueries = {
     status?: boolean
     storeId?: string
   }) {
-    const { page = 1, limit = 10, search, status, storeId } = params;
-    const skip = (page - 1) * limit;
+    const { page = 1, limit = 10, search, status, storeId } = params
+    const skip = (page - 1) * limit
 
-    const where: any = {};
+    const where: any = {}
 
     if (search) {
       where.OR = [
@@ -44,17 +44,17 @@ export const SupplierQueries = {
         { tradeName: { contains: search, mode: 'insensitive' } },
         { cnpj: { contains: search } },
         { city: { contains: search, mode: 'insensitive' } },
-        { state: { contains: search, mode: 'insensitive' } }
-      ];
+        { state: { contains: search, mode: 'insensitive' } },
+      ]
     }
 
     if (status !== undefined) {
-      where.status = status;
+      where.status = status
     }
 
     // Filtrar fornecedores da loja específica
     if (storeId) {
-      where.storeId = storeId;
+      where.storeId = storeId
     }
 
     const [suppliers, total] = await Promise.all([
@@ -65,19 +65,19 @@ export const SupplierQueries = {
         orderBy: { createdAt: 'desc' },
         include: {
           responsibles: {
-            where: { status: true }
+            where: { status: true },
           },
           products: {
             select: {
               id: true,
               name: true,
-              status: true
-            }
-          }
-        }
+              status: true,
+            },
+          },
+        },
       }),
-      db.supplier.count({ where })
-    ]);
+      db.supplier.count({ where }),
+    ])
 
     return {
       items: suppliers,
@@ -85,9 +85,9 @@ export const SupplierQueries = {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
-    };
+        totalPages: Math.ceil(total / limit),
+      },
+    }
   },
 
   async getByCnpj(cnpj: string, storeId?: string) {
@@ -99,47 +99,47 @@ export const SupplierQueries = {
           select: {
             id: true,
             name: true,
-            status: true
-          }
-        }
-      }
-    });
+            status: true,
+          },
+        },
+      },
+    })
 
     if (!supplier) {
-      throw new Error('Supplier not found');
+      throw new Error('Supplier not found')
     }
 
-    return supplier;
+    return supplier
   },
 
   async getByCity(city: string) {
     return await db.supplier.findMany({
       where: {
         city: { contains: city, mode: 'insensitive' },
-        status: true
+        status: true,
       },
       orderBy: { corporateName: 'asc' },
       include: {
         responsibles: {
-          where: { status: true }
-        }
-      }
-    });
+          where: { status: true },
+        },
+      },
+    })
   },
 
   async getByState(state: string) {
     return await db.supplier.findMany({
       where: {
         state: { contains: state, mode: 'insensitive' },
-        status: true
+        status: true,
       },
       orderBy: { corporateName: 'asc' },
       include: {
         responsibles: {
-          where: { status: true }
-        }
-      }
-    });
+          where: { status: true },
+        },
+      },
+    })
   },
 
   async getActive() {
@@ -152,17 +152,21 @@ export const SupplierQueries = {
         tradeName: true,
         cnpj: true,
         city: true,
-        state: true
-      }
-    });
+        state: true,
+      },
+    })
   },
 
-  async search(term: string, storeId: string, params: {
-    page?: number
-    limit?: number
-  } = {}) {
-    const { page = 1, limit = 10 } = params;
-    const skip = (page - 1) * limit;
+  async search(
+    term: string,
+    storeId: string,
+    params: {
+      page?: number
+      limit?: number
+    } = {}
+  ) {
+    const { page = 1, limit = 10 } = params
+    const skip = (page - 1) * limit
 
     const where: any = {
       status: true,
@@ -170,9 +174,9 @@ export const SupplierQueries = {
       OR: [
         { corporateName: { contains: term, mode: 'insensitive' } },
         { tradeName: { contains: term, mode: 'insensitive' } },
-        { cnpj: { contains: term } }
-      ]
-    };
+        { cnpj: { contains: term } },
+      ],
+    }
 
     const [items, total] = await Promise.all([
       db.supplier.findMany({
@@ -186,11 +190,11 @@ export const SupplierQueries = {
           tradeName: true,
           cnpj: true,
           city: true,
-          state: true
-        }
+          state: true,
+        },
       }),
-      db.supplier.count({ where })
-    ]);
+      db.supplier.count({ where }),
+    ])
 
     return {
       items,
@@ -198,9 +202,9 @@ export const SupplierQueries = {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
-    };
+        totalPages: Math.ceil(total / limit),
+      },
+    }
   },
 
   async getStats() {
@@ -211,28 +215,28 @@ export const SupplierQueries = {
       db.supplier.count({
         where: {
           products: {
-            some: {}
-          }
-        }
-      })
-    ]);
+            some: {},
+          },
+        },
+      }),
+    ])
 
     return {
       total,
       active,
       inactive,
       withProducts,
-      withoutProducts: total - withProducts
-    };
+      withoutProducts: total - withProducts,
+    }
   },
 
-  async getTopSuppliers(limit: number = 5) {
+  async getTopSuppliers(limit = 5) {
     return await db.supplier.findMany({
       where: { status: true },
       orderBy: {
         products: {
-          _count: 'desc'
-        }
+          _count: 'desc',
+        },
       },
       take: limit,
       select: {
@@ -241,9 +245,9 @@ export const SupplierQueries = {
         tradeName: true,
         cnpj: true,
         _count: {
-          select: { products: true }
-        }
-      }
-    });
-  }
-};
+          select: { products: true },
+        },
+      },
+    })
+  },
+}

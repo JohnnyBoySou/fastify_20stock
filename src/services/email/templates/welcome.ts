@@ -1,4 +1,4 @@
-import { WelcomeEmailData } from '../email.service'
+import type { WelcomeEmailData } from '../email.service'
 
 export const generateWelcomeEmailHTML = (data: WelcomeEmailData): string => {
   return `

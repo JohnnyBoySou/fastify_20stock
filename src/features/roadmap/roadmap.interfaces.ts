@@ -1,4 +1,4 @@
-import { FastifyRequest } from 'fastify'
+import type { FastifyRequest } from 'fastify'
 
 // Tipos para RoadmapStatus
 export type RoadmapStatus = 'ACTIVE' | 'COMPLETED' | 'ARCHIVED'

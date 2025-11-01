@@ -1,7 +1,16 @@
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify'
 
-const notificationTypeEnum = ['INFO', 'SUCCESS', 'WARNING', 'ERROR', 'STOCK_ALERT', 'MOVEMENT', 'PERMISSION', 'SYSTEM'];
-const notificationPriorityEnum = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
+const notificationTypeEnum = [
+  'INFO',
+  'SUCCESS',
+  'WARNING',
+  'ERROR',
+  'STOCK_ALERT',
+  'MOVEMENT',
+  'PERMISSION',
+  'SYSTEM',
+]
+const notificationPriorityEnum = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
 
 const notificationResponseSchema = {
   type: 'object',
@@ -24,11 +33,11 @@ const notificationResponseSchema = {
       properties: {
         id: { type: 'string' },
         name: { type: ['string', 'null'] },
-        email: { type: 'string' }
-      }
-    }
-  }
-};
+        email: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const createNotificationSchema: FastifySchema = {
   body: {
@@ -42,33 +51,33 @@ export const createNotificationSchema: FastifySchema = {
       priority: { type: 'string', enum: notificationPriorityEnum, default: 'MEDIUM' },
       data: { type: 'object' },
       actionUrl: { type: 'string', format: 'uri' },
-      expiresAt: { type: 'string', format: 'date-time' }
-    }
+      expiresAt: { type: 'string', format: 'date-time' },
+    },
   },
   response: {
     201: notificationResponseSchema,
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const updateNotificationSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
@@ -79,56 +88,56 @@ export const updateNotificationSchema: FastifySchema = {
       priority: { type: 'string', enum: notificationPriorityEnum },
       data: { type: 'object' },
       actionUrl: { type: 'string', format: 'uri' },
-      expiresAt: { type: 'string', format: 'date-time' }
-    }
+      expiresAt: { type: 'string', format: 'date-time' },
+    },
   },
   response: {
     200: notificationResponseSchema,
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const getNotificationSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: notificationResponseSchema,
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const listNotificationsSchema: FastifySchema = {
   querystring: {
@@ -140,8 +149,8 @@ export const listNotificationsSchema: FastifySchema = {
       type: { type: 'string', enum: notificationTypeEnum },
       priority: { type: 'string', enum: notificationPriorityEnum },
       isRead: { type: 'boolean' },
-      userId: { type: 'string' }
-    }
+      userId: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -149,7 +158,7 @@ export const listNotificationsSchema: FastifySchema = {
       properties: {
         items: {
           type: 'array',
-          items: notificationResponseSchema
+          items: notificationResponseSchema,
         },
         pagination: {
           type: 'object',
@@ -157,102 +166,102 @@ export const listNotificationsSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
+            totalPages: { type: 'number' },
+          },
+        },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const deleteNotificationSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     204: { type: 'null' },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const markAsReadSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: notificationResponseSchema,
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const markAllAsReadSchema: FastifySchema = {
   body: {
     type: 'object',
     required: ['userId'],
     properties: {
-      userId: { type: 'string' }
-    }
+      userId: { type: 'string' },
+    },
   },
   response: {
     200: {
       type: 'object',
       properties: {
         success: { type: 'boolean' },
-        count: { type: 'number' }
-      }
+        count: { type: 'number' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const getByUserSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['userId'],
     properties: {
-      userId: { type: 'string' }
-    }
+      userId: { type: 'string' },
+    },
   },
   querystring: {
     type: 'object',
@@ -260,8 +269,8 @@ export const getByUserSchema: FastifySchema = {
       page: { type: 'number', minimum: 1, default: 1 },
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       isRead: { type: 'boolean' },
-      type: { type: 'string', enum: notificationTypeEnum }
-    }
+      type: { type: 'string', enum: notificationTypeEnum },
+    },
   },
   response: {
     200: {
@@ -269,7 +278,7 @@ export const getByUserSchema: FastifySchema = {
       properties: {
         items: {
           type: 'array',
-          items: notificationResponseSchema
+          items: notificationResponseSchema,
         },
         pagination: {
           type: 'object',
@@ -277,33 +286,33 @@ export const getByUserSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
+            totalPages: { type: 'number' },
+          },
+        },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const getUnreadSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['userId'],
     properties: {
-      userId: { type: 'string' }
-    }
+      userId: { type: 'string' },
+    },
   },
   querystring: {
     type: 'object',
     properties: {
-      limit: { type: 'number', minimum: 1, maximum: 100, default: 10 }
-    }
+      limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
+    },
   },
   response: {
     200: {
@@ -311,32 +320,32 @@ export const getUnreadSchema: FastifySchema = {
       properties: {
         notifications: {
           type: 'array',
-          items: notificationResponseSchema
-        }
-      }
+          items: notificationResponseSchema,
+        },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const getByTypeSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['type'],
     properties: {
-      type: { type: 'string', enum: notificationTypeEnum }
-    }
+      type: { type: 'string', enum: notificationTypeEnum },
+    },
   },
   querystring: {
     type: 'object',
     properties: {
-      limit: { type: 'number', minimum: 1, maximum: 100, default: 10 }
-    }
+      limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
+    },
   },
   response: {
     200: {
@@ -344,32 +353,32 @@ export const getByTypeSchema: FastifySchema = {
       properties: {
         notifications: {
           type: 'array',
-          items: notificationResponseSchema
-        }
-      }
+          items: notificationResponseSchema,
+        },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const getByPrioritySchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['priority'],
     properties: {
-      priority: { type: 'string', enum: notificationPriorityEnum }
-    }
+      priority: { type: 'string', enum: notificationPriorityEnum },
+    },
   },
   querystring: {
     type: 'object',
     properties: {
-      limit: { type: 'number', minimum: 1, maximum: 100, default: 10 }
-    }
+      limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
+    },
   },
   response: {
     200: {
@@ -377,33 +386,33 @@ export const getByPrioritySchema: FastifySchema = {
       properties: {
         notifications: {
           type: 'array',
-          items: notificationResponseSchema
-        }
-      }
+          items: notificationResponseSchema,
+        },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const getRecentSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['userId'],
     properties: {
-      userId: { type: 'string' }
-    }
+      userId: { type: 'string' },
+    },
   },
   querystring: {
     type: 'object',
     properties: {
       days: { type: 'number', minimum: 1, maximum: 365, default: 7 },
-      limit: { type: 'number', minimum: 1, maximum: 100, default: 20 }
-    }
+      limit: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+    },
   },
   response: {
     200: {
@@ -411,25 +420,25 @@ export const getRecentSchema: FastifySchema = {
       properties: {
         notifications: {
           type: 'array',
-          items: notificationResponseSchema
-        }
-      }
+          items: notificationResponseSchema,
+        },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const getStatsSchema: FastifySchema = {
   querystring: {
     type: 'object',
     properties: {
-      userId: { type: 'string' }
-    }
+      userId: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -439,17 +448,17 @@ export const getStatsSchema: FastifySchema = {
         unread: { type: 'number' },
         read: { type: 'number' },
         byType: { type: 'object' },
-        byPriority: { type: 'object' }
-      }
+        byPriority: { type: 'object' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const searchSchema: FastifySchema = {
   querystring: {
@@ -457,8 +466,8 @@ export const searchSchema: FastifySchema = {
     required: ['q'],
     properties: {
       q: { type: 'string', minLength: 1 },
-      limit: { type: 'number', minimum: 1, maximum: 100, default: 10 }
-    }
+      limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
+    },
   },
   response: {
     200: {
@@ -466,18 +475,18 @@ export const searchSchema: FastifySchema = {
       properties: {
         notifications: {
           type: 'array',
-          items: notificationResponseSchema
-        }
-      }
+          items: notificationResponseSchema,
+        },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const NotificationSchemas = {
   create: createNotificationSchema,
@@ -493,5 +502,5 @@ export const NotificationSchemas = {
   getByPriority: getByPrioritySchema,
   getRecent: getRecentSchema,
   getStats: getStatsSchema,
-  search: searchSchema
-};
+  search: searchSchema,
+}

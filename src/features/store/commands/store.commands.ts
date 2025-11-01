@@ -1,5 +1,4 @@
-
-import { db } from '@/plugins/prisma';
+import { db } from '@/plugins/prisma'
 export const StoreCommands = {
   async create(data: {
     ownerId: string
@@ -15,20 +14,20 @@ export const StoreCommands = {
   }) {
     // Check if CNPJ already exists
     const existingStore = await db.store.findUnique({
-      where: { cnpj: data.cnpj }
-    });
+      where: { cnpj: data.cnpj },
+    })
 
     if (existingStore) {
-      throw new Error('CNPJ already exists');
+      throw new Error('CNPJ already exists')
     }
 
     // Check if owner exists
     const owner = await db.user.findUnique({
-      where: { id: data.ownerId }
-    });
+      where: { id: data.ownerId },
+    })
 
     if (!owner) {
-      throw new Error('Owner not found');
+      throw new Error('Owner not found')
     }
 
     return await db.store.create({
@@ -42,48 +41,51 @@ export const StoreCommands = {
         city: data.city || null,
         state: data.state || null,
         address: data.address || null,
-        status: data.status !== undefined ? data.status : true
+        status: data.status !== undefined ? data.status : true,
       },
       include: {
         owner: {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
+            email: true,
+          },
+        },
+      },
+    })
   },
 
-  async update(id: string, data: {
-    name?: string
-    cnpj?: string
-    email?: string
-    phone?: string
-    cep?: string
-    city?: string
-    state?: string
-    address?: string
-    status?: boolean
-  }) {
+  async update(
+    id: string,
+    data: {
+      name?: string
+      cnpj?: string
+      email?: string
+      phone?: string
+      cep?: string
+      city?: string
+      state?: string
+      address?: string
+      status?: boolean
+    }
+  ) {
     // Check if store exists
     const existingStore = await db.store.findUnique({
-      where: { id }
-    });
+      where: { id },
+    })
 
     if (!existingStore) {
-      throw new Error('Store not found');
+      throw new Error('Store not found')
     }
 
     // If updating CNPJ, check if it already exists
     if (data.cnpj && data.cnpj !== existingStore.cnpj) {
       const cnpjExists = await db.store.findUnique({
-        where: { cnpj: data.cnpj }
-      });
+        where: { cnpj: data.cnpj },
+      })
 
       if (cnpjExists) {
-        throw new Error('CNPJ already exists');
+        throw new Error('CNPJ already exists')
       }
     }
 
@@ -96,314 +98,41 @@ export const StoreCommands = {
         cep: data.cep === '' ? null : data.cep,
         city: data.city === '' ? null : data.city,
         state: data.state === '' ? null : data.state,
-        address: data.address === '' ? null : data.address
+        address: data.address === '' ? null : data.address,
       },
       include: {
         owner: {
           select: {
             id: true,
             name: true,
-            email: true
-          }
-        }
-      }
-    });
+            email: true,
+          },
+        },
+      },
+    })
   },
 
   async delete(id: string) {
     // Check if store exists
     const existingStore = await db.store.findUnique({
-      where: { id }
-    });
+      where: { id },
+    })
 
     if (!existingStore) {
-      throw new Error('Store not found');
+      throw new Error('Store not found')
     }
 
     // Check if store has products
     const productCount = await db.product.count({
-      where: { storeId: id }
-    });
+      where: { storeId: id },
+    })
 
     if (productCount > 0) {
-      throw new Error('Cannot delete store with existing products');
+      throw new Error('Cannot delete store with existing products')
     }
 
     return await db.store.delete({
-      where: { id }
-    });
-  },
-
-  async toggleStatus(id: string) {
-    const store = await db.store.findUnique({
-      where: { id }
-    });
-
-    if (!store) {
-      throw new Error('Store not found');
-    }
-
-    return await db.store.update({
       where: { id },
-      data: { status: !store.status },
-      include: {
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
-      }
-    });
+    })
   },
-
-  async verifyCnpj(cnpj: string) {
-    const store = await db.store.findUnique({
-      where: { cnpj }
-    });
-
-    return {
-      exists: !!store,
-      store: store ? {
-        id: store.id,
-        name: store.name,
-        status: store.status
-      } : null
-    };
-  },
-
-  // === GERENCIAMENTO DE USUÁRIOS DA LOJA ===
-  async addUser(storeId: string, userId: string, role: 'OWNER' | 'ADMIN' | 'MANAGER' | 'STAFF') {
-    // Verificar se a loja existe
-    const store = await db.store.findUnique({
-      where: { id: storeId }
-    });
-
-    if (!store) {
-      throw new Error('Store not found');
-    }
-
-    // Verificar se o usuário existe
-    const user = await db.user.findUnique({
-      where: { id: userId, status: true }
-    });
-
-    if (!user) {
-      throw new Error('User not found or inactive');
-    }
-
-    // Verificar se o usuário já está na loja
-    const existingStoreUser = await db.storeUser.findUnique({
-      where: {
-        storeId_userId: {
-          storeId,
-          userId
-        }
-      }
-    });
-
-    if (existingStoreUser) {
-      throw new Error('User already exists in this store');
-    }
-
-    // Adicionar usuário à loja
-    return await db.storeUser.create({
-      data: {
-        storeId,
-        userId,
-        role
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            status: true,
-            lastLoginAt: true
-          }
-        },
-        store: {
-          select: {
-            id: true,
-            name: true,
-            cnpj: true
-          }
-        }
-      }
-    });
-  },
-
-  async removeUser(storeId: string, userId: string) {
-    // Verificar se a loja existe
-    const store = await db.store.findUnique({
-      where: { id: storeId }
-    });
-
-    if (!store) {
-      throw new Error('Store not found');
-    }
-
-    // Verificar se o usuário está na loja
-    const storeUser = await db.storeUser.findUnique({
-      where: {
-        storeId_userId: {
-          storeId,
-          userId
-        }
-      }
-    });
-
-    if (!storeUser) {
-      throw new Error('User not found in this store');
-    }
-
-    // Não permitir remover o dono da loja
-    if (storeUser.role === 'OWNER') {
-      throw new Error('Cannot remove store owner');
-    }
-
-    // Remover usuário da loja
-    return await db.storeUser.delete({
-      where: {
-        storeId_userId: {
-          storeId,
-          userId
-        }
-      }
-    });
-  },
-
-  async updateUserRole(storeId: string, userId: string, newRole: 'OWNER' | 'ADMIN' | 'MANAGER' | 'STAFF') {
-    // Verificar se a loja existe
-    const store = await db.store.findUnique({
-      where: { id: storeId }
-    });
-
-    if (!store) {
-      throw new Error('Store not found');
-    }
-
-    // Verificar se o usuário está na loja
-    const storeUser = await db.storeUser.findUnique({
-      where: {
-        storeId_userId: {
-          storeId,
-          userId
-        }
-      }
-    });
-
-    if (!storeUser) {
-      throw new Error('User not found in this store');
-    }
-
-    // Não permitir alterar role do dono da loja
-    if (storeUser.role === 'OWNER') {
-      throw new Error('Cannot change store owner role');
-    }
-
-    // Atualizar role do usuário
-    return await db.storeUser.update({
-      where: {
-        storeId_userId: {
-          storeId,
-          userId
-        }
-      },
-      data: {
-        role: newRole
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            status: true,
-            lastLoginAt: true
-          }
-        },
-        store: {
-          select: {
-            id: true,
-            name: true,
-            cnpj: true
-          }
-        }
-      }
-    });
-  },
-
-  async transferOwnership(storeId: string, newOwnerId: string) {
-    // Verificar se a loja existe
-    const store = await db.store.findUnique({
-      where: { id: storeId }
-    });
-
-    if (!store) {
-      throw new Error('Store not found');
-    }
-
-    // Verificar se o novo dono existe
-    const newOwner = await db.user.findUnique({
-      where: { id: newOwnerId, status: true }
-    });
-
-    if (!newOwner) {
-      throw new Error('New owner not found or inactive');
-    }
-
-    // Verificar se o novo dono já está na loja
-    const existingStoreUser = await db.storeUser.findUnique({
-      where: {
-        storeId_userId: {
-          storeId,
-          userId: newOwnerId
-        }
-      }
-    });
-
-    // Se o usuário não está na loja, adicionar como OWNER
-    if (!existingStoreUser) {
-      await db.storeUser.create({
-        data: {
-          storeId,
-          userId: newOwnerId,
-          role: 'OWNER'
-        }
-      });
-    } else {
-      // Se já está na loja, atualizar para OWNER
-      await db.storeUser.update({
-        where: {
-          storeId_userId: {
-            storeId,
-            userId: newOwnerId
-          }
-        },
-        data: {
-          role: 'OWNER'
-        }
-      });
-    }
-
-    // Atualizar o ownerId da loja
-    return await db.store.update({
-      where: { id: storeId },
-      data: {
-        ownerId: newOwnerId
-      },
-      include: {
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
-      }
-    });
-  }
-};
+}

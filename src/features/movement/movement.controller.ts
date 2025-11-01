@@ -1,27 +1,33 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
-import { MovementCommands } from './commands/movement.commands';
-import { MovementQueries } from './queries/movement.queries';
-import { db } from '@/plugins/prisma';
-import { StockAlertService } from '@/services/stock-monitoring/stock-alert.service';
-import { ProductQueries } from '../product/queries/product.queries';
+import { db } from '@/plugins/prisma'
+import { StockAlertService } from '@/services/stock-monitoring/stock-alert.service'
+import type { FastifyReply, FastifyRequest } from 'fastify'
+import { ProductQueries } from '../product/queries/product.queries'
+import { MovementCommands } from './commands/movement.commands'
+import { MovementQueries } from './queries/movement.queries'
 
 export const MovementController = {
   // === CRUD BÁSICO ===
-  async create(request: FastifyRequest<{ Body: {
-    type: 'ENTRADA' | 'SAIDA' | 'PERDA'
-    quantity: number
-    storeId: string // Agora obrigatório, vem do middleware
-    productId: string
-    supplierId?: string
-    batch?: string
-    expiration?: string
-    price?: number
-    note?: string
-    userId?: string
-  } }>, reply: FastifyReply) {
+  async create(
+    request: FastifyRequest<{
+      Body: {
+        type: 'ENTRADA' | 'SAIDA' | 'PERDA'
+        quantity: number
+        storeId: string // Agora obrigatório, vem do middleware
+        productId: string
+        supplierId?: string
+        batch?: string
+        expiration?: string
+        price?: number
+        note?: string
+        userId?: string
+      }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { type, quantity, storeId, productId, supplierId, batch, expiration, price, note } = request.body;
-      const userId = request.user?.id; // Obtém o ID do usuário autenticado
+      const { type, quantity, storeId, productId, supplierId, batch, expiration, price, note } =
+        request.body
+      const userId = request.user?.id // Obtém o ID do usuário autenticado
 
       console.log('Creating movement with data:', {
         type,
@@ -32,8 +38,8 @@ export const MovementController = {
         batch,
         price,
         note,
-        userId
-      });
+        userId,
+      })
 
       const result = await MovementCommands.create({
         type,
@@ -45,10 +51,10 @@ export const MovementController = {
         expiration,
         price,
         note,
-        userId
-      });
+        userId,
+      })
 
-      console.log('Movement created successfully:', result);
+      console.log('Movement created successfully:', result)
 
       // Verificar alertas de estoque após criar a movimentação
       try {
@@ -58,73 +64,73 @@ export const MovementController = {
           type,
           quantity,
           result.id
-        );
+        )
 
         if (stockAlert.alertTriggered) {
-          console.log('Stock alert triggered:', stockAlert);
+          console.log('Stock alert triggered:', stockAlert)
           // Criar novo objeto com informação do alerta
           const resultWithAlert = {
             ...result,
             stockAlert: {
               triggered: true,
               type: stockAlert.alertType,
-              message: stockAlert.message
-            }
-          };
-          return reply.status(201).send(resultWithAlert);
+              message: stockAlert.message,
+            },
+          }
+          return reply.status(201).send(resultWithAlert)
         }
       } catch (alertError) {
-        console.error('Error checking stock alerts:', alertError);
+        console.error('Error checking stock alerts:', alertError)
         // Não falhar a criação da movimentação se houver erro no alerta
       }
 
-      return reply.status(201).send(result);
+      return reply.status(201).send(result)
     } catch (error: any) {
-      request.log.error(error);
+      request.log.error(error)
 
       if (error.message === 'Product not found in this store') {
         return reply.status(404).send({
-          error: error.message
-        });
+          error: error.message,
+        })
       }
 
       if (error.message === 'Insufficient stock for this movement') {
         return reply.status(400).send({
-          error: error.message
-        });
+          error: error.message,
+        })
       }
 
       if (error.message === 'Supplier not found or inactive') {
         return reply.status(404).send({
-          error: error.message
-        });
+          error: error.message,
+        })
       }
 
       if (error.message.includes('Store ID is required')) {
         return reply.status(400).send({
-          error: error.message
-        });
+          error: error.message,
+        })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
   async get(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     try {
-      const { id } = request.params;
+      const { id } = request.params
 
-      console.log('MovementController.get: Getting movement with id:', id);
+      console.log('MovementController.get: Getting movement with id:', id)
 
-      const result = await MovementQueries.getById(id);
+      const result = await MovementQueries.getById(id)
 
       if (!result) {
-        console.log('MovementController.get: Movement not found');
+        console.log('MovementController.get: Movement not found')
         return reply.status(404).send({
-          error: 'Movement not found'
-        });
+          error: 'Movement not found',
+        })
       }
 
       console.log('MovementController.get: Returning movement:', {
@@ -132,117 +138,161 @@ export const MovementController = {
         store: result.store,
         product: result.product,
         supplier: result.supplier,
-        user: result.user
-      });
+        user: result.user,
+      })
 
-      console.log('MovementController.get: Full result JSON:', JSON.stringify(result, null, 2));
+      console.log('MovementController.get: Full result JSON:', JSON.stringify(result, null, 2))
 
       // Forçar serialização correta dos dados relacionados
       const serializedResult = {
         ...result,
-        store: result.store ? {
-          id: result.store.id,
-          name: result.store.name
-        } : null,
-        product: result.product ? {
-          id: result.product.id,
-          name: result.product.name,
-          unitOfMeasure: result.product.unitOfMeasure
-        } : null,
-        supplier: result.supplier ? {
-          id: result.supplier.id,
-          corporateName: result.supplier.corporateName
-        } : null,
-        user: result.user ? {
-          id: result.user.id,
-          name: result.user.name,
-          email: result.user.email
-        } : null
-      };
+        store: result.store
+          ? {
+              id: result.store.id,
+              name: result.store.name,
+            }
+          : null,
+        product: result.product
+          ? {
+              id: result.product.id,
+              name: result.product.name,
+              unitOfMeasure: result.product.unitOfMeasure,
+            }
+          : null,
+        supplier: result.supplier
+          ? {
+              id: result.supplier.id,
+              corporateName: result.supplier.corporateName,
+            }
+          : null,
+        user: result.user
+          ? {
+              id: result.user.id,
+              name: result.user.name,
+              email: result.user.email,
+            }
+          : null,
+      }
 
-
-      return reply.send(result);
+      return reply.send(result)
     } catch (error: any) {
-      request.log.error(error);
+      request.log.error(error)
 
       if (error.message === 'Movement not found') {
         return reply.status(404).send({
-          error: error.message
-        });
+          error: error.message,
+        })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
-  async update(request: FastifyRequest<{ Params: { id: string }; Body: { type?: 'ENTRADA' | 'SAIDA' | 'PERDA'; quantity?: number; supplierId?: string; batch?: string; expiration?: string; price?: number; note?: string } }>, reply: FastifyReply) {
+  async update(
+    request: FastifyRequest<{
+      Params: { id: string }
+      Body: {
+        type?: 'ENTRADA' | 'SAIDA' | 'PERDA'
+        quantity?: number
+        supplierId?: string
+        batch?: string
+        expiration?: string
+        price?: number
+        note?: string
+      }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { id } = request.params;
-      const updateData = { ...request.body };
+      const { id } = request.params
+      const updateData = { ...request.body }
 
-      const result = await MovementCommands.update(id, updateData);
+      const result = await MovementCommands.update(id, updateData)
 
-      return reply.send(result);
+      return reply.send(result)
     } catch (error: any) {
-      request.log.error(error);
+      request.log.error(error)
 
       if (error.message === 'Movement not found') {
         return reply.status(404).send({
-          error: error.message
-        });
+          error: error.message,
+        })
       }
 
       if (error.message === 'Insufficient stock for this movement') {
         return reply.status(400).send({
-          error: error.message
-        });
+          error: error.message,
+        })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
   async delete(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
     try {
-      const { id } = request.params;
+      const { id } = request.params
 
-      await MovementCommands.delete(id);
+      await MovementCommands.delete(id)
 
-      return reply.status(204).send();
+      return reply.status(204).send()
     } catch (error: any) {
-      request.log.error(error);
+      request.log.error(error)
 
       if (error.message === 'Movement not found') {
         return reply.status(404).send({
-          error: error.message
-        });
+          error: error.message,
+        })
       }
 
       if (error.message === 'Cannot delete movement: insufficient stock to revert') {
         return reply.status(400).send({
-          error: error.message
-        });
+          error: error.message,
+        })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
-  async list(request: FastifyRequest<{ Querystring: { page?: number; limit?: number; search?: string; type?: 'ENTRADA' | 'SAIDA' | 'PERDA'; productId?: string; supplierId?: string; startDate?: string; endDate?: string } }>, reply: FastifyReply) {
+  async list(
+    request: FastifyRequest<{
+      Querystring: {
+        page?: number
+        limit?: number
+        search?: string
+        type?: 'ENTRADA' | 'SAIDA' | 'PERDA'
+        productId?: string
+        supplierId?: string
+        startDate?: string
+        endDate?: string
+      }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { page = 1, limit = 10, search, type, productId, supplierId, startDate, endDate } = request.query;
-      const storeId = request.store?.id;
+      const {
+        page = 1,
+        limit = 10,
+        search,
+        type,
+        productId,
+        supplierId,
+        startDate,
+        endDate,
+      } = request.query
+      const storeId = request.store?.id
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
-        });
+          error: 'Store context required',
+        })
       }
 
       const result = await MovementQueries.list({
@@ -254,41 +304,64 @@ export const MovementController = {
         productId,
         supplierId,
         startDate,
-        endDate
-      });
+        endDate,
+      })
 
-      return reply.send(result);
+      return reply.send(result)
     } catch (error) {
-      request.log.error(error);
+      request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
   // === NOVOS ENDPOINTS ESPECÍFICOS ===
-  async listByStore(request: FastifyRequest<{ Querystring: { page?: number; limit?: number; search?: string; type?: 'ENTRADA' | 'SAIDA' | 'PERDA'; productId?: string; supplierId?: string; startDate?: string; endDate?: string } }>, reply: FastifyReply) {
+  async listByStore(
+    request: FastifyRequest<{
+      Querystring: {
+        page?: number
+        limit?: number
+        search?: string
+        type?: 'ENTRADA' | 'SAIDA' | 'PERDA'
+        productId?: string
+        supplierId?: string
+        startDate?: string
+        endDate?: string
+      }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { page = 1, limit = 10, search, type, productId, supplierId, startDate, endDate } = request.query;
-      
+      const {
+        page = 1,
+        limit = 10,
+        search,
+        type,
+        productId,
+        supplierId,
+        startDate,
+        endDate,
+      } = request.query
+
       // Obter storeId do middleware ou do request.store
-      const storeId = request.store?.id;
-      
+      const storeId = request.store?.id
+
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store ID is required. User must be associated with a store.'
-        });
+          error: 'Store ID is required. User must be associated with a store.',
+        })
       }
 
-      console.log('Listing movements for store:', storeId);
+      console.log('Listing movements for store:', storeId)
 
       const result = await MovementQueries.getByStore(storeId, {
         page,
         limit,
         type,
         startDate,
-        endDate
-      });
+        endDate,
+      })
 
       // Se houver filtros adicionais, aplicar na query
       if (search || productId || supplierId) {
@@ -301,119 +374,61 @@ export const MovementController = {
           productId,
           supplierId,
           startDate,
-          endDate
-        });
-        return reply.send(filteredResult);
+          endDate,
+        })
+        return reply.send(filteredResult)
       }
 
-      return reply.send(result);
+      return reply.send(result)
     } catch (error) {
-      request.log.error(error);
+      request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
-  async listByProduct(request: FastifyRequest<{ 
-    Params: { productId: string }
-    Querystring: { page?: number; limit?: number; type?: 'ENTRADA' | 'SAIDA' | 'PERDA'; startDate?: string; endDate?: string } 
-  }>, reply: FastifyReply) {
+  async listByProduct(
+    request: FastifyRequest<{
+      Params: { productId: string }
+      Querystring: {
+        page?: number
+        limit?: number
+        type?: 'ENTRADA' | 'SAIDA' | 'PERDA'
+        startDate?: string
+        endDate?: string
+      }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { productId } = request.params;
-      const { page = 1, limit = 10, type, startDate, endDate } = request.query;
-      
+      const { productId } = request.params
+      const { page = 1, limit = 10, type, startDate, endDate } = request.query
+
       // Obter storeId do middleware ou do request.store
-      const storeId = request.store?.id;
-      
+      const storeId = request.store?.id
+
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store ID is required. User must be associated with a store.'
-        });
+          error: 'Store ID is required. User must be associated with a store.',
+        })
       }
 
-      console.log('Listing movements for product:', productId, 'in store:', storeId);
+      console.log('Listing movements for product:', productId, 'in store:', storeId)
 
       // Verificar se o produto existe na loja
       const product = await db.product.findFirst({
         where: {
           id: productId,
           storeId: storeId,
-          status: true
-        }
-      });
+          status: true,
+        },
+      })
 
       if (!product) {
         return reply.status(404).send({
-          error: 'Product not found in this store'
-        });
-      }
-
-      const result = await MovementQueries.getByProduct(productId, {
-        page,
-        limit,
-        type,
-        startDate,
-        endDate
-      });
-
-      return reply.send(result);
-    } catch (error) {
-      request.log.error(error);
-      return reply.status(500).send({
-        error: 'Internal server error'
-      });
-    }
-  },
-
-  // === FUNÇÕES ADICIONAIS (QUERIES) ===
-  async getByStore(request: FastifyRequest<{ Params: { storeId: string }; Querystring: { page?: number; limit?: number; type?: 'ENTRADA' | 'SAIDA' | 'PERDA'; startDate?: string; endDate?: string } }>, reply: FastifyReply) {
-    try {
-      const { storeId } = request.params;
-      const { page = 1, limit = 10, type, startDate, endDate } = request.query;
-
-      const result = await MovementQueries.getByStore(storeId, {
-        page,
-        limit,
-        type,
-        startDate,
-        endDate
-      });
-
-      return reply.send(result);
-    } catch (error) {
-      request.log.error(error);
-      return reply.status(500).send({
-        error: 'Internal server error'
-      });
-    }
-  },
-
-  async getByProduct(request: FastifyRequest<{ Params: { productId: string }; Querystring: { page?: number; limit?: number; type?: 'ENTRADA' | 'SAIDA' | 'PERDA'; startDate?: string; endDate?: string } }>, reply: FastifyReply) {
-    try {
-      const { productId } = request.params;
-      const { page = 1, limit = 10, type, startDate, endDate } = request.query;
-      
-      // Obter storeId do middleware ou do request.store
-      const storeId = request.store?.id;
-      
-      if (!storeId) {
-        return reply.status(400).send({
-          error: 'Store ID is required. User must be associated with a store.'
-        });
-      }
-
-      console.log('Getting movements for product:', productId, 'in store:', storeId);
-
-      // Verificar se o produto existe na loja
-
-      const product = await ProductQueries.getById(productId, storeId);
-      console.log('Product:', product);
-
-      if (!product) {
-        return reply.status(404).send({
-          error: 'Product not found in this store'
-        });
+          error: 'Product not found in this store',
+        })
       }
 
       const result = await MovementQueries.getByProduct(productId, {
@@ -422,177 +437,297 @@ export const MovementController = {
         type,
         startDate,
         endDate,
-        storeId
-      });
+      })
 
-      console.log('Result:', result);
-
-      return reply.send(result);
+      return reply.send(result)
     } catch (error) {
-      request.log.error(error);
+      request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
-  async getBySupplier(request: FastifyRequest<{ Params: { supplierId: string }; Querystring: { page?: number; limit?: number; type?: 'ENTRADA' | 'SAIDA' | 'PERDA'; startDate?: string; endDate?: string } }>, reply: FastifyReply) {
+  // === FUNÇÕES ADICIONAIS (QUERIES) ===
+  async getByStore(
+    request: FastifyRequest<{
+      Params: { storeId: string }
+      Querystring: {
+        page?: number
+        limit?: number
+        type?: 'ENTRADA' | 'SAIDA' | 'PERDA'
+        startDate?: string
+        endDate?: string
+      }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { supplierId } = request.params;
-      const { page = 1, limit = 10, type, startDate, endDate } = request.query;
+      const { storeId } = request.params
+      const { page = 1, limit = 10, type, startDate, endDate } = request.query
+
+      const result = await MovementQueries.getByStore(storeId, {
+        page,
+        limit,
+        type,
+        startDate,
+        endDate,
+      })
+
+      return reply.send(result)
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error',
+      })
+    }
+  },
+
+  async getByProduct(
+    request: FastifyRequest<{
+      Params: { productId: string }
+      Querystring: {
+        page?: number
+        limit?: number
+        type?: 'ENTRADA' | 'SAIDA' | 'PERDA'
+        startDate?: string
+        endDate?: string
+      }
+    }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const { productId } = request.params
+      const { page = 1, limit = 10, type, startDate, endDate } = request.query
+
+      // Obter storeId do middleware ou do request.store
+      const storeId = request.store?.id
+
+      if (!storeId) {
+        return reply.status(400).send({
+          error: 'Store ID is required. User must be associated with a store.',
+        })
+      }
+
+      console.log('Getting movements for product:', productId, 'in store:', storeId)
+
+      // Verificar se o produto existe na loja
+
+      const product = await ProductQueries.getById(productId, storeId)
+      console.log('Product:', product)
+
+      if (!product) {
+        return reply.status(404).send({
+          error: 'Product not found in this store',
+        })
+      }
+
+      const result = await MovementQueries.getByProduct(productId, {
+        page,
+        limit,
+        type,
+        startDate,
+        endDate,
+        storeId,
+      })
+
+      console.log('Result:', result)
+
+      return reply.send(result)
+    } catch (error) {
+      request.log.error(error)
+      return reply.status(500).send({
+        error: 'Internal server error',
+      })
+    }
+  },
+
+  async getBySupplier(
+    request: FastifyRequest<{
+      Params: { supplierId: string }
+      Querystring: {
+        page?: number
+        limit?: number
+        type?: 'ENTRADA' | 'SAIDA' | 'PERDA'
+        startDate?: string
+        endDate?: string
+      }
+    }>,
+    reply: FastifyReply
+  ) {
+    try {
+      const { supplierId } = request.params
+      const { page = 1, limit = 10, type, startDate, endDate } = request.query
 
       const result = await MovementQueries.getBySupplier(supplierId, {
         page,
         limit,
         type,
         startDate,
-        endDate
-      });
+        endDate,
+      })
 
-      return reply.send(result);
+      return reply.send(result)
     } catch (error) {
-      request.log.error(error);
+      request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
-  async getStockHistory(request: FastifyRequest<{ Params: { productId: string; storeId: string }; Querystring: { startDate?: string; endDate?: string } }>, reply: FastifyReply) {
+  async getStockHistory(
+    request: FastifyRequest<{
+      Params: { productId: string; storeId: string }
+      Querystring: { startDate?: string; endDate?: string }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { productId, storeId } = request.params;
-      const { startDate, endDate } = request.query;
+      const { productId, storeId } = request.params
+      const { startDate, endDate } = request.query
 
       const result = await MovementQueries.getStockHistory(productId, storeId, {
         startDate,
-        endDate
-      });
+        endDate,
+      })
 
-      return reply.send({ movements: result });
+      return reply.send({ movements: result })
     } catch (error) {
-      request.log.error(error);
+      request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
-  async getCurrentStock(request: FastifyRequest<{ Params: { productId: string; storeId: string } }>, reply: FastifyReply) {
+  async getCurrentStock(
+    request: FastifyRequest<{ Params: { productId: string; storeId: string } }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { productId, storeId } = request.params;
+      const { productId, storeId } = request.params
 
-      const result = await MovementQueries.getCurrentStock(productId, storeId);
+      const result = await MovementQueries.getCurrentStock(productId, storeId)
 
-      return reply.send({ currentStock: result });
+      return reply.send({ currentStock: result })
     } catch (error) {
-      request.log.error(error);
+      request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
   async getStats(request: FastifyRequest, reply: FastifyReply) {
     try {
+      const result = await MovementQueries.getStats()
 
-      const result = await MovementQueries.getStats();
-
-      return reply.send(result);
+      return reply.send(result)
     } catch (error) {
-      request.log.error(error);
+      request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
-  async search(request: FastifyRequest<{ Querystring: { q: string; page?: number; limit?: number } }>, reply: FastifyReply) {
+  async search(
+    request: FastifyRequest<{ Querystring: { q: string; page?: number; limit?: number } }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { q, page = 1, limit = 10 } = request.query;
-      const storeId = request.store?.id;
+      const { q, page = 1, limit = 10 } = request.query
+      const storeId = request.store?.id
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
-        });
+          error: 'Store context required',
+        })
       }
 
-      const result = await MovementQueries.search(q, storeId, { page, limit });
+      const result = await MovementQueries.search(q, storeId, { page, limit })
 
-      return reply.send(result);
+      return reply.send(result)
     } catch (error) {
-      request.log.error(error);
+      request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
   async getLowStockProducts(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const storeId = request.store?.id;
+      const storeId = request.store?.id
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
-        });
+          error: 'Store context required',
+        })
       }
 
-      const result = await MovementQueries.getLowStockProducts(storeId);
+      const result = await MovementQueries.getLowStockProducts(storeId)
 
-      return reply.send({ products: result });
+      return reply.send({ products: result })
     } catch (error) {
-      request.log.error(error);
+      request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
   // === FUNÇÕES ADICIONAIS (COMMANDS) ===
-  async recalculateStock(request: FastifyRequest<{ Params: { productId: string; storeId: string } }>, reply: FastifyReply) {
+  async recalculateStock(
+    request: FastifyRequest<{ Params: { productId: string; storeId: string } }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { productId, storeId } = request.params;
+      const { productId, storeId } = request.params
 
-      const result = await MovementCommands.recalculateStock(productId, storeId);
+      const result = await MovementCommands.recalculateStock(productId, storeId)
 
-      return reply.send({ currentStock: result });
+      return reply.send({ currentStock: result })
     } catch (error: any) {
-      request.log.error(error);
+      request.log.error(error)
 
       if (error.message === 'Product not found') {
         return reply.status(404).send({
-          error: error.message
-        });
+          error: error.message,
+        })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
   // === FUNÇÕES ADICIONAIS DE MOVIMENTAÇÃO ===
-  async getReport(request: FastifyRequest<{ 
-    Querystring: {
-      storeId?: string
-      productId?: string
-      supplierId?: string
-      type?: 'ENTRADA' | 'SAIDA' | 'PERDA'
-      startDate?: string
-      endDate?: string
-      groupBy?: 'day' | 'week' | 'month' | 'year'
-      format?: 'json' | 'csv' | 'pdf'
-    }
-  }>, reply: FastifyReply) {
+  async getReport(
+    request: FastifyRequest<{
+      Querystring: {
+        storeId?: string
+        productId?: string
+        supplierId?: string
+        type?: 'ENTRADA' | 'SAIDA' | 'PERDA'
+        startDate?: string
+        endDate?: string
+        groupBy?: 'day' | 'week' | 'month' | 'year'
+        format?: 'json' | 'csv' | 'pdf'
+      }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { productId, supplierId, type, startDate, endDate, groupBy, format } = request.query;
-      const storeId = request.store?.id;
+      const { productId, supplierId, type, startDate, endDate, groupBy, format } = request.query
+      const storeId = request.store?.id
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
-        });
+          error: 'Store context required',
+        })
       }
 
       const result = await MovementQueries.getMovementReport({
@@ -602,145 +737,157 @@ export const MovementController = {
         type,
         startDate,
         endDate,
-        groupBy
-      });
+        groupBy,
+      })
 
       // Se for CSV ou PDF, implementar geração de arquivo
       if (format === 'csv') {
         // Implementar geração de CSV
-        return reply.type('text/csv').send('CSV generation not implemented yet');
+        return reply.type('text/csv').send('CSV generation not implemented yet')
       }
 
       if (format === 'pdf') {
         // Implementar geração de PDF
-        return reply.type('application/pdf').send('PDF generation not implemented yet');
+        return reply.type('application/pdf').send('PDF generation not implemented yet')
       }
 
-      return reply.send(result);
+      return reply.send(result)
     } catch (error: any) {
-      request.log.error(error);
+      request.log.error(error)
 
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
-  async createBulk(request: FastifyRequest<{ 
-    Body: {
-      movements: Array<{
-        type: 'ENTRADA' | 'SAIDA' | 'PERDA'
-        quantity: number
-        storeId: string
-        productId: string
-        supplierId?: string
-        batch?: string
-        expiration?: string
-        price?: number
-        note?: string
-      }>
-    }
-  }>, reply: FastifyReply) {
+  async createBulk(
+    request: FastifyRequest<{
+      Body: {
+        movements: Array<{
+          type: 'ENTRADA' | 'SAIDA' | 'PERDA'
+          quantity: number
+          storeId: string
+          productId: string
+          supplierId?: string
+          batch?: string
+          expiration?: string
+          price?: number
+          note?: string
+        }>
+      }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { movements } = request.body;
-      const userId = request.user?.id;
+      const { movements } = request.body
+      const userId = request.user?.id
 
-      const result = await MovementCommands.createBulk(movements, userId);
+      const result = await MovementCommands.createBulk(movements, userId)
 
-      return reply.status(201).send(result);
+      return reply.status(201).send(result)
     } catch (error: any) {
-      request.log.error(error);
+      request.log.error(error)
 
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
-  async verify(request: FastifyRequest<{ 
-    Params: { id: string }
-    Body: { verified: boolean; note?: string }
-  }>, reply: FastifyReply) {
+  async verify(
+    request: FastifyRequest<{
+      Params: { id: string }
+      Body: { verified: boolean; note?: string }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { id } = request.params;
-      const { verified, note } = request.body;
-      const userId = request.user?.id;
+      const { id } = request.params
+      const { verified, note } = request.body
+      const userId = request.user?.id
 
-      const result = await MovementCommands.verify(id, verified, note, userId);
+      const result = await MovementCommands.verify(id, verified, note, userId)
 
-      return reply.send(result);
+      return reply.send(result)
     } catch (error: any) {
-      request.log.error(error);
+      request.log.error(error)
 
       if (error.message === 'Movement not found') {
         return reply.status(404).send({
-          error: error.message
-        });
+          error: error.message,
+        })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
-  async cancel(request: FastifyRequest<{ 
-    Params: { id: string }
-    Body: { reason: string }
-  }>, reply: FastifyReply) {
+  async cancel(
+    request: FastifyRequest<{
+      Params: { id: string }
+      Body: { reason: string }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { id } = request.params;
-      const { reason } = request.body;
-      const userId = request.user?.id;
+      const { id } = request.params
+      const { reason } = request.body
+      const userId = request.user?.id
 
-      const result = await MovementCommands.cancel(id, reason, userId);
+      const result = await MovementCommands.cancel(id, reason, userId)
 
-      return reply.send(result);
+      return reply.send(result)
     } catch (error: any) {
-      request.log.error(error);
+      request.log.error(error)
 
       if (error.message === 'Movement not found') {
         return reply.status(404).send({
-          error: error.message
-        });
+          error: error.message,
+        })
       }
 
       if (error.message === 'Movement already cancelled') {
         return reply.status(400).send({
-          error: error.message
-        });
+          error: error.message,
+        })
       }
 
       if (error.message === 'Cannot cancel movement: insufficient stock to revert') {
         return reply.status(400).send({
-          error: error.message
-        });
+          error: error.message,
+        })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
-  async getVerifiedMovements(request: FastifyRequest<{ 
-    Querystring: { 
-      page?: number; 
-      limit?: number; 
-      storeId?: string; 
-      verified?: boolean; 
-      startDate?: string; 
-      endDate?: string 
-    } 
-  }>, reply: FastifyReply) {
+  async getVerifiedMovements(
+    request: FastifyRequest<{
+      Querystring: {
+        page?: number
+        limit?: number
+        storeId?: string
+        verified?: boolean
+        startDate?: string
+        endDate?: string
+      }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { page = 1, limit = 10, verified, startDate, endDate } = request.query;
-      const storeId = request.store?.id;
+      const { page = 1, limit = 10, verified, startDate, endDate } = request.query
+      const storeId = request.store?.id
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
-        });
+          error: 'Store context required',
+        })
       }
 
       const result = await MovementQueries.getVerifiedMovements({
@@ -749,36 +896,39 @@ export const MovementController = {
         storeId,
         verified,
         startDate,
-        endDate
-      });
+        endDate,
+      })
 
-      return reply.send(result);
+      return reply.send(result)
     } catch (error: any) {
-      request.log.error(error);
+      request.log.error(error)
 
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
-  async getCancelledMovements(request: FastifyRequest<{ 
-    Querystring: { 
-      page?: number; 
-      limit?: number; 
-      storeId?: string; 
-      startDate?: string; 
-      endDate?: string 
-    } 
-  }>, reply: FastifyReply) {
+  async getCancelledMovements(
+    request: FastifyRequest<{
+      Querystring: {
+        page?: number
+        limit?: number
+        storeId?: string
+        startDate?: string
+        endDate?: string
+      }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { page = 1, limit = 10, startDate, endDate } = request.query;
-      const storeId = request.store?.id;
+      const { page = 1, limit = 10, startDate, endDate } = request.query
+      const storeId = request.store?.id
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
-        });
+          error: 'Store context required',
+        })
       }
 
       const result = await MovementQueries.getCancelledMovements({
@@ -786,36 +936,39 @@ export const MovementController = {
         limit,
         storeId,
         startDate,
-        endDate
-      });
+        endDate,
+      })
 
-      return reply.send(result);
+      return reply.send(result)
     } catch (error: any) {
-      request.log.error(error);
+      request.log.error(error)
 
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
-  async getAnalytics(request: FastifyRequest<{ 
-    Querystring: { 
-      storeId?: string; 
-      productId?: string; 
-      supplierId?: string; 
-      startDate?: string; 
-      endDate?: string 
-    } 
-  }>, reply: FastifyReply) {
+  async getAnalytics(
+    request: FastifyRequest<{
+      Querystring: {
+        storeId?: string
+        productId?: string
+        supplierId?: string
+        startDate?: string
+        endDate?: string
+      }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { productId, supplierId, startDate, endDate } = request.query;
-      const storeId = request.store?.id;
+      const { productId, supplierId, startDate, endDate } = request.query
+      const storeId = request.store?.id
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
-        });
+          error: 'Store context required',
+        })
       }
 
       const result = await MovementQueries.getMovementAnalytics({
@@ -823,131 +976,139 @@ export const MovementController = {
         productId,
         supplierId,
         startDate,
-        endDate
-      });
+        endDate,
+      })
 
-      return reply.send(result);
+      return reply.send(result)
     } catch (error: any) {
-      request.log.error(error);
+      request.log.error(error)
 
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
-
 
   async summarize(request: FastifyRequest, reply: FastifyReply) {
     try {
-      const result = await MovementQueries.summarize();
-      return reply.send(result);
+      const result = await MovementQueries.summarize()
+      return reply.send(result)
     } catch (error: any) {
-      request.log.error(error);
+      request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
-  async summarizeProduct(request: FastifyRequest<{ 
-    Params: { productId: string }
-    Querystring: { 
-      startDate?: string
-      endDate?: string
-      storeId?: string
-    }
-  }>, reply: FastifyReply) {
+  async summarizeProduct(
+    request: FastifyRequest<{
+      Params: { productId: string }
+      Querystring: {
+        startDate?: string
+        endDate?: string
+        storeId?: string
+      }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const { productId } = request.params;
-      const { startDate, endDate } = request.query;
-      const storeId = request.store?.id;
+      const { productId } = request.params
+      const { startDate, endDate } = request.query
+      const storeId = request.store?.id
 
       if (!storeId) {
         return reply.status(400).send({
-          error: 'Store context required'
-        });
+          error: 'Store context required',
+        })
       }
 
       const result = await MovementQueries.getProductSummary(productId, {
         startDate,
         endDate,
-        storeId
-      });
+        storeId,
+      })
 
-      return reply.send(result);
+      return reply.send(result)
     } catch (error: any) {
-      request.log.error(error);
+      request.log.error(error)
 
       if (error.message === 'Product not found') {
         return reply.status(404).send({
-          error: error.message
-        });
+          error: error.message,
+        })
       }
 
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
   // === ENDPOINTS PARA ALERTAS DE ESTOQUE ===
-  async checkStockAlerts(request: FastifyRequest<{ 
-    Querystring: { storeId?: string }
-  }>, reply: FastifyReply) {
+  async checkStockAlerts(
+    request: FastifyRequest<{
+      Querystring: { storeId?: string }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const finalStoreId = request.store?.id;
+      const finalStoreId = request.store?.id
 
       if (!finalStoreId) {
         return reply.status(400).send({
-          error: 'Store ID is required'
-        });
+          error: 'Store ID is required',
+        })
       }
 
-      const lowStockProducts = await StockAlertService.checkLowStockProducts(finalStoreId);
+      const lowStockProducts = await StockAlertService.checkLowStockProducts(finalStoreId)
 
       return reply.send({
         storeId: finalStoreId,
         lowStockCount: lowStockProducts.length,
-        products: lowStockProducts
-      });
+        products: lowStockProducts,
+      })
     } catch (error: any) {
-      request.log.error(error);
+      request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
   },
 
-  async createLowStockSummaryNotification(request: FastifyRequest<{ 
-    Querystring: { storeId?: string }
-  }>, reply: FastifyReply) {
+  async createLowStockSummaryNotification(
+    request: FastifyRequest<{
+      Querystring: { storeId?: string }
+    }>,
+    reply: FastifyReply
+  ) {
     try {
-      const finalStoreId = request.store?.id;
+      const finalStoreId = request.store?.id
 
       if (!finalStoreId) {
         return reply.status(400).send({
-          error: 'Store ID is required'
-        });
+          error: 'Store ID is required',
+        })
       }
 
-      const notification = await StockAlertService.createLowStockSummaryNotification(finalStoreId);
+      const notification = await StockAlertService.createLowStockSummaryNotification(finalStoreId)
 
       if (!notification) {
         return reply.send({
           message: 'No low stock products found',
-          notification: null
-        });
+          notification: null,
+        })
       }
 
       return reply.status(201).send({
         message: 'Low stock summary notification created',
-        notification
-      });
+        notification,
+      })
     } catch (error: any) {
-      request.log.error(error);
+      request.log.error(error)
       return reply.status(500).send({
-        error: 'Internal server error'
-      });
+        error: 'Internal server error',
+      })
     }
-  }
-};
+  },
+}

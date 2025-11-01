@@ -1,4 +1,4 @@
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify'
 
 export const createCategorySchema: FastifySchema = {
   body: {
@@ -11,8 +11,8 @@ export const createCategorySchema: FastifySchema = {
       status: { type: 'boolean', default: true },
       color: { type: 'string' },
       icon: { type: 'string' },
-      parentId: { type: 'string' }
-    }
+      parentId: { type: 'string' },
+    },
   },
   response: {
     201: {
@@ -35,21 +35,21 @@ export const createCategorySchema: FastifySchema = {
           type: 'object',
           properties: {
             children: { type: 'number' },
-            products: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            products: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const updateCategorySchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
@@ -60,8 +60,8 @@ export const updateCategorySchema: FastifySchema = {
       status: { type: 'boolean' },
       color: { type: 'string' },
       icon: { type: 'string' },
-      parentId: { type: 'string' }
-    }
+      parentId: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -83,21 +83,21 @@ export const updateCategorySchema: FastifySchema = {
           type: 'object',
           properties: {
             children: { type: 'number' },
-            products: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            products: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getCategorySchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -120,13 +120,13 @@ export const getCategorySchema: FastifySchema = {
           type: 'object',
           properties: {
             children: { type: 'number' },
-            products: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            products: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const listCategoriesSchema: FastifySchema = {
   querystring: {
@@ -136,8 +136,8 @@ export const listCategoriesSchema: FastifySchema = {
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       search: { type: 'string' },
       status: { type: 'boolean' },
-      parentId: { type: 'string' }
-    }
+      parentId: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -165,11 +165,11 @@ export const listCategoriesSchema: FastifySchema = {
                 type: 'object',
                 properties: {
                   children: { type: 'number' },
-                  products: { type: 'number' }
-                }
-              }
-            }
-          }
+                  products: { type: 'number' },
+                },
+              },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -177,41 +177,41 @@ export const listCategoriesSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const deleteCategorySchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
-    204: { type: 'null' }
-  }
-};
+    204: { type: 'null' },
+  },
+}
 
 export const updateStatusSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     required: ['status'],
     properties: {
-      status: { type: 'boolean' }
-    }
+      status: { type: 'boolean' },
+    },
   },
   response: {
     200: {
@@ -227,21 +227,21 @@ export const updateStatusSchema: FastifySchema = {
           type: 'object',
           properties: {
             children: { type: 'number' },
-            products: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            products: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getChildrenSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -269,23 +269,23 @@ export const getChildrenSchema: FastifySchema = {
                 type: 'object',
                 properties: {
                   children: { type: 'number' },
-                  products: { type: 'number' }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+                  products: { type: 'number' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getRootCategoriesSchema: FastifySchema = {
   querystring: {
     type: 'object',
     properties: {
-      status: { type: 'boolean' }
-    }
+      status: { type: 'boolean' },
+    },
   },
   response: {
     200: {
@@ -313,43 +313,43 @@ export const getRootCategoriesSchema: FastifySchema = {
                 type: 'object',
                 properties: {
                   children: { type: 'number' },
-                  products: { type: 'number' }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+                  products: { type: 'number' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getTopCategoriesByProductsSchema: FastifySchema = {
   querystring: {
     type: 'object',
     properties: {
-      limit: { 
-        type: 'number', 
-        minimum: 1, 
-        maximum: 50, 
+      limit: {
+        type: 'number',
+        minimum: 1,
+        maximum: 50,
         default: 10,
-        description: 'Número máximo de categorias a retornar (recomendado: 5-10 para gráficos)'
+        description: 'Número máximo de categorias a retornar (recomendado: 5-10 para gráficos)',
       },
-      status: { 
+      status: {
         type: 'boolean',
-        description: 'Filtrar por status da categoria (true = ativa, false = inativa)'
+        description: 'Filtrar por status da categoria (true = ativa, false = inativa)',
       },
-      includeInactive: { 
-        type: 'boolean', 
+      includeInactive: {
+        type: 'boolean',
         default: false,
-        description: 'Incluir categorias inativas no resultado'
+        description: 'Incluir categorias inativas no resultado',
       },
-      includeProductDetails: { 
-        type: 'boolean', 
+      includeProductDetails: {
+        type: 'boolean',
         default: false,
-        description: 'Incluir detalhes dos produtos em cada categoria'
-      }
-    }
+        description: 'Incluir detalhes dos produtos em cada categoria',
+      },
+    },
   },
   response: {
     200: {
@@ -370,15 +370,15 @@ export const getTopCategoriesByProductsSchema: FastifySchema = {
               parentId: { type: 'string', nullable: true },
               createdAt: { type: 'string', format: 'date-time' },
               updatedAt: { type: 'string', format: 'date-time' },
-              parent: { 
-                type: 'object', 
+              parent: {
+                type: 'object',
                 nullable: true,
                 properties: {
                   id: { type: 'string' },
                   name: { type: 'string' },
                   description: { type: 'string', nullable: true },
-                  code: { type: 'string', nullable: true }
-                }
+                  code: { type: 'string', nullable: true },
+                },
               },
               products: {
                 type: 'array',
@@ -396,21 +396,21 @@ export const getTopCategoriesByProductsSchema: FastifySchema = {
                         status: { type: 'boolean' },
                         sku: { type: 'string', nullable: true },
                         price: { type: 'number', nullable: true },
-                        stock: { type: 'number', nullable: true }
-                      }
-                    }
-                  }
-                }
+                        stock: { type: 'number', nullable: true },
+                      },
+                    },
+                  },
+                },
               },
               _count: {
                 type: 'object',
                 properties: {
                   products: { type: 'number' },
-                  children: { type: 'number' }
-                }
-              }
-            }
-          }
+                  children: { type: 'number' },
+                },
+              },
+            },
+          },
         },
         metadata: {
           type: 'object',
@@ -419,49 +419,49 @@ export const getTopCategoriesByProductsSchema: FastifySchema = {
             limit: { type: 'number' },
             description: { type: 'string' },
             chartType: { type: 'string' },
-            recommendedLimit: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            recommendedLimit: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getCategoryCreationEvolutionSchema: FastifySchema = {
   querystring: {
     type: 'object',
     properties: {
-      period: { 
-        type: 'string', 
+      period: {
+        type: 'string',
         enum: ['day', 'week', 'month', 'year'],
         default: 'month',
-        description: 'Período de agrupamento dos dados'
+        description: 'Período de agrupamento dos dados',
       },
-      startDate: { 
-        type: 'string', 
+      startDate: {
+        type: 'string',
         format: 'date',
-        description: 'Data de início do período (YYYY-MM-DD)'
+        description: 'Data de início do período (YYYY-MM-DD)',
       },
-      endDate: { 
-        type: 'string', 
+      endDate: {
+        type: 'string',
         format: 'date',
-        description: 'Data de fim do período (YYYY-MM-DD)'
+        description: 'Data de fim do período (YYYY-MM-DD)',
       },
-      status: { 
+      status: {
         type: 'boolean',
-        description: 'Filtrar por status da categoria (true = ativa, false = inativa)'
+        description: 'Filtrar por status da categoria (true = ativa, false = inativa)',
       },
-      includeInactive: { 
-        type: 'boolean', 
+      includeInactive: {
+        type: 'boolean',
         default: false,
-        description: 'Incluir categorias inativas no resultado'
+        description: 'Incluir categorias inativas no resultado',
       },
-      includeDetails: { 
-        type: 'boolean', 
+      includeDetails: {
+        type: 'boolean',
         default: false,
-        description: 'Incluir detalhes adicionais das categorias'
-      }
-    }
+        description: 'Incluir detalhes adicionais das categorias',
+      },
+    },
   },
   response: {
     200: {
@@ -487,22 +487,22 @@ export const getCategoryCreationEvolutionSchema: FastifySchema = {
                       nullable: true,
                       properties: {
                         id: { type: 'string' },
-                        name: { type: 'string' }
-                      }
+                        name: { type: 'string' },
+                      },
                     },
                     _count: {
                       type: 'object',
                       nullable: true,
                       properties: {
                         children: { type: 'number' },
-                        products: { type: 'number' }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+                        products: { type: 'number' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
         periodStats: {
           type: 'object',
@@ -513,8 +513,8 @@ export const getCategoryCreationEvolutionSchema: FastifySchema = {
             totalPeriods: { type: 'number' },
             periodsWithGrowth: { type: 'number' },
             periodsWithDecline: { type: 'number' },
-            periodsStable: { type: 'number' }
-          }
+            periodsStable: { type: 'number' },
+          },
         },
         metadata: {
           type: 'object',
@@ -527,35 +527,35 @@ export const getCategoryCreationEvolutionSchema: FastifySchema = {
             endDate: { type: 'string', nullable: true },
             growthRate: { type: 'number' },
             description: { type: 'string' },
-            chartType: { type: 'string' }
-          }
-        }
-      }
+            chartType: { type: 'string' },
+          },
+        },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const getActiveInactiveRatioSchema: FastifySchema = {
   querystring: {
     type: 'object',
     properties: {
-      includeDetails: { 
-        type: 'boolean', 
+      includeDetails: {
+        type: 'boolean',
         default: false,
-        description: 'Incluir detalhes das categorias recentes'
+        description: 'Incluir detalhes das categorias recentes',
       },
-      includeHierarchy: { 
-        type: 'boolean', 
+      includeHierarchy: {
+        type: 'boolean',
         default: false,
-        description: 'Incluir análise hierárquica das categorias'
-      }
-    }
+        description: 'Incluir análise hierárquica das categorias',
+      },
+    },
   },
   response: {
     200: {
@@ -581,13 +581,13 @@ export const getActiveInactiveRatioSchema: FastifySchema = {
                     type: 'object',
                     properties: {
                       children: { type: 'number' },
-                      products: { type: 'number' }
-                    }
-                  }
-                }
-              }
-            }
-          }
+                      products: { type: 'number' },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
         inactive: {
           type: 'object',
@@ -609,13 +609,13 @@ export const getActiveInactiveRatioSchema: FastifySchema = {
                     type: 'object',
                     properties: {
                       children: { type: 'number' },
-                      products: { type: 'number' }
-                    }
-                  }
-                }
-              }
-            }
-          }
+                      products: { type: 'number' },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
         total: { type: 'number' },
         hygieneScore: { type: 'number' },
@@ -628,43 +628,43 @@ export const getActiveInactiveRatioSchema: FastifySchema = {
             activeWithoutChildren: { type: 'number' },
             inactiveWithoutChildren: { type: 'number' },
             totalWithChildren: { type: 'number' },
-            totalWithoutChildren: { type: 'number' }
-          }
+            totalWithoutChildren: { type: 'number' },
+          },
         },
         metadata: {
           type: 'object',
           properties: {
             description: { type: 'string' },
             chartType: { type: 'string' },
-            lastUpdated: { type: 'string', format: 'date-time' }
-          }
-        }
-      }
-    }
-  }
-};
+            lastUpdated: { type: 'string', format: 'date-time' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getActiveInactiveTrendSchema: FastifySchema = {
   querystring: {
     type: 'object',
     properties: {
-      period: { 
-        type: 'string', 
+      period: {
+        type: 'string',
         enum: ['day', 'week', 'month', 'year'],
         default: 'month',
-        description: 'Período de agrupamento dos dados'
+        description: 'Período de agrupamento dos dados',
       },
-      startDate: { 
-        type: 'string', 
+      startDate: {
+        type: 'string',
         format: 'date',
-        description: 'Data de início do período (YYYY-MM-DD)'
+        description: 'Data de início do período (YYYY-MM-DD)',
       },
-      endDate: { 
-        type: 'string', 
+      endDate: {
+        type: 'string',
         format: 'date',
-        description: 'Data de fim do período (YYYY-MM-DD)'
-      }
-    }
+        description: 'Data de fim do período (YYYY-MM-DD)',
+      },
+    },
   },
   response: {
     200: {
@@ -677,9 +677,9 @@ export const getActiveInactiveTrendSchema: FastifySchema = {
             properties: {
               active: { type: 'number' },
               inactive: { type: 'number' },
-              total: { type: 'number' }
-            }
-          }
+              total: { type: 'number' },
+            },
+          },
         },
         metadata: {
           type: 'object',
@@ -688,31 +688,31 @@ export const getActiveInactiveTrendSchema: FastifySchema = {
             startDate: { type: 'string', nullable: true },
             endDate: { type: 'string', nullable: true },
             description: { type: 'string' },
-            chartType: { type: 'string' }
-          }
-        }
-      }
+            chartType: { type: 'string' },
+          },
+        },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const bulkDeleteCategoriesSchema: FastifySchema = {
   body: {
     type: 'object',
     required: ['ids'],
     properties: {
-      ids: { 
-        type: 'array', 
+      ids: {
+        type: 'array',
         items: { type: 'string', minLength: 1 },
-        minItems: 1
-      }
-    }
+        minItems: 1,
+      },
+    },
   },
   response: {
     200: {
@@ -721,25 +721,25 @@ export const bulkDeleteCategoriesSchema: FastifySchema = {
         deleted: { type: 'number' },
         errors: {
           type: 'array',
-          items: { type: 'string' }
+          items: { type: 'string' },
         },
-        message: { type: 'string' }
-      }
+        message: { type: 'string' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const CategorySchemas = {
   create: createCategorySchema,
@@ -754,5 +754,5 @@ export const CategorySchemas = {
   getCategoryCreationEvolution: getCategoryCreationEvolutionSchema,
   getActiveInactiveRatio: getActiveInactiveRatioSchema,
   getActiveInactiveTrend: getActiveInactiveTrendSchema,
-  bulkDelete: bulkDeleteCategoriesSchema
-};
+  bulkDelete: bulkDeleteCategoriesSchema,
+}

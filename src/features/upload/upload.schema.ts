@@ -1,4 +1,4 @@
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify'
 
 // === SCHEMAS DE VALIDAÇÃO ===
 
@@ -9,8 +9,8 @@ export const createUploadSchema: FastifySchema = {
     properties: {
       name: { type: 'string', minLength: 1, maxLength: 255 },
       type: { type: 'string', minLength: 1, maxLength: 100 },
-      size: { type: 'number', minimum: 0 }
-    }
+      size: { type: 'number', minimum: 0 },
+    },
   },
   response: {
     201: {
@@ -22,23 +22,23 @@ export const createUploadSchema: FastifySchema = {
         type: { type: 'string', nullable: true },
         size: { type: 'number', nullable: true },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schema para atualizar upload
 export const updateUploadSchema: FastifySchema = {
@@ -46,16 +46,16 @@ export const updateUploadSchema: FastifySchema = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string', minLength: 1 }
-    }
+      id: { type: 'string', minLength: 1 },
+    },
   },
   body: {
     type: 'object',
     properties: {
       name: { type: 'string', minLength: 1, maxLength: 255 },
       type: { type: 'string', minLength: 1, maxLength: 100 },
-      size: { type: 'number', minimum: 0 }
-    }
+      size: { type: 'number', minimum: 0 },
+    },
   },
   response: {
     200: {
@@ -67,23 +67,23 @@ export const updateUploadSchema: FastifySchema = {
         type: { type: 'string', nullable: true },
         size: { type: 'number', nullable: true },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schema para obter upload por ID
 export const getUploadSchema: FastifySchema = {
@@ -91,8 +91,8 @@ export const getUploadSchema: FastifySchema = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string', minLength: 1 }
-    }
+      id: { type: 'string', minLength: 1 },
+    },
   },
   response: {
     200: {
@@ -104,23 +104,23 @@ export const getUploadSchema: FastifySchema = {
         type: { type: 'string', nullable: true },
         size: { type: 'number', nullable: true },
         createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schema para listar uploads
 export const listUploadsSchema: FastifySchema = {
@@ -131,12 +131,12 @@ export const listUploadsSchema: FastifySchema = {
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       search: { type: 'string' },
       type: { type: 'string' },
-      entityType: { 
+      entityType: {
         type: 'string',
-        enum: ['product', 'supplier', 'user', 'store']
+        enum: ['product', 'supplier', 'user', 'store'],
       },
-      entityId: { type: 'string' }
-    }
+      entityId: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -153,9 +153,9 @@ export const listUploadsSchema: FastifySchema = {
               type: { type: 'string', nullable: true },
               size: { type: 'number', nullable: true },
               createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' }
-            }
-          }
+              updatedAt: { type: 'string', format: 'date-time' },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -163,19 +163,19 @@ export const listUploadsSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
+            totalPages: { type: 'number' },
+          },
+        },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schema para deletar upload
 export const deleteUploadSchema: FastifySchema = {
@@ -183,25 +183,25 @@ export const deleteUploadSchema: FastifySchema = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string', minLength: 1 }
-    }
+      id: { type: 'string', minLength: 1 },
+    },
   },
   response: {
     204: { type: 'null' },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schema para anexar mídia a uma entidade
 export const attachMediaSchema: FastifySchema = {
@@ -209,20 +209,20 @@ export const attachMediaSchema: FastifySchema = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string', minLength: 1 }
-    }
+      id: { type: 'string', minLength: 1 },
+    },
   },
   body: {
     type: 'object',
     required: ['entityType', 'entityId'],
     properties: {
-      entityType: { 
+      entityType: {
         type: 'string',
-        enum: ['product', 'supplier', 'user', 'store']
+        enum: ['product', 'supplier', 'user', 'store'],
       },
       entityId: { type: 'string', minLength: 1 },
-      isPrimary: { type: 'boolean', default: false }
-    }
+      isPrimary: { type: 'boolean', default: false },
+    },
   },
   response: {
     200: {
@@ -233,29 +233,29 @@ export const attachMediaSchema: FastifySchema = {
         entityType: { type: 'string' },
         entityId: { type: 'string' },
         isPrimary: { type: 'boolean', nullable: true },
-        createdAt: { type: 'string', format: 'date-time' }
-      }
+        createdAt: { type: 'string', format: 'date-time' },
+      },
     },
     400: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schema para desanexar mídia de uma entidade
 export const detachMediaSchema: FastifySchema = {
@@ -263,41 +263,41 @@ export const detachMediaSchema: FastifySchema = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string', minLength: 1 }
-    }
+      id: { type: 'string', minLength: 1 },
+    },
   },
   body: {
     type: 'object',
     required: ['entityType', 'entityId'],
     properties: {
-      entityType: { 
+      entityType: {
         type: 'string',
-        enum: ['product', 'supplier', 'user', 'store']
+        enum: ['product', 'supplier', 'user', 'store'],
       },
-      entityId: { type: 'string', minLength: 1 }
-    }
+      entityId: { type: 'string', minLength: 1 },
+    },
   },
   response: {
     200: {
       type: 'object',
       properties: {
-        success: { type: 'boolean' }
-      }
+        success: { type: 'boolean' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schema para obter mídias de uma entidade
 export const getEntityMediaSchema: FastifySchema = {
@@ -305,12 +305,12 @@ export const getEntityMediaSchema: FastifySchema = {
     type: 'object',
     required: ['entityType', 'entityId'],
     properties: {
-      entityType: { 
+      entityType: {
         type: 'string',
-        enum: ['product', 'supplier', 'user', 'store']
+        enum: ['product', 'supplier', 'user', 'store'],
       },
-      entityId: { type: 'string', minLength: 1 }
-    }
+      entityId: { type: 'string', minLength: 1 },
+    },
   },
   response: {
     200: {
@@ -334,28 +334,28 @@ export const getEntityMediaSchema: FastifySchema = {
                   url: { type: 'string' },
                   name: { type: 'string', nullable: true },
                   type: { type: 'string', nullable: true },
-                  size: { type: 'number', nullable: true }
-                }
-              }
-            }
-          }
-        }
-      }
+                  size: { type: 'number', nullable: true },
+                },
+              },
+            },
+          },
+        },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schema para definir mídia principal
 export const setPrimaryMediaSchema: FastifySchema = {
@@ -363,41 +363,41 @@ export const setPrimaryMediaSchema: FastifySchema = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string', minLength: 1 }
-    }
+      id: { type: 'string', minLength: 1 },
+    },
   },
   body: {
     type: 'object',
     required: ['entityType', 'entityId'],
     properties: {
-      entityType: { 
+      entityType: {
         type: 'string',
-        enum: ['product', 'supplier', 'user', 'store']
+        enum: ['product', 'supplier', 'user', 'store'],
       },
-      entityId: { type: 'string', minLength: 1 }
-    }
+      entityId: { type: 'string', minLength: 1 },
+    },
   },
   response: {
     200: {
       type: 'object',
       properties: {
-        success: { type: 'boolean' }
-      }
+        success: { type: 'boolean' },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schema para buscar por tipo
 export const getByTypeSchema: FastifySchema = {
@@ -405,8 +405,8 @@ export const getByTypeSchema: FastifySchema = {
     type: 'object',
     required: ['type'],
     properties: {
-      type: { type: 'string', minLength: 1 }
-    }
+      type: { type: 'string', minLength: 1 },
+    },
   },
   response: {
     200: {
@@ -423,28 +423,28 @@ export const getByTypeSchema: FastifySchema = {
               type: { type: 'string', nullable: true },
               size: { type: 'number', nullable: true },
               createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' }
-            }
-          }
-        }
-      }
+              updatedAt: { type: 'string', format: 'date-time' },
+            },
+          },
+        },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schema para buscar recentes
 export const getRecentSchema: FastifySchema = {
   querystring: {
     type: 'object',
     properties: {
-      limit: { type: 'number', minimum: 1, maximum: 50, default: 10 }
-    }
+      limit: { type: 'number', minimum: 1, maximum: 50, default: 10 },
+    },
   },
   response: {
     200: {
@@ -461,20 +461,20 @@ export const getRecentSchema: FastifySchema = {
               type: { type: 'string', nullable: true },
               size: { type: 'number', nullable: true },
               createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' }
-            }
-          }
-        }
-      }
+              updatedAt: { type: 'string', format: 'date-time' },
+            },
+          },
+        },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schema para estatísticas
 export const getStatsSchema: FastifySchema = {
@@ -483,22 +483,22 @@ export const getStatsSchema: FastifySchema = {
       type: 'object',
       properties: {
         total: { type: 'number' },
-        byType: { 
+        byType: {
           type: 'object',
-          additionalProperties: { type: 'number' }
+          additionalProperties: { type: 'number' },
         },
         totalSize: { type: 'number' },
-        recentCount: { type: 'number' }
-      }
+        recentCount: { type: 'number' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schema para busca
 export const searchSchema: FastifySchema = {
@@ -507,8 +507,8 @@ export const searchSchema: FastifySchema = {
     required: ['q'],
     properties: {
       q: { type: 'string', minLength: 1 },
-      limit: { type: 'number', minimum: 1, maximum: 50, default: 10 }
-    }
+      limit: { type: 'number', minimum: 1, maximum: 50, default: 10 },
+    },
   },
   response: {
     200: {
@@ -525,20 +525,20 @@ export const searchSchema: FastifySchema = {
               type: { type: 'string', nullable: true },
               size: { type: 'number', nullable: true },
               createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' }
-            }
-          }
-        }
-      }
+              updatedAt: { type: 'string', format: 'date-time' },
+            },
+          },
+        },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schema para uso da mídia
 export const getMediaUsageSchema: FastifySchema = {
@@ -546,8 +546,8 @@ export const getMediaUsageSchema: FastifySchema = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string', minLength: 1 }
-    }
+      id: { type: 'string', minLength: 1 },
+    },
   },
   response: {
     200: {
@@ -561,34 +561,34 @@ export const getMediaUsageSchema: FastifySchema = {
               entityType: { type: 'string' },
               entityId: { type: 'string' },
               isPrimary: { type: 'boolean', nullable: true },
-              createdAt: { type: 'string', format: 'date-time' }
-            }
-          }
-        }
-      }
+              createdAt: { type: 'string', format: 'date-time' },
+            },
+          },
+        },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schema para mídias não utilizadas
 export const getUnusedMediaSchema: FastifySchema = {
   querystring: {
     type: 'object',
     properties: {
-      limit: { type: 'number', minimum: 1, maximum: 100, default: 20 }
-    }
+      limit: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+    },
   },
   response: {
     200: {
@@ -605,20 +605,20 @@ export const getUnusedMediaSchema: FastifySchema = {
               type: { type: 'string', nullable: true },
               size: { type: 'number', nullable: true },
               createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' }
-            }
-          }
-        }
-      }
+              updatedAt: { type: 'string', format: 'date-time' },
+            },
+          },
+        },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schema para mídia principal
 export const getPrimaryMediaSchema: FastifySchema = {
@@ -626,12 +626,12 @@ export const getPrimaryMediaSchema: FastifySchema = {
     type: 'object',
     required: ['entityType', 'entityId'],
     properties: {
-      entityType: { 
+      entityType: {
         type: 'string',
-        enum: ['product', 'supplier', 'user', 'store']
+        enum: ['product', 'supplier', 'user', 'store'],
       },
-      entityId: { type: 'string', minLength: 1 }
-    }
+      entityId: { type: 'string', minLength: 1 },
+    },
   },
   response: {
     200: {
@@ -644,25 +644,25 @@ export const getPrimaryMediaSchema: FastifySchema = {
             url: { type: 'string' },
             name: { type: 'string', nullable: true },
             type: { type: 'string', nullable: true },
-            size: { type: 'number', nullable: true }
-          }
-        }
-      }
+            size: { type: 'number', nullable: true },
+          },
+        },
+      },
     },
     404: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
+        error: { type: 'string' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}
 
 // Schema para deletar em lote
 export const bulkDeleteSchema: FastifySchema = {
@@ -670,26 +670,26 @@ export const bulkDeleteSchema: FastifySchema = {
     type: 'object',
     required: ['ids'],
     properties: {
-      ids: { 
-        type: 'array', 
+      ids: {
+        type: 'array',
         items: { type: 'string', minLength: 1 },
-        minItems: 1
-      }
-    }
+        minItems: 1,
+      },
+    },
   },
   response: {
     200: {
       type: 'object',
       properties: {
         deleted: { type: 'number' },
-        failed: { type: 'number' }
-      }
+        failed: { type: 'number' },
+      },
     },
     500: {
       type: 'object',
       properties: {
-        error: { type: 'string' }
-      }
-    }
-  }
-};
+        error: { type: 'string' },
+      },
+    },
+  },
+}

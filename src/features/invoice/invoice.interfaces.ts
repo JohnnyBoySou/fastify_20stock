@@ -1,26 +1,15 @@
-import { FastifyRequest } from 'fastify';
+import type { FastifyRequest } from 'fastify'
 
 // Interfaces para Invoice
 export interface CreateInvoiceRequest extends FastifyRequest {
   body: {
-    customerId: string
+    subscriptionId: string
     amount: number
-    status?: 'PENDING' | 'PAID' | 'FAILED'
+    status?: InvoiceStatus
     gatewayPaymentId?: string
-    paymentDate?: string
+    paymentDate?: Date
   }
 }
-
-export interface UpdateInvoiceRequest extends FastifyRequest {
-  params: { id: string }
-  body: {
-    amount?: number
-    status?: 'PENDING' | 'PAID' | 'FAILED'
-    gatewayPaymentId?: string
-    paymentDate?: string
-  }
-}
-
 export interface GetInvoiceRequest extends FastifyRequest {
   params: { id: string }
 }
@@ -29,8 +18,8 @@ export interface ListInvoicesRequest extends FastifyRequest {
   query: {
     page?: number
     limit?: number
-    customerId?: string
-    status?: 'PENDING' | 'PAID' | 'FAILED'
+    subscriptionId?: string
+    status?: InvoiceStatus
     startDate?: string
     endDate?: string
   }
@@ -140,5 +129,5 @@ export interface EmailSendResponse {
 export enum InvoiceStatus {
   PENDING = 'PENDING',
   PAID = 'PAID',
-  FAILED = 'FAILED'
+  FAILED = 'FAILED',
 }

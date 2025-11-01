@@ -1,48 +1,48 @@
-import { FastifyInstance } from 'fastify';
-import { QuoteController } from './quote.controller';
-import { QuoteSchemas } from './quote.schema';
-import { authMiddleware } from '../../middlewares/auth.middleware';
+import type { FastifyInstance } from 'fastify'
+import { Middlewares } from '@/middlewares'
+import { QuoteController } from './quote.controller'
+import { QuoteSchemas } from './quote.schema'
 
 export async function QuoteRoutes(fastify: FastifyInstance) {
+
+  // Middlewares para todas as rotas
+  fastify.addHook('preHandler', Middlewares.auth)
+  fastify.addHook('preHandler', Middlewares.store)
   // === ROTAS AUTENTICADAS ===
-  
+
   // CRUD básico
   fastify.post('/', {
     schema: QuoteSchemas.create,
-    preHandler: [authMiddleware],
-    handler: QuoteController.create
-  });
+    handler: QuoteController.create,
+  })
 
   fastify.get('/', {
     schema: QuoteSchemas.list,
-    preHandler: [authMiddleware],
-    handler: QuoteController.list
-  });
+    handler: QuoteController.list,
+  })
 
   fastify.get('/:id', {
     schema: QuoteSchemas.get,
-    preHandler: [authMiddleware],
-    handler: QuoteController.get
-  });
+    handler: QuoteController.get,
+  })
 
   fastify.put('/:id', {
     schema: QuoteSchemas.update,
-    preHandler: [authMiddleware],
-    handler: QuoteController.update
-  });
+    handler: QuoteController.update,
+  })
 
   fastify.delete('/:id', {
     schema: QuoteSchemas.delete,
-    preHandler: [authMiddleware],
-    handler: QuoteController.delete
-  });
+    
+    handler: QuoteController.delete,
+  })
 
   // Funções adicionais
   fastify.patch('/:id/status', {
     schema: QuoteSchemas.updateStatus,
-    preHandler: [authMiddleware],
-    handler: QuoteController.updateStatus
-  });
+    
+    handler: QuoteController.updateStatus,
+  })
 
   fastify.patch<{ Params: { id: string } }>('/:id/publish', {
     schema: {
@@ -50,13 +50,13 @@ export async function QuoteRoutes(fastify: FastifyInstance) {
         type: 'object',
         required: ['id'],
         properties: {
-          id: { type: 'string' }
-        }
-      }
+          id: { type: 'string' },
+        },
+      },
     },
-    preHandler: [authMiddleware],
-    handler: QuoteController.publish
-  });
+    
+    handler: QuoteController.publish,
+  })
 
   fastify.patch<{ Params: { id: string } }>('/:id/send', {
     schema: {
@@ -64,25 +64,25 @@ export async function QuoteRoutes(fastify: FastifyInstance) {
         type: 'object',
         required: ['id'],
         properties: {
-          id: { type: 'string' }
-        }
-      }
+          id: { type: 'string' },
+        },
+      },
     },
-    preHandler: [authMiddleware],
-    handler: QuoteController.send
-  });
+    
+    handler: QuoteController.send,
+  })
 
   fastify.post('/:id/convert', {
     schema: QuoteSchemas.convertToMovement,
-    preHandler: [authMiddleware],
-    handler: QuoteController.convertToMovements
-  });
+    
+    handler: QuoteController.convertToMovements,
+  })
 
   fastify.get('/stats', {
     schema: QuoteSchemas.getStats,
-    preHandler: [authMiddleware],
-    handler: QuoteController.getStats
-  });
+    
+    handler: QuoteController.getStats,
+  })
 
   fastify.get<{ Params: { userId: string } }>('/user/:userId', {
     schema: {
@@ -90,8 +90,8 @@ export async function QuoteRoutes(fastify: FastifyInstance) {
         type: 'object',
         required: ['userId'],
         properties: {
-          userId: { type: 'string' }
-        }
+          userId: { type: 'string' },
+        },
       },
       querystring: {
         type: 'object',
@@ -100,14 +100,24 @@ export async function QuoteRoutes(fastify: FastifyInstance) {
           limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
           status: {
             type: 'string',
-            enum: ['DRAFT', 'PUBLISHED', 'SENT', 'VIEWED', 'APPROVED', 'REJECTED', 'EXPIRED', 'CONVERTED', 'CANCELED']
-          }
-        }
-      }
+            enum: [
+              'DRAFT',
+              'PUBLISHED',
+              'SENT',
+              'VIEWED',
+              'APPROVED',
+              'REJECTED',
+              'EXPIRED',
+              'CONVERTED',
+              'CANCELED',
+            ],
+          },
+        },
+      },
     },
-    preHandler: [authMiddleware],
-    handler: QuoteController.getByUser
-  });
+    
+    handler: QuoteController.getByUser,
+  })
 
   fastify.get('/status/:status', {
     schema: {
@@ -117,22 +127,32 @@ export async function QuoteRoutes(fastify: FastifyInstance) {
         properties: {
           status: {
             type: 'string',
-            enum: ['DRAFT', 'PUBLISHED', 'SENT', 'VIEWED', 'APPROVED', 'REJECTED', 'EXPIRED', 'CONVERTED', 'CANCELED']
-          }
-        }
+            enum: [
+              'DRAFT',
+              'PUBLISHED',
+              'SENT',
+              'VIEWED',
+              'APPROVED',
+              'REJECTED',
+              'EXPIRED',
+              'CONVERTED',
+              'CANCELED',
+            ],
+          },
+        },
       },
       querystring: {
         type: 'object',
         properties: {
           page: { type: 'number', minimum: 1, default: 1 },
           limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
-          userId: { type: 'string' }
-        }
-      }
+          userId: { type: 'string' },
+        },
+      },
     },
-    preHandler: [authMiddleware],
-    handler: QuoteController.getByStatus
-  });
+    
+    handler: QuoteController.getByStatus,
+  })
 
   fastify.get('/search', {
     schema: {
@@ -142,13 +162,13 @@ export async function QuoteRoutes(fastify: FastifyInstance) {
         properties: {
           q: { type: 'string', minLength: 1 },
           limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
-          userId: { type: 'string' }
-        }
-      }
+          userId: { type: 'string' },
+        },
+      },
     },
-    preHandler: [authMiddleware],
-    handler: QuoteController.search
-  });
+    
+    handler: QuoteController.search,
+  })
 
   fastify.get('/recent', {
     schema: {
@@ -156,13 +176,13 @@ export async function QuoteRoutes(fastify: FastifyInstance) {
         type: 'object',
         properties: {
           limit: { type: 'number', minimum: 1, maximum: 50, default: 5 },
-          userId: { type: 'string' }
-        }
-      }
+          userId: { type: 'string' },
+        },
+      },
     },
-    preHandler: [authMiddleware],
-    handler: QuoteController.getRecent
-  });
+    
+    handler: QuoteController.getRecent,
+  })
 
   fastify.get('/:id/analytics', {
     schema: {
@@ -170,33 +190,33 @@ export async function QuoteRoutes(fastify: FastifyInstance) {
         type: 'object',
         required: ['id'],
         properties: {
-          id: { type: 'string' }
-        }
-      }
+          id: { type: 'string' },
+        },
+      },
     },
-    preHandler: [authMiddleware],
-    handler: QuoteController.getAnalytics
-  });
+    
+    handler: QuoteController.getAnalytics,
+  })
 
   fastify.post('/mark-expired', {
-    preHandler: [authMiddleware],
-    handler: QuoteController.markExpired
-  });
+    
+    handler: QuoteController.markExpired,
+  })
 
   // === ROTAS PÚBLICAS (sem autenticação) ===
-  
+
   fastify.get('/public/:publicId', {
     schema: QuoteSchemas.getPublic,
-    handler: QuoteController.getPublic
-  });
+    handler: QuoteController.getPublic,
+  })
 
   fastify.post('/public/:publicId/approve', {
     schema: QuoteSchemas.approve,
-    handler: QuoteController.approvePublic
-  });
+    handler: QuoteController.approvePublic,
+  })
 
   fastify.post('/public/:publicId/reject', {
     schema: QuoteSchemas.reject,
-    handler: QuoteController.rejectPublic
-  });
+    handler: QuoteController.rejectPublic,
+  })
 }

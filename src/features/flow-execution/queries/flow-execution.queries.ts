@@ -1,8 +1,7 @@
-import { db } from '@/plugins/prisma';
-import { FlowExecutionStatus } from '../../flow/flow.interfaces';
+import { db } from '@/plugins/prisma'
+import type { FlowExecutionStatus } from '../../flow/flow.interfaces'
 
 export const FlowExecutionQueries = {
-
   async getById(id: string) {
     try {
       const execution = await db.flowExecution.findUnique({
@@ -11,66 +10,58 @@ export const FlowExecutionQueries = {
           flow: {
             select: {
               id: true,
-              name: true
-            }
-          }
-        }
-      });
+              name: true,
+            },
+          },
+        },
+      })
 
       if (!execution) {
-        return null;
+        return null
       }
 
-      return execution;
+      return execution
     } catch (error: any) {
-      console.error('Error getting flow execution by id:', error);
-      throw error;
+      console.error('Error getting flow execution by id:', error)
+      throw error
     }
   },
 
   async list(params: {
-    page?: number;
-    limit?: number;
-    flowId?: string;
-    status?: FlowExecutionStatus;
-    triggerType?: string;
-    startDate?: string;
-    endDate?: string;
+    page?: number
+    limit?: number
+    flowId?: string
+    status?: FlowExecutionStatus
+    triggerType?: string
+    startDate?: string
+    endDate?: string
   }) {
     try {
-      const {
-        page = 1,
-        limit = 10,
-        flowId,
-        status,
-        triggerType,
-        startDate,
-        endDate
-      } = params;
+      const { page = 1, limit = 10, flowId, status, triggerType, startDate, endDate } = params
 
-      const skip = (page - 1) * limit;
+      const skip = (page - 1) * limit
 
-      const where: any = {};
+      const where: any = {}
 
       if (flowId) {
-        where.flowId = flowId;
+        where.flowId = flowId
       }
 
       if (status) {
-        where.status = status;
+        where.status = status
       }
 
       if (triggerType) {
-        where.triggerType = triggerType;
+        where.triggerType = triggerType
       }
 
       if (startDate || endDate) {
-        where.startedAt = {};
+        where.startedAt = {}
         if (startDate) {
-          where.startedAt.gte = new Date(startDate);
+          where.startedAt.gte = new Date(startDate)
         }
         if (endDate) {
-          where.startedAt.lte = new Date(endDate);
+          where.startedAt.lte = new Date(endDate)
         }
       }
 
@@ -84,13 +75,13 @@ export const FlowExecutionQueries = {
             flow: {
               select: {
                 id: true,
-                name: true
-              }
-            }
-          }
+                name: true,
+              },
+            },
+          },
         }),
-        db.flowExecution.count({ where })
-      ]);
+        db.flowExecution.count({ where }),
+      ])
 
       return {
         executions,
@@ -98,35 +89,34 @@ export const FlowExecutionQueries = {
           page,
           limit,
           total,
-          totalPages: Math.ceil(total / limit)
-        }
-      };
+          totalPages: Math.ceil(total / limit),
+        },
+      }
     } catch (error: any) {
-      console.error('Error listing flow executions:', error);
-      throw error;
+      console.error('Error listing flow executions:', error)
+      throw error
     }
   },
 
-  async getByFlow(flowId: string, params: {
-    page?: number;
-    limit?: number;
-    status?: FlowExecutionStatus;
-  }) {
+  async getByFlow(
+    flowId: string,
+    params: {
+      page?: number
+      limit?: number
+      status?: FlowExecutionStatus
+    }
+  ) {
     try {
-      const {
-        page = 1,
-        limit = 10,
-        status
-      } = params;
+      const { page = 1, limit = 10, status } = params
 
-      const skip = (page - 1) * limit;
+      const skip = (page - 1) * limit
 
       const where: any = {
-        flowId
-      };
+        flowId,
+      }
 
       if (status) {
-        where.status = status;
+        where.status = status
       }
 
       const [executions, total] = await Promise.all([
@@ -139,13 +129,13 @@ export const FlowExecutionQueries = {
             flow: {
               select: {
                 id: true,
-                name: true
-              }
-            }
-          }
+                name: true,
+              },
+            },
+          },
         }),
-        db.flowExecution.count({ where })
-      ]);
+        db.flowExecution.count({ where }),
+      ])
 
       return {
         executions,
@@ -153,12 +143,12 @@ export const FlowExecutionQueries = {
           page,
           limit,
           total,
-          totalPages: Math.ceil(total / limit)
-        }
-      };
+          totalPages: Math.ceil(total / limit),
+        },
+      }
     } catch (error: any) {
-      console.error('Error getting flow executions by flow:', error);
-      throw error;
+      console.error('Error getting flow executions by flow:', error)
+      throw error
     }
   },
 
@@ -166,50 +156,52 @@ export const FlowExecutionQueries = {
     try {
       const [total, byStatus, byTrigger, durations] = await Promise.all([
         db.flowExecution.count({
-          where: { flowId }
+          where: { flowId },
         }),
         db.flowExecution.groupBy({
           by: ['status'],
           where: { flowId },
-          _count: true
+          _count: true,
         }),
         db.flowExecution.groupBy({
           by: ['triggerType'],
           where: { flowId },
-          _count: true
+          _count: true,
         }),
         db.flowExecution.findMany({
           where: {
             flowId,
-            duration: { not: null }
+            duration: { not: null },
           },
-          select: { duration: true }
-        })
-      ]);
+          select: { duration: true },
+        }),
+      ])
 
       const statusMap: Record<string, number> = {
         success: 0,
         failed: 0,
         running: 0,
-        cancelled: 0
-      };
+        cancelled: 0,
+      }
 
       byStatus.forEach((item: any) => {
-        statusMap[item.status.toLowerCase()] = item._count;
-      });
+        statusMap[item.status.toLowerCase()] = item._count
+      })
 
-      const triggerMap: Record<string, number> = {};
+      const triggerMap: Record<string, number> = {}
       byTrigger.forEach((item: any) => {
-        triggerMap[item.triggerType] = item._count;
-      });
+        triggerMap[item.triggerType] = item._count
+      })
 
       const completedDurations = durations
         .filter((d: any) => d.duration !== null)
-        .map((d: any) => d.duration);
+        .map((d: any) => d.duration)
 
-      const averageDuration = completedDurations.length > 0
-        ? completedDurations.reduce((a: number, b: number) => a + b, 0) / completedDurations.length
-        : 0;
+      const averageDuration =
+        completedDurations.length > 0
+          ? completedDurations.reduce((a: number, b: number) => a + b, 0) /
+            completedDurations.length
+          : 0
 
       const lastExecution = await db.flowExecution.findFirst({
         where: { flowId },
@@ -218,23 +210,22 @@ export const FlowExecutionQueries = {
           flow: {
             select: {
               id: true,
-              name: true
-            }
-          }
-        }
-      });
+              name: true,
+            },
+          },
+        },
+      })
 
       return {
         total,
         byStatus: statusMap,
         byTrigger: triggerMap,
         averageDuration,
-        lastExecution
-      };
+        lastExecution,
+      }
     } catch (error: any) {
-      console.error('Error getting flow execution stats:', error);
-      throw error;
+      console.error('Error getting flow execution stats:', error)
+      throw error
     }
   },
 }
-

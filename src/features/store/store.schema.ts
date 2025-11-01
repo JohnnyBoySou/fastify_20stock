@@ -1,4 +1,4 @@
-import { FastifySchema } from 'fastify';
+import type { FastifySchema } from 'fastify'
 
 export const createStoreSchema: FastifySchema = {
   body: {
@@ -13,8 +13,8 @@ export const createStoreSchema: FastifySchema = {
       city: { type: 'string' },
       state: { type: 'string' },
       address: { type: 'string' },
-      status: { type: 'boolean', default: true }
-    }
+      status: { type: 'boolean', default: true },
+    },
   },
   response: {
     201: {
@@ -37,21 +37,21 @@ export const createStoreSchema: FastifySchema = {
           properties: {
             id: { type: 'string' },
             name: { type: 'string' },
-            email: { type: 'string' }
-          }
-        }
-      }
-    }
-  }
-};
+            email: { type: 'string' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const updateStoreSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
@@ -64,8 +64,8 @@ export const updateStoreSchema: FastifySchema = {
       city: { type: 'string' },
       state: { type: 'string' },
       address: { type: 'string' },
-      status: { type: 'boolean' }
-    }
+      status: { type: 'boolean' },
+    },
   },
   response: {
     200: {
@@ -87,21 +87,21 @@ export const updateStoreSchema: FastifySchema = {
           properties: {
             id: { type: 'string' },
             name: { type: 'string' },
-            email: { type: 'string' }
-          }
-        }
-      }
-    }
-  }
-};
+            email: { type: 'string' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getStoreSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -124,34 +124,34 @@ export const getStoreSchema: FastifySchema = {
           properties: {
             id: { type: 'string' },
             name: { type: 'string' },
-            email: { type: 'string' }
-          }
+            email: { type: 'string' },
+          },
         },
         products: { type: 'array' },
         _count: {
           type: 'object',
           properties: {
             products: { type: 'number' },
-            users: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            users: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const deleteStoreSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
-    204: { type: 'null' }
-  }
-};
+    204: { type: 'null' },
+  },
+}
 
 export const listStoresSchema: FastifySchema = {
   querystring: {
@@ -160,8 +160,8 @@ export const listStoresSchema: FastifySchema = {
       page: { type: 'number', minimum: 1, default: 1 },
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       search: { type: 'string' },
-      status: { type: 'boolean' }
-    }
+      status: { type: 'boolean' },
+    },
   },
   response: {
     200: {
@@ -189,18 +189,18 @@ export const listStoresSchema: FastifySchema = {
                 properties: {
                   id: { type: 'string' },
                   name: { type: 'string' },
-                  email: { type: 'string' }
-                }
+                  email: { type: 'string' },
+                },
               },
               _count: {
                 type: 'object',
                 properties: {
                   products: { type: 'number' },
-                  users: { type: 'number' }
-                }
-              }
-            }
-          }
+                  users: { type: 'number' },
+                },
+              },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -208,21 +208,21 @@ export const listStoresSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getStoreByCnpjSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['cnpj'],
     properties: {
-      cnpj: { type: 'string', minLength: 14, maxLength: 14 }
-    }
+      cnpj: { type: 'string', minLength: 14, maxLength: 14 },
+    },
   },
   response: {
     200: {
@@ -245,28 +245,28 @@ export const getStoreByCnpjSchema: FastifySchema = {
           properties: {
             id: { type: 'string' },
             name: { type: 'string' },
-            email: { type: 'string' }
-          }
+            email: { type: 'string' },
+          },
         },
         _count: {
           type: 'object',
           properties: {
             products: { type: 'number' },
-            users: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            users: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getStoresByOwnerSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['ownerId'],
     properties: {
-      ownerId: { type: 'string', minLength: 1 }
-    }
+      ownerId: { type: 'string', minLength: 1 },
+    },
   },
   response: {
     200: {
@@ -294,50 +294,50 @@ export const getStoresByOwnerSchema: FastifySchema = {
                 properties: {
                   id: { type: 'string' },
                   name: { type: 'string' },
-                  email: { type: 'string' }
-                }
+                  email: { type: 'string' },
+                },
               },
               _count: {
                 type: 'object',
                 properties: {
                   products: { type: 'number' },
-                  users: { type: 'number' }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+                  users: { type: 'number' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const verifyCnpjSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['cnpj'],
     properties: {
-      cnpj: { type: 'string', minLength: 14, maxLength: 14 }
-    }
+      cnpj: { type: 'string', minLength: 14, maxLength: 14 },
+    },
   },
   response: {
     200: {
       type: 'object',
       properties: {
         available: { type: 'boolean' },
-        message: { type: 'string' }
-      }
-    }
-  }
-};
+        message: { type: 'string' },
+      },
+    },
+  },
+}
 
 export const toggleStatusSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -346,11 +346,11 @@ export const toggleStatusSchema: FastifySchema = {
         id: { type: 'string' },
         name: { type: 'string' },
         status: { type: 'boolean' },
-        updatedAt: { type: 'string', format: 'date-time' }
-      }
-    }
-  }
-};
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  },
+}
 
 // === SCHEMAS PARA GERENCIAMENTO DE USUÁRIOS DA LOJA ===
 
@@ -359,19 +359,19 @@ export const addUserToStoreSchema: FastifySchema = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     required: ['userId', 'role'],
     properties: {
       userId: { type: 'string', minLength: 1 },
-      role: { 
-        type: 'string', 
-        enum: ['OWNER', 'ADMIN', 'MANAGER', 'STAFF'] 
-      }
-    }
+      role: {
+        type: 'string',
+        enum: ['OWNER', 'ADMIN', 'MANAGER', 'STAFF'],
+      },
+    },
   },
   response: {
     201: {
@@ -388,21 +388,21 @@ export const addUserToStoreSchema: FastifySchema = {
             name: { type: 'string' },
             email: { type: 'string' },
             status: { type: 'boolean' },
-            lastLoginAt: { type: 'string', format: 'date-time', nullable: true }
-          }
+            lastLoginAt: { type: 'string', format: 'date-time', nullable: true },
+          },
         },
         store: {
           type: 'object',
           properties: {
             id: { type: 'string' },
             name: { type: 'string' },
-            cnpj: { type: 'string' }
-          }
-        }
-      }
-    }
-  }
-};
+            cnpj: { type: 'string' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const removeUserFromStoreSchema: FastifySchema = {
   params: {
@@ -410,13 +410,13 @@ export const removeUserFromStoreSchema: FastifySchema = {
     required: ['id', 'userId'],
     properties: {
       id: { type: 'string' },
-      userId: { type: 'string' }
-    }
+      userId: { type: 'string' },
+    },
   },
   response: {
-    204: { type: 'null' }
-  }
-};
+    204: { type: 'null' },
+  },
+}
 
 export const updateUserRoleSchema: FastifySchema = {
   params: {
@@ -424,18 +424,18 @@ export const updateUserRoleSchema: FastifySchema = {
     required: ['id', 'userId'],
     properties: {
       id: { type: 'string' },
-      userId: { type: 'string' }
-    }
+      userId: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     required: ['role'],
     properties: {
-      role: { 
-        type: 'string', 
-        enum: ['OWNER', 'ADMIN', 'MANAGER', 'STAFF'] 
-      }
-    }
+      role: {
+        type: 'string',
+        enum: ['OWNER', 'ADMIN', 'MANAGER', 'STAFF'],
+      },
+    },
   },
   response: {
     200: {
@@ -452,29 +452,29 @@ export const updateUserRoleSchema: FastifySchema = {
             name: { type: 'string' },
             email: { type: 'string' },
             status: { type: 'boolean' },
-            lastLoginAt: { type: 'string', format: 'date-time', nullable: true }
-          }
+            lastLoginAt: { type: 'string', format: 'date-time', nullable: true },
+          },
         },
         store: {
           type: 'object',
           properties: {
             id: { type: 'string' },
             name: { type: 'string' },
-            cnpj: { type: 'string' }
-          }
-        }
-      }
-    }
-  }
-};
+            cnpj: { type: 'string' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const listStoreUsersSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   querystring: {
     type: 'object',
@@ -482,11 +482,11 @@ export const listStoreUsersSchema: FastifySchema = {
       page: { type: 'number', minimum: 1, default: 1 },
       limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
       search: { type: 'string' },
-      role: { 
-        type: 'string', 
-        enum: ['OWNER', 'ADMIN', 'MANAGER', 'STAFF'] 
-      }
-    }
+      role: {
+        type: 'string',
+        enum: ['OWNER', 'ADMIN', 'MANAGER', 'STAFF'],
+      },
+    },
   },
   response: {
     200: {
@@ -509,19 +509,19 @@ export const listStoreUsersSchema: FastifySchema = {
                   email: { type: 'string' },
                   status: { type: 'boolean' },
                   lastLoginAt: { type: 'string', format: 'date-time', nullable: true },
-                  createdAt: { type: 'string', format: 'date-time' }
-                }
+                  createdAt: { type: 'string', format: 'date-time' },
+                },
               },
               store: {
                 type: 'object',
                 properties: {
                   id: { type: 'string' },
                   name: { type: 'string' },
-                  cnpj: { type: 'string' }
-                }
-              }
-            }
-          }
+                  cnpj: { type: 'string' },
+                },
+              },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -529,13 +529,13 @@ export const listStoreUsersSchema: FastifySchema = {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            totalPages: { type: 'number' }
-          }
-        }
-      }
-    }
-  }
-};
+            totalPages: { type: 'number' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getStoreUserSchema: FastifySchema = {
   params: {
@@ -543,8 +543,8 @@ export const getStoreUserSchema: FastifySchema = {
     required: ['id', 'userId'],
     properties: {
       id: { type: 'string' },
-      userId: { type: 'string' }
-    }
+      userId: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -562,29 +562,29 @@ export const getStoreUserSchema: FastifySchema = {
             email: { type: 'string' },
             status: { type: 'boolean' },
             lastLoginAt: { type: 'string', format: 'date-time', nullable: true },
-            createdAt: { type: 'string', format: 'date-time' }
-          }
+            createdAt: { type: 'string', format: 'date-time' },
+          },
         },
         store: {
           type: 'object',
           properties: {
             id: { type: 'string' },
             name: { type: 'string' },
-            cnpj: { type: 'string' }
-          }
-        }
-      }
-    }
-  }
-};
+            cnpj: { type: 'string' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getStoreOwnerSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -601,21 +601,21 @@ export const getStoreOwnerSchema: FastifySchema = {
             name: { type: 'string' },
             email: { type: 'string' },
             status: { type: 'boolean' },
-            lastLoginAt: { type: 'string', format: 'date-time', nullable: true }
-          }
-        }
-      }
-    }
-  }
-};
+            lastLoginAt: { type: 'string', format: 'date-time', nullable: true },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getStoreAdminsSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -637,24 +637,24 @@ export const getStoreAdminsSchema: FastifySchema = {
                   name: { type: 'string' },
                   email: { type: 'string' },
                   status: { type: 'boolean' },
-                  lastLoginAt: { type: 'string', format: 'date-time', nullable: true }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+                  lastLoginAt: { type: 'string', format: 'date-time', nullable: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getStoreManagersSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -676,24 +676,24 @@ export const getStoreManagersSchema: FastifySchema = {
                   name: { type: 'string' },
                   email: { type: 'string' },
                   status: { type: 'boolean' },
-                  lastLoginAt: { type: 'string', format: 'date-time', nullable: true }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+                  lastLoginAt: { type: 'string', format: 'date-time', nullable: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getStoreStaffSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -715,24 +715,24 @@ export const getStoreStaffSchema: FastifySchema = {
                   name: { type: 'string' },
                   email: { type: 'string' },
                   status: { type: 'boolean' },
-                  lastLoginAt: { type: 'string', format: 'date-time', nullable: true }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+                  lastLoginAt: { type: 'string', format: 'date-time', nullable: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getStoreUserStatsSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   response: {
     200: {
@@ -748,34 +748,34 @@ export const getStoreUserStatsSchema: FastifySchema = {
               _count: {
                 type: 'object',
                 properties: {
-                  id: { type: 'number' }
-                }
-              }
-            }
-          }
+                  id: { type: 'number' },
+                },
+              },
+            },
+          },
         },
         active: { type: 'number' },
-        inactive: { type: 'number' }
-      }
-    }
-  }
-};
+        inactive: { type: 'number' },
+      },
+    },
+  },
+}
 
 export const searchStoreUsersSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   querystring: {
     type: 'object',
     required: ['q'],
     properties: {
       q: { type: 'string', minLength: 1 },
-      limit: { type: 'number', minimum: 1, maximum: 100, default: 10 }
-    }
+      limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
+    },
   },
   response: {
     200: {
@@ -797,31 +797,31 @@ export const searchStoreUsersSchema: FastifySchema = {
                   name: { type: 'string' },
                   email: { type: 'string' },
                   status: { type: 'boolean' },
-                  lastLoginAt: { type: 'string', format: 'date-time', nullable: true }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+                  lastLoginAt: { type: 'string', format: 'date-time', nullable: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const transferOwnershipSchema: FastifySchema = {
   params: {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { type: 'string' }
-    }
+      id: { type: 'string' },
+    },
   },
   body: {
     type: 'object',
     required: ['newOwnerId'],
     properties: {
-      newOwnerId: { type: 'string', minLength: 1 }
-    }
+      newOwnerId: { type: 'string', minLength: 1 },
+    },
   },
   response: {
     200: {
@@ -836,13 +836,13 @@ export const transferOwnershipSchema: FastifySchema = {
           properties: {
             id: { type: 'string' },
             name: { type: 'string' },
-            email: { type: 'string' }
-          }
-        }
-      }
-    }
-  }
-};
+            email: { type: 'string' },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const StoreSchemas = {
   create: createStoreSchema,
@@ -866,5 +866,5 @@ export const StoreSchemas = {
   getStoreStaff: getStoreStaffSchema,
   getStoreUserStats: getStoreUserStatsSchema,
   searchStoreUsers: searchStoreUsersSchema,
-  transferOwnership: transferOwnershipSchema
-};
+  transferOwnership: transferOwnershipSchema,
+}

@@ -1,23 +1,21 @@
-import { db } from '@/plugins/prisma';
-
+import { db } from '@/plugins/prisma'
 
 export const MilestoneQueries = {
-
   async getById(id: string, roadmapId: string) {
     const milestone = await db.milestone.findFirst({
       where: {
         id,
-        roadmapId
+        roadmapId,
       },
       include: {
         roadmap: {
           select: {
             id: true,
             title: true,
-            status: true
-          }
-        }
-      }
+            status: true,
+          },
+        },
+      },
     })
 
     if (!milestone) {
@@ -27,11 +25,14 @@ export const MilestoneQueries = {
     return milestone
   },
 
-  async listByRoadmap(roadmapId: string, params?: {
-    status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED'
-    page?: number
-    limit?: number
-  }) {
+  async listByRoadmap(
+    roadmapId: string,
+    params?: {
+      status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED'
+      page?: number
+      limit?: number
+    }
+  ) {
     const { status, page = 1, limit = 50 } = params || {}
     const skip = (page - 1) * limit
 
@@ -46,9 +47,9 @@ export const MilestoneQueries = {
         where,
         skip,
         take: limit,
-        orderBy: { order: 'asc' }
+        orderBy: { order: 'asc' },
       }),
-      db.milestone.count({ where })
+      db.milestone.count({ where }),
     ])
 
     return {
@@ -57,30 +58,26 @@ export const MilestoneQueries = {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
+        totalPages: Math.ceil(total / limit),
+      },
     }
   },
 
-  async getByStatus(roadmapId: string, status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED') {
+  async getByStatus(
+    roadmapId: string,
+    status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED'
+  ) {
     return await db.milestone.findMany({
       where: {
         roadmapId,
-        status
+        status,
       },
-      orderBy: { order: 'asc' }
+      orderBy: { order: 'asc' },
     })
   },
 
   async getStats(roadmapId: string) {
-    const [
-      total,
-      pending,
-      inProgress,
-      completed,
-      blocked,
-      avgProgress
-    ] = await Promise.all([
+    const [total, pending, inProgress, completed, blocked, avgProgress] = await Promise.all([
       db.milestone.count({ where: { roadmapId } }),
       db.milestone.count({ where: { roadmapId, status: 'PENDING' } }),
       db.milestone.count({ where: { roadmapId, status: 'IN_PROGRESS' } }),
@@ -88,8 +85,8 @@ export const MilestoneQueries = {
       db.milestone.count({ where: { roadmapId, status: 'BLOCKED' } }),
       db.milestone.aggregate({
         where: { roadmapId },
-        _avg: { progress: true }
-      })
+        _avg: { progress: true },
+      }),
     ])
 
     return {
@@ -98,28 +95,28 @@ export const MilestoneQueries = {
         pending,
         inProgress,
         completed,
-        blocked
+        blocked,
       },
       averageProgress: Math.round(avgProgress._avg.progress || 0),
-      completionRate: total > 0 ? Math.round((completed / total) * 100) : 0
+      completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
     }
   },
 
-  async getUpcoming(roadmapId: string, limit: number = 5) {
+  async getUpcoming(roadmapId: string, limit = 5) {
     const now = new Date()
 
     return await db.milestone.findMany({
       where: {
         roadmapId,
         status: {
-          in: ['PENDING', 'IN_PROGRESS']
+          in: ['PENDING', 'IN_PROGRESS'],
         },
         startDate: {
-          gte: now
-        }
+          gte: now,
+        },
       },
       orderBy: { startDate: 'asc' },
-      take: limit
+      take: limit,
     })
   },
 
@@ -130,13 +127,13 @@ export const MilestoneQueries = {
       where: {
         roadmapId,
         status: {
-          notIn: ['COMPLETED']
+          notIn: ['COMPLETED'],
         },
         endDate: {
-          lt: now
-        }
+          lt: now,
+        },
       },
-      orderBy: { endDate: 'asc' }
+      orderBy: { endDate: 'asc' },
     })
   },
 
@@ -144,23 +141,23 @@ export const MilestoneQueries = {
     return await db.milestone.findMany({
       where: {
         roadmapId,
-        status: 'IN_PROGRESS'
+        status: 'IN_PROGRESS',
       },
-      orderBy: { order: 'asc' }
+      orderBy: { order: 'asc' },
     })
   },
 
-  async search(roadmapId: string, term: string, limit: number = 10) {
+  async search(roadmapId: string, term: string, limit = 10) {
     return await db.milestone.findMany({
       where: {
         roadmapId,
         OR: [
           { title: { contains: term, mode: 'insensitive' } },
-          { description: { contains: term, mode: 'insensitive' } }
-        ]
+          { description: { contains: term, mode: 'insensitive' } },
+        ],
       },
       orderBy: { order: 'asc' },
-      take: limit
+      take: limit,
     })
   },
 
@@ -168,7 +165,7 @@ export const MilestoneQueries = {
   async getAllOrdered(roadmapId: string) {
     return await db.milestone.findMany({
       where: { roadmapId },
-      orderBy: { order: 'asc' }
+      orderBy: { order: 'asc' },
     })
   },
 
@@ -177,8 +174,8 @@ export const MilestoneQueries = {
     const count = await db.milestone.count({
       where: {
         roadmapId,
-        status: 'BLOCKED'
-      }
+        status: 'BLOCKED',
+      },
     })
 
     return count > 0
@@ -189,16 +186,9 @@ export const MilestoneQueries = {
     return await db.milestone.findMany({
       where: {
         roadmapId,
-        OR: [
-          { startDate: { not: null } },
-          { endDate: { not: null } }
-        ]
+        OR: [{ startDate: { not: null } }, { endDate: { not: null } }],
       },
-      orderBy: [
-        { startDate: 'asc' },
-        { order: 'asc' }
-      ]
+      orderBy: [{ startDate: 'asc' }, { order: 'asc' }],
     })
   },
 }
-
